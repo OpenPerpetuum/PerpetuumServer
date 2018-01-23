@@ -27,6 +27,7 @@ namespace Perpetuum.Services.Sessions
         bool IsAuthenticated { get; }
         Character Character { get; }
         AccessLevel AccessLevel { get; }
+        IZoneManager ZoneMgr { get; }
 
         void SendMessage(MessageBuilder builder);
         void SendMessage(IMessage message);
@@ -102,6 +103,14 @@ namespace Perpetuum.Services.Sessions
         public void Start()
         {
             _connection.Receive();
+        }
+
+        public IZoneManager ZoneMgr
+        {
+            get
+            {
+                return _zoneManager;
+            }
         }
 
         public SessionID Id { get; private set; }
