@@ -181,9 +181,9 @@ namespace Perpetuum.Services.Channels
                 Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
                     { "definition", definition },
-                    { "x", x },
-                    { "y", y },
-                    { "z", z },
+                    { "x", x*255 },
+                    { "y", y*255 },
+                    { "z", z*255 },
                     { "quaternionX", qx },
                     { "quaternionY", qy },
                     { "quaternionZ", qz },
@@ -207,6 +207,43 @@ namespace Perpetuum.Services.Channels
                 };
 
                 string cmd = string.Format("zoneDecorDelete:zone_{0}:{1}", sender.ZoneId, GenxyConverter.Serialize(dictionary));
+                request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
+            }
+
+            if (command[0] == "#zoneclearlayer")
+            {
+
+                Dictionary<string, object> dictionary = new Dictionary<string, object>()
+                {
+                    { "layerName", command[1] }
+                };
+
+                string cmd = string.Format("zoneClearLayer:zone_{0}:{1}", sender.ZoneId, GenxyConverter.Serialize(dictionary));
+                request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
+            }
+
+            if (command[0] == "#zonesetplantspeed")
+            {
+                bool err = false;
+                err = !int.TryParse(command[1], out int speed);
+
+                Dictionary<string, object> dictionary = new Dictionary<string, object>()
+                {
+                    { "speed", speed }
+                };
+
+                string cmd = string.Format("zoneSetPlantsSpeed:zone_{0}:{1}", sender.ZoneId, GenxyConverter.Serialize(dictionary));
+                request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
+            }
+
+            if (command[0] == "#zonesetplantmode")
+            {
+                Dictionary<string, object> dictionary = new Dictionary<string, object>()
+                {
+                    { "mode", command[1] }
+                };
+
+                string cmd = string.Format("zoneSetPlantsMode:zone_{0}:{1}", sender.ZoneId, GenxyConverter.Serialize(dictionary));
                 request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
             }
 
