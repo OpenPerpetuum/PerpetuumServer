@@ -377,7 +377,7 @@ namespace Perpetuum.Services.Channels
             if (command[0] == "#zonetileshighway")
             {
                 bool.TryParse(command[1], out bool adddelete);
-                bool.TryParse(command[1], out bool keeplock);
+                bool.TryParse(command[2], out bool keeplock);
 
                 var character = request.Session.Character;
                 var zone = request.Session.ZoneMgr.GetZone((int)character.ZoneId);
@@ -405,7 +405,7 @@ namespace Perpetuum.Services.Channels
             if (command[0] == "#zonetilesconcretea")
             {
                 bool.TryParse(command[1], out bool adddelete);
-                bool.TryParse(command[1], out bool keeplock);
+                bool.TryParse(command[2], out bool keeplock);
 
                 var character = request.Session.Character;
                 var zone = request.Session.ZoneMgr.GetZone((int)character.ZoneId);
