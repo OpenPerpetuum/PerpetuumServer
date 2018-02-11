@@ -14,6 +14,7 @@ using Perpetuum.Services.MissionEngine.MissionDataCacheObjects;
 using Perpetuum.Services.Standing;
 using Perpetuum.Units.DockingBases;
 using Perpetuum.Zones;
+using Perpetuum.Zones.Intrusion;
 
 namespace Perpetuum.Services.ProductionEngine.Facilities
 {
@@ -42,27 +43,17 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
             return $"{ED.Name} {ED.Definition} {Eid}";
         }
 
-        /// <summary>
-        /// I do not like ANY of this.
-        /// but it solves the problem.
-        /// THIS IS DUPLICATED CODE.
-        /// </summary>
-        public const int MAXIMUM_PRODUCTION_POINT_INDICES = 3; //maximum level of production facility
-        public static int GetFacilityLevelFromStack(long facilityEid)
-        {
-            var level = Db.Query().CommandText("select count(*) from intrusionproductionstack where facilityeid=@facilityEID")
-                .SetParameter("@facilityEID", facilityEid)
-                .ExecuteScalar<int>();
-
-            return level.Clamp(0, MAXIMUM_PRODUCTION_POINT_INDICES);
-        }
-
         private int GetFacilityBonus()
         {
-            var facility = GetDockingBase().GetProductionFacilities().Where(x => x.Eid == this.Eid).First();
-            return GetFacilityLevelFromStack(facility.Eid) * 25;
+            int modifier = 0;
+            var dockingbase = GetDockingBase();
+            if (dockingbase is Outpost)
+            {
+                ProductionFacility facility = (dockingbase as Outpost).GetProductionFacilities().Where(x => x.Eid == this.Eid).First();
+                modifier = Outpost.GetFacilityLevelFromStack(facility.Eid) * 25;
+            }
+            return modifier;
         }
-
 
         public virtual Dictionary<string, object> GetFacilityInfo(Character character)
         {
