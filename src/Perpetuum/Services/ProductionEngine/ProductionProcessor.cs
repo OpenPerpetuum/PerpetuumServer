@@ -278,23 +278,31 @@ namespace Perpetuum.Services.ProductionEngine
        
         private int CalculateEp(ProductionFacility facility, ProductionInProgress productionInProgress)
         {
-
+            var dockingBase = facility.GetDockingBase();
+            if (dockingBase.Zone is TrainingZone)
+            {
+                return 0;
+            }
+                
+            var ep = productionInProgress.TotalProductionTime.TotalHours;
+            if (dockingBase.Zone.Configuration.IsBeta)
+            {
+                ep *= BETA_EP_MULTIPLIER;
+            }
             
-            var ep = Math.Ceiling(productionInProgress.TotalProductionTime.TotalHours );
+            //For <1hr jobs, give EP at a rate that would equate to 1 per hour
+            if (ep < 1 && FastRandom.NextDouble() < ep)
+            {
+                ep = 1;
+            }
 
             // dev cheat
+#if DEBUG
             if (productionInProgress.character.AccessLevel.IsAdminOrGm())
             {
                 ep = Math.Ceiling(productionInProgress.TotalProductionTime.TotalSeconds);
             }
-
-            var dockingBase = facility.GetDockingBase();
-            if (dockingBase.Zone is TrainingZone)
-                return 0;
-
-            if (dockingBase.Zone.Configuration.IsBeta)
-                ep *= BETA_EP_MULTIPLIER;
-
+#endif
             return (int) ep;
         }
 

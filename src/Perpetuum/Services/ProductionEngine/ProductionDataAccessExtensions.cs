@@ -2,6 +2,8 @@ using System.Linq;
 using Perpetuum.EntityFramework;
 using Perpetuum.Log;
 using Perpetuum.Services.ProductionEngine.CalibrationPrograms;
+using Perpetuum.ExportedTypes;
+using System;
 
 namespace Perpetuum.Services.ProductionEngine
 {
@@ -51,6 +53,8 @@ namespace Perpetuum.Services.ProductionEngine
             return dataAccess.ResearchLevels.TryGetValue(definition, out ItemResearchLevel researchLevel) ? researchLevel.researchLevel : 0;
         }
 
+        private static readonly double[] TechLevelMods = { 0.25, 1, 2.5, 5 };
+        private static readonly double[] BotClassMods = { 0.5, 1, 2, 3};
         public static double GetProductionDuration(this IProductionDataAccess dataAccess,int targetDefinition)
         {
             if (!EntityDefault.TryGet(targetDefinition, out EntityDefault ed))
@@ -63,10 +67,36 @@ namespace Perpetuum.Services.ProductionEngine
             {
                 if (dataAccess.ProductionDurations.TryGetValue(cf, out double durationModifier))
                 {
+                    //New Math to scale production time by Tier level
+                    var modifier = 1.0;
+                    if(CategoryFlagsExtensions.IsCategory(ed.CategoryFlags, CategoryFlags.cf_robots)){
+                        if(CategoryFlagsExtensions.IsCategory(ed.CategoryFlags, CategoryFlags.cf_runners))
+                        {
+                            modifier = BotClassMods[0];
+                        }
+                        else if(CategoryFlagsExtensions.IsCategory(ed.CategoryFlags, CategoryFlags.cf_crawlers))
+                        {
+                            modifier = BotClassMods[1];
+                        }
+                        else if (CategoryFlagsExtensions.IsCategory(ed.CategoryFlags, CategoryFlags.cf_walkers))
+                        {
+                            modifier = BotClassMods[2];
+                        }
+                        else if (CategoryFlagsExtensions.IsCategory(ed.CategoryFlags, CategoryFlags.cf_heavy_mechs))
+                        {
+                            modifier = BotClassMods[3];
+                        }
+                    }
+                    else
+                    {
+                        var techLevel = Math.Min(Math.Max(1, ed.Tier.level)-1, TechLevelMods.Length-1);
+                        modifier = TechLevelMods[techLevel];
+                    }
+                    durationModifier *= modifier;
+                    Logger.Info("Production time/cost modifier for " + targetDefinition + " is: "+durationModifier);
                     return durationModifier;
                 }
             }
-
             Logger.Error("consistency error. production duration modifier was not found for definition: " + targetDefinition + " " + ed.CategoryFlags);
             return 1.0;
         }
