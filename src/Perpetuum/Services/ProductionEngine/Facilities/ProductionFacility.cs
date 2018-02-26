@@ -222,11 +222,11 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
             return (int)( GetStandingOfOwnerToCharacter(character)*20);
         }
 
+        //Overload method for price/sec
         public virtual double GetPricePerSecond(int targetDefinition)
         {
             var mod = Math.Max(1, ProductionDataAccess.GetProductionPriceModifier(targetDefinition));
             mod = Math.Min(10, mod);
-            Logger.Info("Price Modifier on def:" + targetDefinition + " is x" + mod);
             return GetPricePerSecond() * mod;
         }
 
