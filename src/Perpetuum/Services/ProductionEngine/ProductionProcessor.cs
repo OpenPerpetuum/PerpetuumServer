@@ -296,13 +296,6 @@ namespace Perpetuum.Services.ProductionEngine
                 ep = 1;
             }
 
-            // dev cheat
-#if DEBUG
-            if (productionInProgress.character.AccessLevel.IsAdminOrGm())
-            {
-                ep = Math.Ceiling(productionInProgress.TotalProductionTime.TotalSeconds);
-            }
-#endif
             return (int) ep;
         }
 
@@ -857,7 +850,7 @@ namespace Perpetuum.Services.ProductionEngine
 
             var facilityInfo = prototyper.GetFacilityInfo(character);
             var prototypeTimeSeconds = prototyper.CalculatePrototypeTimeSeconds(character, targetDefinition);
-            var price = prototyper.CalculatePrototypePrice(prototypeTimeSeconds);
+            var price = prototyper.CalculatePrototypePrice(prototypeTimeSeconds, targetDefinition);
             bool hasBonus;
             var materialMultiplier = prototyper.CalculateMaterialMultiplier(character, targetDefinition, out hasBonus);
             var materials = ProductionDescription.GetRequiredComponentsInfo(  ProductionInProgressType.prototype, 1, materialMultiplier, productionDescription.Components.ToList());
