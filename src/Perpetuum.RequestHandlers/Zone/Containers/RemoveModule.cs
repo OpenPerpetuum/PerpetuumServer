@@ -35,11 +35,12 @@ namespace Perpetuum.RequestHandlers.Zone.Containers
                 Transaction.Current.OnCompleted(completed =>
                 {
                     player.Initialize(character);
-                    player.SendRefreshUnitPacket();
 
                     //Apply original ratios after equip-action
                     player.Armor = player.ArmorMax * hpRatio;
                     player.Core = player.CoreMax * apRatio;
+
+                    player.SendRefreshUnitPacket();
 
                     var result = new Dictionary<string, object>
                     {
