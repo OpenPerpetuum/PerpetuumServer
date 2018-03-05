@@ -28,7 +28,10 @@ namespace Perpetuum.Services.Sessions
         Character Character { get; }
         AccessLevel AccessLevel { get; }
         IZoneManager ZoneMgr { get; }
+<<<<<<< HEAD
         bool AccountCreatedInSession { get; set; }
+=======
+>>>>>>> master
 
         void SendMessage(MessageBuilder builder);
         void SendMessage(IMessage message);
