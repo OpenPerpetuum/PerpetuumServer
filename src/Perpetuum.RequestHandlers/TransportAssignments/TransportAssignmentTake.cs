@@ -33,12 +33,12 @@ namespace Perpetuum.RequestHandlers.TransportAssignments
             var transportAssignmentInfo = TransportAssignment.Get(id);
 
             transportAssignmentInfo.ownercharacter.ThrowIfEqual(character, ErrorCodes.WTFErrorMedicalAttentionSuggested);
-            transportAssignmentInfo.taken.ThrowIfTrue(ErrorCodes.TransportAssignmentIsTaken);
-            transportAssignmentInfo.volunteercharacter.ThrowIfNotEqual(null, ErrorCodes.TransportAssignmentIsTaken);
+            transportAssignmentInfo.taken.ThrowIfTrue(ErrorCodes.TransportAssignmentIsTaken);            
 
             transportAssignmentInfo.TakeCollateral(character);
             transportAssignmentInfo.expiry.ThrowIfLess(DateTime.Now, ErrorCodes.TransportAssignmentExpired);
             transportAssignmentInfo.volunteercharacter = character;
+            transportAssignmentInfo.volunteercharacter.ThrowIfNotEqual(character, ErrorCodes.TransportAssignmentIsTaken);
             transportAssignmentInfo.taken = true;
             transportAssignmentInfo.started = DateTime.Now;
             transportAssignmentInfo.UpdateToDb();
