@@ -9,7 +9,6 @@ using Perpetuum.Players;
 using Perpetuum.Services.Channels;
 using Perpetuum.Services.Sparks;
 using Perpetuum.Zones.Training.Reward;
-using Perpetuum.Services.Mail;
 
 namespace Perpetuum.Zones.Teleporting.Strategies
 {
