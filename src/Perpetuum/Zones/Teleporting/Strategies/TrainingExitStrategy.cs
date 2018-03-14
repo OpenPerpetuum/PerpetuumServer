@@ -9,6 +9,7 @@ using Perpetuum.Players;
 using Perpetuum.Services.Channels;
 using Perpetuum.Services.Sparks;
 using Perpetuum.Zones.Training.Reward;
+using Perpetuum.Services.Mail;
 
 namespace Perpetuum.Zones.Teleporting.Strategies
 {
@@ -43,6 +44,9 @@ namespace Perpetuum.Zones.Teleporting.Strategies
 
         public void DoTeleport(Player player)
         {
+            //Throw if email not confirmed
+            player.Character.GetAccount().EmailConfirmed.ThrowIfFalse(ErrorCodes.EmailNotConfirmed);
+            
             player.States.Dock = true;
 
             var character = player.Character;
