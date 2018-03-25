@@ -48,13 +48,7 @@ namespace Perpetuum.RequestHandlers.AdminTools
                 return;
             }
 
-            //New Account creation procedure
-            IDataRecord data = Db.Query().CommandText("opp_create_account")
-                .SetParameter("@email", account.Email)
-                .SetParameter("@password", account.Password)
-                .SetParameter("@campaignid", account.CampaignId)
-                .ExecuteSingleRow();
-            data.GetInt32(0).ThrowIfEqual<int>(1, ErrorCodes.SQLInsertError);
+            _accountRepository.Insert(account);
 
             // if we get this far, make sure we can't sit here and make accounts.
             request.Session.AccountCreatedInSession = true;
