@@ -1,8 +1,6 @@
 ﻿using Perpetuum.Accounting;
-using Perpetuum.Data;
 using Perpetuum.Host.Requests;
 using Perpetuum.Services.Relay;
-using System.Data;
 
 namespace Perpetuum.RequestHandlers.AdminTools
 {
@@ -30,7 +28,7 @@ namespace Perpetuum.RequestHandlers.AdminTools
             // if an account was already created using this session, reject this creation attempt.
             if (request.Session.AccountCreatedInSession)
             {
-                throw new PerpetuumException(ErrorCodes.MaxIterationsExceeded); 
+                throw new PerpetuumException(ErrorCodes.MaxIterationsExceeded);
             }
 
             var account = new Account
