@@ -2,6 +2,7 @@
 using Perpetuum.Data;
 using Perpetuum.Host.Requests;
 using Perpetuum.Services.Relay;
+using System.Data;
 
 namespace Perpetuum.RequestHandlers.AdminTools
 {
@@ -29,7 +30,7 @@ namespace Perpetuum.RequestHandlers.AdminTools
             // if an account was already created using this session, reject this creation attempt.
             if (request.Session.AccountCreatedInSession)
             {
-                throw new PerpetuumException(ErrorCodes.AccountAlreadyExists);
+                throw new PerpetuumException(ErrorCodes.MaxIterationsExceeded); 
             }
 
             var account = new Account
@@ -40,21 +41,23 @@ namespace Perpetuum.RequestHandlers.AdminTools
                 CampaignId = "{\"host\":\"opencreate\"}"
             };
 
-            if (_accountRepository.Get(account.Email,account.Password) != null)
+            //If email exists - throw error
+            if (_accountRepository.Get(account.Email) != null)
             {
                 Message.Builder.FromRequest(request).WithError(ErrorCodes.AccountAlreadyExists).Send();
                 return;
             }
 
-            _accountRepository.Insert(account);
+            //New Account creation procedure
+            IDataRecord data = Db.Query().CommandText("opp_create_account")
+                .SetParameter("@email", account.Email)
+                .SetParameter("@password", account.Password)
+                .SetParameter("@campaignid", account.CampaignId)
+                .ExecuteSingleRow();
+            data.GetInt32(0).ThrowIfEqual<int>(1, ErrorCodes.SQLInsertError);
 
             // if we get this far, make sure we can't sit here and make accounts.
             request.Session.AccountCreatedInSession = true;
-
-            Db.Query().CommandText("extensionPointsInject")
-                .SetParameter("@accountID", account.Id)
-                .SetParameter("@points", 40000)
-                .ExecuteNonQuery();
 
             Message.Builder.FromRequest(request).SetData(k.account, account.ToDictionary()).Send();
         }

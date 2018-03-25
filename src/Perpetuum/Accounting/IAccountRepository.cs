@@ -12,6 +12,9 @@ namespace Perpetuum.Accounting
         [CanBeNull]
         Account Get(string email, string password);
 
+        [CanBeNull]
+        Account Get(string email);
+
         IEnumerable<Account> GetBySteamId(string steamId);
       
     }
