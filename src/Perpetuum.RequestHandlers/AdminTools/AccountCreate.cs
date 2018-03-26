@@ -28,7 +28,7 @@ namespace Perpetuum.RequestHandlers.AdminTools
             };
 
             //If email exists - throw error
-            if (_accountRepository.Get(account.Email) != null)
+            if (_accountRepository.Get(account.Email, account.Password) != null)
             {
                 Message.Builder.FromRequest(request).WithError(ErrorCodes.AccountAlreadyExists).Send();
                 return;
