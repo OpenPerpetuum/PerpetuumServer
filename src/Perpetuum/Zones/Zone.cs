@@ -9,6 +9,7 @@ using System.Threading;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Common.Loggers;
 using Perpetuum.EntityFramework;
+using Perpetuum.ExportedTypes;
 using Perpetuum.Groups.Corporations;
 using Perpetuum.Groups.Gangs;
 using Perpetuum.Log;
@@ -22,6 +23,7 @@ using Perpetuum.Units;
 using Perpetuum.Zones.Beams;
 using Perpetuum.Zones.Blobs;
 using Perpetuum.Zones.Decors;
+using Perpetuum.Zones.Effects;
 using Perpetuum.Zones.Environments;
 using Perpetuum.Zones.NpcSystem.Presences;
 using Perpetuum.Zones.NpcSystem.SafeSpawnPoints;
@@ -184,6 +186,13 @@ namespace Perpetuum.Zones
 
             if (unit is Player player)
                 ImmutableInterlocked.TryAdd(ref _players, player.Eid, player);
+
+            //Add effect!
+            if (Configuration.IsBeta && unit is Player)
+            {
+                EffectBuilder effectBuilder = unit.NewEffectBuilder().SetType(EffectType.effect_beta_bonus);
+                unit.ApplyEffect(effectBuilder);
+            }
 
             unit.Updated += OnUnitUpdated;
             unit.Dead += OnUnitDead;
