@@ -571,7 +571,6 @@
     <Compile Include="Zones\CombatLogs\CombatLogSaver.cs" />
     <Compile Include="Zones\CombatLogs\CombatSummary.cs" />
     <Compile Include="Zones\CombatLogs\ICombatLogSaver.cs" />
-    <Compile Include="Zones\Effects\ZoneEffect.cs" />
     <Compile Include="Zones\IUsableItem.cs" />
     <Compile Include="Services\Channels\Channel.cs" />
     <Compile Include="Services\Channels\ChannelBanRepository.cs" />
