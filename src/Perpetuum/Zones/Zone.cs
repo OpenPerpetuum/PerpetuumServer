@@ -187,13 +187,6 @@ namespace Perpetuum.Zones
             if (unit is Player player)
                 ImmutableInterlocked.TryAdd(ref _players, player.Eid, player);
 
-            //Add effect!
-            if (Configuration.IsBeta && unit is Player)
-            {
-                EffectBuilder effectBuilder = unit.NewEffectBuilder().SetType(EffectType.effect_beta_bonus);
-                unit.ApplyEffect(effectBuilder);
-            }
-
             unit.Updated += OnUnitUpdated;
             unit.Dead += OnUnitDead;
             Logger.Info($"Unit entered to zone. zone:{Id} eid = {unit.InfoString} ({unit.CurrentPosition})");

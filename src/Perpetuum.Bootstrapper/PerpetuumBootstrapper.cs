@@ -709,7 +709,7 @@ namespace Perpetuum.Bootstrapper
             _builder.RegisterType<AuraEffect>().Keyed<Effect>(EffectType.effect_pbs_booster_sensor_lvl2);
             _builder.RegisterType<AuraEffect>().Keyed<Effect>(EffectType.effect_pbs_booster_sensor_lvl3);
 
-            _builder.RegisterType<ZoneEffect>().Keyed<Effect>(EffectType.effect_beta_bonus); //TODO beta bonus
+            _builder.RegisterType<AuraEffect>().Keyed<Effect>(EffectType.effect_beta_bonus); //TODO beta bonus
 
             _builder.Register<EffectFactory>(x =>
             {
