@@ -22,7 +22,7 @@ namespace Perpetuum.Accounting
 
         void InsertExtensionRemoveLog(Account account, Character character, int extensionId, int extensionLevel,int points);
         void AddExtensionPointsSpent(Account account, Character character, int spentPoints, int extensionID,int extensionLevel);
-        void ExtensionSubscriptionStart(Account account, DateTime startTime, DateTime endTime, int multiplierBonus);
+        void ExtensionSubscriptionStart(Account account, DateTimeOffset startTime, DateTimeOffset endTime, int multiplierBonus);
         //void ExtensionSubscriptionExtend(Account account, DateTime extendedValidUntil);
 
         void AddExtensionPoints(Account account, int pointsToInject);

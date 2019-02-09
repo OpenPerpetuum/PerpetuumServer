@@ -326,7 +326,7 @@ namespace Perpetuum.Accounting
         /// <summary>
         /// Starts the subscription period
         /// </summary>
-        public void ExtensionSubscriptionStart(Account account,DateTime startTime,DateTime endTime, int multiplierBonus)
+        public void ExtensionSubscriptionStart(Account account, DateTimeOffset startTime, DateTimeOffset endTime, int multiplierBonus)
         {
             try
             {
