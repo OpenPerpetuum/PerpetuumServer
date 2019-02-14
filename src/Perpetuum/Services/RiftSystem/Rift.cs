@@ -194,13 +194,12 @@ namespace Perpetuum.Services.RiftSystem
 
 
             // we are on a stronghold. we want to go home.
-            // for the moment we will send them to a teleporter on zone 0.
+            // Sending them at the Hershfield main terminal.
             if (player.Zone is StrongHoldZone)
             {
-                var destZone = player.Character.GetZone(0);
-                var teleportColumns = destZone.GetTeleportColumns().Where(t => t.IsEnabled);
+                var destZone = player.Character.GetZone(8); // Hershfield zone
                 var teleport = _teleportStrategyFactories.TeleportToAnotherZoneFactory(destZone);
-                teleport.TargetPosition = teleportColumns.First().CurrentPosition;
+                teleport.TargetPosition = new Position(964, 804); // At the Hershfield main terminal
                 teleport.DoTeleportAsync(player);
                 return;
             }
