@@ -9,6 +9,7 @@ using Perpetuum.Log;
 using Perpetuum.Players;
 using Perpetuum.Services.MissionEngine.MissionTargets;
 using Perpetuum.Units;
+using Perpetuum.Units.DockingBases;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Blobs.BlobEmitters;
 using Perpetuum.Zones.NpcSystem.Presences;
@@ -135,12 +136,14 @@ namespace Perpetuum.Services.RiftSystem
     public class Rift : Unit,IUsableItem,IBlobEmitter
     {
         private readonly ITeleportStrategyFactories _teleportStrategyFactories;
+        private readonly DockingBaseHelper _dockingBaseHelper;
         private UnitDespawnHelper _despawnHelper;
         private readonly BlobEmitter _blobEmitter;
 
-        public Rift(ITeleportStrategyFactories teleportStrategyFactories)
+        public Rift(ITeleportStrategyFactories teleportStrategyFactories, DockingBaseHelper dockingBaseHelper)
         {
             _teleportStrategyFactories = teleportStrategyFactories;
+            _dockingBaseHelper = dockingBaseHelper;
             _blobEmitter = new BlobEmitter(this);
         }
 
@@ -199,7 +202,8 @@ namespace Perpetuum.Services.RiftSystem
             {
                 var destZone = player.Character.GetZone(8); // Hershfield zone
                 var teleport = _teleportStrategyFactories.TeleportToAnotherZoneFactory(destZone);
-                teleport.TargetPosition = new Position(964, 804); // At the Hershfield main terminal
+                var dockingBase = _dockingBaseHelper.GetDockingBase(142); // Hershfield main terminal
+                teleport.TargetPosition = UndockSpawnPositionSelector.SelectSpawnPosition(dockingBase);
                 teleport.DoTeleportAsync(player);
                 return;
             }
