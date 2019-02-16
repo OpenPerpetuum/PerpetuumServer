@@ -199,9 +199,7 @@ namespace Perpetuum.Services.RiftSystem
             if (player.Zone is StrongHoldZone)
             {
                 var destZone = player.Character.GetZone(8); // Hershfield zone
-                var zoneUnits = destZone.GetStaticUnits();
-                bool isDockingBase(Unit unit) => unit.ED.CategoryFlags == CategoryFlags.cf_public_docking_base;
-                var dockingBase = (DockingBase) zoneUnits.First(isDockingBase);
+                var dockingBase = destZone.Units.OfType<DockingBase>().First();
                 var teleport = _teleportStrategyFactories.TeleportToAnotherZoneFactory(destZone);
                 teleport.TargetPosition = UndockSpawnPositionSelector.SelectSpawnPosition(dockingBase);
                 teleport.DoTeleportAsync(player);
