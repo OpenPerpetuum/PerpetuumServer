@@ -136,14 +136,12 @@ namespace Perpetuum.Services.RiftSystem
     public class Rift : Unit,IUsableItem,IBlobEmitter
     {
         private readonly ITeleportStrategyFactories _teleportStrategyFactories;
-        private readonly DockingBaseHelper _dockingBaseHelper;
         private UnitDespawnHelper _despawnHelper;
         private readonly BlobEmitter _blobEmitter;
 
-        public Rift(ITeleportStrategyFactories teleportStrategyFactories, DockingBaseHelper dockingBaseHelper)
+        public Rift(ITeleportStrategyFactories teleportStrategyFactories)
         {
             _teleportStrategyFactories = teleportStrategyFactories;
-            _dockingBaseHelper = dockingBaseHelper;
             _blobEmitter = new BlobEmitter(this);
         }
 
@@ -201,8 +199,10 @@ namespace Perpetuum.Services.RiftSystem
             if (player.Zone is StrongHoldZone)
             {
                 var destZone = player.Character.GetZone(8); // Hershfield zone
+                var zoneUnits = destZone.GetStaticUnits();
+                bool isDockingBase(Unit unit) => unit.ED.CategoryFlags == CategoryFlags.cf_public_docking_base;
+                var dockingBase = (DockingBase) zoneUnits.First(isDockingBase);
                 var teleport = _teleportStrategyFactories.TeleportToAnotherZoneFactory(destZone);
-                var dockingBase = _dockingBaseHelper.GetDockingBase(142); // Hershfield main terminal
                 teleport.TargetPosition = UndockSpawnPositionSelector.SelectSpawnPosition(dockingBase);
                 teleport.DoTeleportAsync(player);
                 return;
