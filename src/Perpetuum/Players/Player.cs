@@ -600,7 +600,7 @@ namespace Perpetuum.Players
                 }
             }
         }
-        private bool _running_query = false;
+
         protected override void OnTileChanged()
         {
             base.OnTileChanged();
@@ -614,17 +614,6 @@ namespace Perpetuum.Players
             var controlInfo = zone.Terrain.Controls.GetValue(CurrentPosition);
 
             ApplyHighwayEffect(controlInfo.IsAnyHighway);
-
-#if DEBUG
-            Logger.Info("Player Tile Update - Is Relic Query Running? " + _running_query);
-#endif
-
-            if (!_running_query) //Prevent excessive updates
-            {
-                _running_query = true;
-                //Query relicmanager for nearby relics - pop relic and award to player if in range
-                Task.Run(() => Zone.RelicManager?.CheckNearbyRelics(this)).ContinueWith(a => _running_query = false);
-            }
 
             if (zone.Configuration.Protected)
                 return;

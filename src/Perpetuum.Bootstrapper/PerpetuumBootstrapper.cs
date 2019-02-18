@@ -1004,6 +1004,8 @@ namespace Perpetuum.Bootstrapper
             RegisterEntity<Gift>();
             RegisterEntity<Paint>();//TODO register new entitydef
 			RegisterEntity<EPBoost>();
+            RegisterEntity<Relic>();
+           
 
             _builder.Register<Func<EntityDefault,Entity>>(x =>
             {
@@ -1219,6 +1221,8 @@ namespace Perpetuum.Bootstrapper
 
 				// TODO new ep boost item -- activates like paint
 				ByNamePatternAndFlag<EPBoost>("def_boost_ep", CategoryFlags.cf_lottery_items);
+
+                ByNamePatternAndFlag<Relic>("def_relic", CategoryFlags.undefined);
 
                 ByCategoryFlags<VisibilityBasedProbeDeployer>(CategoryFlags.cf_proximity_probe_deployer);
                 ByCategoryFlags<Item>(CategoryFlags.cf_gift_packages);

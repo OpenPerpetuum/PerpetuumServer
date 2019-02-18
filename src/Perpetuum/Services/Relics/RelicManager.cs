@@ -11,6 +11,11 @@ using Perpetuum.Log;
 using Perpetuum.Players;
 using Perpetuum.Data;
 using Perpetuum.Zones.Beams;
+using System.Threading;
+using Perpetuum.Threading;
+using Perpetuum.EntityFramework;
+using Perpetuum.Units;
+using Perpetuum.Items;
 
 namespace Perpetuum.Services.Relics
 {
@@ -20,10 +25,11 @@ namespace Perpetuum.Services.Relics
         private const double ACTIVATION_RANGE = 3; //30m
         private const double RESPAWN_PROXIMITY = 10.0 * ACTIVATION_RANGE;
         private readonly TimeSpan RESPAWN_RANDOM_WINDOW = TimeSpan.FromHours(1);
+        private readonly TimeSpan THREAD_TIMEOUT = TimeSpan.FromSeconds(4);
 
         private IZone _zone;
         private RiftSpawnPositionFinder _spawnPosFinder;
-        private readonly object _lock = new object();
+        private ReaderWriterLockSlim _lock;
         private Random _random;
 
         private int _max_relics = 0;
@@ -40,16 +46,19 @@ namespace Perpetuum.Services.Relics
         private RelicSpawnInfoRepository relicSpawnInfoRepository;
         private RelicLootGenerator relicLootGenerator;
         private RelicRepository relicRepository;
+        private readonly IEntityServices _entityServices;
 
         //Timers for update
         private TimeSpan _refreshElapsed;
         private TimeSpan _respawnElapsed;
         private TimeSpan _respawnRandomized;
 
-        public RelicManager(IZone zone)
+        public RelicManager(IZone zone, IEntityServices entityServices)
         {
             _random = new Random();
+            _lock = new ReaderWriterLockSlim();
             _zone = zone;
+            _entityServices = entityServices;
             _spawnPosFinder = new PveRiftSpawnPositionFinder(zone);
             if (zone.Configuration.Terraformable)
             {
@@ -78,15 +87,18 @@ namespace Perpetuum.Services.Relics
             return _respawnRate.Add(TimeSpan.FromSeconds(minutesToAdd));
         }
 
+        private int GetRelicCount()
+        {
+            using (_lock.Write(THREAD_TIMEOUT))
+                return _relicsOnZone.Count;
+        }
+
         public void Start()
         {
             //Inject max relics on first start
-            lock (_lock)
+            while (GetRelicCount() < _max_relics)
             {
-                while (_relicsOnZone.Count < _max_relics)
-                {
-                    SpawnRelic();
-                }
+                SpawnRelic();
             }
         }
 
@@ -106,12 +118,9 @@ namespace Perpetuum.Services.Relics
                     return false;
                 }
                 Position position = new Position(x, y);
-                Relic relic = new Relic(0, info, _zone, _zone.GetPosition(position));
-                lock (_lock)
-                {
-                    _relicsOnZone.Add(relic);
-                    success = true;
-                }
+                Relic relic = new Relic(0, info, _zone, position);
+                AddRelicToZone(relic);
+                success = true;
             }
             catch (Exception e)
             {
@@ -119,56 +128,6 @@ namespace Perpetuum.Services.Relics
             }
             return success;
         }
-
-        //Relics are just beam locations until a player comes within range of it, then they are awarded the Loot and EP for finding the Relic
-        public void CheckNearbyRelics(Player player)
-        {
-            Relic relicInRange = null;
-            lock (_lock)
-            {
-                foreach (Relic r in _relicsOnZone)
-                {
-                    if (r.GetPosition().TotalDistance3D(player.CurrentPosition) < ACTIVATION_RANGE && r.IsAlive())
-                    {
-                        relicInRange = r;
-                        break;
-                    }
-                }
-                //Bail if nothing found
-                if (relicInRange == null)
-                {
-                    return;
-                }
-
-                //Compute EP
-                var ep = relicInRange.GetRelicInfo().GetEP();
-                if (_zone.Configuration.Type == ZoneType.Pvp) ep *= 2;
-                if (_zone.Configuration.Type == ZoneType.Training) ep = 0;
-
-                //Compute loots
-                var relicLoots = relicLootGenerator.GenerateLoot(relicInRange);
-                if (relicLoots == null)
-                    return;
-
-                //Set flag on relic for removal
-                relicInRange.SetAlive(false);
-
-                //Fork task to make the lootcan and log the ep
-                Task.Run(() =>
-                {
-                    using (var scope = Db.CreateTransaction())
-                    {
-                        LootContainer.Create().SetOwner(player).SetEnterBeamType(BeamType.loot_bolt).AddLoot(relicLoots.LootItems).BuildAndAddToZone(_zone, relicLoots.Position);
-                        if (ep > 0) player.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Artifact, ep);
-                        scope.Complete();
-                    }
-                });
-
-                //Remove all relics with flag set
-                _relicsOnZone.RemoveAll(r => !r.IsAlive());
-            }
-        }
-
 
         private Point FindRelicPosition(RelicInfo info)
         {
@@ -208,68 +167,74 @@ namespace Perpetuum.Services.Relics
             var maxAttempts = 100;
             var attempts = 0;
             RelicInfo info = null;
-            while (info == null && _spawnInfos != null)
+            while (info == null)
             {
                 info = GetNextRelicType();
-                if (info.HasStaticPosistion) //The selected Relic type is static!  We must check if another relic is in this location
+                if (info.HasStaticPosistion && IsSpawnTooClose(info.GetPosition())) //The selected Relic type is static!  We must check if another relic is in this location
                 {
-                    Point point = info.GetPosition();
-                    foreach (var r in _relicsOnZone)
-                    {
-                        if (RESPAWN_PROXIMITY > point.Distance(r.GetPosition()))
-                        {
-                            info = null; //We cannot spawn this type because another relic (possibly of the same type) is already present near this location
-                            break;
-                        }
-                    }
+                    info = null;
                 }
                 attempts++;
                 if (attempts > maxAttempts)
-                    break;
-            }
-
-            if (info == null)
-            {
-                Logger.Error("Could not get RelicInfo for next Relic on Zone: " + _zone.Id);
-                return;
+                {
+                    Logger.Error("Could not get RelicInfo for next Relic on Zone: " + _zone.Id);
+                    return;
+                }
             }
 
             attempts = 0;
-            var spatialConflict = true;
             Point pt = FindRelicPosition(info);
-            while (spatialConflict)
+            while (IsSpawnTooClose(pt))
             {
-                spatialConflict = false;
-                foreach (var r in _relicsOnZone)
+                pt = _spawnPosFinder.FindSpawnPosition();
+                attempts++;
+                if (attempts > maxAttempts)
                 {
-                    if (RESPAWN_PROXIMITY > pt.Distance(r.GetPosition()))
-                    {
-                        spatialConflict = true;
-                        break;
-                    }
-                }
-                if (spatialConflict)
-                {
-                    pt = _spawnPosFinder.FindSpawnPosition();
-                    attempts++;
-                    if (attempts > maxAttempts)
-                        break;
+                    Logger.Error("Could not get Position for next Relic on Zone: " + _zone.Id);
+                    return;
                 }
             }
-            if (attempts > maxAttempts)
-            {
-                Logger.Error("Could not get Position for next Relic on Zone: " + _zone.Id);
-                return;
-            }
+
             Position position = pt.ToPosition();
             Relic relic = new Relic(0, info, _zone, _zone.GetPosition(position));
-            _relicsOnZone.Add(relic);
+            AddRelicToZone(relic);
+        }
+
+        private void AddRelicToZone(Relic relic)
+        {
+            using (_lock.Write(THREAD_TIMEOUT))
+            {
+                //HACK - Relic needs valid Unit Properties
+                //var dummyUnit = (Unit) _entityServices.Factory.CreateWithRandomEID(DefinitionNames.WALL_HEALER_SMALL_OBJECT);  def_relic
+                var dummyUnit = (Unit)_entityServices.Factory.CreateWithRandomEID("def_relic"); //TODO this works - make better init/construction of unit...
+                relic.InitUnitProperties(dummyUnit);
+                relic.SetLoots(relicLootGenerator.GenerateLoot(relic));
+                _zone.AddUnit(relic);
+                _relicsOnZone.Add(relic);
+            }
+        }
+
+        private bool IsSpawnTooClose(Point point)
+        {
+            using (_lock.Write(THREAD_TIMEOUT))
+            {
+                foreach (var r in _relicsOnZone)
+                {
+                    if (RESPAWN_PROXIMITY > point.Distance(r.GetPosition()))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private void RefreshBeam(Relic relic)
         {
-            var level = relic.GetRelicInfo().GetLevel();
-            var faction = relic.GetRelicInfo().GetFaction();
+            var info = relic.GetRelicInfo();
+            var level = info.GetLevel();
+            var faction = info.GetFaction();
+            var position = relic.GetPosition();
             var factionalBeamType = BeamType.orange_20sec;
             switch (faction)
             {
@@ -290,12 +255,12 @@ namespace Perpetuum.Services.Relics
                     break;
             }
 
-            var p = _zone.FixZ(relic.GetPosition());
-            var beamBuilder = Beam.NewBuilder().WithType(BeamType.artifact_radar).WithTargetPosition(relic.GetPosition())
+            var p = _zone.FixZ(position);
+            var beamBuilder = Beam.NewBuilder().WithType(BeamType.artifact_radar).WithTargetPosition(position)
                 .WithState(BeamState.AlignToTerrain)
                 .WithDuration(_relicRefreshRate);
             _zone.CreateBeam(beamBuilder);
-            beamBuilder = Beam.NewBuilder().WithType(BeamType.nature_effect).WithTargetPosition(relic.GetPosition())
+            beamBuilder = Beam.NewBuilder().WithType(BeamType.nature_effect).WithTargetPosition(position)
                 .WithState(BeamState.AlignToTerrain)
                 .WithDuration(_relicRefreshRate);
             _zone.CreateBeam(beamBuilder);
@@ -308,44 +273,49 @@ namespace Perpetuum.Services.Relics
             }
         }
 
-        private void UpdateRelics(TimeSpan elapsed)
+        private void UpdateRelics()
         {
-            foreach (Relic r in _relicsOnZone)
+            using (_lock.Write(THREAD_TIMEOUT))
             {
-                r.Update(elapsed);
-                RefreshBeam(r);
+                foreach (Relic r in _relicsOnZone)
+                {
+                    if (!r.IsAlive())
+                    {
+                        r.RemoveFromZone();
+                    }
+                    else
+                    {
+                        RefreshBeam(r);
+                    }
+                }
+                _relicsOnZone.RemoveAll(r => !r.IsAlive());
             }
-
-            //Remove all expired relics
-            _relicsOnZone.RemoveAll(r => !r.IsAlive());
         }
 
         public void Update(TimeSpan time)
         {
-            lock (_lock)
+            //Minimum tick rate
+            _refreshElapsed += time;
+            if (_refreshElapsed < _relicRefreshRate)
+                return;
+
+            //Update Relic lifespans, refresh beams and remove dead relics
+            UpdateRelics();
+
+            _respawnElapsed += _refreshElapsed;
+            _refreshElapsed = TimeSpan.Zero;
+
+            //check if time to spawn a new Relic
+            if (_respawnElapsed > _respawnRandomized)
             {
-                //Minimum tick rate
-                _refreshElapsed += time;
-                if (_refreshElapsed < _relicRefreshRate)
-                    return;
-
-                //Update Relic lifespans, refresh beams and expire
-                UpdateRelics(_refreshElapsed);
-
-                _respawnElapsed += _refreshElapsed;
-                _refreshElapsed = TimeSpan.Zero;
-
-                //check if time to spawn a new Relic
-                if (_respawnElapsed > _respawnRandomized)
+                if (GetRelicCount() < _max_relics)
                 {
-                    if (_relicsOnZone.Count < _max_relics)
-                    {
-                        SpawnRelic();
-                        _respawnRandomized = RollNextSpawnTime();
-                    }
-                    _respawnElapsed = TimeSpan.Zero;
+                    SpawnRelic();
+                    _respawnRandomized = RollNextSpawnTime();
                 }
+                _respawnElapsed = TimeSpan.Zero;
             }
+
         }
     }
 }

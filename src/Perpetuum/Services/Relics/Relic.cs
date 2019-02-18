@@ -1,64 +1,141 @@
 ﻿using Perpetuum.Data;
+using Perpetuum.EntityFramework;
+using Perpetuum.ExportedTypes;
+using Perpetuum.Players;
 using Perpetuum.Services.Looting;
+using Perpetuum.Threading;
 using Perpetuum.Timers;
+using Perpetuum.Units;
 using Perpetuum.Zones;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Perpetuum.Services.Relics
 {
-    public class Relic
+    public class Relic : Unit
     {
         private int _id;
         private RelicInfo _info;
         private IZone _zone;
-        private Position _position;
         private bool _alive;
-        private TimeTracker _lifeSpan = new TimeTracker(TimeSpan.FromDays(3));
 
+        private const double ACTIVATION_RANGE = 3; //30m
+        private const double RESPAWN_PROXIMITY = 10.0 * ACTIVATION_RANGE;
+
+        private ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+        private readonly TimeSpan THREAD_TIMEOUT = TimeSpan.FromSeconds(4);
+
+        private RelicLootItems _loots;
+
+        public Relic()
+        {
+
+        }
 
         public Relic(int id, RelicInfo info, IZone zone, Position position)
         {
             _id = id;
             _info = info;
             _zone = zone;
-            _position = position;
+            CurrentPosition = position;
             SetAlive(true);
+        }
+
+        public void InitUnitProperties(Unit unit)
+        {
+            this.BasePropertyModifiers = unit.BasePropertyModifiers;
+            this.ED = unit.ED;
+            this.Eid = unit.Eid;
+        }
+
+        public void SetLoots(RelicLootItems lootItems)
+        {
+            using (_lock.Write(THREAD_TIMEOUT))
+                _loots = lootItems;
         }
 
         public RelicInfo GetRelicInfo()
         {
-            return this._info;
+            using (_lock.Read(THREAD_TIMEOUT))
+                return _info;
         }
 
         public Position GetPosition()
         {
-            return this._position;
+            using (_lock.Read(THREAD_TIMEOUT))
+                return CurrentPosition;
         }
 
         public void SetAlive(bool isAlive)
         {
-            this._alive = isAlive;
+            using (_lock.Write(THREAD_TIMEOUT))
+                _alive = isAlive;
         }
 
         public bool IsAlive()
         {
-            return _alive;
+            using (_lock.Read(THREAD_TIMEOUT))
+                return _alive;
         }
 
-        public void Update(TimeSpan elapsed)
+        private UnitDespawnHelper _despawnHelper;
+
+        public void SetDespawnTime(TimeSpan despawnTime)
         {
-            _lifeSpan.Update(elapsed);
-            if (_lifeSpan.Expired)
+            _despawnHelper = UnitDespawnHelper.Create(this, despawnTime);
+        }
+
+        protected override void OnUpdate(TimeSpan time)
+        {
+            _despawnHelper?.Update(time, this);
+            base.OnUpdate(time);
+        }
+
+        protected override void OnRemovedFromZone(IZone zone)
+        {
+            SetAlive(false);
+            base.OnRemovedFromZone(zone);
+        }
+
+
+        protected internal override void UpdatePlayerVisibility(Player player)
+        {
+            if (GetPosition().TotalDistance2D(player.CurrentPosition) < ACTIVATION_RANGE && IsAlive())
             {
-                this.SetAlive(false);
+                PopRelic(player);
             }
         }
 
+        private void PopRelic(Player player)
+        {
+            //Set flag on relic for removal
+            SetAlive(false);
+
+            //Compute loots
+            if (_loots == null)
+                return;
+
+            //Compute EP
+            var ep = GetRelicInfo().GetEP();
+            if (_zone.Configuration.Type == ZoneType.Pvp) ep *= 2;
+            if (_zone.Configuration.Type == ZoneType.Training) ep = 0;
+
+            //Fork task to make the lootcan and log the ep
+            Task.Run(() =>
+            {
+                using (var scope = Db.CreateTransaction())
+                {
+                    LootContainer.Create().SetOwner(player).SetEnterBeamType(BeamType.loot_bolt).AddLoot(_loots.LootItems).BuildAndAddToZone(_zone, _loots.Position);
+                    if (ep > 0) player.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Artifact, ep);
+                    scope.Complete();
+                }
+            });
+        }
     }
 
 
