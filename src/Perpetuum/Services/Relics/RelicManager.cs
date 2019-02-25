@@ -34,18 +34,15 @@ namespace Perpetuum.Services.Relics
 
         private int _max_relics = 0;
         private IEnumerable<RelicSpawnInfo> _spawnInfos;
+        private List<Relic> _relics;
 
         private readonly TimeSpan _respawnRate = TimeSpan.FromHours(3);
         private readonly TimeSpan _relicRefreshRate = TimeSpan.FromSeconds(19.95);
-
-        //Cache of Relics
-        private List<Relic> _relicsOnZone = new List<Relic>();
 
         //DB-accessing objects
         private RelicZoneConfigRepository relicZoneConfigRepository;
         private RelicSpawnInfoRepository relicSpawnInfoRepository;
         private RelicLootGenerator relicLootGenerator;
-        private RelicRepository relicRepository;
         private readonly IEntityServices _entityServices;
 
         //Timers for update
@@ -57,6 +54,7 @@ namespace Perpetuum.Services.Relics
         {
             _random = new Random();
             _lock = new ReaderWriterLockSlim();
+            _relics = new List<Relic>();
             _zone = zone;
             _entityServices = entityServices;
             _spawnPosFinder = new PveRiftSpawnPositionFinder(zone);
@@ -67,8 +65,7 @@ namespace Perpetuum.Services.Relics
             // init repositories and extract data
             relicZoneConfigRepository = new RelicZoneConfigRepository(zone);
             relicSpawnInfoRepository = new RelicSpawnInfoRepository(zone);
-            relicRepository = new RelicRepository(zone);
-            relicLootGenerator = new RelicLootGenerator(relicRepository);
+            relicLootGenerator = new RelicLootGenerator();
 
             //Get Zone Relic-Configuration data
             var config = relicZoneConfigRepository.GetZoneConfig();
@@ -90,7 +87,7 @@ namespace Perpetuum.Services.Relics
         private int GetRelicCount()
         {
             using (_lock.Write(THREAD_TIMEOUT))
-                return _relicsOnZone.Count;
+                return _relics.Count;
         }
 
         public void Start()
@@ -118,13 +115,13 @@ namespace Perpetuum.Services.Relics
                     return false;
                 }
                 Position position = new Position(x, y);
-                Relic relic = new Relic(0, info, _zone, position);
-                AddRelicToZone(relic);
+                AddRelicToZone(info, position);
                 success = true;
             }
             catch (Exception e)
             {
                 Logger.Warning("Failed to spawn Relic by ForceSpawnRelicAt()");
+                Logger.Warning(e.Message);
             }
             return success;
         }
@@ -194,23 +191,15 @@ namespace Perpetuum.Services.Relics
                     return;
                 }
             }
-
-            Position position = pt.ToPosition();
-            Relic relic = new Relic(0, info, _zone, _zone.GetPosition(position));
-            AddRelicToZone(relic);
+            AddRelicToZone(info, pt.ToPosition());
         }
 
-        private void AddRelicToZone(Relic relic)
+        private void AddRelicToZone(RelicInfo info, Position position)
         {
             using (_lock.Write(THREAD_TIMEOUT))
             {
-                //HACK - Relic needs valid Unit Properties
-                //var dummyUnit = (Unit) _entityServices.Factory.CreateWithRandomEID(DefinitionNames.WALL_HEALER_SMALL_OBJECT);  def_relic
-                var dummyUnit = (Unit)_entityServices.Factory.CreateWithRandomEID("def_relic"); //TODO this works - make better init/construction of unit...
-                relic.InitUnitProperties(dummyUnit);
-                relic.SetLoots(relicLootGenerator.GenerateLoot(relic));
-                _zone.AddUnit(relic);
-                _relicsOnZone.Add(relic);
+                var r = Relic.BuildAndAddToZone(info, _zone, position, relicLootGenerator.GenerateLoot(info));
+                _relics.Add(r);
             }
         }
 
@@ -218,7 +207,7 @@ namespace Perpetuum.Services.Relics
         {
             using (_lock.Write(THREAD_TIMEOUT))
             {
-                foreach (var r in _relicsOnZone)
+                foreach (var r in _relics)
                 {
                     if (RESPAWN_PROXIMITY > point.Distance(r.GetPosition()))
                     {
@@ -277,7 +266,7 @@ namespace Perpetuum.Services.Relics
         {
             using (_lock.Write(THREAD_TIMEOUT))
             {
-                foreach (Relic r in _relicsOnZone)
+                foreach (Relic r in _relics)
                 {
                     if (!r.IsAlive())
                     {
@@ -288,7 +277,7 @@ namespace Perpetuum.Services.Relics
                         RefreshBeam(r);
                     }
                 }
-                _relicsOnZone.RemoveAll(r => !r.IsAlive());
+                _relics.RemoveAll(r => !r.IsAlive());
             }
         }
 

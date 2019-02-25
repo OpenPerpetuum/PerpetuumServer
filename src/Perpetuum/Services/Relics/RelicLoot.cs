@@ -6,36 +6,32 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Perpetuum.Services.Relics
 {
 
     public class RelicLootGenerator
     {
-        private readonly RelicRepository _relicRepository;
+        private readonly RelicLootReader _relicLootRepository;
         private Random _random;
 
-        public RelicLootGenerator(RelicRepository relicRepository)
+        public RelicLootGenerator()
         {
-            _relicRepository = relicRepository;
+            _relicLootRepository = new RelicLootReader();
             _random = new Random();
         }
 
         //Guard loot-loop from empty or low probability loot tables (would indicate bad/missing Relicloot entries)
         private bool HasValidLoots(IRelicLoot[] loots)
         {
-            return loots.Length > 0 && (0.1 < loots.Sum(loot => loot.Chance)); 
+            return loots.Length > 0 && (0.1 < loots.Sum(loot => loot.Chance));
         }
 
-        public RelicLootItems GenerateLoot(Relic relic)
+        public RelicLootItems GenerateLoot(RelicInfo relicInfo)
         {
-            var relicInfo = relic.GetRelicInfo();
-
             var result = new List<LootItem>();
 
-            var loots = _relicRepository.GetRelicLoots(relicInfo).ToArray();
+            var loots = _relicLootRepository.GetRelicLoots(relicInfo).ToArray();
 
             if (!HasValidLoots(loots))
                 return null;
@@ -55,57 +51,80 @@ namespace Perpetuum.Services.Relics
 
             } while (result.Count < 1);
 
-            return new RelicLootItems(relic.GetPosition(), result);
+            return new RelicLootItems(result);
         }
     }
-}
 
-public class RelicLootItems
-{
-    public Position Position { get; private set; }
-    public IEnumerable<LootItem> LootItems { get; private set; }
 
-    public RelicLootItems(Position position, IEnumerable<LootItem> lootItems)
+    public class RelicLootItems
     {
-        Position = position;
-        LootItems = lootItems;
-    }
-}
+        public IEnumerable<LootItem> LootItems { get; private set; }
 
-
-public interface IRelicLoot
-{
-    double Chance { get; }
-    IBuilder<LootItem> GetLootItemBuilder();
-}
-
-/// <summary>
-/// Describes one loot item can be found in a discovered relic
-/// </summary>
-public class RelicLoot : IRelicLoot
-{
-    private int Definition { get; set; }
-    private IntRange Quantity { get; set; }
-    public double Chance { get; private set; }
-
-    public IBuilder<LootItem> GetLootItemBuilder()
-    {
-        return LootItemBuilder.Create(Definition)
-            .SetQuantity(FastRandom.NextInt(Quantity))
-            .SetRepackaged(Packed);
+        public RelicLootItems(IEnumerable<LootItem> lootItems)
+        {
+            LootItems = lootItems;
+        }
     }
 
-    private bool Packed { get; set; }
-    private int RelicInfoId { get; set; }
 
-    public RelicLoot(IDataRecord record)
+    public interface IRelicLoot
     {
-        Definition = record.GetValue<int>("definition");
-        Quantity = new IntRange(record.GetValue<int>("minquantity"), record.GetValue<int>("maxquantity"));
-        Chance = record.GetValue<double>("chance");
-        Packed = record.GetValue<bool>("packed");
-        RelicInfoId = record.GetValue<int>("relicinfoid");
+        double Chance { get; }
+        IBuilder<LootItem> GetLootItemBuilder();
+    }
+
+    /// <summary>
+    /// Describes one loot item can be found in a discovered relic
+    /// </summary>
+    public class RelicLoot : IRelicLoot
+    {
+        private int Definition { get; set; }
+        private IntRange Quantity { get; set; }
+        public double Chance { get; private set; }
+
+        public IBuilder<LootItem> GetLootItemBuilder()
+        {
+            return LootItemBuilder.Create(Definition)
+                .SetQuantity(FastRandom.NextInt(Quantity))
+                .SetRepackaged(Packed);
+        }
+
+        private bool Packed { get; set; }
+        private int RelicInfoId { get; set; }
+
+        public RelicLoot(IDataRecord record)
+        {
+            Definition = record.GetValue<int>("definition");
+            Quantity = new IntRange(record.GetValue<int>("minquantity"), record.GetValue<int>("maxquantity"));
+            Chance = record.GetValue<double>("chance");
+            Packed = record.GetValue<bool>("packed");
+            RelicInfoId = record.GetValue<int>("relicinfoid");
+
+        }
 
     }
 
+
+    public class RelicLootReader
+    {
+        protected IRelicLoot CreateRelicLootFromRecord(IDataRecord record)
+        {
+            return new RelicLoot(record);
+        }
+
+        public IEnumerable<IRelicLoot> GetRelicLoots(RelicInfo info)
+        {
+            var loots = Db.Query().CommandText("SELECT definition,minquantity,maxquantity,chance,relicinfoid,packed FROM relicloots WHERE relicinfoid = @relicInfoId")
+                .SetParameter("@relicInfoId", info.GetID())
+                .Execute()
+                .Select(CreateRelicLootFromRecord);
+
+            var resultList = new List<IRelicLoot>();
+            foreach (var loot in loots)
+            {
+                resultList.Add(loot);
+            }
+            return resultList;
+        }
+    }
 }

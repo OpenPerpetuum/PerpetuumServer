@@ -1222,7 +1222,7 @@ namespace Perpetuum.Bootstrapper
 				// TODO new ep boost item -- activates like paint
 				ByNamePatternAndFlag<EPBoost>("def_boost_ep", CategoryFlags.cf_lottery_items);
 
-                ByNamePatternAndFlag<Relic>("def_relic", CategoryFlags.undefined);
+                ByNamePatternAndFlag<Relic>(DefinitionNames.RELIC, CategoryFlags.undefined);
 
                 ByCategoryFlags<VisibilityBasedProbeDeployer>(CategoryFlags.cf_proximity_probe_deployer);
                 ByCategoryFlags<Item>(CategoryFlags.cf_gift_packages);
