@@ -20,8 +20,10 @@ namespace Perpetuum.Services.Relics
 
         private const double ACTIVATION_RANGE = 3; //30m
         private const double RESPAWN_PROXIMITY = 10.0 * ACTIVATION_RANGE;
+        private readonly TimeSpan MAXLIFESPAN = TimeSpan.FromDays(3);
+        private TimeSpan lifespan = TimeSpan.Zero;
 
-        private ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+        private ReaderWriterLockSlim _lock;
         private readonly TimeSpan THREAD_TIMEOUT = TimeSpan.FromSeconds(4);
 
         private RelicLootItems _loots;
@@ -33,12 +35,13 @@ namespace Perpetuum.Services.Relics
             if (relic == null)
                 return null;
             relic.Init(info, zone, position, lootItems);
-            zone.AddUnit(relic);
+            relic.AddToZone(zone, position);
             return relic;
         }
 
         public void Init(RelicInfo info, IZone zone, Position position, RelicLootItems lootItems)
         {
+            _lock = new ReaderWriterLockSlim();
             _info = info;
             _zone = zone;
             CurrentPosition = _zone.GetPosition(position);
@@ -76,16 +79,11 @@ namespace Perpetuum.Services.Relics
                 return _alive;
         }
 
-        private UnitDespawnHelper _despawnHelper;
-
-        public void SetDespawnTime(TimeSpan despawnTime)
-        {
-            _despawnHelper = UnitDespawnHelper.Create(this, despawnTime);
-        }
-
         protected override void OnUpdate(TimeSpan time)
         {
-            _despawnHelper?.Update(time, this);
+            lifespan += time;
+            if (lifespan > MAXLIFESPAN)
+                SetAlive(false);
             base.OnUpdate(time);
         }
 

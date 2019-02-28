@@ -81,7 +81,7 @@ namespace Perpetuum.Services.Relics
             var randomFactor = _random.NextDouble() - 0.5;
             var minutesToAdd = RESPAWN_RANDOM_WINDOW.TotalMinutes * randomFactor;
 
-            return _respawnRate.Add(TimeSpan.FromSeconds(minutesToAdd));
+            return _respawnRate.Add(TimeSpan.FromMinutes(minutesToAdd));
         }
 
         private int GetRelicCount()
@@ -196,9 +196,9 @@ namespace Perpetuum.Services.Relics
 
         private void AddRelicToZone(RelicInfo info, Position position)
         {
+            var r = Relic.BuildAndAddToZone(info, _zone, position, relicLootGenerator.GenerateLoot(info));
             using (_lock.Write(THREAD_TIMEOUT))
             {
-                var r = Relic.BuildAndAddToZone(info, _zone, position, relicLootGenerator.GenerateLoot(info));
                 _relics.Add(r);
             }
         }
