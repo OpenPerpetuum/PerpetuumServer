@@ -196,10 +196,13 @@ namespace Perpetuum.Services.Relics
 
         private void AddRelicToZone(RelicInfo info, Position position)
         {
-            var r = Relic.BuildAndAddToZone(info, _zone, position, relicLootGenerator.GenerateLoot(info));
             using (_lock.Write(THREAD_TIMEOUT))
             {
-                _relics.Add(r);
+                var r = Relic.BuildAndAddToZone(info, _zone, position, relicLootGenerator.GenerateLoot(info));
+                if (r != null)
+                {
+                    _relics.Add(r);
+                }
             }
         }
 

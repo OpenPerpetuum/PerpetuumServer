@@ -51,20 +51,17 @@ namespace Perpetuum.Services.Relics
 
         public void SetLoots(RelicLootItems lootItems)
         {
-            using (_lock.Write(THREAD_TIMEOUT))
-                _loots = lootItems;
+            _loots = lootItems;
         }
 
         public RelicInfo GetRelicInfo()
         {
-            using (_lock.Read(THREAD_TIMEOUT))
-                return _info;
+            return _info;
         }
 
         public Position GetPosition()
         {
-            using (_lock.Read(THREAD_TIMEOUT))
-                return CurrentPosition;
+            return CurrentPosition;
         }
 
         public void SetAlive(bool isAlive)
