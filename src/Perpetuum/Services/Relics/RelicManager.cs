@@ -126,6 +126,19 @@ namespace Perpetuum.Services.Relics
             return success;
         }
 
+        public List<Dictionary<string, object>> GetRelicListDictionary()
+        {
+            var list = new List<Dictionary<string, object>>();
+            using (_lock.Write(THREAD_TIMEOUT))
+            {
+                foreach (var relic in this._relics)
+                {
+                    list.Add(relic.ToDebugDictionary());
+                }
+            }
+            return list;
+        }
+
         private Point FindRelicPosition(RelicInfo info)
         {
             if (info.HasStaticPosistion) //If the relic spawn info has a valid static position defined - use that

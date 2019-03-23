@@ -162,7 +162,7 @@ namespace Perpetuum.Services.Channels
                 {
                     { "eid", eid }
                 };
-                
+
                 string cmd = string.Format("zoneDrawBlockingByEid:zone_{0}:{1}", sender.ZoneId, GenxyConverter.Serialize(dictionary));
                 request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
             }
@@ -882,6 +882,56 @@ namespace Perpetuum.Services.Channels
 
             }
 #endif
+
+            //List all Relics
+            if (command[0] == "#listrelics")
+            {
+                bool err = false;
+
+                var character = request.Session.Character;
+                IZone zone = null;
+
+                if (command.Length == 2)
+                {
+                    err = !int.TryParse(command[1], out int zoneCommand);
+                    if (err)
+                    {
+                        channel.SendMessageToAll(sessionManager, sender, "Bad args");
+                        throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                    }
+                    var zoneid = zoneCommand;
+                    zone = request.Session.ZoneMgr.GetZone((int)zoneid);
+                }
+                else if (character.ZoneId != null)
+                {
+                    zone = request.Session.ZoneMgr.GetZone((int)character.ZoneId);
+                }
+
+                if (zone == null)
+                {
+                    channel.SendMessageToAll(sessionManager, sender, "Zone not provided or not found");
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
+                Dictionary<string, object> dictionary = new Dictionary<string, object>()
+                {
+                    {"zoneid", zone.Id }
+                };
+                if (zone.RelicManager != null)
+                {
+                    var relicDictList = zone.RelicManager.GetRelicListDictionary();
+                    foreach (var dict in relicDictList)
+                    {
+                        channel.SendMessageToAll(sessionManager, sender, dict.ToDebugString());
+                    }
+                }
+                else
+                {
+                    channel.SendMessageToAll(sessionManager, sender, "This zone does NOT support relics!");
+                }
+
+            }
+
 
         }
     }

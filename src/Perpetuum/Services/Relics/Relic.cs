@@ -6,6 +6,7 @@ using Perpetuum.Threading;
 using Perpetuum.Units;
 using Perpetuum.Zones;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,6 +25,7 @@ namespace Perpetuum.Services.Relics
         private TimeSpan lifespan = TimeSpan.Zero;
 
         private ReaderWriterLockSlim _lock;
+        private ReaderWriterLockSlim _lifespanLock;
         private readonly TimeSpan THREAD_TIMEOUT = TimeSpan.FromSeconds(4);
 
         private RelicLootItems _loots;
@@ -42,6 +44,7 @@ namespace Perpetuum.Services.Relics
         public void Init(RelicInfo info, IZone zone, Position position, RelicLootItems lootItems)
         {
             _lock = new ReaderWriterLockSlim();
+            _lifespanLock = new ReaderWriterLockSlim();
             _info = info;
             _zone = zone;
             CurrentPosition = _zone.GetPosition(position);
@@ -76,10 +79,28 @@ namespace Perpetuum.Services.Relics
                 return _alive;
         }
 
+        private void incrementLifeSpan(TimeSpan time)
+        {
+            using (_lifespanLock.Write(THREAD_TIMEOUT))
+                lifespan += time;
+        }
+
+        private bool isLifeSpanExpired()
+        {
+            using (_lifespanLock.Read(THREAD_TIMEOUT))
+                return lifespan > MAXLIFESPAN;
+        }
+
+        private TimeSpan GetLifeSpan()
+        {
+            using (_lifespanLock.Read(THREAD_TIMEOUT))
+                return lifespan;
+        }
+
         protected override void OnUpdate(TimeSpan time)
         {
-            lifespan += time;
-            if (lifespan > MAXLIFESPAN)
+            incrementLifeSpan(time);
+            if (isLifeSpanExpired())
                 SetAlive(false);
             base.OnUpdate(time);
         }
@@ -123,6 +144,19 @@ namespace Perpetuum.Services.Relics
                     scope.Complete();
                 }
             });
+        }
+
+        public Dictionary<string, object> ToDebugDictionary()
+        {
+            var lifeLeft = MAXLIFESPAN - GetLifeSpan();
+            var dictionary = new Dictionary<string, object>
+            {
+                {k.position, this.GetPosition() },
+                {k.timeLeft, lifeLeft },
+                {"relicinfo", this.GetRelicInfo().ToDictionary().ToDebugString()},
+            };
+
+            return dictionary;
         }
     }
 

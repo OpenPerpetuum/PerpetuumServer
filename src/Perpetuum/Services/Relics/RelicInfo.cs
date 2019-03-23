@@ -82,5 +82,19 @@ namespace Perpetuum.Services.Relics
             return this._id;
         }
 
+        public Dictionary<string, object> ToDictionary()
+        {
+            var dictionary = new Dictionary<string, object>
+            {
+                {k.name, this._name },
+                {k.raceID, this.GetFaction()},
+                {k.level, this.GetLevel()},
+                {k.extensionPoints, this.GetEP()},
+                {"isStatic", HasStaticPosistion},
+            };
+
+            return dictionary;
+        }
+
     }
 }
