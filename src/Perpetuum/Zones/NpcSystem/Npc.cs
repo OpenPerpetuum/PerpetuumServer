@@ -38,6 +38,12 @@ namespace Perpetuum.Zones.NpcSystem
         Aggressive
     }
 
+    public enum NpcSpecialType
+    {
+        Normal,
+        Boss
+    }
+
     public abstract class NpcAI : IState
     {
         protected readonly Npc npc;
@@ -568,6 +574,7 @@ namespace Perpetuum.Zones.NpcSystem
         }
 
         public NpcBehavior Behavior { get; set; }
+        public NpcSpecialType SpecialType { get; set; }
 
         [CanBeNull]
         private INpcGroup _group;
@@ -723,8 +730,10 @@ namespace Perpetuum.Zones.NpcSystem
 
             using (var scope = Db.CreateTransaction())
             {
-                if (true) //TODO npc.IsSpecial/or .IsBoss 
+
+                if (SpecialType == NpcSpecialType.Boss)
                 {
+                    //Boss - Split loot equally to all participants
                     List<Player> participants = new List<Player>();
                     participants = ThreatManager.Hostiles.Select(x => zone.ToPlayerOrGetOwnerPlayer(x.unit)).ToList();
                     ISplittableLootGenerator splitLooter = new SplittableLootGenerator(LootGenerator);
@@ -736,6 +745,7 @@ namespace Perpetuum.Zones.NpcSystem
                 }
                 else
                 {
+                    //Normal case: loot can awarded in full to tagger
                     LootContainer.Create().SetOwner(tagger).AddLoot(LootGenerator).BuildAndAddToZone(zone, CurrentPosition);
                 }
 
