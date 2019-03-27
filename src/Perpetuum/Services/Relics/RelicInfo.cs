@@ -24,7 +24,7 @@ namespace Perpetuum.Services.Relics
 
         public static RelicInfo GetByIDFromDB(int id)
         {
-            var relicinfos = Db.Query().CommandText("SELECT TOP 1 id, name, raceid, level, ep FROM relicinfo WHERE id = @relicInfoId")
+            var relicinfos = Db.Query().CommandText("SELECT TOP 1 id, name, raceid, level, ep FROM relictypes WHERE id = @relicInfoId")
                 .SetParameter("@relicInfoId", id)
                 .Execute()
                 .Select(CreateRelicInfoFromRecord);

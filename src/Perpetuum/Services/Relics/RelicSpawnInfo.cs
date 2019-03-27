@@ -42,7 +42,7 @@ namespace Perpetuum.Services.Relics
         protected RelicSpawnInfo CreateRelicSpawnInfoFromRecord(IDataRecord record)
         {
             var id = record.GetValue<int>("id");
-            var relicinfoid = record.GetValue<int>("relicinfoid");
+            var relicinfoid = record.GetValue<int>("relictypeid");
             var zoneid = record.GetValue<int>("zoneid");
             var rate = record.GetValue<int>("rate");
             var x = record.GetValue<int?>("x");
@@ -57,7 +57,7 @@ namespace Perpetuum.Services.Relics
 
         public IEnumerable<RelicSpawnInfo> GetAll()
         {
-            var relicZoneConfigs = Db.Query().CommandText("SELECT id, relicinfoid, zoneid, rate, x, y FROM relicspawninfo WHERE zoneid = @zoneId")
+            var relicZoneConfigs = Db.Query().CommandText("SELECT id, relictypeid, zoneid, rate, x, y FROM relicspawninfo WHERE zoneid = @zoneId")
                 .SetParameter("@zoneId", _zone.Id)
                 .Execute()
                 .Select(CreateRelicSpawnInfoFromRecord);
