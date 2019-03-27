@@ -53,7 +53,7 @@ namespace Perpetuum.Services.Relics
 
         public RelicZoneConfig GetZoneRelicConfiguration()
         {
-            var relicZoneConfigs = Db.Query().CommandText("SELECT TOP 1 id, zoneid, maxspawn, respawnrate FROM reliczoneconfigs WHERE zoneid = @zoneId")
+            var relicZoneConfigs = Db.Query().CommandText("SELECT TOP 1 id, zoneid, maxspawn, respawnrate FROM reliczoneconfig WHERE zoneid = @zoneId")
                 .SetParameter("@zoneId", _zone.Id)
                 .Execute()
                 .Select(CreateRelicZoneConfigFromRecord);

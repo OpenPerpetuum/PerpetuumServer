@@ -57,7 +57,7 @@ namespace Perpetuum.Services.Relics
 
         public IEnumerable<RelicSpawnInfo> GetAll()
         {
-            var relicZoneConfigs = Db.Query().CommandText("SELECT id, relicinfoid, zoneid, rate, x, y FROM relicspawninfos WHERE zoneid = @zoneId")
+            var relicZoneConfigs = Db.Query().CommandText("SELECT id, relicinfoid, zoneid, rate, x, y FROM relicspawninfo WHERE zoneid = @zoneId")
                 .SetParameter("@zoneId", _zone.Id)
                 .Execute()
                 .Select(CreateRelicSpawnInfoFromRecord);

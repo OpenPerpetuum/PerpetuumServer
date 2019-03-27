@@ -2360,7 +2360,7 @@ namespace Perpetuum.Bootstrapper
                 var ctx = x.Resolve<IComponentContext>();
                 return zone =>
                 {
-                    var numRelicConfigs = Db.Query().CommandText("SELECT * FROM relicspawninfos WHERE zoneid = @zoneId")
+                    var numRelicConfigs = Db.Query().CommandText("SELECT * FROM relicspawninfo WHERE zoneid = @zoneId")
                     .SetParameter("@zoneId", zone.Id)
                     .Execute().Count;
                     if (numRelicConfigs < 1)
@@ -2368,7 +2368,7 @@ namespace Perpetuum.Bootstrapper
                         return null;
                     }
 
-                    var zoneConfigs = Db.Query().CommandText("SELECT * FROM reliczoneconfigs WHERE zoneid = @zoneId")
+                    var zoneConfigs = Db.Query().CommandText("SELECT * FROM reliczoneconfig WHERE zoneid = @zoneId")
                     .SetParameter("@zoneId", zone.Id)
                     .Execute();
                     if (zoneConfigs.Count < 1)
@@ -2381,7 +2381,7 @@ namespace Perpetuum.Bootstrapper
                     {
                         return null;
                     }
-                    //Do not register RelicManagers on zones without the necessary valid entries in reliczoneconfigs and relicspawninfos
+                    //Do not register RelicManagers on zones without the necessary valid entries in reliczoneconfig and relicspawninfo
                     return ctx.Resolve<RelicManager>(new TypedParameter(typeof(IZone), zone));
                 };
             });

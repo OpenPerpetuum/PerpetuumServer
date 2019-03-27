@@ -96,7 +96,7 @@ namespace Perpetuum.Services.Relics
         {
             Definition = record.GetValue<int>("definition");
             Quantity = new IntRange(record.GetValue<int>("minquantity"), record.GetValue<int>("maxquantity"));
-            Chance = record.GetValue<double>("chance");
+            Chance = (float)record.GetValue<decimal>("chance");
             Packed = record.GetValue<bool>("packed");
             RelicInfoId = record.GetValue<int>("relicinfoid");
 
@@ -114,7 +114,7 @@ namespace Perpetuum.Services.Relics
 
         public IEnumerable<IRelicLoot> GetRelicLoots(RelicInfo info)
         {
-            var loots = Db.Query().CommandText("SELECT definition,minquantity,maxquantity,chance,relicinfoid,packed FROM relicloots WHERE relicinfoid = @relicInfoId")
+            var loots = Db.Query().CommandText("SELECT definition,minquantity,maxquantity,chance,relicinfoid,packed FROM relicloot WHERE relicinfoid = @relicInfoId")
                 .SetParameter("@relicInfoId", info.GetID())
                 .Execute()
                 .Select(CreateRelicLootFromRecord);
