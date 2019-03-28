@@ -68,7 +68,7 @@ namespace Perpetuum.Services.Looting
                 amounts = amounts.OrderBy(x => _random.Next()).ToArray();
                 for (var i = 0; i < splitCount; i++)
                 {
-                    ItemInfo itemInfo = new ItemInfo(lootItem.ItemInfo.Definition, lootItem.Quantity, lootItem.Quantity);
+                    ItemInfo itemInfo = new ItemInfo(lootItem.ItemInfo.Definition, splitQuantity, splitQuantity);
                     var generatorInfo = new LootGeneratorItemInfo(itemInfo, info.damaged, info.probability);
                     generatorInfos.Add(generatorInfo);
                 }
