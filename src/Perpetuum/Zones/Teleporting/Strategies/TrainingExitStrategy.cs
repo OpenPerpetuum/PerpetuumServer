@@ -7,6 +7,7 @@ using Perpetuum.Data;
 using Perpetuum.Groups.Corporations;
 using Perpetuum.Players;
 using Perpetuum.Services.Channels;
+using Perpetuum.Services.Mail;
 using Perpetuum.Services.Sparks;
 using Perpetuum.Zones.Training.Reward;
 
@@ -92,6 +93,9 @@ namespace Perpetuum.Zones.Teleporting.Strategies
                 _channelManager.LeaveChannel(oldCorporation.ChannelName, character);
                 _channelManager.JoinChannel(newCorporation.ChannelName, character);
                 player.RemoveFromZone();
+
+                // After some time send mail to the character
+                //MailHandler.SendWelcomeMail(character);
             });
         }
 

@@ -3,6 +3,7 @@ using Perpetuum.ExportedTypes;
 using Perpetuum.GenXY;
 using Perpetuum.Host.Requests;
 using Perpetuum.Players;
+using Perpetuum.Services.Mail;
 using Perpetuum.Services.RiftSystem;
 using Perpetuum.Services.Sessions;
 using Perpetuum.Zones;
@@ -30,6 +31,7 @@ namespace Perpetuum.Services.Channels
         // then parse/cast/convert arguments as necessary.
         public void ParseAdminCommand(Character sender, string text, IRequest request, Channel channel, ISessionManager sessionManager, ChannelManager channelmanager)
         {
+            Console.WriteLine(string.Format("Got command {0}", text));
             string[] command = text.Split(new char[] { ',' });
 
             // channel is not secured. must be secured first.
@@ -810,6 +812,66 @@ namespace Perpetuum.Services.Channels
                 channel.SendMessageToAll(sessionManager, sender, "EP Bonus Set with command: " + dictionary.ToDebugString());
             }
 
+            // Send mail manually
+            // [0] = Command
+            // [1] = Source Character ID
+            // [2] = Target Character ID
+            // [3] = Mail subject
+            // [4] = Mail body
+            // [5] = Mail Type
+            // Note for the mail type:
+            // character = 0
+            // news = 1
+            // maintenance = 2
+            // storyteller = 3
+            // company = 4
+            if (command[0] == "#sendmail")
+            {
+                if(!int.TryParse(command[1], out int sourceCharacterID))
+                {
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
+                if (!int.TryParse(command[2], out int targetCharacterID))
+                {
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+            
+                Character sourceCharacter = Character.Get(sourceCharacterID);
+                Character targetCharacter = Character.Get(targetCharacterID);
+                string mailSubject = command[3];
+                string mailBody = command[4];
+
+                MailType type;
+                switch(int.Parse(command[5]))
+                {
+                    case 0:
+                        type = MailType.character;
+                        break;
+
+                    case 1:
+                        type = MailType.company;
+                        break;
+
+                    case 2:
+                        type = MailType.maintenance;
+                        break;
+
+                    case 3:
+                        type = MailType.news;
+                        break;
+
+                    case 4:
+                        type = MailType.storyteller;
+                        break;
+
+                    default:
+                        type = MailType.character;
+                        break;
+                }
+
+                MailHandler.SendMail(sourceCharacter, targetCharacter, mailSubject, mailBody, type, out _, out _).ThrowIfError();
+            }
         }
     }
 }

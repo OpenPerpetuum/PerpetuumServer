@@ -90,6 +90,7 @@ namespace Perpetuum.Services.Mail
             var senderGuid = sourceID = Guid.NewGuid();
             var targetGuid = mailID = Guid.NewGuid();
 
+
             var res = Db.Query().CommandText("mailsend")
                               .SetParameter("@sender", sender.Id)
                               .SetParameter("@target", target.Id)
@@ -184,6 +185,18 @@ namespace Perpetuum.Services.Mail
         public static int NewMailCount(Character character)
         {
             return Db.Query().CommandText("newMailCount").SetParameter("@characterID", character.Id).ExecuteScalar<int>();
+        }
+
+        public static ErrorCodes SendWelcomeMail(Character newPlayer)
+        {
+            // Get dummy character
+            Character sender = Character.GetByNick("overlord");
+
+            var records = Db.Query().CommandText("select subject, body from PremadeMail where id = 1").Execute();
+            string subject = records.First().GetValue<string>(0);
+            string body = records.First().GetValue<string>(1);
+
+            return SendMail(sender, newPlayer, subject, body, MailType.character, out _, out _);
         }
     }
 }
