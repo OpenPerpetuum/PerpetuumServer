@@ -936,6 +936,7 @@ namespace Perpetuum.Bootstrapper
             RegisterEffectModule<SensorDampenerModule>();
             RegisterEffectModule<RemoteSensorBoosterModule>();
             RegisterEffectModule<TargetPainterModule>();
+            RegisterEffectModule<TargetBlinderModule>(); //TODO new module
             RegisterEffectModule<SensorBoosterModule>();
             RegisterEffectModule<ArmorHardenerModule>();
             RegisterEffectModule<StealthModule>();
@@ -1217,6 +1218,9 @@ namespace Perpetuum.Bootstrapper
 
 				// TODO new ep boost item -- activates like paint
 				ByNamePatternAndFlag<EPBoost>("def_boost_ep", CategoryFlags.cf_lottery_items);
+
+                // TODO new Blinder module
+                ByNamePatternAndFlag<TargetBlinderModule>("def_standard_blinder", CategoryFlags.cf_target_painter);
 
                 ByCategoryFlags<VisibilityBasedProbeDeployer>(CategoryFlags.cf_proximity_probe_deployer);
                 ByCategoryFlags<Item>(CategoryFlags.cf_gift_packages);
