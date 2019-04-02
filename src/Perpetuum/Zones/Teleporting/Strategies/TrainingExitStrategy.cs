@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Transactions;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Containers;
@@ -17,6 +18,7 @@ namespace Perpetuum.Zones.Teleporting.Strategies
     {
         private const double CHARACTER_START_CREDIT = 500000; //TODO: move to DB
         private const int MAX_REWARD_LEVEL = 4;
+        private const int WAIT_TIME_BEFORE_SENDING_MAIL_MS = 10000;
 
         private readonly TeleportDescription _description;
         private readonly ITrainingRewardRepository _trainingRewardRepository;
@@ -94,8 +96,8 @@ namespace Perpetuum.Zones.Teleporting.Strategies
                 _channelManager.JoinChannel(newCorporation.ChannelName, character);
                 player.RemoveFromZone();
 
-                // After some time send mail to the character
-                //MailHandler.SendWelcomeMail(character);
+                Task.Delay(WAIT_TIME_BEFORE_SENDING_MAIL_MS)
+                .ContinueWith(task => MailHandler.SendWelcomeMailExitTutorial(character));
             });
         }
 

@@ -90,7 +90,6 @@ namespace Perpetuum.Services.Mail
             var senderGuid = sourceID = Guid.NewGuid();
             var targetGuid = mailID = Guid.NewGuid();
 
-
             var res = Db.Query().CommandText("mailsend")
                               .SetParameter("@sender", sender.Id)
                               .SetParameter("@target", target.Id)
@@ -187,14 +186,36 @@ namespace Perpetuum.Services.Mail
             return Db.Query().CommandText("newMailCount").SetParameter("@characterID", character.Id).ExecuteScalar<int>();
         }
 
-        public static ErrorCodes SendWelcomeMail(Character newPlayer)
+        public static ErrorCodes SendWelcomeMailBeginTutorial(Character newPlayer)
         {
-            // Get dummy character
+            return SendWelcomeMail(newPlayer, 1);
+        }
+
+        public static ErrorCodes SendWelcomeMailExitTutorial(Character newPlayer)
+        {
+            return SendWelcomeMail(newPlayer, 2);
+        }
+
+        private static ErrorCodes SendWelcomeMail(Character newPlayer, int mailId)
+        {
+            // TODO: Change the sender character name for something more/less appropriate
             Character sender = Character.GetByNick("overlord");
 
-            var records = Db.Query().CommandText("select subject, body from PremadeMail where id = 1").Execute();
-            string subject = records.First().GetValue<string>(0);
-            string body = records.First().GetValue<string>(1);
+            string subject, body;
+            using (var scope = Db.CreateTransaction())
+            {
+                var records = Db.Query()
+                    .CommandText("select subject, body from premademail where id = @mailId")
+                    .SetParameter("@mailId", mailId.ToString())
+                    .Execute();
+                subject = records.First().GetValue<string>(0);
+                body = records.First().GetValue<string>(1);
+
+                subject = subject.Replace("$USER$", newPlayer.Nick);
+                body = body.Replace("$USER$", newPlayer.Nick);
+
+                scope.Complete();
+            }
 
             return SendMail(sender, newPlayer, subject, body, MailType.character, out _, out _);
         }
