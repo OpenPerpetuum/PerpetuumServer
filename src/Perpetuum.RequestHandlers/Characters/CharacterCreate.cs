@@ -21,7 +21,7 @@ namespace Perpetuum.RequestHandlers.Characters
 {
     public class CharacterCreate : IRequestHandler
     {
-        private const int WAIT_TIME_BEFORE_SENDING_MAIL_MS = 10000;
+        private TimeSpan WAIT_TIME_BEFORE_SENDING_MAIL = TimeSpan.FromSeconds(10);
 
         private readonly IAccountManager _accountManager;
         private readonly IChannelManager _channelManager;
@@ -108,7 +108,7 @@ namespace Perpetuum.RequestHandlers.Characters
                     dockingBase.CreateStarterRobotForCharacter(character);
                     character.AddToWallet(TransactionType.CharacterCreate,10000000);
 
-                    Task.Delay(WAIT_TIME_BEFORE_SENDING_MAIL_MS)
+                    Task.Delay(WAIT_TIME_BEFORE_SENDING_MAIL)
                         .ContinueWith(task => MailHandler.SendWelcomeMailBeginTutorial(character));
                 }
 

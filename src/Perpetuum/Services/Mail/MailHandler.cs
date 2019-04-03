@@ -188,28 +188,28 @@ namespace Perpetuum.Services.Mail
 
         public static ErrorCodes SendWelcomeMailBeginTutorial(Character newPlayer)
         {
-            return SendWelcomeMail(newPlayer, 1);
+            return SendWelcomeMail(newPlayer, "TutorialArriveMail");
         }
 
         public static ErrorCodes SendWelcomeMailExitTutorial(Character newPlayer)
         {
-            return SendWelcomeMail(newPlayer, 2);
+            return SendWelcomeMail(newPlayer, "TutorialCompleteMail");
         }
 
-        private static ErrorCodes SendWelcomeMail(Character newPlayer, int mailId)
+        private static ErrorCodes SendWelcomeMail(Character newPlayer, string mailName)
         {
             // TODO: Change the sender character name for something more/less appropriate
-            Character sender = Character.GetByNick("overlord");
+            Character sender = Character.GetByNick("[OPP] Welcome-Agent");
 
             string subject, body;
             using (var scope = Db.CreateTransaction())
             {
                 var records = Db.Query()
-                    .CommandText("select subject, body from premademail where id = @mailId")
-                    .SetParameter("@mailId", mailId.ToString())
+                    .CommandText("SELECT subject, body FROM premademail WHERE name = @mailName")
+                    .SetParameter("@mailName", mailName)
                     .Execute();
-                subject = records.First().GetValue<string>(0);
-                body = records.First().GetValue<string>(1);
+                subject = records.First().GetValue<string>("subject");
+                body = records.First().GetValue<string>("body");
 
                 subject = subject.Replace("$USER$", newPlayer.Nick);
                 body = body.Replace("$USER$", newPlayer.Nick);
