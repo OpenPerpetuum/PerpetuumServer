@@ -61,18 +61,8 @@ namespace Perpetuum.Services.Relics
                 .SetParameter("@zoneId", _zone.Id)
                 .Execute()
                 .Select(CreateRelicSpawnInfoFromRecord);
-            var count = relicZoneConfigs.Count();
 
-            var resultList = new List<RelicSpawnInfo>();
-            if (count <= 0)
-            {
-                return resultList;
-            }
-            foreach (var config in relicZoneConfigs)
-            {
-                resultList.Add(config);
-            }
-            return resultList;
+            return relicZoneConfigs.ToList();
         }
     }
 

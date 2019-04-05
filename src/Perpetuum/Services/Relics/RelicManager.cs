@@ -86,7 +86,7 @@ namespace Perpetuum.Services.Relics
 
         private int GetRelicCount()
         {
-            using (_lock.Write(THREAD_TIMEOUT))
+            using (_lock.Read(THREAD_TIMEOUT))
                 return _relics.Count;
         }
 
@@ -128,15 +128,8 @@ namespace Perpetuum.Services.Relics
 
         public List<Dictionary<string, object>> GetRelicListDictionary()
         {
-            var list = new List<Dictionary<string, object>>();
-            using (_lock.Write(THREAD_TIMEOUT))
-            {
-                foreach (var relic in this._relics)
-                {
-                    list.Add(relic.ToDebugDictionary());
-                }
-            }
-            return list;
+            using (_lock.Read(THREAD_TIMEOUT))
+                return _relics.Select(r => r.ToDebugDictionary()).ToList();
         }
 
         private Point FindRelicPosition(RelicInfo info)
@@ -221,7 +214,7 @@ namespace Perpetuum.Services.Relics
 
         private bool IsSpawnTooClose(Point point)
         {
-            using (_lock.Write(THREAD_TIMEOUT))
+            using (_lock.Read(THREAD_TIMEOUT))
             {
                 foreach (var r in _relics)
                 {
@@ -288,12 +281,15 @@ namespace Perpetuum.Services.Relics
                     {
                         r.RemoveFromZone();
                     }
-                    else
-                    {
-                        RefreshBeam(r);
-                    }
                 }
                 _relics.RemoveAll(r => !r.IsAlive());
+            }
+            using (_lock.Read(THREAD_TIMEOUT))
+            {
+                foreach (Relic r in _relics)
+                {
+                    RefreshBeam(r);
+                }
             }
         }
 

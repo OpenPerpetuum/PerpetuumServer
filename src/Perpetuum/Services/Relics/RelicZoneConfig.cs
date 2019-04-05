@@ -58,12 +58,7 @@ namespace Perpetuum.Services.Relics
                 .Execute()
                 .Select(CreateRelicZoneConfigFromRecord);
 
-            var resultList = new List<RelicZoneConfig>();
-            foreach (var config in relicZoneConfigs)
-            {
-                resultList.Add(config);
-            }
-            return resultList[0]; // TODO risky
+            return relicZoneConfigs.SingleOrDefault();
         }
     }
 

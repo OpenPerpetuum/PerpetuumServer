@@ -24,7 +24,10 @@ namespace Perpetuum.Services.Relics
         private readonly TimeSpan MAXLIFESPAN = TimeSpan.FromDays(3);
         private TimeSpan lifespan = TimeSpan.Zero;
 
+        // Locks - Be sure to use locks independently and do not nest calls into other locks!
+        // Lock for Live/Dead state of Relic
         private ReaderWriterLockSlim _lock;
+        // Lock for altering and reading the time left in this relic's lifepsan
         private ReaderWriterLockSlim _lifespanLock;
         private readonly TimeSpan THREAD_TIMEOUT = TimeSpan.FromSeconds(4);
 

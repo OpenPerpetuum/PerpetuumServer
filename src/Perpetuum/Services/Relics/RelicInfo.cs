@@ -28,9 +28,8 @@ namespace Perpetuum.Services.Relics
                 .SetParameter("@relicInfoId", id)
                 .Execute()
                 .Select(CreateRelicInfoFromRecord);
-
-            var info = relicinfos.ToList()[0];//TODO risky?
-            return info;
+            
+            return relicinfos.SingleOrDefault();
         }
 
 

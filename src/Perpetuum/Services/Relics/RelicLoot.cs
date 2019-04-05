@@ -49,7 +49,7 @@ namespace Perpetuum.Services.Relics
                     result.Add(lootItem);
                 }
 
-            } while (result.Count < 1);
+            } while (!result.Any());
 
             return new RelicLootItems(result);
         }
@@ -119,12 +119,7 @@ namespace Perpetuum.Services.Relics
                 .Execute()
                 .Select(CreateRelicLootFromRecord);
 
-            var resultList = new List<IRelicLoot>();
-            foreach (var loot in loots)
-            {
-                resultList.Add(loot);
-            }
-            return resultList;
+            return loots.ToList();
         }
     }
 }
