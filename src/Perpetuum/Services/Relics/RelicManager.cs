@@ -36,7 +36,7 @@ namespace Perpetuum.Services.Relics
         private IEnumerable<RelicSpawnInfo> _spawnInfos;
         private List<Relic> _relics;
 
-        private readonly TimeSpan _respawnRate = TimeSpan.FromHours(3);
+        private readonly TimeSpan _respawnRate = TimeSpan.FromHours(1.5);
         private readonly TimeSpan _relicRefreshRate = TimeSpan.FromSeconds(19.95);
 
         //DB-accessing objects
