@@ -2368,7 +2368,7 @@ namespace Perpetuum.Bootstrapper
                         return null;
                     }
 
-                    var zoneConfigs = Db.Query().CommandText("SELECT id FROM reliczoneconfig WHERE zoneid = @zoneId")
+                    var zoneConfigs = Db.Query().CommandText("SELECT maxspawn FROM reliczoneconfig WHERE zoneid = @zoneId")
                     .SetParameter("@zoneId", zone.Id)
                     .Execute();
                     if (zoneConfigs.Count < 1)
