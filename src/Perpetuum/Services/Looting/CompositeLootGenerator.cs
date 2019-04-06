@@ -12,7 +12,7 @@ namespace Perpetuum.Services.Looting
             _generators = generators;
         }
 
-        public IEnumerable<LootGeneratorItemInfo> GetInfos()
+        public IReadOnlyCollection<LootGeneratorItemInfo> GetInfos()
         {
             var infos = _generators.Select(x => x.GetInfos());
             return infos.SelectMany(infoset => infoset).ToList();

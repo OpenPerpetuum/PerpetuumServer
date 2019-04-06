@@ -6,7 +6,7 @@ namespace Perpetuum.Services.Looting
     {
         IEnumerable<LootItem> Generate();
 
-        IEnumerable<LootGeneratorItemInfo> GetInfos();
+        IReadOnlyCollection<LootGeneratorItemInfo> GetInfos();
     }
 
     public interface ISplittableLootGenerator

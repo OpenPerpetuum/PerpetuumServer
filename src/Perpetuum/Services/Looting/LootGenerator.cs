@@ -16,9 +16,9 @@ namespace Perpetuum.Services.Looting
             _lootInfos = lootInfos;
         }
 
-        public IEnumerable<LootGeneratorItemInfo> GetInfos()
+        public IReadOnlyCollection<LootGeneratorItemInfo> GetInfos()
         {
-            return this._lootInfos;
+            return this._lootInfos.ToList();
         }
 
         public IEnumerable<LootItem> Generate()
@@ -38,8 +38,8 @@ namespace Perpetuum.Services.Looting
 
     public class SplittableLootGenerator : ISplittableLootGenerator
     {
-        private readonly IEnumerable<LootGeneratorItemInfo> _lootInfos;
-        private Random _random;
+        private readonly IReadOnlyCollection<LootGeneratorItemInfo> _lootInfos;
+        private readonly Random _random;
 
         public SplittableLootGenerator(ILootGenerator lootGenerator)
         {
