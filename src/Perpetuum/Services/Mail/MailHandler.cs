@@ -198,8 +198,8 @@ namespace Perpetuum.Services.Mail
 
         private static ErrorCodes SendWelcomeMail(Character newPlayer, string mailName)
         {
-            // TODO: Change the sender character name for something more/less appropriate
-            Character sender = Character.GetByNick("[OPP] Welcome-Agent");
+            // TODO: query for this character once upon startup
+            Character sender = Character.GetByNick("[OPP] Sparky - The Syndicate Welcome Agent");
 
             string subject, body;
             using (var scope = Db.CreateTransaction())
