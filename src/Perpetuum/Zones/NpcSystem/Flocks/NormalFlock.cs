@@ -73,7 +73,7 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
         {
             if (Configuration.SpecialType == NpcSpecialType.Boss)
             {
-                return RespawnTime.Multiply(FastRandom.NextDouble(0.9, 1.1));
+                return RespawnTime.Multiply(FastRandom.NextDouble(0.9, 1.15));
             }
             return RespawnTime;
         }
