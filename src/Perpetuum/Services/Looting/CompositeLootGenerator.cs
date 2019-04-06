@@ -15,15 +15,7 @@ namespace Perpetuum.Services.Looting
         public IEnumerable<LootGeneratorItemInfo> GetInfos()
         {
             var infos = _generators.Select(x => x.GetInfos());
-            var allInfos = new List<LootGeneratorItemInfo>();
-            foreach (var infoset in infos)
-            {
-                foreach (var info in infoset)
-                {
-                    allInfos.Add(info);
-                }
-            }
-            return allInfos;
+            return infos.SelectMany(infoset => infoset).ToList();
         }
 
         public IEnumerable<LootItem> Generate()
