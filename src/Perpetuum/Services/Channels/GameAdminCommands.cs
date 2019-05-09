@@ -48,11 +48,6 @@ namespace Perpetuum.Services.Channels
                 return;
             }
 
-            if (command[0] == "#msgtest")
-            {
-                channel.SendMessageToAll(sessionManager, sender, string.Format("Please welcome our new player: {0}", sender.Nick));
-            }
-
             if (command[0] == "#shutdown")
             {
                 DateTime shutdownin = DateTime.Now;

@@ -21,7 +21,7 @@ namespace Perpetuum.Zones.Teleporting.Strategies
         private const double CHARACTER_START_CREDIT = 500000; //TODO: move to DB
         private const int MAX_REWARD_LEVEL = 4;
         private TimeSpan WAIT_TIME_BEFORE_SENDING_MAIL = TimeSpan.FromSeconds(10);
-        private const string WELCOME_CHANNEL_NAME = "General chat";
+        private TimeSpan WAIT_TIME_BEFORE_SENDING_WELCOME_MESSAGE = TimeSpan.FromSeconds(10);
 
         private readonly TeleportDescription _description;
         private readonly ITrainingRewardRepository _trainingRewardRepository;
@@ -29,21 +29,16 @@ namespace Perpetuum.Zones.Teleporting.Strategies
         private readonly CharacterCleaner _characterCleaner;
         private readonly SparkHelper _sparkHelper;
         private int _trainingRewardLevel;
-        private readonly Channel _welcomeChannel;
-        private readonly ISessionManager _sessionManager;
 
         public delegate TrainingExitStrategy Factory(TeleportDescription description);
 
-        public TrainingExitStrategy(TeleportDescription description, ITrainingRewardRepository trainingRewardRepository, IChannelManager channelManager, CharacterCleaner characterCleaner, SparkHelper sparkHelper, IChannelRepository channelRepository, ISessionManager sessionManager)
+        public TrainingExitStrategy(TeleportDescription description, ITrainingRewardRepository trainingRewardRepository, IChannelManager channelManager, CharacterCleaner characterCleaner, SparkHelper sparkHelper)
         {
             _description = description;
             _trainingRewardRepository = trainingRewardRepository;
             _channelManager = channelManager;
             _characterCleaner = characterCleaner;
             _sparkHelper = sparkHelper;
-            _welcomeChannel = channelRepository.GetAll()
-                .First(channel => channel.Name == WELCOME_CHANNEL_NAME);
-            _sessionManager = sessionManager;
         }
 
         public int TrainingRewardLevel
@@ -108,9 +103,11 @@ namespace Perpetuum.Zones.Teleporting.Strategies
                 .ContinueWith(task => 
                 {
                     MailHandler.SendWelcomeMailExitTutorial(character);
-                    // todo: move string to DB
-                    // todo: fetch character that will send the welcome message to the chat
-                    _welcomeChannel.SendMessageToAll(_sessionManager, character, string.Format("Please welcome our new player: {0}", character.Nick));
+                });
+                Task.Delay(WAIT_TIME_BEFORE_SENDING_WELCOME_MESSAGE)
+                .ContinueWith(task =>
+                {
+                    ChannelMessageHandler.SendWelcomeMessageExitTutorial(_channelManager, character.Nick);
                 });
             });
         }
