@@ -3,14 +3,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
 using Perpetuum.Accounting.Characters;
-using Perpetuum.Common.Loggers;
 using Perpetuum.Containers;
 using Perpetuum.Data;
 using Perpetuum.Groups.Corporations;
 using Perpetuum.Players;
 using Perpetuum.Services.Channels;
 using Perpetuum.Services.Mail;
-using Perpetuum.Services.Sessions;
 using Perpetuum.Services.Sparks;
 using Perpetuum.Zones.Training.Reward;
 
