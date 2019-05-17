@@ -98,6 +98,7 @@ using Perpetuum.Services.ProductionEngine.CalibrationPrograms;
 using Perpetuum.Services.ProductionEngine.Facilities;
 using Perpetuum.Services.ProductionEngine.ResearchKits;
 using Perpetuum.Services.Relay;
+using Perpetuum.Services.Relics;
 using Perpetuum.Services.RiftSystem;
 using Perpetuum.Services.Sessions;
 using Perpetuum.Services.Social;
@@ -477,6 +478,7 @@ namespace Perpetuum.Bootstrapper
             RegisterChannelTypes();
             RegisterMtProducts();
             RegisterRifts();
+            RegisterRelics();
             RegisterEffects();
             RegisterIntrusions();
             RegisterZones();
@@ -510,6 +512,7 @@ namespace Perpetuum.Bootstrapper
             _builder.RegisterType<TechTreeInfoService>().As<ITechTreeInfoService>();
             _builder.RegisterType<TechTreeService>().As<ITechTreeService>();
             _builder.RegisterType<TeleportDescriptionRepository>().As<ITeleportDescriptionRepository>();
+            _builder.RegisterType<CustomDictionary>().As<ICustomDictionary>().SingleInstance().AutoActivate();
 
             _builder.RegisterType<Session>().AsSelf().As<ISession>();
 
@@ -1003,6 +1006,8 @@ namespace Perpetuum.Bootstrapper
             RegisterEntity<Gift>();
             RegisterEntity<Paint>();//TODO register new entitydef
 			RegisterEntity<EPBoost>();
+            RegisterEntity<Relic>();
+           
 
             _builder.Register<Func<EntityDefault,Entity>>(x =>
             {
@@ -1216,11 +1221,14 @@ namespace Perpetuum.Bootstrapper
                 //TODO new CalibrationTemplateItem -- activates like paint! same category!
                 ByNamePatternAndFlag<CalibrationProgramCapsule>("_CT_capsule", CategoryFlags.cf_lottery_items);
 
-				// TODO new ep boost item -- activates like paint
-				ByNamePatternAndFlag<EPBoost>("def_boost_ep", CategoryFlags.cf_lottery_items);
+                // TODO new ep boost item -- activates like paint
+                ByNamePatternAndFlag<EPBoost>("def_boost_ep", CategoryFlags.cf_lottery_items);
 
                 // TODO new Blinder module
                 ByNamePatternAndFlag<TargetBlinderModule>("def_standard_blinder", CategoryFlags.cf_target_painter);
+
+                //New Relic Definition for Units
+                ByNamePatternAndFlag<Relic>(DefinitionNames.RELIC, CategoryFlags.undefined);
 
                 ByCategoryFlags<VisibilityBasedProbeDeployer>(CategoryFlags.cf_proximity_probe_deployer);
                 ByCategoryFlags<Item>(CategoryFlags.cf_gift_packages);
@@ -2349,6 +2357,42 @@ namespace Perpetuum.Bootstrapper
             });
         }
 
+        private void RegisterRelics()
+        {
+            _builder.RegisterType<RelicManager>();
+
+            _builder.Register<Func<IZone, RelicManager>>(x =>
+            {
+                var ctx = x.Resolve<IComponentContext>();
+                return zone =>
+                {
+                    var numRelicConfigs = Db.Query().CommandText("SELECT id FROM relicspawninfo WHERE zoneid = @zoneId")
+                    .SetParameter("@zoneId", zone.Id)
+                    .Execute().Count;
+                    if (numRelicConfigs < 1)
+                    {
+                        return null;
+                    }
+
+                    var zoneConfigs = Db.Query().CommandText("SELECT maxspawn FROM reliczoneconfig WHERE zoneid = @zoneId")
+                    .SetParameter("@zoneId", zone.Id)
+                    .Execute();
+                    if (zoneConfigs.Count < 1)
+                    {
+                        return null;
+                    }
+                    var record = zoneConfigs[0];
+                    var maxspawn = record.GetValue<int>("maxspawn");
+                    if (maxspawn < 1)
+                    {
+                        return null;
+                    }
+                    //Do not register RelicManagers on zones without the necessary valid entries in reliczoneconfig and relicspawninfo
+                    return ctx.Resolve<RelicManager>(new TypedParameter(typeof(IZone), zone));
+                };
+            });
+        }
+
         private void RegisterZones()
         {
             _builder.RegisterType<ZoneSession>().AsSelf().As<IZoneSession>();
@@ -2403,7 +2447,6 @@ namespace Perpetuum.Bootstrapper
             _builder.RegisterType<SettingsLoader>();
             _builder.RegisterType<PlantRuleLoader>();
 
-
             _builder.Register<Func<ZoneConfiguration, IZone>>(x =>
             {
                 var ctx = x.Resolve<IComponentContext>();
@@ -2428,6 +2471,7 @@ namespace Perpetuum.Bootstrapper
                     zone.Environment = ctx.Resolve<ZoneEnvironmentHandler>(new TypedParameter(typeof(IZone), zone));
                     zone.SafeSpawnPoints = ctx.Resolve<ISafeSpawnPointsRepository>(new TypedParameter(typeof(IZone), zone));
                     zone.ZoneSessionFactory = ctx.Resolve<ZoneSession.Factory>();
+                    zone.RelicManager = ctx.Resolve<Func<IZone, RelicManager>>().Invoke(zone);
 
                     if (configuration.Terraformable)
                     {
