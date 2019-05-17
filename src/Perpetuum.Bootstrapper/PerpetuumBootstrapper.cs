@@ -1225,7 +1225,7 @@ namespace Perpetuum.Bootstrapper
                 ByNamePatternAndFlag<EPBoost>("def_boost_ep", CategoryFlags.cf_lottery_items);
 
                 // TODO new Blinder module
-                ByNamePatternAndFlag<TargetBlinderModule>("def_standard_blinder", CategoryFlags.cf_target_painter);
+                ByNamePatternAndFlag<TargetBlinderModule>(DefinitionNames.STANDARD_BLINDER_MODUL, CategoryFlags.cf_target_painter);
 
                 //New Relic Definition for Units
                 ByNamePatternAndFlag<Relic>(DefinitionNames.RELIC, CategoryFlags.undefined);
