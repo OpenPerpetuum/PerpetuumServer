@@ -1,29 +1,26 @@
 ﻿using Perpetuum.Accounting.Characters;
 using Perpetuum.Data;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Perpetuum.Services.Channels
 {
     public static class ChannelMessageHandler
     {
+        // TODO hardcoded character and channel names
         private const string WELCOME_CHANNEL_NAME = "Recruitment";
         private const string HELP_CHANNEL_NAME = "regchannel_help";
-        private const string SENDER_CHARACTER_NICKNAME = "New Player Announcer";
+        private const string SENDER_CHARACTER_NICKNAME = "[OPP] Announcer";
 
         public static void SendNewPlayerTutorialMessage(IChannelManager channelManager, string newCharacterName)
         {
             var test = channelManager.Channels.All(channel => channel.Name.ToLower().Contains("help"));
 
-            SendMessage(channelManager, HELP_CHANNEL_NAME, "NewPlayerEnteredTheGame", newCharacterName);
+            SendMessage(channelManager, HELP_CHANNEL_NAME, PreMadeChatMessageNames.TUTORIAL_ARRIVE, newCharacterName);
         }
 
         public static void SendWelcomeMessageExitTutorial(IChannelManager channelManager, string newCharacterName)
         {
-            SendMessage(channelManager, WELCOME_CHANNEL_NAME, "NewPlayerFinishedTheTutorial", newCharacterName);
+            SendMessage(channelManager, WELCOME_CHANNEL_NAME, PreMadeChatMessageNames.TUTORIAL_FINISH, newCharacterName);
         }
 
         private static void SendMessage(IChannelManager channelManager, string channelName, string messageName, string newCharacterName)
