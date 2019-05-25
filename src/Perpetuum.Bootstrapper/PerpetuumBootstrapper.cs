@@ -512,6 +512,7 @@ namespace Perpetuum.Bootstrapper
             _builder.RegisterType<TechTreeInfoService>().As<ITechTreeInfoService>();
             _builder.RegisterType<TechTreeService>().As<ITechTreeService>();
             _builder.RegisterType<TeleportDescriptionRepository>().As<ITeleportDescriptionRepository>();
+            _builder.RegisterType<CustomDictionary>().As<ICustomDictionary>().SingleInstance().AutoActivate();
 
             _builder.RegisterType<Session>().AsSelf().As<ISession>();
 
@@ -938,6 +939,7 @@ namespace Perpetuum.Bootstrapper
             RegisterEffectModule<SensorDampenerModule>();
             RegisterEffectModule<RemoteSensorBoosterModule>();
             RegisterEffectModule<TargetPainterModule>();
+            RegisterEffectModule<TargetBlinderModule>(); //TODO new module
             RegisterEffectModule<SensorBoosterModule>();
             RegisterEffectModule<ArmorHardenerModule>();
             RegisterEffectModule<StealthModule>();
@@ -1219,9 +1221,13 @@ namespace Perpetuum.Bootstrapper
                 //TODO new CalibrationTemplateItem -- activates like paint! same category!
                 ByNamePatternAndFlag<CalibrationProgramCapsule>("_CT_capsule", CategoryFlags.cf_lottery_items);
 
-				// TODO new ep boost item -- activates like paint
-				ByNamePatternAndFlag<EPBoost>("def_boost_ep", CategoryFlags.cf_lottery_items);
+                // TODO new ep boost item -- activates like paint
+                ByNamePatternAndFlag<EPBoost>("def_boost_ep", CategoryFlags.cf_lottery_items);
 
+                // TODO new Blinder module
+                ByNamePatternAndFlag<TargetBlinderModule>(DefinitionNames.STANDARD_BLINDER_MODUL, CategoryFlags.cf_target_painter);
+
+                //New Relic Definition for Units
                 ByNamePatternAndFlag<Relic>(DefinitionNames.RELIC, CategoryFlags.undefined);
 
                 ByCategoryFlags<VisibilityBasedProbeDeployer>(CategoryFlags.cf_proximity_probe_deployer);
