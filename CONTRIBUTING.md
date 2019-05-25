@@ -14,7 +14,7 @@ Either:
 
 Your code must:
  - Not break style conventions within the codebase.
- - Be either ungrokable, insufficiently documented (self-/comments) or otherwise unmaintainable by other experienced developers.
+ - Be neither ungrokable, insufficiently documented (self-/comments) nor otherwise unmaintainable by other experienced developers.
  - Not introduce, change, or manipulate game mechanics outside the scope of OP-Project issue cards.
  - Not introduce, exploit, or otherwise attempt to introduce vulnerabilities to compromise game integrity or user data.
 
