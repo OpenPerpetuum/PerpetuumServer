@@ -107,6 +107,7 @@ namespace Perpetuum.Accounting
 
         private const double BOOSTMULTIPLIERMAX = 25;
         private const double SERVER_DESIRED_EP_LEVEL = 750000;
+        private const double GAURANTEED_BOOST_MAX_THRESH = 45000;
 
         public IDictionary<string,object> GetEPData(Account account,Character character)
         {
@@ -147,6 +148,9 @@ namespace Perpetuum.Accounting
 
         private static double GetExperienceBoostingFactor(int collectedEpSum, double epLevelThreshold)
         {
+            if (collectedEpSum < GAURANTEED_BOOST_MAX_THRESH)
+                return 1.0;
+
             var linearRatio = collectedEpSum / epLevelThreshold;
             var result = 1.0 - linearRatio;
             result = result.Clamp();
