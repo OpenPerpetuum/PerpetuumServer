@@ -774,13 +774,14 @@ namespace Perpetuum.Services.Channels
             if (command[0] == "#renamecorp")
             {
                 string currentCorpName = command[1];
-                string newCorpName = command[2];
-                string newCorpNick = command[3];
+                string desiredCorpName = command[2];
+                string desiredCorpNick = command[3];
 
+                Corporation.IsNameOrNickTaken(desiredCorpName, desiredCorpNick).ThrowIfTrue(ErrorCodes.NameTaken);
                 var corp = Corporation.GetByName(currentCorpName);
-                corp.SetName(newCorpName, newCorpNick);
+                corp.SetName(desiredCorpName, desiredCorpNick);
 
-                channel.SendMessageToAll(sessionManager, sender, string.Format("Corp with nick {0} changed to: {1} [{2}]", currentCorpName, newCorpName, newCorpNick));
+                channel.SendMessageToAll(sessionManager, sender, string.Format("Corp with nick {0} changed to: {1} [{2}]", currentCorpName, desiredCorpName, desiredCorpNick));
             }
 
 
