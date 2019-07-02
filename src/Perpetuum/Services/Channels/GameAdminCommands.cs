@@ -1,4 +1,5 @@
 ﻿using Perpetuum.Accounting.Characters;
+using Perpetuum.Groups.Corporations;
 using Perpetuum.ExportedTypes;
 using Perpetuum.GenXY;
 using Perpetuum.Host.Requests;
@@ -769,6 +770,19 @@ namespace Perpetuum.Services.Channels
                 channel.SendMessageToAll(sessionManager, sender, string.Format("Player with nick {0} is offensive:{1}", charactersession.Character.Nick, charactersession.Character.IsOffensiveNick));
 
             }
+
+            if (command[0] == "#renamecorp")
+            {
+                string currentCorpName = command[1];
+                string newCorpName = command[2];
+                string newCorpNick = command[3];
+
+                var corp = Corporation.GetByName(currentCorpName);
+                corp.SetName(newCorpName, newCorpNick);
+
+                channel.SendMessageToAll(sessionManager, sender, string.Format("Corp with nick {0} changed to: {1} [{2}]", currentCorpName, newCorpName, newCorpNick));
+            }
+
 
             //FreeAllLockedEP for account - by request of player
             if (command[0] == "#unlockallep")
