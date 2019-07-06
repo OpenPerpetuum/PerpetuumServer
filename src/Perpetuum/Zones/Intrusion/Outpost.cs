@@ -366,7 +366,7 @@ namespace Perpetuum.Zones.Intrusion
                         ownerAndWinnerGoodRelation = _corporationManager.IsStandingMatch(winnerCorporation.Eid, ownerEid, friendlyOnly);
                         ownerAndWinnerGoodRelation = _corporationManager.IsStandingMatch(ownerEid, winnerCorporation.Eid, friendlyOnly) && ownerAndWinnerGoodRelation;
 
-                        //Stability increase if winner is owner OR winner is in good standing with owner
+                        //Stability increase if winner is owner, 0 increase if ally, else negative
                         if (winnerCorporation.Eid == siteInfo.Owner)
                         {
                             newStability = (newStability + sap.StabilityChange).Clamp(0, 100);
