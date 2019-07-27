@@ -1,8 +1,10 @@
 ﻿using Perpetuum.Accounting.Characters;
+using Perpetuum.Groups.Corporations;
 using Perpetuum.ExportedTypes;
 using Perpetuum.GenXY;
 using Perpetuum.Host.Requests;
 using Perpetuum.Players;
+using Perpetuum.Services.Mail;
 using Perpetuum.Services.RiftSystem;
 using Perpetuum.Services.Sessions;
 using Perpetuum.Zones;
@@ -45,7 +47,7 @@ namespace Perpetuum.Services.Channels
 
                 channel.SendMessageToAll(sessionManager, sender, "Channel must be secured before sending commands.");
                 return;
-            }            
+            }
 
             if (command[0] == "#shutdown")
             {
@@ -106,16 +108,16 @@ namespace Perpetuum.Services.Channels
                 {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
                 }
-                
+
                 // get the target character's session.
-                var charactersession = sessionManager.GetByCharacter(characterID);    
+                var charactersession = sessionManager.GetByCharacter(characterID);
 
                 if (charactersession.Character.ZoneId == null)
                 {
                     channel.SendMessageToAll(sessionManager, sender, string.Format("ERR: Character with ID {0} does not have a zone. Are they docked?", characterID));
                     return;
                 }
-                
+
                 // get destination zone.
                 var zone = request.Session.ZoneMgr.GetZone(zoneID);
 
@@ -162,7 +164,7 @@ namespace Perpetuum.Services.Channels
                 {
                     { "eid", eid }
                 };
-                
+
                 string cmd = string.Format("zoneDrawBlockingByEid:zone_{0}:{1}", sender.ZoneId, GenxyConverter.Serialize(dictionary));
                 request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
             }
@@ -609,7 +611,7 @@ namespace Perpetuum.Services.Channels
                 channel.SendMessageToAll(sessionManager, sender, string.Format("Gave Item {0} ", definition));
             }
 
- 
+
             if (command[0] == "#getlockedtileproperties")
             {
 
@@ -618,7 +620,7 @@ namespace Perpetuum.Services.Channels
                 var player = zone.GetPlayer(character.ActiveRobotEid);
 
                 var lockedtile = player.GetPrimaryLock();
-                
+
                 TerrainControlInfo ti = zone.Terrain.Controls.GetValue((lockedtile as TerrainLock).Location);
 
                 channel.SendMessageToAll(sessionManager, sender, string.Format("Tile at {0},{1} has the following flags..", (lockedtile as TerrainLock).Location.X, (lockedtile as TerrainLock).Location.Y));
@@ -726,7 +728,7 @@ namespace Perpetuum.Services.Channels
                 var c = sessionManager.GetByCharacter(characterid);
 
                 channelmanager.JoinChannel(channel.Name, c.Character, ChannelMemberRole.Operator, string.Empty);
-                
+
                 channel.SendMessageToAll(sessionManager, sender, string.Format("Added character {0} to channel ", c.Character.Nick));
 
             }
@@ -769,6 +771,20 @@ namespace Perpetuum.Services.Channels
 
             }
 
+            if (command[0] == "#renamecorp")
+            {
+                string currentCorpName = command[1];
+                string desiredCorpName = command[2];
+                string desiredCorpNick = command[3];
+
+                Corporation.IsNameOrNickTaken(desiredCorpName, desiredCorpNick).ThrowIfTrue(ErrorCodes.NameTaken);
+                var corp = Corporation.GetByName(currentCorpName);
+                corp.SetName(desiredCorpName, desiredCorpNick);
+
+                channel.SendMessageToAll(sessionManager, sender, string.Format("Corp with nick {0} changed to: {1} [{2}]", currentCorpName, desiredCorpName, desiredCorpNick));
+            }
+
+
             //FreeAllLockedEP for account - by request of player
             if (command[0] == "#unlockallep")
             {
@@ -786,6 +802,7 @@ namespace Perpetuum.Services.Channels
 
                 string cmd = string.Format("{0}:relay:{1}", Commands.ExtensionFreeAllLockedEpCommand.Text, GenxyConverter.Serialize(dictionary));
                 request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
+                channel.SendMessageToAll(sessionManager, sender, "unlockallep: " + dictionary.ToDebugString());
             }
 
             //EPBonusCommands
@@ -809,6 +826,128 @@ namespace Perpetuum.Services.Channels
                 request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
                 channel.SendMessageToAll(sessionManager, sender, "EP Bonus Set with command: " + dictionary.ToDebugString());
             }
+
+
+#if DEBUG
+            //SpawnRelics by command
+            if (command[0] == "#spawnrelic")
+            {
+                bool err = false;
+
+                var character = request.Session.Character;
+                var zone = request.Session.ZoneMgr.GetZone((int)character.ZoneId);
+                var player = zone.GetPlayer(character.ActiveRobotEid);
+
+                var terrainLock = player.GetPrimaryLock() as TerrainLock;
+
+                int x, y, zoneid;
+
+                if (terrainLock == null)
+                {
+                    if (command.Length != 4)
+                    {
+                        channel.SendMessageToAll(sessionManager, sender, "Bad args");
+                        throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                    }
+                    err = !int.TryParse(command[1], out int xCommand);
+                    err = !int.TryParse(command[2], out int yCommand);
+                    err = !int.TryParse(command[3], out int zoneCommand);
+                    if (err)
+                    {
+                        channel.SendMessageToAll(sessionManager, sender, "Bad args");
+                        throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                    }
+                    x = xCommand;
+                    y = yCommand;
+                    zoneid = zoneCommand;
+                    zone = request.Session.ZoneMgr.GetZone((int)zoneid);
+                    if (zone == null)
+                    {
+                        channel.SendMessageToAll(sessionManager, sender, "Bad zone id!");
+                    }
+                }
+                else
+                {
+                    x = terrainLock.Location.intX;
+                    y = terrainLock.Location.intY;
+                    zoneid = zone.Id;
+                }
+
+                Dictionary<string, object> dictionary = new Dictionary<string, object>()
+                {
+                    { "x", x },
+                    { "y", y },
+                    {"zoneid", zoneid }
+                };
+                if (zone.RelicManager != null)
+                {
+                    bool success = zone.RelicManager.ForceSpawnRelicAt(x, y);
+                    if (success)
+                    {
+                        channel.SendMessageToAll(sessionManager, sender, "Spawned relic at: " + dictionary.ToDebugString());
+                    }
+                    else
+                    {
+                        channel.SendMessageToAll(sessionManager, sender, "FAILED to spawn relic at: " + dictionary.ToDebugString());
+                    }
+                }
+                else
+                {
+                    channel.SendMessageToAll(sessionManager, sender, "This zone does NOT support relics!");
+                }
+
+            }
+#endif
+
+            //List all Relics
+            if (command[0] == "#listrelics")
+            {
+                bool err = false;
+
+                var character = request.Session.Character;
+                IZone zone = null;
+
+                if (command.Length == 2)
+                {
+                    err = !int.TryParse(command[1], out int zoneCommand);
+                    if (err)
+                    {
+                        channel.SendMessageToAll(sessionManager, sender, "Bad args");
+                        throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                    }
+                    var zoneid = zoneCommand;
+                    zone = request.Session.ZoneMgr.GetZone((int)zoneid);
+                }
+                else if (character.ZoneId != null)
+                {
+                    zone = request.Session.ZoneMgr.GetZone((int)character.ZoneId);
+                }
+
+                if (zone == null)
+                {
+                    channel.SendMessageToAll(sessionManager, sender, "Zone not provided or not found");
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
+                Dictionary<string, object> dictionary = new Dictionary<string, object>()
+                {
+                    {"zoneid", zone.Id }
+                };
+                if (zone.RelicManager != null)
+                {
+                    var relicDictList = zone.RelicManager.GetRelicListDictionary();
+                    foreach (var dict in relicDictList)
+                    {
+                        channel.SendMessageToAll(sessionManager, sender, dict.ToDebugString());
+                    }
+                }
+                else
+                {
+                    channel.SendMessageToAll(sessionManager, sender, "This zone does NOT support relics!");
+                }
+
+            }
+
 
         }
     }
