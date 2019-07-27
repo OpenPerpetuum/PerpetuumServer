@@ -170,7 +170,7 @@ namespace Perpetuum.Zones.NpcSystem
 
             if (hostile.unit is Player)
             {
-                return (hostile.unit as Player).GetLocks().OfType<UnitLock>().Where(x => x.Target.Eid == npc.Eid).FirstOrDefault() != null;
+                return (hostile.unit as Player).GetLocks().OfType<UnitLock>().Where(x => x.Target.Eid == npc.Eid).Any();
             }
 
             if (npc.Behavior.Type == NpcBehaviorType.Neutral)
