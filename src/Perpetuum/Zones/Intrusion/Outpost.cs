@@ -26,7 +26,7 @@ namespace Perpetuum.Zones.Intrusion
     {
         private const int EP_WINNER = 120;
         private const int EP_LOSER = 20;
-        private const int MAX_STABILITY = 150;
+        private const int MAX_STABILITY = 120;
         private const int PRODUCTION_BONUS_THRESHOLD = 100;
 
         private TimeRange _intrusionWaitTime => IntrusionWaitTime;
