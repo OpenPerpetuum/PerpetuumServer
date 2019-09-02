@@ -852,7 +852,8 @@ namespace Perpetuum.Zones.NpcSystem
                     }
 
                     // same as above, but add half EP for players that were out of range of the NPC.
-                    foreach (var hostile in PseudoThreats)
+                    var psuedoHostiles = PseudoThreats.Where(p => !ThreatManager.Contains(p.Unit));
+                    foreach (var hostile in psuedoHostiles)
                     {
                         var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(hostile.Unit);
                         hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep / 2);
