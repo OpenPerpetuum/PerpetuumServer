@@ -331,7 +331,7 @@ namespace Perpetuum.Zones.Intrusion
 
         private void OnSAPTakeOver(SAP sap)
         {
-            _decay.OnSAP();
+            
             Task.Run(() => HandleTakeOver(sap)).ContinueWith(t => IntrusionInProgress = false);
         }
 
@@ -402,6 +402,12 @@ namespace Perpetuum.Zones.Intrusion
             var newStability = siteInfo.Stability;
             var newOwner = siteInfo.Owner;
             var oldOwner = siteInfo.Owner;
+
+            // Reset Decay timer on any StabilityAffectingEvent completed by the owner
+            if (winnerCorporation.Eid == siteInfo.Owner)
+            {
+                _decay.OnSAP();
+            }
 
             var logEvent = new IntrusionLogEvent
             {
