@@ -406,7 +406,7 @@ namespace Perpetuum.Zones.Intrusion
             // Reset Decay timer on any StabilityAffectingEvent completed by the owner
             if (winnerCorporation.Eid == siteInfo.Owner)
             {
-                _decay.OnSAP();
+                _decay.ResetDecayTimer();
             }
 
             var logEvent = new IntrusionLogEvent
@@ -460,6 +460,7 @@ namespace Perpetuum.Zones.Intrusion
                     logEvent.EventType = IntrusionEvents.siteOwnershipGain;
                     newOwner = winnerCorporation.Eid;
                     newStability = STARTING_STABILITY;
+                    _decay.ResetDecayTimer();
                 }
                 else
                 {
