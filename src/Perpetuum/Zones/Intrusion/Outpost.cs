@@ -34,7 +34,6 @@ namespace Perpetuum.Zones.Intrusion
         private const int PRODUCTION_BONUS_THRESHOLD = 100;
 
         private TimeRange _intrusionWaitTime => IntrusionWaitTime;
-        private TimeSpan _timeSinceLastSAP = TimeSpan.Zero;
         private readonly IEntityServices _entityServices;
         private readonly ICorporationManager _corporationManager;
         private readonly ILootService _lootService;
