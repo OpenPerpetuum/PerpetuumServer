@@ -11,7 +11,7 @@ namespace Perpetuum.Services.EventServices.EventMessages
     public class StabilityAffectingEvent : EventMessage
     {
         private Player _player;
-        private IList<Player> _particpants = new List<Player>();
+        private List<Player> _particpants = new List<Player>();
         public Outpost Outpost { get; }
         public bool OverrideRelations { get; }
         public int StabilityChange { get; }
@@ -27,7 +27,7 @@ namespace Perpetuum.Services.EventServices.EventMessages
             Eid = eid;
             if (participants != null)
             {
-                _particpants = participants;
+                _particpants = participants as List<Player>;
             }
             
             OverrideRelations = overrideRelations;
@@ -40,6 +40,7 @@ namespace Perpetuum.Services.EventServices.EventMessages
 
         public IList<Player> GetPlayers()
         {
+            _particpants.RemoveAll(p => p == null);
             return _particpants;
         }
 
