@@ -18,6 +18,7 @@ namespace Perpetuum.Zones.PBS
     public sealed class PBSObjectHelper<T> where T : Unit, IPBSObject
     {
         private readonly T _pbsUnit;
+        private int zoneid;
         private readonly UnitOptionalProperty<int> _constructionLevelCurrent;
         private readonly PBSObjectSaver<T> _saver;
 
@@ -93,6 +94,11 @@ namespace Perpetuum.Zones.PBS
             {
                 _pbsUnit.DynamicProperties.Update(k.constructionDirection,0);
             }
+        }
+
+        public void setZoneId(int zid)
+        {
+            this.zoneid = zid;
         }
 
         public void OnSave()
@@ -464,7 +470,7 @@ namespace Perpetuum.Zones.PBS
 #endif
             data.Add(k.message,(int)pbsEventType);
             data.Add(k.source,sourceDict);
-            data[k.zoneID] = _pbsUnit.Zone?.Id ?? -1; //zoneid legyen mindig.
+            data[k.zoneID] = zoneid; //_pbsUnit.Zone?.Id ?? null; //zoneid legyen mindig.
             return data;
         }
     }

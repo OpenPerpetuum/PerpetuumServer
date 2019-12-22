@@ -1182,7 +1182,7 @@ namespace Perpetuum.Zones.PBS
         }
 
 
-        public static ErrorCodes DeletePBSDockingBase(IZone zone, PBSDockingBase dockingBase)
+        public static ErrorCodes DeletePBSDockingBase(int zone, PBSDockingBase dockingBase)
         {
             ErrorCodes ec;
 
@@ -1230,8 +1230,9 @@ namespace Perpetuum.Zones.PBS
         }
 
 
-        public static Dictionary<string, object> GetUpdateDictionary(IZone zone,Unit eventSource,PBSEventType pbsEventType, Dictionary<string, object> data = null)
+        public static Dictionary<string, object> GetUpdateDictionary(int zone,Unit eventSource,PBSEventType pbsEventType, Dictionary<string, object> data = null)
         {
+            Logger.Warning($"Zone {zone} eventSource {eventSource} event type {pbsEventType}");
             var sourceDict = eventSource.ToDictionary();
 
             if (data == null)
@@ -1245,7 +1246,7 @@ namespace Perpetuum.Zones.PBS
             // the comment below translates to "zoneid should always be." 
             // BUT if we sent a zoneid the client doesn't seem to process it?
             // So, we always send NULL because otherwise an exception is thrown and the transactions to clear the PBS are halted.
-            data[k.zoneID] = null; //zoneid legyen mindig.
+            data[k.zoneID] = zone; //zone?.Id ?? null; //zoneid legyen mindig.
             return data;
         }
         

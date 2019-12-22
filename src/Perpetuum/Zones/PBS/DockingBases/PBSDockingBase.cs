@@ -34,6 +34,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
         private readonly PBSObjectHelper<PBSDockingBase> _pbsObjectHelper;
         private readonly PBSReinforceHandler<PBSDockingBase> _pbsReinforceHandler;
         private readonly PBSTerritorialVisibilityHelper _pbsTerritorialVisibilityHelper;
+        private int zoneid;
 
         public PBSDockingBase(MarketHelper marketHelper,ICorporationManager corporationManager,IChannelManager channelManager,ICentralBank centralBank,IRobotTemplateRelations robotTemplateRelations,DockingBaseHelper dockingBaseHelper,SparkTeleportHelper sparkTeleportHelper,PBSObjectHelper<PBSDockingBase>.Factory pbsObjectHelperFactory) : base(channelManager,centralBank,robotTemplateRelations,dockingBaseHelper)
         {
@@ -143,6 +144,8 @@ namespace Perpetuum.Zones.PBS.DockingBases
             ClearChildren(); //ez azert kell, hogy a zonan ne legyenek gyerekei semmikepp
             Parent = 0; //ez azert kell, hogy a bazison levo kontenerek megtalaljak, mint root
             base.OnEnterZone(zone, enterType);
+            this.zoneid = zone.Id;
+            _pbsObjectHelper.setZoneId(this.zoneid);
         }
 
         public override void OnLoadFromDb()
@@ -219,7 +222,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
             //NO BASE CLASS CALL -> szandekos
             Logger.DebugInfo($"[{InfoString}] docking base on delete");
             Logger.DebugInfo($"[{InfoString}] zonaid jo, helperes cucc jon");
-            PBSHelper.DeletePBSDockingBase(Zone,this).ThrowIfError();
+            PBSHelper.DeletePBSDockingBase(zoneid, this).ThrowIfError();
         }
 
         protected override void OnRemovedFromZone(IZone zone)
@@ -480,7 +483,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
             return 0;
         }
 
-        public ErrorCodes DoCleanUpWork(IZone zone)
+        public ErrorCodes DoCleanUpWork(int zone)
         {
             var ec = ErrorCodes.NoError;
 
