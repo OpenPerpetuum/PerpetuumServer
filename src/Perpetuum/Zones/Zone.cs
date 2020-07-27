@@ -151,11 +151,65 @@ namespace Perpetuum.Zones
 
         private void UpdateSessions(TimeSpan time)
         {
+            CheckPlayerSessions();
             foreach (var session in _sessions)
             {
                 session.Update(time);
             }
         }
+        #region refactorRegion
+        //TODO refactor
+        private class PlayerTimeout
+        {
+            private TimeKeeper _time;
+            private TimeSpan MAX_TIME_NO_SESSION = TimeSpan.FromSeconds(66);
+            public PlayerTimeout(Player p)
+            {
+                _time = new TimeKeeper(MAX_TIME_NO_SESSION);
+                Player = p;
+            }
+
+            public Player Player { get; private set; }
+
+            public bool Expired
+            {
+                get
+                {
+                    return _time.Expired;
+                }
+            }
+
+            public override string ToString()
+            {
+                return $"PlayerTimeout:[{Player.Eid}, {_time.Remaining}]";
+            }
+        }
+        private IDictionary<long, PlayerTimeout> _orphanPlayers = new Dictionary<long, PlayerTimeout>();
+        private void CheckPlayerSessions()
+        {
+            // Players on the zone without a session - this is ok unless the session never connects!
+            var playersWithoutSessions = _players.Values.Where(p => p.Session == ZoneSession.None)
+                .Where(p => !_orphanPlayers.Keys.Contains(p.Eid));
+
+            foreach (var p in playersWithoutSessions)
+            {
+                _orphanPlayers.Add(p.Eid, new PlayerTimeout(p));
+            }
+
+            // Players that are no longer orphaned
+            _orphanPlayers.RemoveRange(_orphanPlayers.Where(o => o.Value.Player.Session != ZoneSession.None).GetKeys().ToArray());
+
+            // Players with Expired timers; Zone assumes the Player has failed to connect and removes them
+            var toRemove = _orphanPlayers.Where(o => o.Value.Expired).ToArray();
+
+            foreach (var o in toRemove)
+            {
+                o.Value.Player.RemoveFromZone();
+                _orphanPlayers.Remove(o.Key);
+                Logger.Info($"A player w/o session REMOVED: {o.Value.Player}");
+            }
+        }
+        #endregion
 
         [CanBeNull]
         public ZoneSession GetSessionByCharacter(Character character)
