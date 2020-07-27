@@ -264,6 +264,7 @@ namespace Perpetuum.Zones
                 // nincs kint a terepen ezert betoltjuk
                 player = Player.LoadPlayerAndAddToZone(_zone, character);
             }
+
             var session = player.Session as ZoneSession;
             session?.OnStopped();
 
@@ -272,7 +273,7 @@ namespace Perpetuum.Zones
 
             _weatherMonitor = Observer<Packet>.Create(OnWeatherUpdated);
             _zone.Weather.Subscribe(_weatherMonitor);
-            
+
             _terrainUpdateNotifier = CreateTerrainNotifier(player);
 
             player.SetSession(this);
