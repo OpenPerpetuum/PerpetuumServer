@@ -1159,6 +1159,7 @@
     <Compile Include="Zones\ZoneEntityRepositories\ZoneUnitService.cs" />
     <Compile Include="Zones\ZoneExitType.cs" />
     <Compile Include="Zones\ZoneManager.cs" />
+    <Compile Include="Zones\SessionlessPlayerTimeout.cs" />
     <Compile Include="Zones\ZoneSession.cs" />
     <Compile Include="Zones\ZoneSessionExtensions.cs" />
     <Compile Include="Zones\ZoneStorage.cs" />

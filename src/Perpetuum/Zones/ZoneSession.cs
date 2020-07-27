@@ -249,9 +249,6 @@ namespace Perpetuum.Zones
 
         private void HandleAuth(Packet packet)
         {
-            // TODO: any failure, exception, or network disconnect between when the player was added to zone, and this finalizing step will create a orphaned player on the zone
-            //throw new Exception("TODO SIMULATE NETWORK FAIL");
-
             packet.ReadInt(); // mar nem kell
             var count = (int)(packet.Length - packet.Position) - sizeof(long);
             var encrypted = packet.ReadBytes(count);
