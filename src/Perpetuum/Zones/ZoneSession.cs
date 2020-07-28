@@ -273,7 +273,7 @@ namespace Perpetuum.Zones
 
             _weatherMonitor = Observer<Packet>.Create(OnWeatherUpdated);
             _zone.Weather.Subscribe(_weatherMonitor);
-
+            
             _terrainUpdateNotifier = CreateTerrainNotifier(player);
 
             player.SetSession(this);
