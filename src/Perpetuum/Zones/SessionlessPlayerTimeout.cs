@@ -1,7 +1,10 @@
-﻿using Perpetuum.Players;
+﻿using Perpetuum.Comparers;
+using Perpetuum.EntityFramework;
+using Perpetuum.Players;
 using Perpetuum.Timers;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Perpetuum.Zones
@@ -14,12 +17,11 @@ namespace Perpetuum.Zones
         private static readonly TimeSpan MAX_ORPHAN_TIME = TimeSpan.FromMinutes(3);
         private static readonly TimeSpan UPDATE_RATE = TimeSpan.FromMinutes(1.5);
         private readonly IZone _zone;
-        private IEnumerable<PlayerTimeout> _orphanPlayers;
+        private readonly List<PlayerTimeout> _orphanPlayers = new List<PlayerTimeout>();
 
         public SessionlessPlayerTimeout(IZone zone)
         {
             _zone = zone;
-            _orphanPlayers = new HashSet<PlayerTimeout>();
         }
 
         private TimeSpan _elapsed = TimeSpan.Zero;
@@ -35,34 +37,52 @@ namespace Perpetuum.Zones
 
         private void DoUpdate()
         {
-            _orphanPlayers = AddSessionlessPlayers(_orphanPlayers, _zone);
-            _orphanPlayers = RemoveExpiredOrphansFromZone(_orphanPlayers);
+            PopulateNewSessionlessPlayers(_zone);
+            RemoveExpiredOrphansFromZone(_orphanPlayers);
         }
 
-        private static IEnumerable<PlayerTimeout> AddSessionlessPlayers(IEnumerable<PlayerTimeout> orphans, IZone zone)
+        private void PopulateNewSessionlessPlayers(IZone zone)
         {
-            var sessionLessPlayers = zone.Players.Where(p => p.Session == ZoneSession.None).Select(p => new PlayerTimeout(p)).ToHashSet();
-            return orphans.Union(sessionLessPlayers).Where(o => o.Player.Session == ZoneSession.None).ToHashSet();
+            var newOrphans =
+                zone.Players
+                    .Where(p => p.Session == ZoneSession.None)
+                    .Cast<IEntity>()
+                    .Except(_orphanPlayers, new EntityComparer())
+                    .Cast<Player>()
+                    .Select(p => new PlayerTimeout(p));
+
+            _orphanPlayers.AddRange(newOrphans);
         }
 
-        private static IEnumerable<PlayerTimeout> RemoveExpiredOrphansFromZone(IEnumerable<PlayerTimeout> orphans)
+        private void RemoveExpiredOrphansFromZone(IEnumerable<PlayerTimeout> orphans)
         {
             var toRemove = orphans.Where(o => o.Expired);
-            toRemove.ForEach(o => o.Player.RemoveFromZone());
-            return orphans.Except(toRemove).ToHashSet();
+
+            // The Enumerable ForEach call was deprecated for good reason
+            // use a standard foreach loop so that you have compiler help
+            foreach (var orphan in toRemove)
+                orphan.RemoveFromZone();
+
+            _orphanPlayers.RemoveAll(p => p.Expired);
         }
 
-        private class PlayerTimeout : IEquatable<PlayerTimeout>
+        private class PlayerTimeout : IEntity
         {
-            public Player Player { get; private set; }
+            private readonly TimeKeeper _time;
+            private Player Player { get; }
+
             public bool Expired { get { return _time.Expired; } }
             public long Eid { get { return Player is null ? 0 : Player.Eid; } }
-            private readonly TimeKeeper _time;
 
             public PlayerTimeout(Player p)
             {
                 _time = new TimeKeeper(MAX_ORPHAN_TIME);
                 Player = p;
+            }
+
+            public void RemoveFromZone()
+            {
+                Player.RemoveFromZone();
             }
 
             public bool Equals(PlayerTimeout other)
