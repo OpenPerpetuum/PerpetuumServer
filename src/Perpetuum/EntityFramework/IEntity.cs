@@ -3,6 +3,6 @@ namespace Perpetuum.EntityFramework
 {
     public interface IEntity
     {
-        public long Eid { get; }
+        long Eid { get; }
     }
 }
