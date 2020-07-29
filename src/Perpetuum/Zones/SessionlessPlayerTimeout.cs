@@ -1,5 +1,4 @@
-﻿using Perpetuum.Log;
-using Perpetuum.Players;
+﻿using Perpetuum.Players;
 using Perpetuum.Timers;
 using System;
 using System.Collections.Generic;
