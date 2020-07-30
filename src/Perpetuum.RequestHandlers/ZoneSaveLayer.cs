@@ -6,9 +6,9 @@ namespace Perpetuum.RequestHandlers
     public class ZoneSaveLayer : IRequestHandler
     {
         private readonly IZoneManager _zoneManager;
-        private readonly LayerFileIO _layerFileIO;
+        private readonly ILayerFileIO _layerFileIO;
 
-        public ZoneSaveLayer(IZoneManager zoneManager,LayerFileIO layerFileIO)
+        public ZoneSaveLayer(IZoneManager zoneManager, ILayerFileIO layerFileIO)
         {
             _zoneManager = zoneManager;
             _layerFileIO = layerFileIO;
@@ -16,14 +16,26 @@ namespace Perpetuum.RequestHandlers
 
         public void HandleRequest(IRequest request)
         {
-            foreach (var zone in _zoneManager.Zones)
+            if (request.Data.ContainsKey(k.zoneID))
             {
-                _layerFileIO.SaveLayerToDisk(zone,zone.Terrain.Altitude);
-                _layerFileIO.SaveLayerToDisk(zone,zone.Terrain.Blocks);
-                _layerFileIO.SaveLayerToDisk(zone,zone.Terrain.Controls);
-                _layerFileIO.SaveLayerToDisk(zone,zone.Terrain.Plants);
+                var zoneToSave = request.Data.GetOrDefault<int>(k.zoneID);
+                _zoneManager.ContainsZone(zoneToSave).ThrowIfFalse(ErrorCodes.ZoneNotFound);
+                var zone = _zoneManager.GetZone(zoneToSave);
+                _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Altitude);
+                _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Blocks);
+                _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Controls);
+                _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Plants);
             }
-
+            else
+            {
+                foreach (var zone in _zoneManager.Zones)
+                {
+                    _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Altitude);
+                    _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Blocks);
+                    _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Controls);
+                    _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Plants);
+                }
+            }
             Message.Builder.FromRequest(request).WithOk().Send();
         }
     }
