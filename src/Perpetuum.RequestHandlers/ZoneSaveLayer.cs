@@ -18,9 +18,9 @@ namespace Perpetuum.RequestHandlers
         {
             if (request.Data.ContainsKey(k.zoneID))
             {
-                var zoneToSave = request.Data.GetOrDefault<int>(k.zoneID);
-                _zoneManager.ContainsZone(zoneToSave).ThrowIfFalse(ErrorCodes.ZoneNotFound);
-                var zone = _zoneManager.GetZone(zoneToSave);
+                var zoneId = request.Data.GetOrDefault<int>(k.zoneID);
+                _zoneManager.ContainsZone(zoneId).ThrowIfFalse(ErrorCodes.ZoneNotFound);
+                var zone = _zoneManager.GetZone(zoneId);
                 _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Altitude);
                 _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Blocks);
                 _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Controls);
