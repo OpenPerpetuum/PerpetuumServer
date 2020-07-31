@@ -21,22 +21,24 @@ namespace Perpetuum.RequestHandlers
                 var zoneId = request.Data.GetOrDefault<int>(k.zoneID);
                 _zoneManager.ContainsZone(zoneId).ThrowIfFalse(ErrorCodes.ZoneNotFound);
                 var zone = _zoneManager.GetZone(zoneId);
-                _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Altitude);
-                _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Blocks);
-                _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Controls);
-                _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Plants);
+                SaveZoneLayers(zone);
             }
             else
             {
                 foreach (var zone in _zoneManager.Zones)
                 {
-                    _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Altitude);
-                    _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Blocks);
-                    _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Controls);
-                    _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Plants);
+                    SaveZoneLayers(zone);
                 }
             }
             Message.Builder.FromRequest(request).WithOk().Send();
+        }
+
+        private void SaveZoneLayers(IZone zone)
+        {
+            _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Altitude);
+            _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Blocks);
+            _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Controls);
+            _layerFileIO.SaveLayerToDisk(zone, zone.Terrain.Plants);
         }
     }
 }
