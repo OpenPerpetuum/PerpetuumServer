@@ -260,6 +260,11 @@ namespace Perpetuum.Zones.NpcSystem
                 _movement.Start(npc);
             });
 
+            if (npc.IsBoss())
+            {
+                npc.BossInfo.OnDeAggro();
+            }
+
             base.Enter();
         }
 

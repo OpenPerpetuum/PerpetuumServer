@@ -75,6 +75,14 @@ namespace Perpetuum.Zones.NpcSystem
         }
 
         /// <summary>
+        /// Handle any actions when the boss loses aggro
+        /// </summary>
+        public void OnDeAggro()
+        {
+            _speak = true;
+        }
+
+        /// <summary>
         /// Handle any actions that this NPC Boss should do upon Aggression, including sending a message
         /// </summary>
         /// <param name="aggressor">Player aggressor</param>
