@@ -134,7 +134,6 @@ namespace Perpetuum.Services.RiftSystem
     public class Rift : DespawningPortal, IBlobEmitter
     {
         private readonly ITeleportStrategyFactories _teleportStrategyFactories;
-        private readonly UnitDespawnHelper _despawnHelper;
         private readonly BlobEmitter _blobEmitter;
 
         public int MaxTAPLevel { get; private set; }
@@ -152,7 +151,6 @@ namespace Perpetuum.Services.RiftSystem
 
         protected override void OnUpdate(TimeSpan time)
         {
-            _despawnHelper?.Update(time, this);
             base.OnUpdate(time);
         }
 
