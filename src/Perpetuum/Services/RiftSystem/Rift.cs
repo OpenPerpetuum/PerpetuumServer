@@ -9,7 +9,6 @@ using Perpetuum.Log;
 using Perpetuum.Players;
 using Perpetuum.Services.MissionEngine.MissionTargets;
 using Perpetuum.Units;
-using Perpetuum.Units.DockingBases;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Blobs.BlobEmitters;
 using Perpetuum.Zones.NpcSystem.Presences;
@@ -17,6 +16,9 @@ using Perpetuum.Zones.Teleporting.Strategies;
 
 namespace Perpetuum.Services.RiftSystem
 {
+    /// <summary>
+    /// Super class to all Rifts
+    /// </summary>
     public abstract class Portal : Unit, IUsableItem
     {
         public virtual void UseItem(Player player)
@@ -27,7 +29,9 @@ namespace Perpetuum.Services.RiftSystem
         }
     }
 
-
+    /// <summary>
+    /// Rifts that despawn
+    /// </summary>
     public abstract class DespawningPortal : Portal
     {
         private UnitDespawnHelper _despawnHelper;
@@ -42,9 +46,11 @@ namespace Perpetuum.Services.RiftSystem
             _despawnHelper?.Update(time, this);
             base.OnUpdate(time);
         }
-
     }
 
+    /// <summary>
+    /// RandomRift (used as the Rift Echo after a TAP)
+    /// </summary>
     public class RandomRiftPortal : DespawningPortal
     {
         private readonly ITeleportStrategyFactories _teleportStrategyFactories;
@@ -86,6 +92,9 @@ namespace Perpetuum.Services.RiftSystem
         public Player ownerPlayer;
     }
 
+    /// <summary>
+    /// TAP deployment
+    /// </summary>
     public class RiftActivator : ItemDeployerBase
     {
         public override void Deploy(IZone zone, Player player)
@@ -94,33 +103,11 @@ namespace Perpetuum.Services.RiftSystem
             if (rift == null)
                 throw new PerpetuumException(ErrorCodes.RiftOutOfRange);
 
-            var maxRiftLevel = 1;
-
-            if (zone.Configuration.IsAlpha)
-            {
-                maxRiftLevel = 1;
-            }
-            else if (zone.Configuration.IsBeta)
-            {
-                maxRiftLevel = 2;
-                if (zone.Configuration.Id > 8 && zone.Configuration.Id < 12)
-                {
-                    maxRiftLevel = 3; //TODO fixme move to DB!
-                    Logger.Info("LEVEL 3 RIFT ON BETA!");
-                }
-            }
-            else if (zone.Configuration.IsGamma)
-            {
-                maxRiftLevel = 3;
-            }
-
-
-            if (ED.Tier.level > maxRiftLevel)
+            if (ED.Tier.level > rift.MaxTAPLevel)
                 throw new PerpetuumException(ErrorCodes.RiftLevelMismatch);
 
             if (zone is StrongHoldZone)
                 throw new PerpetuumException(ErrorCodes.ItemNotUsable);
-
 
             var info = new RiftNpcGroupInfo();
             Debug.Assert(DeployableItemEntityDefault.Config.npcPresenceId != null, "DeployableItemEntityDefault.Config.npcPresenceId != null");
@@ -141,11 +128,16 @@ namespace Perpetuum.Services.RiftSystem
         }
     }
 
-    public class Rift : Unit, IUsableItem, IBlobEmitter
+    /// <summary>
+    /// Regular Rift, despawns, can activate a TAP on it, can jump, emits interference
+    /// </summary>
+    public class Rift : DespawningPortal, IBlobEmitter
     {
         private readonly ITeleportStrategyFactories _teleportStrategyFactories;
-        private UnitDespawnHelper _despawnHelper;
+        private readonly UnitDespawnHelper _despawnHelper;
         private readonly BlobEmitter _blobEmitter;
+
+        public int MaxTAPLevel { get; private set; }
 
         public Rift(ITeleportStrategyFactories teleportStrategyFactories)
         {
@@ -153,9 +145,9 @@ namespace Perpetuum.Services.RiftSystem
             _blobEmitter = new BlobEmitter(this);
         }
 
-        public void SetDespawnTime(TimeSpan despawnTime)
+        public void SetLevel(int maxLevel)
         {
-            _despawnHelper = UnitDespawnHelper.Create(this, despawnTime);
+            MaxTAPLevel = maxLevel;
         }
 
         protected override void OnUpdate(TimeSpan time)
@@ -196,40 +188,22 @@ namespace Perpetuum.Services.RiftSystem
             return true;
         }
 
-        public void UseItem(Player player)
+        public override void UseItem(Player player)
         {
-            player.HasTeleportSicknessEffect.ThrowIfTrue(ErrorCodes.TeleportTimerStillRunning);
-            player.HasPvpEffect.ThrowIfTrue(ErrorCodes.CantBeUsedInPvp);
+            base.UseItem(player);
 
-
-            // we are on a stronghold. we want to go home.
-            // Sending them at the Hershfield main terminal.
-            if (player.Zone is StrongHoldZone)
+            var nearestRift = Zone.Units.OfType<Rift>().Where(rift => rift != this).GetNearestUnit(CurrentPosition);
+            if (nearestRift == null)
             {
-                var destZone = player.Character.GetZone(8); // Hershfield zone
-                var dockingBase = destZone.Units.OfType<DockingBase>().First();
-                var teleport = _teleportStrategyFactories.TeleportToAnotherZoneFactory(destZone);
-                teleport.TargetPosition = UndockSpawnPositionSelector.SelectSpawnPosition(dockingBase);
-                teleport.DoTeleportAsync(player);
-                return;
+                throw new PerpetuumException(ErrorCodes.WTFErrorMedicalAttentionSuggested);
             }
-            else
-            {
-                // Regular jump behaviour
-                player.CurrentPosition.IsInRangeOf3D(CurrentPosition, 8).ThrowIfFalse(ErrorCodes.TeleportOutOfRange);
 
-                var nearestRift = Zone.Units.OfType<Rift>().Where(rift => rift != this).GetNearestUnit(CurrentPosition);
-                if (nearestRift == null)
-                {
-                    throw new PerpetuumException(ErrorCodes.WTFErrorMedicalAttentionSuggested);
-                }
+            var teleport = _teleportStrategyFactories.TeleportWithinZoneFactory();
+            teleport.TargetPosition = nearestRift.CurrentPosition;
+            teleport.ApplyTeleportSickness = true;
+            teleport.ApplyInvulnerable = true;
+            teleport.DoTeleportAsync(player);
 
-                var teleport = _teleportStrategyFactories.TeleportWithinZoneFactory();
-                teleport.TargetPosition = nearestRift.CurrentPosition;
-                teleport.ApplyTeleportSickness = true;
-                teleport.ApplyInvulnerable = true;
-                teleport.DoTeleportAsync(player);
-            }
         }
 
         public double BlobEmission => _blobEmitter.BlobEmission;

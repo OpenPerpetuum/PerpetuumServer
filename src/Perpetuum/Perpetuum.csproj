@@ -322,6 +322,7 @@
     <Compile Include="Services\RiftSystem\StrongholdRifts\StrongholdExitLocations.cs" />
     <Compile Include="Services\RiftSystem\StrongholdRifts\StrongholdRiftManager.cs" />
     <Compile Include="Services\RiftSystem\StrongholdRifts\StrongholdExitRift.cs" />
+    <Compile Include="Services\RiftSystem\ZoneRiftConfigs.cs" />
     <Compile Include="Services\Sessions\SessionID.cs" />
     <Compile Include="Common\SettingsLoader.cs" />
     <Compile Include="EntityFramework\DefinitionConfig.cs" />
