@@ -102,6 +102,7 @@ using Perpetuum.Services.ProductionEngine.ResearchKits;
 using Perpetuum.Services.Relay;
 using Perpetuum.Services.Relics;
 using Perpetuum.Services.RiftSystem;
+using Perpetuum.Services.RiftSystem.StrongholdRifts;
 using Perpetuum.Services.Sessions;
 using Perpetuum.Services.Social;
 using Perpetuum.Services.Sparks;
@@ -993,6 +994,7 @@ namespace Perpetuum.Bootstrapper
             RegisterUnit<TrainingKillSwitch>();
             RegisterUnit<Gate>();
             RegisterUnit<RandomRiftPortal>();
+            RegisterUnit<StrongholdExitRift>(); // TODO new exit rift
 
             RegisterEntity<Item>();
             RegisterEntity<Item>();
@@ -1301,6 +1303,7 @@ namespace Perpetuum.Bootstrapper
                 ByName<RandomRiftPortal>(DefinitionNames.RANDOM_RIFT_PORTAL);
                 ByName<ItemShop>(DefinitionNames.BASE_ITEM_SHOP);
                 ByName<Gift>(DefinitionNames.ANNIVERSARY_PACKAGE);
+                ByName<StrongholdExitRift>(DefinitionNames.STRONGHOLD_EXIT_RIFT);
 
                 var c = b.Build();
 
@@ -2386,14 +2389,20 @@ namespace Perpetuum.Bootstrapper
             });
 
             _builder.RegisterType<RiftManager>();
+            _builder.RegisterType<StrongholdRiftManager>();
 
-            _builder.Register<Func<IZone, RiftManager>>(x =>
+            _builder.Register<Func<IZone, IRiftManager>>(x =>
             {
                 var ctx = x.Resolve<IComponentContext>();
                 return zone =>
                 {
                     if (zone is TrainingZone)
                         return null;
+
+                    if (zone is StrongHoldZone)
+                    {
+                       return ctx.Resolve<StrongholdRiftManager>(new TypedParameter(typeof(IZone), zone));
+                    }
 
                     var spawnTime = TimeRange.FromLength(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
                     var finder = ctx.Resolve<Func<IZone, RiftSpawnPositionFinder>>().Invoke(zone);
@@ -2507,7 +2516,7 @@ namespace Perpetuum.Bootstrapper
                     zone.PlantHandler = ctx.Resolve<PlantHandler.Factory>().Invoke(zone);
                     zone.CorporationHandler = ctx.Resolve<CorporationHandler.Factory>().Invoke(zone);
                     zone.MiningLogHandler = ctx.Resolve<MiningLogHandler.Factory>().Invoke(zone);
-                    zone.RiftManager = ctx.Resolve<Func<IZone, RiftManager>>().Invoke(zone);
+                    zone.RiftManager = ctx.Resolve<Func<IZone, IRiftManager>>().Invoke(zone);
                     zone.ChatLogger = ctx.Resolve<ChatLoggerFactory>().Invoke("zone", zone.Configuration.Name);
                     zone.EnterQueueService = ctx.Resolve<ZoneEnterQueueService.Factory>().Invoke(zone);
                     zone.Terrain = ctx.Resolve<TerrainFactory>().Invoke(zone);

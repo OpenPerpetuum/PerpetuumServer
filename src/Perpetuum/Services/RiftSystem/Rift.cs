@@ -13,12 +13,22 @@ using Perpetuum.Units.DockingBases;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Blobs.BlobEmitters;
 using Perpetuum.Zones.NpcSystem.Presences;
-using Perpetuum.Zones.Teleporting;
 using Perpetuum.Zones.Teleporting.Strategies;
 
 namespace Perpetuum.Services.RiftSystem
 {
-    public abstract class Portal : Unit,IUsableItem
+    public abstract class Portal : Unit, IUsableItem
+    {
+        public virtual void UseItem(Player player)
+        {
+            player.HasTeleportSicknessEffect.ThrowIfTrue(ErrorCodes.TeleportTimerStillRunning);
+            player.HasPvpEffect.ThrowIfTrue(ErrorCodes.CantBeUsedInPvp);
+            player.CurrentPosition.IsInRangeOf3D(CurrentPosition, 8).ThrowIfFalse(ErrorCodes.TeleportOutOfRange);
+        }
+    }
+
+
+    public abstract class DespawningPortal : Portal
     {
         private UnitDespawnHelper _despawnHelper;
 
@@ -33,15 +43,9 @@ namespace Perpetuum.Services.RiftSystem
             base.OnUpdate(time);
         }
 
-        public virtual void UseItem(Player player)
-        {
-            player.HasTeleportSicknessEffect.ThrowIfTrue(ErrorCodes.TeleportTimerStillRunning);
-            player.HasPvpEffect.ThrowIfTrue(ErrorCodes.CantBeUsedInPvp);
-            player.CurrentPosition.IsInRangeOf3D(CurrentPosition, 8).ThrowIfFalse(ErrorCodes.TeleportOutOfRange);
-        }
     }
 
-    public class RandomRiftPortal : Portal
+    public class RandomRiftPortal : DespawningPortal
     {
         private readonly ITeleportStrategyFactories _teleportStrategyFactories;
         private Position _targetPosition;
@@ -73,7 +77,7 @@ namespace Perpetuum.Services.RiftSystem
             teleport.DoTeleportAsync(player);
         }
     }
-    
+
     public class RiftNpcGroupInfo
     {
         public int presenceID;
@@ -95,7 +99,7 @@ namespace Perpetuum.Services.RiftSystem
             if (zone.Configuration.IsAlpha)
             {
                 maxRiftLevel = 1;
-            }   
+            }
             else if (zone.Configuration.IsBeta)
             {
                 maxRiftLevel = 2;
@@ -104,12 +108,12 @@ namespace Perpetuum.Services.RiftSystem
                     maxRiftLevel = 3; //TODO fixme move to DB!
                     Logger.Info("LEVEL 3 RIFT ON BETA!");
                 }
-            }  
+            }
             else if (zone.Configuration.IsGamma)
             {
                 maxRiftLevel = 3;
             }
-            
+
 
             if (ED.Tier.level > maxRiftLevel)
                 throw new PerpetuumException(ErrorCodes.RiftLevelMismatch);
@@ -124,20 +128,20 @@ namespace Perpetuum.Services.RiftSystem
             Debug.Assert(DeployableItemEntityDefault.Config.lifeTime != null, "DeployableItemEntityDefault.Config.lifeTime != null");
             info.presenceLifeTime = TimeSpan.FromMilliseconds((double)DeployableItemEntityDefault.Config.lifeTime);
             Debug.Assert(DeployableItemEntityDefault.Config.waves != null, "DeployableItemEntityDefault.Config.waves != null");
-            info.wavesCount = (int) DeployableItemEntityDefault.Config.waves;
+            info.wavesCount = (int)DeployableItemEntityDefault.Config.waves;
             info.ownerPlayer = player;
 
             if (!rift.TryActivate(info))
                 throw new PerpetuumException(ErrorCodes.WTFErrorMedicalAttentionSuggested);
 
-            LogTransaction(player,this);
+            LogTransaction(player, this);
 
-            var seei = new SummonEggEventInfo(player,DeployableItemEntityDefault.Definition, player.CurrentPosition);
+            var seei = new SummonEggEventInfo(player, DeployableItemEntityDefault.Definition, player.CurrentPosition);
             player.MissionHandler.EnqueueMissionEventInfo(seei);
         }
     }
 
-    public class Rift : Unit,IUsableItem,IBlobEmitter
+    public class Rift : Unit, IUsableItem, IBlobEmitter
     {
         private readonly ITeleportStrategyFactories _teleportStrategyFactories;
         private UnitDespawnHelper _despawnHelper;
@@ -151,7 +155,7 @@ namespace Perpetuum.Services.RiftSystem
 
         public void SetDespawnTime(TimeSpan despawnTime)
         {
-            _despawnHelper = UnitDespawnHelper.Create(this,despawnTime);
+            _despawnHelper = UnitDespawnHelper.Create(this, despawnTime);
         }
 
         protected override void OnUpdate(TimeSpan time)

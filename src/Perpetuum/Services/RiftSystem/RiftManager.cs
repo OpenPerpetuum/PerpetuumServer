@@ -56,8 +56,11 @@ namespace Perpetuum.Services.RiftSystem
         }
     }
 
-    public class RiftManager
+    public class RiftManager : IRiftManager
     {
+        // Parameter to scale number of rifts with size of island
+        private const int AREA_PER_RIFT = 400000; // 2048^2 / 10 = 400k
+        private int _maxRifts = 0;
         private readonly IZone _zone;
         private readonly TimeRange _spawnTime;
         private readonly RiftSpawnPositionFinder _spawnPositionFinder;
@@ -68,6 +71,7 @@ namespace Perpetuum.Services.RiftSystem
         public RiftManager(IZone zone, TimeRange spawnTime, RiftSpawnPositionFinder spawnPositionFinder, IEntityServices entityServices)
         {
             _zone = zone;
+            _maxRifts = Math.Min((zone.Size.Width * zone.Size.Height) / AREA_PER_RIFT, 10);
             _spawnTime = spawnTime;
             _spawnPositionFinder = spawnPositionFinder;
             _entityServices = entityServices;
@@ -77,14 +81,7 @@ namespace Perpetuum.Services.RiftSystem
 
         public void Update(TimeSpan time)
         {
-            while (_riftCounts < 10 && !(_zone is StrongHoldZone))
-            {
-                _nextRiftSpawns.AddLast(new TimeTracker(FastRandom.NextTimeSpan(_spawnTime)));
-                Interlocked.Increment(ref _riftCounts);
-            }
-            
-            //If exit rift dies on stronghold, respawn it
-            if (_riftCounts < 1 && _zone is StrongHoldZone)
+            while (_riftCounts < _maxRifts)
             {
                 _nextRiftSpawns.AddLast(new TimeTracker(FastRandom.NextTimeSpan(_spawnTime)));
                 Interlocked.Increment(ref _riftCounts);
@@ -109,12 +106,6 @@ namespace Perpetuum.Services.RiftSystem
             rift.RemovedFromZone += OnRiftRemovedFromZone;
 
             var spawnPosition = _spawnPositionFinder.FindSpawnPosition().ToPosition();
-
-            if (_zone is StrongHoldZone)
-            {
-                //TODO: Fixme for I should be a DB table for valid spawn locations on strongholds
-                spawnPosition = new Position(1120, 1039);
-            }
 
             rift.AddToZone(_zone, spawnPosition, ZoneEnterType.NpcSpawn);
             Logger.Info(string.Format("Rift spawned on zone {0} {1} ({2})", _zone.Id, rift.ED.Name, rift.CurrentPosition));
