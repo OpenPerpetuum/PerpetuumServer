@@ -120,6 +120,7 @@ using Perpetuum.Zones.Blobs.BlobEmitters;
 using Perpetuum.Zones.CombatLogs;
 using Perpetuum.Zones.Decors;
 using Perpetuum.Zones.Effects;
+using Perpetuum.Zones.Effects.ZoneEffects;
 using Perpetuum.Zones.Eggs;
 using Perpetuum.Zones.Environments;
 using Perpetuum.Zones.Gates;
@@ -175,7 +176,6 @@ using SetItemName = Perpetuum.RequestHandlers.SetItemName;
 using TrashItems = Perpetuum.RequestHandlers.TrashItems;
 using UnpackItems = Perpetuum.RequestHandlers.UnpackItems;
 using UnstackAmount = Perpetuum.RequestHandlers.UnstackAmount;
-using Perpetuum.Zones.Effects.ZoneEffects;
 
 namespace Perpetuum.Bootstrapper
 {
