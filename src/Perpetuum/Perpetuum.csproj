@@ -607,6 +607,12 @@
     <Compile Include="Zones\CombatLogs\CombatLogSaver.cs" />
     <Compile Include="Zones\CombatLogs\CombatSummary.cs" />
     <Compile Include="Zones\CombatLogs\ICombatLogSaver.cs" />
+    <Compile Include="Zones\Effects\ZoneEffects\IZoneEffectHandler.cs" />
+    <Compile Include="Zones\Effects\ZoneEffects\IZoneEffectRepository.cs" />
+    <Compile Include="Zones\Effects\ZoneEffects\ZoneEffect.cs" />
+    <Compile Include="Zones\Effects\ZoneEffects\ZoneEffectHandler.cs" />
+    <Compile Include="Zones\Effects\ZoneEffects\ZoneEffectRepository.cs" />
+    <Compile Include="Zones\Effects\ZoneEffects\ZoneEffectReader.cs" />
     <Compile Include="Zones\Intrusion\OutpostDecay.cs" />
     <Compile Include="Zones\IUsableItem.cs" />
     <Compile Include="Services\Channels\Channel.cs" />
@@ -1207,7 +1213,6 @@
     <Folder Include="Properties\" />
     <Folder Include="Services\ProductionEngine\Methods\" />
     <Folder Include="Services\Relay\RequestHandlers\" />
-    <Folder Include="Comparers\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
