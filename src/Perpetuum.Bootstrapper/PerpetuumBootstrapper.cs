@@ -2574,6 +2574,7 @@ namespace Perpetuum.Bootstrapper
 
             _builder.RegisterType<TeleportDescriptionBuilder>();
             _builder.RegisterType<TeleportWorldTargetHelper>();
+            _builder.RegisterType<MobileTeleportZoneMapCached>().As<IMobileTeleportToZoneMap>();
             _builder.RegisterType<StrongholdTeleportTargetHelper>();
             _builder.RegisterType<TeleportToAnotherZone>();
             _builder.RegisterType<TeleportWithinZone>();
