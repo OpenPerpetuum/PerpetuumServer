@@ -1,8 +1,5 @@
 ﻿using Perpetuum.Data;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 
 namespace Perpetuum.Zones.Teleporting
 {
@@ -11,45 +8,39 @@ namespace Perpetuum.Zones.Teleporting
         List<int> GetDestinationZones(int definition);
     }
 
-    public class MobileTeleportZoneMapCached : IMobileTeleportToZoneMap
+    public class MobileTeleportZoneMapCache : IMobileTeleportToZoneMap
     {
-        private readonly ConcurrentDictionary<int, List<int>> dictionary;
-        private readonly MobileTeleportToZoneReader reader;
-        public MobileTeleportZoneMapCached()
+        private readonly IDictionary<int, List<int>> _cache;
+        public MobileTeleportZoneMapCache()
         {
-            dictionary = new ConcurrentDictionary<int, List<int>>();
-            reader = new MobileTeleportToZoneReader();
-        }
-
-        private List<int> GetZones(int definition)
-        {
-            return reader.GetDestinationZones(definition).ToList();
+            _cache = MobileTeleportToZoneReader.GetAll();
         }
 
         public List<int> GetDestinationZones(int definition)
         {
-            return dictionary.GetOrAdd(definition, () => GetZones(definition));
+            _cache.TryGetValue(definition, out List<int> zones);
+            return zones;
         }
     }
 
-    public class MobileTeleportToZoneReader
+    public static class MobileTeleportToZoneReader
     {
-        public MobileTeleportToZoneReader()
+        public static IDictionary<int, List<int>> GetAll()
         {
+            var dict = new Dictionary<int, List<int>>();
+            var entries = Db.Query().CommandText("SELECT sourcedefinition, zoneid FROM zoneteleportdevicemap")
+                .Execute();
+            foreach (var entry in entries)
+            {
+                var def = entry.GetValue<int>("sourcedefinition");
+                var zoneid = entry.GetValue<int>("zoneid");
+                dict.AddOrUpdate(def, new List<int>() { zoneid }, (listOfZones) => {
+                    listOfZones.Add(zoneid);
+                    return listOfZones;
+                });
+            }
+            return dict;
         }
 
-        protected int GetZoneId(IDataRecord record)
-        {
-            return record.GetValue<int>("zoneid");
-        }
-
-        public IEnumerable<int> GetDestinationZones(int definition)
-        {
-            var zoneIds = Db.Query().CommandText("SELECT zoneid FROM zoneteleportdevicemap WHERE sourcedefinition=@definition")
-                .SetParameter("@definition", definition)
-                .Execute()
-                .Select(GetZoneId);
-            return zoneIds;
-        }
     }
 }
