@@ -14,8 +14,8 @@ namespace Perpetuum.Zones
     /// </summary>
     public class SessionlessPlayerTimeout
     {
-        private static readonly TimeSpan MAX_ORPHAN_TIME = TimeSpan.FromMinutes(1.5);
-        private static readonly TimeSpan UPDATE_RATE = TimeSpan.FromMinutes(0.25);
+        private static readonly TimeSpan MAX_ORPHAN_TIME = TimeSpan.FromMinutes(3);
+        private static readonly TimeSpan UPDATE_RATE = TimeSpan.FromMinutes(1.5);
         private readonly IZone _zone;
         private readonly List<PlayerTimeout> _orphanPlayers = new List<PlayerTimeout>();
 
