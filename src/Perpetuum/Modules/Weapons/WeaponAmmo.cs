@@ -24,6 +24,7 @@ namespace Perpetuum.Modules.Weapons
         {
             base.UpdateAllProperties();
             UpdateCleanDamages();
+            UpdatePlantDamages();
         }
 
         private IList<Damage> _cleanDamages;
@@ -92,6 +93,38 @@ namespace Perpetuum.Modules.Weapons
         public ItemPropertyModifier GetExplosionRadius()
         {
             return GetPropertyModifier(AggregateField.explosion_radius);
+        }
+
+        private IList<Damage> _plantDamage;
+
+        public IList<Damage> GetPlantDamage()
+        {
+            return LazyInitializer.EnsureInitialized(ref _plantDamage, CalculatePlantDamage);
+        }
+
+        private IList<Damage> CalculatePlantDamage()
+        {
+            var result = new List<Damage>();
+
+            if (!(this.GetParentModule() is WeaponModule weapon))
+                return result;
+
+            var damageModifier = weapon.PlantDamageModifier.ToPropertyModifier();
+
+            var property = GetPropertyModifier(AggregateField.damage_toxic);
+
+            if (!property.HasValue)
+                return result;
+
+            damageModifier.Modify(ref property);
+            result.Add(new Damage(DamageType.Toxic, property.Value));
+
+            return result;
+        }
+
+        private void UpdatePlantDamages()
+        {
+            _plantDamage = null;
         }
     }
 }
