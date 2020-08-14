@@ -106,7 +106,7 @@ namespace Perpetuum.Modules.Weapons
         {
             var result = new List<Damage>();
 
-            if (!(this.GetParentModule() is WeaponModule weapon))
+            if (!(this.GetParentModule() is FirearmWeaponModule weapon))
                 return result;
 
             var damageModifier = weapon.PlantDamageModifier.ToPropertyModifier();

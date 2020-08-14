@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
@@ -18,29 +17,16 @@ namespace Perpetuum.Modules.Weapons
     {
         private readonly ModuleAction _action;
 
-        private readonly ModuleProperty _damageModifier;
-        private readonly ModuleProperty _plantDamageModifier;
-        private readonly ModuleProperty _accuracy;
-
-        public ModuleProperty DamageModifier
-        {
-            get { return _damageModifier; }
-        }
-
-        public ModuleProperty PlantDamageModifier
-        {
-            get { return _plantDamageModifier; }
-        }
+        public ModuleProperty DamageModifier { get; }
+        public ModuleProperty Accuracy { get; }
 
         public WeaponModule(CategoryFlags ammoCategoryFlags) : base(ammoCategoryFlags, true)
         {
             _action = new ModuleAction(this);
-            _damageModifier = new ModuleProperty(this,AggregateField.damage_modifier);
-            AddProperty(_damageModifier);
-            _accuracy = new ModuleProperty(this, AggregateField.accuracy);
-            AddProperty(_accuracy);
-            _plantDamageModifier = new ModuleProperty(this, AggregateField.damage_toxic_modifier);
-            AddProperty(_plantDamageModifier);
+            DamageModifier = new ModuleProperty(this,AggregateField.damage_modifier);
+            AddProperty(DamageModifier);
+            Accuracy = new ModuleProperty(this, AggregateField.accuracy);
+            AddProperty(Accuracy);
 
             cycleTime.AddEffectModifier(AggregateField.effect_weapon_cycle_time_modifier);
         }
@@ -178,7 +164,7 @@ namespace Perpetuum.Modules.Weapons
         protected virtual bool CheckAccuracy(Unit victim)
         {
             var rnd = FastRandom.NextDouble();
-            var isMiss = rnd * _accuracy.Value > victim.SignatureRadius;
+            var isMiss = rnd * Accuracy.Value > victim.SignatureRadius;
             return isMiss;
         }
 
@@ -196,15 +182,9 @@ namespace Perpetuum.Modules.Weapons
             return ammo != null ? ammo.GetCleanDamages() : new Damage[0];
         }
 
-        private IDamageBuilder GetPlantDamageBuilder()
+        protected virtual IDamageBuilder GetPlantDamageBuilder()
         {
-            return GetDamageBuilder().WithPlantDamages(GetPlantDamage());
-        }
-
-        private IEnumerable<Damage> GetPlantDamage()
-        {
-            var ammo = (WeaponAmmo)GetAmmo();
-            return ammo != null ? ammo.GetPlantDamage() : new Damage[0];
+            return GetDamageBuilder();
         }
     }
 }
