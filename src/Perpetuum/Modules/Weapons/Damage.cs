@@ -26,12 +26,11 @@ namespace Perpetuum.Modules.Weapons
         IDamageBuilder WithOptimalRange(double optimalRange);
         IDamageBuilder WithFalloff(double falloff);
         IDamageBuilder WithDamage(Damage damage);
-        IDamageBuilder WithPlantDamage(Damage damage);
     }
 
     public static class DamageBuilderExtensions
     {
-        public static IDamageBuilder WithAllDamageTypes(this IDamageBuilder builder,double damage)
+        public static IDamageBuilder WithAllDamageTypes(this IDamageBuilder builder, double damage)
         {
             return builder.WithDamage(DamageType.Chemical, damage)
                           .WithDamage(DamageType.Explosive, damage)
@@ -39,26 +38,12 @@ namespace Perpetuum.Modules.Weapons
                           .WithDamage(DamageType.Thermal, damage);
         }
 
-        public static IDamageBuilder WithDamages(this IDamageBuilder builder,IEnumerable<Damage> damages)
+        public static IDamageBuilder WithDamages(this IDamageBuilder builder, IEnumerable<Damage> damages)
         {
             foreach (var damage in damages)
                 builder.WithDamage(damage);
 
             return builder;
-        }
-
-        public static IDamageBuilder WithPlantDamages(this IDamageBuilder builder, IEnumerable<Damage> damages)
-        {
-            foreach (var damage in damages)
-                builder.WithPlantDamage(damage);
-
-            return builder;
-        }
-
-        public static IDamageBuilder WithPlantDamage(this IDamageBuilder builder, DamageType type, double damage)
-        {
-            Debug.Assert(!double.IsNaN(damage));
-            return Math.Abs(damage - 0.0) < double.Epsilon ? builder : builder.WithPlantDamage(new Damage(type, damage));
         }
 
         public static IDamageBuilder WithDamage(this IDamageBuilder builder, DamageType type, double damage)
@@ -139,17 +124,9 @@ namespace Perpetuum.Modules.Weapons
                         damageModifier *= tmpDamageMod;
                     }
 
-                    foreach (var cleanDamage in damages)
-                    {
-                        if (cleanDamage.type == DamageType.Toxic)
-                            continue;
-
-                        var damageValue = cleanDamage.value * damageModifier;
-
-                        Debug.Assert(!double.IsNaN(damageValue));
-
-                        result.Add(new Damage(cleanDamage.type, damageValue));
-                    }
+                    result = damages.Where(d => d.type != DamageType.Toxic)
+                        .Select(d => new Damage(d.type, d.value * damageModifier))
+                        .ToList();
                 }
             }
 
@@ -214,15 +191,14 @@ namespace Perpetuum.Modules.Weapons
 
             public IDamageBuilder WithDamage(Damage damage)
             {
-                if (damage.type != DamageType.Toxic)
-                    _damages.Add(damage);
-                return this;
-            }
-
-            public IDamageBuilder WithPlantDamage(Damage damage)
-            {
-                if(damage.type == DamageType.Toxic)
+                if (damage.type == DamageType.Toxic)
+                {
                     _plantDamages.Add(damage);
+                }
+                else
+                {
+                    _damages.Add(damage);
+                }
                 return this;
             }
 

@@ -135,7 +135,7 @@ namespace Perpetuum.Modules.Weapons
                 var beamTime = (int)Math.Max(flyTime, _weapon.CycleTime.TotalMilliseconds);
                 flyTime += _weapon.CreateBeam(location, BeamState.Hit, beamTime, bulletTime);
 
-                var damage = _weapon.GetPlantDamageBuilder().Build().CalculatePlantDamages();
+                var damage = _weapon.GetDamageBuilder().Build().CalculatePlantDamages();
 
                 if (damage <= 0.0)
                     return;
@@ -180,11 +180,6 @@ namespace Perpetuum.Modules.Weapons
         {
             var ammo = (WeaponAmmo)GetAmmo();
             return ammo != null ? ammo.GetCleanDamages() : new Damage[0];
-        }
-
-        protected virtual IDamageBuilder GetPlantDamageBuilder()
-        {
-            return GetDamageBuilder();
         }
     }
 }

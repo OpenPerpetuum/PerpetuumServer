@@ -24,23 +24,34 @@ namespace Perpetuum.Modules.Weapons
         {
             base.UpdateAllProperties();
             UpdateCleanDamages();
-            UpdatePlantDamages();
         }
 
         private IList<Damage> _cleanDamages;
 
         public IList<Damage> GetCleanDamages()
         {
-            return LazyInitializer.EnsureInitialized(ref _cleanDamages,CalculateCleanDamages);
+            return LazyInitializer.EnsureInitialized(ref _cleanDamages, CalculateCleanDamages);
         }
 
         private IList<Damage> CalculateCleanDamages()
         {
             var result = new List<Damage>();
 
-            var weapon = this.GetParentModule() as WeaponModule;
-            if (weapon == null)
+            if (!(GetParentModule() is WeaponModule weapon))
                 return result;
+
+            if (weapon is FirearmWeaponModule firearm)
+            {
+                var plantDmgMod = firearm.PlantDamageModifier.ToPropertyModifier();
+
+                var plantDmgProperty = GetPropertyModifier(AggregateField.damage_toxic);
+
+                if (plantDmgProperty.HasValue)
+                {
+                    plantDmgMod.Modify(ref plantDmgProperty);
+                    result.Add(new Damage(DamageType.Toxic, plantDmgProperty.Value));
+                }
+            }
 
             var damageModifier = weapon.DamageModifier.ToPropertyModifier();
 
@@ -93,38 +104,6 @@ namespace Perpetuum.Modules.Weapons
         public ItemPropertyModifier GetExplosionRadius()
         {
             return GetPropertyModifier(AggregateField.explosion_radius);
-        }
-
-        private IList<Damage> _plantDamage;
-
-        public IList<Damage> GetPlantDamage()
-        {
-            return LazyInitializer.EnsureInitialized(ref _plantDamage, CalculatePlantDamage);
-        }
-
-        private IList<Damage> CalculatePlantDamage()
-        {
-            var result = new List<Damage>();
-
-            if (!(this.GetParentModule() is FirearmWeaponModule weapon))
-                return result;
-
-            var damageModifier = weapon.PlantDamageModifier.ToPropertyModifier();
-
-            var property = GetPropertyModifier(AggregateField.damage_toxic);
-
-            if (!property.HasValue)
-                return result;
-
-            damageModifier.Modify(ref property);
-            result.Add(new Damage(DamageType.Toxic, property.Value));
-
-            return result;
-        }
-
-        private void UpdatePlantDamages()
-        {
-            _plantDamage = null;
         }
     }
 }

@@ -1,8 +1,5 @@
-﻿using Perpetuum.EntityFramework;
-using Perpetuum.ExportedTypes;
-using Perpetuum.Items;
+﻿using Perpetuum.ExportedTypes;
 using Perpetuum.Units;
-using System.Collections.Generic;
 
 namespace Perpetuum.Modules.Weapons
 {
@@ -27,19 +24,8 @@ namespace Perpetuum.Modules.Weapons
 
         protected override IDamageBuilder GetDamageBuilder()
         {
-            return base.GetDamageBuilder().WithExplosionRadius(Accuracy.Value);
+            return base.GetDamageBuilder()
+                .WithExplosionRadius(Accuracy.Value);
         }
-
-        protected override IDamageBuilder GetPlantDamageBuilder()
-        {
-            return GetDamageBuilder().WithPlantDamages(GetPlantDamage());
-        }
-
-        private IEnumerable<Damage> GetPlantDamage()
-        {
-            var ammo = (WeaponAmmo)GetAmmo();
-            return ammo != null ? ammo.GetPlantDamage() : new Damage[0];
-        }
-
     }
 }
