@@ -1033,46 +1033,42 @@ namespace Perpetuum.Zones.NpcSystem
             return true;
         }
 
-        public bool CanAddThreatTo(Unit target,Threat threat)
+        /// <summary>
+        /// This determines if threat can be added to a target based on the following:
+        ///  - Is the target already on the threat manager
+        ///  - Or is the npc aggressive and within aggrorange
+        ///  - Or is the npc non-passive and the Threat is of some defined type
+        /// </summary>
+        /// <param name="target">Unit target</param>
+        /// <param name="threat">Threat threat</param>
+        /// <returns>If the target can be a threat</returns>
+        public bool CanAddThreatTo(Unit target, Threat threat)
         {
             var hasThreat = _threatManager.Contains(target);
             if (hasThreat)
                 return true;
-
-            var check = false;
 
             switch (Behavior.Type)
             {
                 case NpcBehaviorType.Passive:
                     return false;
                 case NpcBehaviorType.Neutral:
-                {
-                    switch (threat.type)
                     {
-                        case ThreatType.Direct:
+                        switch (threat.type)
                         {
-                            // itt nincs aggrorange,mehet mindig
-                            return true;
-                        }
-
-                        case ThreatType.Debuff:
-                        case ThreatType.Support:
-                        case ThreatType.Lock:
-                        {
-                            check = true;
-                            break;
+                            case ThreatType.Undefined:
+                                return false;
+                            default:
+                                return true;
                         }
                     }
-                    break;
-                }
                 case NpcBehaviorType.Aggressive:
-                {
-                    check = true;
-                    break;
-                }
+                    {
+                        return IsInAggroRange(target);
+                    }
             }
 
-            return check && IsInAggroRange(target);
+            return IsInAggroRange(target);
         }
 
         private void AddBodyPullThreat(Unit enemy)

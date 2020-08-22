@@ -16,7 +16,9 @@ namespace Perpetuum.Zones.NpcSystem
         Lock,
         Buff,
         Debuff,
-        Direct
+        Direct,
+        EnWar,
+        Ewar
     }
 
     public struct Threat
