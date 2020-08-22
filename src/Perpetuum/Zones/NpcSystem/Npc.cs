@@ -576,7 +576,7 @@ namespace Perpetuum.Zones.NpcSystem
         private object _bestCombatRange;
         private TimeSpan _lastHelpCalled;
         private readonly EventListenerService _eventChannel;
-        private readonly IPsuedoThreatManager _psuedoThreatManager;
+        private readonly IPseudoThreatManager _pseudoThreatManager;
 
         public Npc(TagHelper tagHelper, EventListenerService eventChannel)
         {
@@ -584,7 +584,7 @@ namespace Perpetuum.Zones.NpcSystem
             _tagHelper = tagHelper;
             _threatManager = new ThreatManager();
             AI = new StackFSM();
-            _psuedoThreatManager = new PsuedoThreatManager();
+            _pseudoThreatManager = new PseudoThreatManager();
         }
 
         public NpcBehavior Behavior { get; set; }
@@ -650,7 +650,7 @@ namespace Perpetuum.Zones.NpcSystem
             }
             _threatManager.GetOrAddHostile(hostile).AddThreat(threat);
 
-            _psuedoThreatManager.AddOrRefreshExisting(hostile);
+            RemovePseudoThreat(hostile);
 
             if (!spreadToGroup)
                 return;
@@ -671,12 +671,17 @@ namespace Perpetuum.Zones.NpcSystem
 
         public void AddPseudoThreat(Unit hostile)
         {
-            _psuedoThreatManager.AddOrRefreshExisting(hostile);
+            _pseudoThreatManager.AddOrRefreshExisting(hostile);
         }
 
         private void UpdatePseudoThreats(TimeSpan time)
         {
-            _psuedoThreatManager.Update(time);
+            _pseudoThreatManager.Update(time);
+        }
+
+        private void RemovePseudoThreat(Unit hostile)
+        {
+            _pseudoThreatManager.Remove(hostile);
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
@@ -828,7 +833,7 @@ namespace Perpetuum.Zones.NpcSystem
                         hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep);
                     }
 
-                    _psuedoThreatManager.AwardPsuedoThreats(ThreatManager, zone, ep);
+                    _pseudoThreatManager.AwardPseudoThreats(ThreatManager, zone, ep);
                 }
 
                 scope.Complete();

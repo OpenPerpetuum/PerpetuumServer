@@ -193,32 +193,37 @@ namespace Perpetuum.Zones.NpcSystem
         }
     }
 
-
-    public interface IPsuedoThreatManager
+    /// <summary>
+    /// Manager of PseudoThreats
+    /// Processes and manages an internal collection of players aggressive to an npc
+    /// but not on the npc's ThreatManager.
+    /// For awarding players a portion of the total ep reward.
+    /// </summary>
+    public interface IPseudoThreatManager
     {
         void Update(TimeSpan time);
         void AddOrRefreshExisting(Unit hostile);
         void Remove(Unit hostile);
-        void AwardPsuedoThreats(IThreatManager threatManager, IZone zone, int ep);
+        void AwardPseudoThreats(IThreatManager threatManager, IZone zone, int ep);
     }
 
 
-    public class PsuedoThreatManager : IPsuedoThreatManager
+    public class PseudoThreatManager : IPseudoThreatManager
     {
         private readonly TimeSpan LOCK_TIMEOUT = TimeSpan.FromSeconds(1);
-        private readonly List<PsuedoThreat> _psuedoThreats;
+        private readonly List<PseudoThreat> _pseudoThreats;
         private readonly ReaderWriterLockSlim _lock;
 
-        public PsuedoThreatManager()
+        public PseudoThreatManager()
         {
-            _psuedoThreats = new List<PsuedoThreat>();
+            _pseudoThreats = new List<PseudoThreat>();
             _lock = new ReaderWriterLockSlim();
         }
 
-        public void AwardPsuedoThreats(IThreatManager threatManager, IZone zone, int ep)
+        public void AwardPseudoThreats(IThreatManager threatManager, IZone zone, int ep)
         {
-            var psuedoHostiles = _psuedoThreats.Where(p => !threatManager.Contains(p.Unit));
-            foreach (var hostile in psuedoHostiles)
+            var pseudoHostiles = _pseudoThreats.Where(p => !threatManager.Contains(p.Unit));
+            foreach (var hostile in pseudoHostiles)
             {
                 var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(hostile.Unit);
                 hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep / 2);
@@ -229,7 +234,7 @@ namespace Perpetuum.Zones.NpcSystem
         {
             using (_lock.Read(LOCK_TIMEOUT))
             {
-                var existing = _psuedoThreats.Where(x => x.Unit == hostile).FirstOrDefault();
+                var existing = _pseudoThreats.Where(x => x.Unit == hostile).FirstOrDefault();
                 if (existing != null)
                 {
                     existing.RefreshThreat();
@@ -238,21 +243,21 @@ namespace Perpetuum.Zones.NpcSystem
             }
 
             using (_lock.Write(LOCK_TIMEOUT))
-                _psuedoThreats.Add(new PsuedoThreat(hostile));
+                _pseudoThreats.Add(new PseudoThreat(hostile));
 
         }
 
         public void Remove(Unit hostile)
         {
             using (_lock.Write(LOCK_TIMEOUT))
-                _psuedoThreats.RemoveAll(x => x.Unit == hostile);
+                _pseudoThreats.RemoveAll(x => x.Unit == hostile);
         }
 
         public void Update(TimeSpan time)
         {
             using (_lock.Read(LOCK_TIMEOUT))
             {
-                foreach (var threat in _psuedoThreats)
+                foreach (var threat in _pseudoThreats)
                 {
                     threat.Update(time);
                 }
@@ -263,18 +268,21 @@ namespace Perpetuum.Zones.NpcSystem
         private void CleanExpiredThreats()
         {
             using (_lock.Write(LOCK_TIMEOUT))
-                _psuedoThreats.RemoveAll(threat => threat.IsExpired);
+                _pseudoThreats.RemoveAll(threat => threat.IsExpired);
         }
     }
 
 
-
-    public class PsuedoThreat
+    /// <summary>
+    /// An expirable record of a player that is aggressing an npc but the npc is
+    /// not capable of attacking back (removed from the ThreatManager)
+    /// </summary>
+    public class PseudoThreat
     {
         private TimeSpan _lastUpdated = TimeSpan.Zero;
         private TimeSpan Expiration = TimeSpan.FromMinutes(1);
 
-        public PsuedoThreat(Unit unit)
+        public PseudoThreat(Unit unit)
         {
             Unit = unit;
         }
