@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using Perpetuum.Log;
+using Perpetuum.Threading;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 
@@ -184,6 +188,110 @@ namespace Perpetuum.Zones.NpcSystem
             sb.AppendLine("============================");
 
             return sb.ToString();
+        }
+    }
+
+
+    public interface IPsuedoThreatManager
+    {
+        void Update(TimeSpan time);
+        void AddOrRefreshExisting(Unit hostile);
+        void Remove(Unit hostile);
+        void AwardPsuedoThreats(IThreatManager threatManager, IZone zone, int ep);
+    }
+
+
+    public class PsuedoThreatManager : IPsuedoThreatManager
+    {
+        private readonly TimeSpan LOCK_TIMEOUT = TimeSpan.FromSeconds(1);
+        private readonly List<PsuedoThreat> _psuedoThreats;
+        private readonly ReaderWriterLockSlim _lock;
+
+        public PsuedoThreatManager()
+        {
+            _psuedoThreats = new List<PsuedoThreat>();
+            _lock = new ReaderWriterLockSlim();
+        }
+
+        public void AwardPsuedoThreats(IThreatManager threatManager, IZone zone, int ep)
+        {
+            var psuedoHostiles = _psuedoThreats.Where(p => !threatManager.Contains(p.Unit));
+            foreach (var hostile in psuedoHostiles)
+            {
+                var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(hostile.Unit);
+                hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep / 2);
+            }
+        }
+
+        public void AddOrRefreshExisting(Unit hostile)
+        {
+            using (_lock.Read(LOCK_TIMEOUT))
+            {
+                var existing = _psuedoThreats.Where(x => x.Unit == hostile).FirstOrDefault();
+                if (existing != null)
+                {
+                    existing.RefreshThreat();
+                    return;
+                }
+            }
+
+            using (_lock.Write(LOCK_TIMEOUT))
+                _psuedoThreats.Add(new PsuedoThreat(hostile));
+
+        }
+
+        public void Remove(Unit hostile)
+        {
+            using (_lock.Write(LOCK_TIMEOUT))
+                _psuedoThreats.RemoveAll(x => x.Unit == hostile);
+        }
+
+        public void Update(TimeSpan time)
+        {
+            using (_lock.Read(LOCK_TIMEOUT))
+            {
+                foreach (var threat in _psuedoThreats)
+                {
+                    threat.Update(time);
+                }
+            }
+            CleanExpiredThreats();
+        }
+
+        private void CleanExpiredThreats()
+        {
+            using (_lock.Write(LOCK_TIMEOUT))
+                _psuedoThreats.RemoveAll(threat => threat.IsExpired);
+        }
+    }
+
+
+
+    public class PsuedoThreat
+    {
+        private TimeSpan _lastUpdated = TimeSpan.Zero;
+        private TimeSpan Expiration = TimeSpan.FromMinutes(1);
+
+        public PsuedoThreat(Unit unit)
+        {
+            Unit = unit;
+        }
+
+        public Unit Unit { get; }
+
+        public bool IsExpired
+        {
+            get { return _lastUpdated > Expiration; }
+        }
+
+        public void RefreshThreat()
+        {
+            _lastUpdated = TimeSpan.Zero;
+        }
+
+        public void Update(TimeSpan time)
+        {
+            _lastUpdated += time;
         }
     }
 }

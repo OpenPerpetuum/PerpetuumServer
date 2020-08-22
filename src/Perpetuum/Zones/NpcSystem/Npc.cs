@@ -568,35 +568,7 @@ namespace Perpetuum.Zones.NpcSystem
         }
     }
 
-    public class PsuedoThreat
-    {
-        private TimeSpan _lastUpdated = TimeSpan.Zero;
-        private TimeSpan Expiration = TimeSpan.FromMinutes(1);
-
-        public PsuedoThreat(Unit unit)
-        {
-            Unit = unit;
-        }
-
-        public Unit Unit { get; }
-
-        public bool IsExpired
-        {
-            get { return _lastUpdated > Expiration; }
-        }
-
-        public void RefreshThreat()
-        {
-            _lastUpdated = TimeSpan.Zero;
-        }
-
-        public void Update(TimeSpan time)
-        {
-            _lastUpdated += time;
-        }
-    }
-
-    public class Npc : Creature,ITaggable
+    public class Npc : Creature, ITaggable
     {
         private readonly TagHelper _tagHelper;
         private const double CALL_FOR_HELP_ARMOR_THRESHOLD = 0.2;
@@ -604,8 +576,7 @@ namespace Perpetuum.Zones.NpcSystem
         private object _bestCombatRange;
         private TimeSpan _lastHelpCalled;
         private readonly EventListenerService _eventChannel;
-        private List<PsuedoThreat> PseudoThreats;
-        private object PseudoLock = new Object();
+        private readonly IPsuedoThreatManager _psuedoThreatManager;
 
         public Npc(TagHelper tagHelper, EventListenerService eventChannel)
         {
@@ -613,7 +584,7 @@ namespace Perpetuum.Zones.NpcSystem
             _tagHelper = tagHelper;
             _threatManager = new ThreatManager();
             AI = new StackFSM();
-            PseudoThreats = new List<PsuedoThreat>();
+            _psuedoThreatManager = new PsuedoThreatManager();
         }
 
         public NpcBehavior Behavior { get; set; }
@@ -671,7 +642,7 @@ namespace Perpetuum.Zones.NpcSystem
             return TagHelper.GetTagger(this);
         }
 
-        public void AddThreat(Unit hostile, Threat threat,bool spreadToGroup)
+        public void AddThreat(Unit hostile, Threat threat, bool spreadToGroup)
         {
             if (IsBoss() && hostile.IsPlayer())
             {
@@ -679,15 +650,7 @@ namespace Perpetuum.Zones.NpcSystem
             }
             _threatManager.GetOrAddHostile(hostile).AddThreat(threat);
 
-            var PseudoThreat = PseudoThreats.Where(x => x.Unit == hostile).FirstOrDefault();
-            if (PseudoThreat != null)
-            {
-                lock (PseudoLock)
-                {
-                    PseudoThreats.Remove(PseudoThreat);
-                    Logger.DebugInfo(" Removed " + PseudoThreat.ToString());
-                }
-            }
+            _psuedoThreatManager.AddOrRefreshExisting(hostile);
 
             if (!spreadToGroup)
                 return;
@@ -708,19 +671,12 @@ namespace Perpetuum.Zones.NpcSystem
 
         public void AddPseudoThreat(Unit hostile)
         {
-            lock (PseudoLock)
-            {
-                PseudoThreats.Add(new PsuedoThreat(hostile));
-            }
+            _psuedoThreatManager.AddOrRefreshExisting(hostile);
         }
 
         private void UpdatePseudoThreats(TimeSpan time)
         {
-            lock (PseudoLock)
-            {
-                PseudoThreats.ForEach(threat => threat.Update(time));
-                PseudoThreats.RemoveAll(threat => threat.IsExpired);
-            }
+            _psuedoThreatManager.Update(time);
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
@@ -865,19 +821,14 @@ namespace Perpetuum.Zones.NpcSystem
 
                 if (ep > 0)
                 {
-                    foreach (var hostile in ThreatManager.Hostiles)
+                    var hostiles = ThreatManager.Hostiles.ToList();
+                    foreach (var hostile in hostiles)
                     {
                         var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(hostile.unit);
                         hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep);
                     }
 
-                    // same as above, but add half EP for players that were out of range of the NPC.
-                    var psuedoHostiles = PseudoThreats.Where(p => !ThreatManager.Contains(p.Unit));
-                    foreach (var hostile in psuedoHostiles)
-                    {
-                        var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(hostile.Unit);
-                        hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep / 2);
-                    }
+                    _psuedoThreatManager.AwardPsuedoThreats(ThreatManager, zone, ep);
                 }
 
                 scope.Complete();
@@ -1055,6 +1006,7 @@ namespace Perpetuum.Zones.NpcSystem
                             return true;
                         }
 
+                        case ThreatType.Undefined:
                         case ThreatType.Debuff:
                         case ThreatType.Support:
                         case ThreatType.Lock:
