@@ -43,7 +43,7 @@ namespace Perpetuum.Zones.Locking
         }
 
         public double MaxTargetingRange { get { return _maxTargetingRange.Value; } }
-        private int MaxLockedTargets { get { return 1; } }//{ get { return (int) _maxLockedTargets.Value; } }
+        private int MaxLockedTargets { get { return (int) _maxLockedTargets.Value; } }
         public int Count { get { return _locks.Count; } }
 
         public List<Lock> Locks
