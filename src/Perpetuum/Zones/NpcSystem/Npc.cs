@@ -826,8 +826,7 @@ namespace Perpetuum.Zones.NpcSystem
 
                 if (ep > 0)
                 {
-                    var hostiles = ThreatManager.Hostiles.ToList();
-                    foreach (var hostile in hostiles)
+                    foreach (var hostile in ThreatManager.Hostiles)
                     {
                         var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(hostile.unit);
                         hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep);
