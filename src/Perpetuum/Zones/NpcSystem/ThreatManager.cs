@@ -4,7 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Perpetuum.Log;
 using Perpetuum.Threading;
 using Perpetuum.Timers;
 using Perpetuum.Units;
