@@ -1002,8 +1002,7 @@ namespace Perpetuum.Zones.NpcSystem
         /// <returns>If the target can be a threat</returns>
         public bool CanAddThreatTo(Unit target, Threat threat)
         {
-            var hasThreat = _threatManager.Contains(target);
-            if (hasThreat)
+            if (_threatManager.Contains(target))
                 return true;
 
             switch (Behavior.Type)
@@ -1012,20 +1011,9 @@ namespace Perpetuum.Zones.NpcSystem
                     return false;
                 case NpcBehaviorType.Neutral:
                     {
-                        switch (threat.type)
-                        {
-                            case ThreatType.Undefined:
-                                return false;
-                            default:
-                                return true;
-                        }
-                    }
-                case NpcBehaviorType.Aggressive:
-                    {
-                        return IsInAggroRange(target);
+                        return threat.type != ThreatType.Undefined;
                     }
             }
-
             return IsInAggroRange(target);
         }
 
