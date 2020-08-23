@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using Perpetuum.Threading;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 
@@ -209,14 +207,13 @@ namespace Perpetuum.Zones.NpcSystem
 
     public class PseudoThreatManager : IPseudoThreatManager
     {
-        private readonly TimeSpan LOCK_TIMEOUT = TimeSpan.FromSeconds(1);
         private readonly List<PseudoThreat> _pseudoThreats;
-        private readonly ReaderWriterLockSlim _lock;
+        private readonly object _lock;
 
         public PseudoThreatManager()
         {
             _pseudoThreats = new List<PseudoThreat>();
-            _lock = new ReaderWriterLockSlim();
+            _lock = new object();
         }
 
         public void AwardPseudoThreats(IThreatManager threatManager, IZone zone, int ep)
@@ -231,7 +228,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         public void AddOrRefreshExisting(Unit hostile)
         {
-            using (_lock.Read(LOCK_TIMEOUT))
+            lock (_lock)
             {
                 var existing = _pseudoThreats.Where(x => x.Unit == hostile).FirstOrDefault();
                 if (existing != null)
@@ -239,22 +236,19 @@ namespace Perpetuum.Zones.NpcSystem
                     existing.RefreshThreat();
                     return;
                 }
-            }
-
-            using (_lock.Write(LOCK_TIMEOUT))
                 _pseudoThreats.Add(new PseudoThreat(hostile));
-
+            }
         }
 
         public void Remove(Unit hostile)
         {
-            using (_lock.Write(LOCK_TIMEOUT))
+            lock(_lock)
                 _pseudoThreats.RemoveAll(x => x.Unit == hostile);
         }
 
         public void Update(TimeSpan time)
         {
-            using (_lock.Read(LOCK_TIMEOUT))
+            lock (_lock)
             {
                 foreach (var threat in _pseudoThreats)
                 {
@@ -266,7 +260,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         private void CleanExpiredThreats()
         {
-            using (_lock.Write(LOCK_TIMEOUT))
+            lock (_lock)
                 _pseudoThreats.RemoveAll(threat => threat.IsExpired);
         }
     }
