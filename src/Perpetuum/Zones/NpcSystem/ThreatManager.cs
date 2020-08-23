@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using Perpetuum.Comparers;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 
@@ -201,7 +202,7 @@ namespace Perpetuum.Zones.NpcSystem
         void Update(TimeSpan time);
         void AddOrRefreshExisting(Unit hostile);
         void Remove(Unit hostile);
-        void AwardPseudoThreats(IThreatManager threatManager, IZone zone, int ep);
+        void AwardPseudoThreats(List<Unit> alreadyAwarded, IZone zone, int ep);
     }
 
 
@@ -216,12 +217,16 @@ namespace Perpetuum.Zones.NpcSystem
             _lock = new object();
         }
 
-        public void AwardPseudoThreats(IThreatManager threatManager, IZone zone, int ep)
+        public void AwardPseudoThreats(List<Unit> alreadyAwarded, IZone zone, int ep)
         {
-            var pseudoHostiles = _pseudoThreats.Where(p => !threatManager.Contains(p.Unit));
-            foreach (var hostile in pseudoHostiles)
+            var pseudoHostileUnits = new List<Unit>();
+            lock (_lock)
             {
-                var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(hostile.Unit);
+                pseudoHostileUnits = _pseudoThreats.Select(p => p.Unit).Except(alreadyAwarded, new EntityComparer()).Cast<Unit>().ToList();
+            }
+            foreach (var unit in pseudoHostileUnits)
+            {
+                var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(unit);
                 hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep / 2);
             }
         }
@@ -254,14 +259,13 @@ namespace Perpetuum.Zones.NpcSystem
                 {
                     threat.Update(time);
                 }
+                CleanExpiredThreats();
             }
-            CleanExpiredThreats();
         }
 
         private void CleanExpiredThreats()
         {
-            lock (_lock)
-                _pseudoThreats.RemoveAll(threat => threat.IsExpired);
+            _pseudoThreats.RemoveAll(threat => threat.IsExpired);
         }
     }
 

@@ -826,13 +826,16 @@ namespace Perpetuum.Zones.NpcSystem
 
                 if (ep > 0)
                 {
+                    var awardedPlayers = new List<Unit>();
                     foreach (var hostile in ThreatManager.Hostiles)
                     {
-                        var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(hostile.unit);
+                        var playerUnit = hostile.unit;
+                        var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(playerUnit);
                         hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, ep);
+                        awardedPlayers.Add(playerUnit);
                     }
 
-                    _pseudoThreatManager.AwardPseudoThreats(ThreatManager, zone, ep);
+                    _pseudoThreatManager.AwardPseudoThreats(awardedPlayers, zone, ep);
                 }
 
                 scope.Complete();
