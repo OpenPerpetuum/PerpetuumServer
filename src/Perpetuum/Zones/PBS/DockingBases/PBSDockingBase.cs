@@ -414,7 +414,6 @@ namespace Perpetuum.Zones.PBS.DockingBases
             return multiplier;
         }
 
-
        
         
 
