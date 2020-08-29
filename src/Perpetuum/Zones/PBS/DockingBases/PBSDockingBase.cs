@@ -150,7 +150,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
         public override void OnLoadFromDb()
         {
             base.OnLoadFromDb();
-
+            
             _pbsObjectHelper.Init();
 
             _pbsTerritorialVisibilityHelper.Init();
@@ -162,12 +162,12 @@ namespace Perpetuum.Zones.PBS.DockingBases
             _pbsObjectHelper.Init();
 
             DynamicProperties.Update(k.creation,DateTime.Now);
-
+            
             base.OnInsertToDb();
 
             var market = GetMarket();
             _marketHelper.InsertGammaPlasmaOrders(market);
-
+            
             Logger.Info("A new PBSDockingbase is created " + this);
 
         }
@@ -306,7 +306,6 @@ namespace Perpetuum.Zones.PBS.DockingBases
 
                 var ctd = GenerateTerritoryDictionary();
                 _cacheTerritoryDictionary = ctd;
-
             }
 
             return _cacheTerritoryDictionary;
@@ -349,7 +348,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
             {
                 return ErrorCodes.ObjectNotFullyConstructed;
             }
-
+            
             if (state)
             {
                 DynamicProperties.Update(k.allowDeconstruction,1);
@@ -370,7 +369,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
         /// <returns></returns>
         public ErrorCodes IsDeconstructAllowed()
         {
-
+            
             if (DynamicProperties.Contains(k.allowDeconstruction))
             {
                 return ErrorCodes.NoError;
@@ -416,7 +415,8 @@ namespace Perpetuum.Zones.PBS.DockingBases
         }
 
 
-
+       
+        
 
         private int _bandwidthCapacity;
 
@@ -437,7 +437,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
                         _bandwidthCapacity = 1000;
                     }
 
-
+                    
                 }
 
                 return _bandwidthCapacity;
