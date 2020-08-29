@@ -65,7 +65,7 @@ namespace Perpetuum.Zones.PBS
             {
                 try
                 {
-                    if (_pbsUnit.States.Dead)
+                    if (!_pbsUnit.States.Dead)
                     {
                         _pbsUnit.SendNodeUpdate(PBSEventType.nodeAttacked);
                     }
