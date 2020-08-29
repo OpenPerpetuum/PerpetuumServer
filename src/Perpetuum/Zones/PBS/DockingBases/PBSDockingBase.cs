@@ -34,7 +34,6 @@ namespace Perpetuum.Zones.PBS.DockingBases
         private readonly PBSObjectHelper<PBSDockingBase> _pbsObjectHelper;
         private readonly PBSReinforceHandler<PBSDockingBase> _pbsReinforceHandler;
         private readonly PBSTerritorialVisibilityHelper _pbsTerritorialVisibilityHelper;
-        private int zoneid;
 
         public PBSDockingBase(MarketHelper marketHelper,ICorporationManager corporationManager,IChannelManager channelManager,ICentralBank centralBank,IRobotTemplateRelations robotTemplateRelations,DockingBaseHelper dockingBaseHelper,SparkTeleportHelper sparkTeleportHelper,PBSObjectHelper<PBSDockingBase>.Factory pbsObjectHelperFactory) : base(channelManager,centralBank,robotTemplateRelations,dockingBaseHelper)
         {
@@ -49,6 +48,8 @@ namespace Perpetuum.Zones.PBS.DockingBases
 
         public IPBSReinforceHandler ReinforceHandler => _pbsReinforceHandler;
         public IPBSConnectionHandler ConnectionHandler => _pbsObjectHelper.ConnectionHandler;
+
+        public int ZoneIdCached { get; private set; }
 
         public ErrorCodes ModifyConstructionLevel(int amount, bool force = false)
         {
@@ -100,7 +101,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
             get
             {
                 //no reinforce
-                if (_pbsReinforceHandler.CurrentState.IsReinforced) 
+                if (_pbsReinforceHandler.CurrentState.IsReinforced)
                     return ErrorCodes.TargetIsNonAttackable_Reinforced;
 
                 //no connections
@@ -125,7 +126,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
         public PBSDockingBaseVisibility DockingBaseMapVisibility
         {
             get { return _pbsTerritorialVisibilityHelper.DockingBaseMapVisibility(); }
-            set { _pbsTerritorialVisibilityHelper.SetDockingBaseVisibleOnMap(value); } 
+            set { _pbsTerritorialVisibilityHelper.SetDockingBaseVisibleOnMap(value); }
         }
 
 
@@ -144,8 +145,6 @@ namespace Perpetuum.Zones.PBS.DockingBases
             ClearChildren(); //ez azert kell, hogy a zonan ne legyenek gyerekei semmikepp
             Parent = 0; //ez azert kell, hogy a bazison levo kontenerek megtalaljak, mint root
             base.OnEnterZone(zone, enterType);
-            this.zoneid = zone.Id;
-            _pbsObjectHelper.setZoneId(this.zoneid);
         }
 
         public override void OnLoadFromDb()
@@ -153,7 +152,6 @@ namespace Perpetuum.Zones.PBS.DockingBases
             base.OnLoadFromDb();
 
             _pbsObjectHelper.Init();
-            
             _pbsTerritorialVisibilityHelper.Init();
         }
 
@@ -163,12 +161,12 @@ namespace Perpetuum.Zones.PBS.DockingBases
             _pbsObjectHelper.Init();
 
             DynamicProperties.Update(k.creation,DateTime.Now);
-            
+
             base.OnInsertToDb();
 
             var market = GetMarket();
             _marketHelper.InsertGammaPlasmaOrders(market);
-            
+
             Logger.Info("A new PBSDockingbase is created " + this);
 
         }
@@ -222,7 +220,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
             //NO BASE CLASS CALL -> szandekos
             Logger.DebugInfo($"[{InfoString}] docking base on delete");
             Logger.DebugInfo($"[{InfoString}] zonaid jo, helperes cucc jon");
-            PBSHelper.DeletePBSDockingBase(zoneid, this).ThrowIfError();
+            PBSHelper.DeletePBSDockingBase(ZoneIdCached, this).ThrowIfError();
         }
 
         protected override void OnRemovedFromZone(IZone zone)
@@ -307,7 +305,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
 
                 var ctd = GenerateTerritoryDictionary();
                 _cacheTerritoryDictionary = ctd;
-                
+
             }
 
             return _cacheTerritoryDictionary;
@@ -324,7 +322,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
 
             var nodes = _pbsObjectHelper.ConnectionHandler.NetworkNodes
                                          .Cast<Unit>()
-                                         .ToDictionary("n", unit => 
+                                         .ToDictionary("n", unit =>
                                           new Dictionary<string, object>
                                           {
                                             {k.x, unit.CurrentPosition.intX},
@@ -350,7 +348,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
             {
                 return ErrorCodes.ObjectNotFullyConstructed;
             }
-            
+
             if (state)
             {
                 DynamicProperties.Update(k.allowDeconstruction,1);
@@ -371,7 +369,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
         /// <returns></returns>
         public ErrorCodes IsDeconstructAllowed()
         {
-            
+
             if (DynamicProperties.Contains(k.allowDeconstruction))
             {
                 return ErrorCodes.NoError;
@@ -416,8 +414,8 @@ namespace Perpetuum.Zones.PBS.DockingBases
             return multiplier;
         }
 
-       
-        
+
+
 
         private int _bandwidthCapacity;
 
@@ -438,7 +436,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
                         _bandwidthCapacity = 1000;
                     }
 
-                    
+
                 }
 
                 return _bandwidthCapacity;

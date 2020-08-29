@@ -18,7 +18,6 @@ namespace Perpetuum.Zones.PBS
     public sealed class PBSObjectHelper<T> where T : Unit, IPBSObject
     {
         private readonly T _pbsUnit;
-        private int zoneid;
         private readonly UnitOptionalProperty<int> _constructionLevelCurrent;
         private readonly PBSObjectSaver<T> _saver;
 
@@ -59,11 +58,14 @@ namespace Perpetuum.Zones.PBS
 
             Logger.DebugInfo($"PBS node attacked ({_pbsUnit.Eid}) attacker: {attacker.InfoString}");
 
+            if (_pbsUnit.States.Dead)
+                return;
+
             Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(t =>
             {
                 try
                 {
-                    if (_pbsUnit.Armor > 0)
+                    if (_pbsUnit.States.Dead)
                     {
                         _pbsUnit.SendNodeUpdate(PBSEventType.nodeAttacked);
                     }
@@ -94,11 +96,6 @@ namespace Perpetuum.Zones.PBS
             {
                 _pbsUnit.DynamicProperties.Update(k.constructionDirection,0);
             }
-        }
-
-        public void setZoneId(int zid)
-        {
-            this.zoneid = zid;
         }
 
         public void OnSave()
@@ -470,7 +467,7 @@ namespace Perpetuum.Zones.PBS
 #endif
             data.Add(k.message,(int)pbsEventType);
             data.Add(k.source,sourceDict);
-            data[k.zoneID] = zoneid; //_pbsUnit.Zone?.Id ?? null; //zoneid legyen mindig.
+            data[k.zoneID] = _pbsUnit.ZoneIdCached; //OPP: use cached value to avoid accessing null zone on death
             return data;
         }
     }

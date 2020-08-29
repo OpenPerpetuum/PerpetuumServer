@@ -887,7 +887,7 @@ namespace Perpetuum.Zones.PBS
             return ec;
         }
 
-        public const int CONSTRUCTION_AMMO_DEFINITION = 4658;
+        public const int CONSTRUCTION_AMMO_DEFINITION = 4658; //TODO: Fetch this from DB
 
         public static IEnumerable<LootItem> GetConstructionAmmoLootOnDead(IPBSObject pbsObject)
         {
