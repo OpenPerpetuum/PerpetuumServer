@@ -752,7 +752,7 @@ namespace Perpetuum.Services.Channels
                     var rift = z.Units.OfType<Rift>();
                     foreach (Rift r in rift)
                     {
-                        channel.SendMessageToAll(sessionManager, sender, string.Format("Rift - Zone: {0}, Position: ({1}), Destination Zone:{2}", r.Zone, r.CurrentPosition, r.DestinationStrongholdZone));
+                        channel.SendMessageToAll(sessionManager, sender, string.Format("Rift - Zone: {0}, Position: ({1})", r.Zone, r.CurrentPosition));
                     }
                 }
             }
@@ -948,7 +948,25 @@ namespace Perpetuum.Services.Channels
 
             }
 
-
+            if (command[0] == "#savelayers")
+            {
+                bool err = false;
+                var dictionary = new Dictionary<string, object>();
+                if (command.Length == 2)
+                {
+                    err = !int.TryParse(command[1], out int zoneId);
+                    if (err)
+                    {
+                        channel.SendMessageToAll(sessionManager, sender, "Bad args");
+                        throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                    }
+                    dictionary.Add(k.zoneID, zoneId);
+                }
+                var cmd = string.Format("{0}:relay:{1}", Commands.ZoneSaveLayer.Text, GenxyConverter.Serialize(dictionary));
+                channel.SendMessageToAll(sessionManager, sender, $"SaveLayers command accepted: {dictionary.ToDebugString()} \r\nSaving... ");
+                request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
+                channel.SendMessageToAll(sessionManager, sender, $"Layer(s) Saved! ");
+            }
         }
     }
 }

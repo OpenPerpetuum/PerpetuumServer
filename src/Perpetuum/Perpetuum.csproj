@@ -78,7 +78,6 @@
       <HintPath>..\..\packages\System.Collections.Immutable.1.4.0\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
     </Reference>
     <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -93,7 +92,6 @@
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="WindowsBase">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -284,22 +282,26 @@
     <Compile Include="Rsa.cs" />
     <Compile Include="Selectors\ISelector.cs" />
     <Compile Include="Selectors\ModuloBasedSelector.cs" />
+    <Compile Include="Services\Artifacts\ArtifactRefresher.cs" />
     <Compile Include="Services\Channels\ChannelMessageHandler.cs" />
     <Compile Include="Services\Channels\GameAdminCommands.cs" />
     <Compile Include="Services\Channels\PreMadeChatMessageNames.cs" />
     <Compile Include="Services\EventServices\EventMessages\EventMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\EventMessageSimple.cs" />
     <Compile Include="Services\EventServices\EventMessages\NpcEventMessage.cs" />
+    <Compile Include="Services\EventServices\EventMessages\OreNpcSpawnMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\StabilityEffectMessage.cs" />
     <Compile Include="Services\EventServices\EventProcessors\AffectOutpostStability.cs" />
     <Compile Include="Services\EventServices\EventProcessors\ChatEcho.cs" />
     <Compile Include="Services\EventServices\EPBonusEventService.cs" />
     <Compile Include="Services\EventServices\EventListenerService.cs" />
     <Compile Include="Services\EventServices\EventProcessors\EventProcessor.cs" />
+    <Compile Include="Services\EventServices\EventProcessors\OreNPCSpawner.cs" />
     <Compile Include="Services\Mail\PreMadeMailNames.cs" />
     <Compile Include="Services\MissionEngine\DisplayMissionSpotsProcess.cs" />
     <Compile Include="Services\MissionEngine\MissionResolveTester.cs" />
     <Compile Include="Services\MissionEngine\OneLocationTest.cs" />
+    <Compile Include="Services\ProductionEngine\ProductionCost.cs" />
     <Compile Include="Services\Relay\GoodiePack.cs" />
     <Compile Include="IMessageSender.cs" />
     <Compile Include="MessageSender.cs" />
@@ -316,6 +318,11 @@
     <Compile Include="Services\Relics\RelicZoneConfig.cs" />
     <Compile Include="Services\Relics\Relics\SAPRelic.cs" />
     <Compile Include="Services\Relics\RelicManagers\ZoneRelicManager.cs" />
+    <Compile Include="Services\RiftSystem\IRiftManager.cs" />
+    <Compile Include="Services\RiftSystem\StrongholdRifts\StrongholdExitLocations.cs" />
+    <Compile Include="Services\RiftSystem\StrongholdRifts\StrongholdRiftManager.cs" />
+    <Compile Include="Services\RiftSystem\StrongholdRifts\StrongholdExitRift.cs" />
+    <Compile Include="Services\RiftSystem\ZoneRiftConfigs.cs" />
     <Compile Include="Services\Sessions\SessionID.cs" />
     <Compile Include="Common\SettingsLoader.cs" />
     <Compile Include="EntityFramework\DefinitionConfig.cs" />
@@ -562,6 +569,7 @@
     <Compile Include="TimeRange.cs" />
     <Compile Include="Timers\GlobalTimer.cs" />
     <Compile Include="Timers\IntervalTimer.cs" />
+    <Compile Include="Timers\TimeKeeper.cs" />
     <Compile Include="Timers\TimerAction.cs" />
     <Compile Include="Timers\TimerList.cs" />
     <Compile Include="Timers\TimeTracker.cs" />
@@ -674,16 +682,31 @@
     <Compile Include="Zones\NpcSystem\Flocks\FlockConfigurationRepository.cs" />
     <Compile Include="Zones\NpcSystem\Flocks\IFlockConfiguration.cs" />
     <Compile Include="Zones\NpcSystem\Flocks\IFlockConfigurationRepository.cs" />
+    <Compile Include="Zones\NpcSystem\Flocks\RemoteSpawningFlock.cs" />
     <Compile Include="Zones\NpcSystem\NpcBossInfo.cs" />
+    <Compile Include="Zones\NpcSystem\Reinforcements\INpcReinforcementWave.cs" />
+    <Compile Include="Zones\NpcSystem\Reinforcements\INpcReinforcementsRepository.cs" />
+    <Compile Include="Zones\NpcSystem\Reinforcements\INpcReinforcements.cs" />
+    <Compile Include="Zones\NpcSystem\Reinforcements\NpcReinforcementWave.cs" />
+    <Compile Include="Zones\NpcSystem\Reinforcements\NpcReinforcementsRepository.cs" />
+    <Compile Include="Zones\NpcSystem\Reinforcements\NpcReinforcements.cs" />
+    <Compile Include="Zones\NpcSystem\Presences\InterzonePresences\IInterzonePresenceConfigurationReader.cs" />
+    <Compile Include="Zones\NpcSystem\Presences\InterzonePresences\InterzoneGroup.cs" />
+    <Compile Include="Zones\NpcSystem\Presences\InterzonePresences\InterzonePresence.cs" />
+    <Compile Include="Zones\NpcSystem\Presences\InterzonePresences\InterzonePresenceConfigReader.cs" />
+    <Compile Include="Zones\NpcSystem\Presences\InterzonePresences\InterzonePresenceManager.cs" />
+    <Compile Include="Zones\NpcSystem\Presences\IPresenceConfiguration.cs" />
     <Compile Include="Zones\NpcSystem\Presences\IPresenceConfigurationReader.cs" />
     <Compile Include="Zones\NpcSystem\Presences\IPresenceManager.cs" />
     <Compile Include="Zones\NpcSystem\Presences\IRandomFlockReader.cs" />
     <Compile Include="Zones\NpcSystem\Presences\IRandomFlockSelector.cs" />
+    <Compile Include="Zones\NpcSystem\Presences\PathFinders\RoamingStates.cs" />
     <Compile Include="Zones\NpcSystem\Presences\PresenceConfigurationReader.cs" />
     <Compile Include="Zones\NpcSystem\Presences\PresenceManager.cs" />
     <Compile Include="Zones\NpcSystem\Presences\RandomFlockInfo.cs" />
     <Compile Include="Zones\NpcSystem\Presences\RandomFlockReader.cs" />
     <Compile Include="Zones\NpcSystem\Presences\RandomFlockSelector.cs" />
+    <Compile Include="Zones\NpcSystem\Reinforcements\ReinforcementType.cs" />
     <Compile Include="Zones\ProximityProbes\PBSRegisterHelper.cs" />
     <Compile Include="Zones\ProximityProbes\VisibilityBasedProximityProbe.cs" />
     <Compile Include="Accounting\Characters\CharacterCleaner.cs" />
@@ -793,6 +816,7 @@
     <Compile Include="Modules\Terraforming\WallBuilderModule.cs" />
     <Compile Include="Modules\Weapons\Damage.cs" />
     <Compile Include="Modules\Weapons\DamageType.cs" />
+    <Compile Include="Modules\Weapons\FirearmWeaponModule.cs" />
     <Compile Include="Modules\Weapons\MissileWeaponModule.cs" />
     <Compile Include="Modules\Weapons\WeaponAmmo.cs" />
     <Compile Include="Modules\Weapons\WeaponModule.cs" />
@@ -878,6 +902,9 @@
     <Compile Include="Zones\Environments\IEnvironmentHandler.cs" />
     <Compile Include="Zones\Environments\ZoneEnvironmentHandler.cs" />
     <Compile Include="Zones\StrongHoldZone.cs" />
+    <Compile Include="Zones\Teleporting\MobileStrongholdTeleport.cs" />
+    <Compile Include="Zones\Teleporting\MobileTeleportToZoneMap.cs" />
+    <Compile Include="Zones\Teleporting\StrongholdTeleportTargetHelper.cs" />
     <Compile Include="Zones\Teleporting\TeleportDescriptionBuilder.cs" />
     <Compile Include="Zones\Teleporting\TeleportWorldTargetHelper.cs" />
     <Compile Include="Zones\Terrains\Materials\MaterialHelper.cs" />
@@ -1137,11 +1164,14 @@
     <Compile Include="Zones\ZoneEntityRepositories\ZoneUnitService.cs" />
     <Compile Include="Zones\ZoneExitType.cs" />
     <Compile Include="Zones\ZoneManager.cs" />
+    <Compile Include="Zones\SessionlessPlayerTimeout.cs" />
     <Compile Include="Zones\ZoneSession.cs" />
     <Compile Include="Zones\ZoneSessionExtensions.cs" />
     <Compile Include="Zones\ZoneStorage.cs" />
     <Compile Include="Zones\ZoneTicket.cs" />
     <Compile Include="Zones\ZoneType.cs" />
+    <Compile Include="Comparers\EntityComparer.cs" />
+    <Compile Include="EntityFramework\IEntity.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -1184,6 +1214,7 @@
     <Folder Include="Properties\" />
     <Folder Include="Services\ProductionEngine\Methods\" />
     <Folder Include="Services\Relay\RequestHandlers\" />
+    <Folder Include="Comparers\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

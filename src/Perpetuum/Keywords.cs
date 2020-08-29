@@ -258,6 +258,9 @@ namespace Perpetuum
         public const string damageThermal = "damageThermal";
         public const string damage_thermal = "damage_thermal";
 
+        public const string damageToxic = "damageToxic";
+        public const string damage_toxic = "damage_toxic";
+
         public const string damageDone = "damageDone";
         public const string damageScale = "damageScale";
         public const string damageTaken = "damageTaken";
@@ -1072,6 +1075,8 @@ namespace Perpetuum
         public const string threshold = "threshold";
         public const string tickets = "tickets";
         public const string tier = "tier";
+        public const string tierType = "tiertype";
+        public const string tierLevel = "tierlevel";
         public const string time = "time";
         public const string timeEfficiency = "timeEfficiency";
         public const string timeExtensionPoints = "timeExtensionPoints";

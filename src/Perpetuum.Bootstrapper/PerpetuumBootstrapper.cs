@@ -76,6 +76,7 @@ using Perpetuum.RequestHandlers.Zone.NpcSafeSpawnPoints;
 using Perpetuum.RequestHandlers.Zone.PBS;
 using Perpetuum.RequestHandlers.Zone.StatsMapDrawing;
 using Perpetuum.Robots;
+using Perpetuum.Services;
 using Perpetuum.Services.Channels;
 using Perpetuum.Services.EventServices;
 using Perpetuum.Services.EventServices.EventProcessors;
@@ -101,6 +102,7 @@ using Perpetuum.Services.ProductionEngine.ResearchKits;
 using Perpetuum.Services.Relay;
 using Perpetuum.Services.Relics;
 using Perpetuum.Services.RiftSystem;
+using Perpetuum.Services.RiftSystem.StrongholdRifts;
 using Perpetuum.Services.Sessions;
 using Perpetuum.Services.Social;
 using Perpetuum.Services.Sparks;
@@ -125,7 +127,9 @@ using Perpetuum.Zones.Gates;
 using Perpetuum.Zones.Intrusion;
 using Perpetuum.Zones.NpcSystem;
 using Perpetuum.Zones.NpcSystem.Flocks;
+using Perpetuum.Zones.NpcSystem.Reinforcements;
 using Perpetuum.Zones.NpcSystem.Presences;
+using Perpetuum.Zones.NpcSystem.Presences.InterzonePresences;
 using Perpetuum.Zones.NpcSystem.Presences.PathFinders;
 using Perpetuum.Zones.NpcSystem.SafeSpawnPoints;
 using Perpetuum.Zones.PBS;
@@ -310,7 +314,6 @@ namespace Perpetuum.Bootstrapper
             MissionTarget.RobotTemplateRelations = _container.Resolve<IRobotTemplateRelations>();
             MissionTarget.MissionTargetInProgressFactory = _container.Resolve<MissionTargetInProgress.Factory>();
 
-
             MissionTargetRewardCalculator.Init(_container.Resolve<MissionDataCache>());
             MissionTargetSuccessInfoGenerator.Init(_container.Resolve<MissionDataCache>());
             MissionBonus.Init(_container.Resolve<MissionDataCache>());
@@ -445,6 +448,7 @@ namespace Perpetuum.Bootstrapper
             RegisterAutoActivate<SessionCountWriter>(TimeSpan.FromMinutes(5));
             RegisterAutoActivate<VolunteerCEOProcessor>(TimeSpan.FromMinutes(10));
             RegisterAutoActivate<GiveExtensionPointsService>(TimeSpan.FromMinutes(10));
+            RegisterAutoActivate<ArtifactRefresher>(TimeSpan.FromHours(7));
         }
 
         private void RegisterCommands()
@@ -855,7 +859,7 @@ namespace Perpetuum.Bootstrapper
             RegisterEntity<CalibrationProgram>();
             RegisterEntity<DynamicCalibrationProgram>();
             RegisterEntity<RandomCalibrationProgram>();
-            RegisterEntity<CalibrationProgramCapsule>();//TODO new CT Capsule!
+            RegisterEntity<CalibrationProgramCapsule>(); // OPP: new CT Capsule item
 
             RegisterProductionFacility<Mill>();
             RegisterProductionFacility<Prototyper>();
@@ -923,6 +927,7 @@ namespace Perpetuum.Bootstrapper
             RegisterModule<HarvesterModule>();
             RegisterModule<Module>();
             RegisterModule<WeaponModule>();
+            RegisterModule<FirearmWeaponModule>(); // OPP: new subclass for firearms
             RegisterModule<MissileWeaponModule>();
             RegisterModule<ArmorRepairModule>();
             RegisterModule<RemoteArmorRepairModule>();
@@ -944,7 +949,7 @@ namespace Perpetuum.Bootstrapper
             RegisterEffectModule<SensorDampenerModule>();
             RegisterEffectModule<RemoteSensorBoosterModule>();
             RegisterEffectModule<TargetPainterModule>();
-            RegisterEffectModule<TargetBlinderModule>(); //TODO new module
+            RegisterEffectModule<TargetBlinderModule>(); //OPP: NPC-only module for detection debuff
             RegisterEffectModule<SensorBoosterModule>();
             RegisterEffectModule<ArmorHardenerModule>();
             RegisterEffectModule<StealthModule>();
@@ -963,6 +968,7 @@ namespace Perpetuum.Bootstrapper
             RegisterUnit<SimpleSwitch>();
             RegisterUnit<ItemSupply>();
             RegisterUnit<MobileWorldTeleport>();
+            RegisterUnit<MobileStrongholdTeleport>(); // OPP: New mobile tele for entry to Strongholds
             RegisterUnit<AreaBomb>();
             RegisterUnit<PBSEgg>();
             RegisterPBSObject<PBSReactor>();
@@ -989,6 +995,7 @@ namespace Perpetuum.Bootstrapper
             RegisterUnit<TrainingKillSwitch>();
             RegisterUnit<Gate>();
             RegisterUnit<RandomRiftPortal>();
+            RegisterUnit<StrongholdExitRift>(); // OPP: Special rift for exiting strongholds
 
             RegisterEntity<Item>();
             RegisterEntity<Item>();
@@ -1009,7 +1016,7 @@ namespace Perpetuum.Bootstrapper
             RegisterEntity<CreditActivator>();
             RegisterEntity<SparkActivator>();
             RegisterEntity<Gift>();
-            RegisterEntity<Paint>();//TODO register new entitydef
+            RegisterEntity<Paint>(); // OPP: Robot paint item
             RegisterEntity<EPBoost>();
             RegisterEntity<Relic>();
             RegisterEntity<SAPRelic>();
@@ -1040,7 +1047,8 @@ namespace Perpetuum.Bootstrapper
                     ByDefinition<T>(ed.Definition, parameters);
                 }
 
-                //TODO: new for paint
+                //TODO: bit of a hack for using the same category for many items grouped by definitionname prefixes
+                //TODO: make separate category for new item groups!
                 void ByNamePatternAndFlag<T>(string substr, CategoryFlags cf, params Parameter[] parameters) where T : Entity
                 {
                     //TODO: this might be expensive -- string matching all defaults
@@ -1141,9 +1149,9 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<WeaponModule>(CategoryFlags.cf_small_railguns,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_small_railgun_ammo));
                 ByCategoryFlags<WeaponModule>(CategoryFlags.cf_medium_railguns,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_medium_railgun_ammo));
                 ByCategoryFlags<WeaponModule>(CategoryFlags.cf_large_railguns,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_large_railgun_ammo));
-                ByCategoryFlags<WeaponModule>(CategoryFlags.cf_small_single_projectile,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_small_projectile_ammo));
-                ByCategoryFlags<WeaponModule>(CategoryFlags.cf_medium_single_projectile,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_medium_projectile_ammo));
-                ByCategoryFlags<WeaponModule>(CategoryFlags.cf_large_single_projectile,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_large_projectile_ammo));
+                ByCategoryFlags<FirearmWeaponModule>(CategoryFlags.cf_small_single_projectile,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_small_projectile_ammo));
+                ByCategoryFlags<FirearmWeaponModule>(CategoryFlags.cf_medium_single_projectile,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_medium_projectile_ammo));
+                ByCategoryFlags<FirearmWeaponModule>(CategoryFlags.cf_large_single_projectile,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_large_projectile_ammo));
                 ByCategoryFlags<MissileWeaponModule>(CategoryFlags.cf_small_missile_launchers,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_small_missile_ammo));
                 ByCategoryFlags<MissileWeaponModule>(CategoryFlags.cf_medium_missile_launchers,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_medium_missile_ammo));
                 ByCategoryFlags<MissileWeaponModule>(CategoryFlags.cf_large_missile_launchers,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_large_missile_ammo));
@@ -1213,6 +1221,7 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<SimpleSwitch>(CategoryFlags.cf_simple_switch);
                 ByCategoryFlags<ItemSupply>(CategoryFlags.cf_item_supply);
                 ByCategoryFlags<MobileWorldTeleport>(CategoryFlags.cf_mobile_world_teleport);
+                ByNamePatternAndFlag<MobileStrongholdTeleport>("def_mobile_teleport_stronghold", CategoryFlags.cf_mobile_world_teleport); // OPP: stronghold tele
                 ByCategoryFlags<Item>(CategoryFlags.cf_mission_coin);
                 ByCategoryFlags<AreaBomb>(CategoryFlags.cf_area_bomb);
                 ByCategoryFlags<AreaBombDeployer>(CategoryFlags.cf_plasma_bomb);
@@ -1221,7 +1230,8 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<LotteryItem>(CategoryFlags.cf_lottery_items);
 
                 //TODO ORDER MATTERS!  Register Paints AFTER lottery will ensure Paint objects are valid subset of lottery category
-                //TODO entitydefaults must contain name "def_paint" and have cf_lottery_items 
+                //TODO entitydefaults must contain name "def_paint" and have cf_lottery_items
+                //TODO make separate category
                 ByNamePatternAndFlag<Paint>("def_paint", CategoryFlags.cf_lottery_items);
 
                 //TODO new CalibrationTemplateItem -- activates like paint! same category!
@@ -1296,6 +1306,7 @@ namespace Perpetuum.Bootstrapper
                 ByName<RandomRiftPortal>(DefinitionNames.RANDOM_RIFT_PORTAL);
                 ByName<ItemShop>(DefinitionNames.BASE_ITEM_SHOP);
                 ByName<Gift>(DefinitionNames.ANNIVERSARY_PACKAGE);
+                ByName<StrongholdExitRift>(DefinitionNames.STRONGHOLD_EXIT_RIFT);
 
                 var c = b.Build();
 
@@ -1420,6 +1431,8 @@ namespace Perpetuum.Bootstrapper
 
         public void RegisterNpcs()
         {
+            _builder.RegisterType<NpcReinforcementsRepository>().SingleInstance().As<INpcReinforcementsRepository>();
+
             _builder.RegisterType<FlockConfiguration>().As<IFlockConfiguration>();
             _builder.RegisterType<FlockConfigurationBuilder>();
             _builder.RegisterType<IntIDGenerator>().Named<IIDGenerator<int>>("directFlockIDGenerator").SingleInstance().WithParameter("startID",25000);
@@ -1439,6 +1452,8 @@ namespace Perpetuum.Bootstrapper
 
             _builder.RegisterType<NpcSafeSpawnPointsRepository>().As<ISafeSpawnPointsRepository>();
             _builder.RegisterType<PresenceConfigurationReader>().As<IPresenceConfigurationReader>();
+            _builder.RegisterType<InterzonePresenceConfigReader>().As<IInterzonePresenceConfigurationReader>();
+            _builder.RegisterType<InterzoneGroup>().As<IInterzoneGroup>();
             _builder.RegisterType<PresenceManager>().OnActivated(e =>
             {
                 var pm = e.Context.Resolve<IProcessManager>();
@@ -1465,7 +1480,7 @@ namespace Perpetuum.Bootstrapper
 
                 return ((configuration, presence) =>
                 {
-                    return ctx.ResolveKeyed<Flock>(presence.Configuration.presenceType, TypedParameter.From(configuration), TypedParameter.From(presence));
+                    return ctx.ResolveKeyed<Flock>(presence.Configuration.PresenceType, TypedParameter.From(configuration), TypedParameter.From(presence));
                 });
             });
 
@@ -1473,9 +1488,12 @@ namespace Perpetuum.Bootstrapper
             RegisterFlock<Flock>(PresenceType.Direct);
             RegisterFlock<NormalFlock>(PresenceType.DynamicPool);
             RegisterFlock<NormalFlock>(PresenceType.Dynamic);
+            RegisterFlock<RemoteSpawningFlock>(PresenceType.DynamicExtended);
             RegisterFlock<Flock>(PresenceType.Random);
             RegisterFlock<Flock>(PresenceType.Roaming);
             RegisterFlock<NormalFlock>(PresenceType.FreeRoaming);
+            RegisterFlock<NormalFlock>(PresenceType.Interzone);
+            RegisterFlock<NormalFlock>(PresenceType.InterzoneRoaming);
 
             RegisterPresence<Presence>(PresenceType.Normal);
             RegisterPresence<DirectPresence>(PresenceType.Direct).OnActivated(e =>
@@ -1484,23 +1502,26 @@ namespace Perpetuum.Bootstrapper
             });
             RegisterPresence<DynamicPoolPresence>(PresenceType.DynamicPool);
             RegisterPresence<DynamicPresence>(PresenceType.Dynamic);
+            RegisterPresence<DynamicPresenceExtended>(PresenceType.DynamicExtended);
             RegisterPresence<RandomPresence>(PresenceType.Random);
             RegisterPresence<RoamingPresence>(PresenceType.Roaming);
             RegisterPresence<RoamingPresence>(PresenceType.FreeRoaming);
+            RegisterPresence<InterzonePresence>(PresenceType.Interzone);
+            RegisterPresence<InterzoneRoamingPresence>(PresenceType.InterzoneRoaming);
 
             _builder.Register<PresenceFactory>(x =>
             {
                 var ctx = x.Resolve<IComponentContext>();
                 return ((zone, configuration) =>
                 {
-                    if (!ctx.IsRegisteredWithKey<Presence>(configuration.presenceType))
+                    if (!ctx.IsRegisteredWithKey<Presence>(configuration.PresenceType))
                         return null;
 
-                    var p = ctx.ResolveKeyed<Presence>(configuration.presenceType,TypedParameter.From(zone),TypedParameter.From(configuration));
+                    var p = ctx.ResolveKeyed<Presence>(configuration.PresenceType,TypedParameter.From(zone),TypedParameter.From(configuration));
 
-                    if (p is RoamingPresence roamingPresence)
+                    if (p is IRoamingPresence roamingPresence)
                     {
-                        switch (p.Configuration.presenceType)
+                        switch (p.Configuration.PresenceType)
                         {
                             case PresenceType.Roaming:
                             {
@@ -1508,6 +1529,11 @@ namespace Perpetuum.Bootstrapper
                                 break;
                             }
                             case PresenceType.FreeRoaming:
+                            {
+                                roamingPresence.PathFinder = new FreeRoamingPathFinder(zone);
+                                break;
+                            }
+                            case PresenceType.InterzoneRoaming:
                             {
                                 roamingPresence.PathFinder = new FreeRoamingPathFinder(zone);
                                 break;
@@ -1652,23 +1678,26 @@ namespace Perpetuum.Bootstrapper
 
             _builder.RegisterType<GoodiePackHandler>();
 
-            //TODO new EPBonusEventService 
+            // OPP: EPBonusEventService singleton
             _builder.RegisterType<EPBonusEventService>().SingleInstance().OnActivated(e =>
             {
                 e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromMinutes(1)));
             });
 
-            //TODO new EventListenerService 
+            // OPP: EventListenerService and consumers
             _builder.RegisterType<ChatEcho>();
             _builder.RegisterType<NpcChatEcho>();
             _builder.RegisterType<AffectOutpostStability>();
+            _builder.RegisterType<OreNpcSpawner>();
             _builder.RegisterType<EventListenerService>().SingleInstance().OnActivated(e =>
             {
-                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(2.5)));
+                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(0.75)));
                 e.Instance.AttachListener(e.Context.Resolve<ChatEcho>());
                 e.Instance.AttachListener(e.Context.Resolve<NpcChatEcho>());
             });
-            
+
+            // OPP: InterzoneNPCManager
+            RegisterAutoActivate<InterzonePresenceManager>(TimeSpan.FromSeconds(10));
 
             _builder.RegisterType<AccountManager>().As<IAccountManager>();
 
@@ -2216,6 +2245,10 @@ namespace Perpetuum.Bootstrapper
                 var ctx = x.Resolve<IComponentContext>();
                 return zone =>
                 {
+                    var reader = ctx.Resolve<IMineralConfigurationReader>();
+                    var listener = new OreNpcSpawner(zone, ctx.Resolve<INpcReinforcementsRepository>(), reader);
+                    var eventListenerService = ctx.Resolve<EventListenerService>();
+                    eventListenerService.AttachListener(listener);
                     if (zone is TrainingZone)
                     {
                         var repo = ctx.Resolve<GravelRepository>();
@@ -2226,25 +2259,24 @@ namespace Perpetuum.Bootstrapper
                     }
 
                     var nodeGeneratorFactory = new MineralNodeGeneratorFactory(zone);
-                    var reader = ctx.Resolve<IMineralConfigurationReader>();
+                    
                     var materialLayers = new List<IMaterialLayer>();
 
                     foreach (var configuration in reader.ReadAll().Where(c => c.ZoneId == zone.Id))
                     {
                         var repo = new MineralNodeRepository(zone, configuration.Type);
-
                         switch (configuration.ExtractionType)
                         {
                             case MineralExtractionType.Solid:
                             {
-                                var layer = new OreLayer(zone.Size.Width, zone.Size.Height, configuration, repo, nodeGeneratorFactory);
+                                var layer = new OreLayer(zone.Size.Width, zone.Size.Height, configuration, repo, nodeGeneratorFactory, eventListenerService);
                                 layer.LoadMineralNodes();
                                 materialLayers.Add(layer);
                                 break;
                             }
                             case MineralExtractionType.Liquid:
                             {
-                                var layer = new LiquidLayer(zone.Size.Width, zone.Size.Height, configuration, repo, nodeGeneratorFactory);
+                                var layer = new LiquidLayer(zone.Size.Width, zone.Size.Height, configuration, repo, nodeGeneratorFactory, eventListenerService);
                                 layer.LoadMineralNodes();
                                 materialLayers.Add(layer);
                                 break;
@@ -2360,14 +2392,20 @@ namespace Perpetuum.Bootstrapper
             });
 
             _builder.RegisterType<RiftManager>();
+            _builder.RegisterType<StrongholdRiftManager>();
 
-            _builder.Register<Func<IZone, RiftManager>>(x =>
+            _builder.Register<Func<IZone, IRiftManager>>(x =>
             {
                 var ctx = x.Resolve<IComponentContext>();
                 return zone =>
                 {
                     if (zone is TrainingZone)
                         return null;
+
+                    if (zone is StrongHoldZone)
+                    {
+                       return ctx.Resolve<StrongholdRiftManager>(new TypedParameter(typeof(IZone), zone));
+                    }
 
                     var spawnTime = TimeRange.FromLength(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
                     var finder = ctx.Resolve<Func<IZone, RiftSpawnPositionFinder>>().Invoke(zone);
@@ -2481,7 +2519,7 @@ namespace Perpetuum.Bootstrapper
                     zone.PlantHandler = ctx.Resolve<PlantHandler.Factory>().Invoke(zone);
                     zone.CorporationHandler = ctx.Resolve<CorporationHandler.Factory>().Invoke(zone);
                     zone.MiningLogHandler = ctx.Resolve<MiningLogHandler.Factory>().Invoke(zone);
-                    zone.RiftManager = ctx.Resolve<Func<IZone, RiftManager>>().Invoke(zone);
+                    zone.RiftManager = ctx.Resolve<Func<IZone, IRiftManager>>().Invoke(zone);
                     zone.ChatLogger = ctx.Resolve<ChatLoggerFactory>().Invoke("zone", zone.Configuration.Name);
                     zone.EnterQueueService = ctx.Resolve<ZoneEnterQueueService.Factory>().Invoke(zone);
                     zone.Terrain = ctx.Resolve<TerrainFactory>().Invoke(zone);
@@ -2519,7 +2557,6 @@ namespace Perpetuum.Bootstrapper
 
                     e.Instance.Zones.Add(zone);
                 };
-
             }).SingleInstance();
 
             _builder.RegisterType<TagHelper>();
@@ -2540,6 +2577,8 @@ namespace Perpetuum.Bootstrapper
 
             _builder.RegisterType<TeleportDescriptionBuilder>();
             _builder.RegisterType<TeleportWorldTargetHelper>();
+            _builder.RegisterType<MobileTeleportZoneMapCache>().As<IMobileTeleportToZoneMap>().SingleInstance();
+            _builder.RegisterType<StrongholdTeleportTargetHelper>();
             _builder.RegisterType<TeleportToAnotherZone>();
             _builder.RegisterType<TeleportWithinZone>();
             _builder.RegisterType<TrainingExitStrategy>();

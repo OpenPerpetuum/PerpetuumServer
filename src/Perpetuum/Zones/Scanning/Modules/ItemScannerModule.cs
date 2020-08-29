@@ -16,6 +16,21 @@ namespace Perpetuum.Zones.Scanning.Modules
             
         }
 
+        protected override void HandleOffensivePVPCheck(Player parentPlayer, UnitLock unitLockTarget)
+        {
+            if (unitLockTarget.Target is Player targetPlayer)
+            {
+                if (targetPlayer != null && targetPlayer.HasPvpEffect || !targetPlayer.Zone.Configuration.Protected)
+                {
+                    return;
+                }
+                if (parentPlayer != null)
+                {
+                    parentPlayer.CheckPvp().ThrowIfError();
+                }
+            }
+        }
+
         protected override void OnAction()
         {
             var unitLock = GetLock().ThrowIfNotType<UnitLock>(ErrorCodes.InvalidLockType);

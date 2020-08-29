@@ -55,13 +55,14 @@ namespace Perpetuum.Zones
 
             if (targetUnit.HitSize > 0)
             {
-                len = (float)CylinderIntersection(source,direction,targetUnit.CurrentPosition.ToVector3(),target,targetUnit.HitSize);
+                var hitsize = (targetUnit.HitSize * 0.5).Clamp(1, 10);
+                len = (float)CylinderIntersection(source, direction, targetUnit.CurrentPosition.ToVector3(), target, hitsize);
             }
 
-            return IsInLineOfSight(zone,source,direction,len,ballistic);
+            return IsInLineOfSight(zone, source, direction, len, ballistic);
         }
 
-        private static double CylinderIntersection(Vector3 start,Vector3 dir,Vector3 cylinderStart,Vector3 cylinderEnd,double radius)
+        private static double CylinderIntersection(Vector3 start, Vector3 dir, Vector3 cylinderStart, Vector3 cylinderEnd, double radius)
         {
             var ab = cylinderEnd - cylinderStart;
             var ao = start - cylinderStart;
@@ -97,8 +98,20 @@ namespace Perpetuum.Zones
         }
 
         [NotNull]
-        private static LOSResult IsInLineOfSight(IZone zone,Vector3 origin,Vector3 direction,float distance,bool ballistic)
+        private static LOSResult IsInLineOfSight(IZone zone, Vector3 origin, Vector3 direction, float distance, bool ballistic)
         {
+            if (distance.IsApproximatelyEqual(0.0f))
+            {
+                var blockingInfo = zone.Terrain.Blocks.GetValue(origin);
+                var losResult = new LOSResult
+                {
+                    hit = true,
+                    position = (Position)origin,
+                    blockingFlags = blockingInfo.Flags
+                };
+                return losResult;
+            }
+
             var lastAltitude = zone.Terrain.Altitude.GetAltitudeAsDouble(origin) + 2;
 
             var lx = (int) origin.X;

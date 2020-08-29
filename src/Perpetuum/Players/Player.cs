@@ -315,6 +315,7 @@ namespace Perpetuum.Players
 
         public void ApplyInvulnerableEffect()
         {
+            RemoveInvulnerableEffect(); // Remove existing effect, set new
             var builder = NewEffectBuilder().SetType(EffectType.effect_invulnerable);
             builder.WithDurationModifier(0.75); //Reduce span of syndicate protection
             ApplyEffect(builder);
@@ -712,6 +713,15 @@ namespace Perpetuum.Players
             return modifier;
         }
 
+        private bool IsUnitPVPAggro(Unit unit)
+        {
+            return unit is MobileTeleport
+                || unit is IPBSObject
+                || unit is WallHealer
+                || unit is ProximityProbeBase
+                || (unit is BlobEmitterUnit b && b.IsPlayerSpawned);
+        }
+
         public override void OnAggression(Unit victim)
         {
             base.OnAggression(victim);
@@ -719,9 +729,9 @@ namespace Perpetuum.Players
             AddInCombatWith(victim);
 
             if (victim is ITaggable taggable)
-                taggable.Tag(this,TimeSpan.Zero);
+                taggable.Tag(this, TimeSpan.Zero);
 
-            if ( victim is MobileTeleport || victim is BlobEmitterUnit || victim is IPBSObject || victim is WallHealer || victim is ProximityProbeBase)
+            if (IsUnitPVPAggro(victim))
             {
                 ApplyPvPEffect();
                 return;
@@ -739,23 +749,6 @@ namespace Perpetuum.Players
 
             if (HasPvpEffect && victimPlayer.HasPvpEffect)
                 return;
-
-            var zone = Zone;
-            if (zone == null)
-                return;
-
-            if (zone.Configuration.Protected)
-            {
-                // PROTECTED ISLANDS 
-                if (!victimPlayer.HasPvpEffect && !victimPlayer.HasAggressorEffect)
-                    ApplyAggressorEffect();
-            }
-            else
-            {
-                //PVP ISLANDS
-                if (victimPlayer.States.BigBrother && !victimPlayer.HasPvpEffect)
-                    ApplyAggressorEffect();
-            }
         }
 
         public void OnPvpSupport(Unit target)

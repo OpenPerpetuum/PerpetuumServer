@@ -34,7 +34,6 @@ namespace Perpetuum.Zones.Intrusion
         private const int PRODUCTION_BONUS_THRESHOLD = 100;
 
         private TimeRange _intrusionWaitTime => IntrusionWaitTime;
-        private TimeSpan _timeSinceLastSAP = TimeSpan.Zero;
         private readonly IEntityServices _entityServices;
         private readonly ICorporationManager _corporationManager;
         private readonly ILootService _lootService;
@@ -331,7 +330,7 @@ namespace Perpetuum.Zones.Intrusion
 
         private void OnSAPTakeOver(SAP sap)
         {
-            _decay.OnSAP();
+            
             Task.Run(() => HandleTakeOver(sap)).ContinueWith(t => IntrusionInProgress = false);
         }
 
@@ -348,7 +347,7 @@ namespace Perpetuum.Zones.Intrusion
                 {
                     var gen = new LootGenerator(_lootService.GetIntrusionLootInfos(this, sap));
                     LootContainer.Create().AddLoot(gen).BuildAndAddToZone(Zone, sap.CurrentPosition);
-                    processStabilityChange(sap.toStabilityAffectingEvent());
+                    ProcessStabilityChange(sap.ToStabilityAffectingEvent());
                     scope.Complete();
                 }
                 catch (Exception ex)
@@ -371,7 +370,7 @@ namespace Perpetuum.Zones.Intrusion
             {
                 try
                 {
-                    processStabilityChange(sap);
+                    ProcessStabilityChange(sap);
                     scope.Complete();
                 }
                 catch (Exception ex)
@@ -386,7 +385,7 @@ namespace Perpetuum.Zones.Intrusion
         /// <summary>
         /// Core SAP logic
         /// </summary>
-        private void processStabilityChange(StabilityAffectingEvent sap)
+        private void ProcessStabilityChange(StabilityAffectingEvent sap)
         {
             // Check for invalid player-SAPS
             var winnerCorporation = sap.GetWinnerCorporation();
@@ -402,6 +401,12 @@ namespace Perpetuum.Zones.Intrusion
             var newStability = siteInfo.Stability;
             var newOwner = siteInfo.Owner;
             var oldOwner = siteInfo.Owner;
+
+            // Reset Decay timer on any StabilityAffectingEvent completed by the owner
+            if (winnerCorporation.Eid == siteInfo.Owner)
+            {
+                _decay.ResetDecayTimer();
+            }
 
             var logEvent = new IntrusionLogEvent
             {
@@ -454,6 +459,7 @@ namespace Perpetuum.Zones.Intrusion
                     logEvent.EventType = IntrusionEvents.siteOwnershipGain;
                     newOwner = winnerCorporation.Eid;
                     newStability = STARTING_STABILITY;
+                    _decay.ResetDecayTimer();
                 }
                 else
                 {
@@ -478,7 +484,7 @@ namespace Perpetuum.Zones.Intrusion
             InsertIntrusionLog(logEvent);
 
             //Award EP
-            foreach (var player in sap.GetPlayers())
+            foreach (var player in sap.Participants)
             {
                 player.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Intrusion, EP_WINNER);
             }
