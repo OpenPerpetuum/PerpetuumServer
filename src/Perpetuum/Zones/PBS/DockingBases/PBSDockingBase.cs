@@ -101,7 +101,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
             get
             {
                 //no reinforce
-                if (_pbsReinforceHandler.CurrentState.IsReinforced)
+                if (_pbsReinforceHandler.CurrentState.IsReinforced) 
                     return ErrorCodes.TargetIsNonAttackable_Reinforced;
 
                 //no connections
@@ -126,7 +126,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
         public PBSDockingBaseVisibility DockingBaseMapVisibility
         {
             get { return _pbsTerritorialVisibilityHelper.DockingBaseMapVisibility(); }
-            set { _pbsTerritorialVisibilityHelper.SetDockingBaseVisibleOnMap(value); }
+            set { _pbsTerritorialVisibilityHelper.SetDockingBaseVisibleOnMap(value); } 
         }
 
 
@@ -152,6 +152,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
             base.OnLoadFromDb();
 
             _pbsObjectHelper.Init();
+
             _pbsTerritorialVisibilityHelper.Init();
         }
 
@@ -322,7 +323,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
 
             var nodes = _pbsObjectHelper.ConnectionHandler.NetworkNodes
                                          .Cast<Unit>()
-                                         .ToDictionary("n", unit =>
+                                         .ToDictionary("n", unit => 
                                           new Dictionary<string, object>
                                           {
                                             {k.x, unit.CurrentPosition.intX},
