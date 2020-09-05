@@ -190,18 +190,21 @@ namespace Perpetuum.RequestHandlers.Zone
 
                 foreach (var rampSample in dict.Values)
                 {
-                    zone.Terrain.Altitude.SetValue(rampSample.position.intX, rampSample.position.intY, origAlt =>
+                    var mix = rampSample.mix / rampSample.samples;
+                    var avgAlt = (ushort)(rampSample.altitude / rampSample.samples);
+
+                    var origAlt = zone.Terrain.Altitude.GetAltitude(rampSample.position.intX, rampSample.position.intY);
+
+                    var altVal = Math.Round(MixValues(avgAlt, origAlt, mix));
+                    var fullBlended = (ushort)MixValues(origAlt, altVal, fullBlend);
+
+                    var rampAltShort = fullBlended;
+                    if (setIfMax)
                     {
-                        var altVal = Math.Round(MixValues(avgAlt, origAlt, mix));
-                        var fullBlended = (ushort)MixValues(origAlt, altVal, fullBlend);
+                        rampAltShort =  origAlt < fullBlended ? fullBlended : origAlt;
+                    }
 
-                        if (setIfMax)
-                        {
-                            return origAlt < fullBlended ? fullBlended : origAlt;
-                        }
-
-                        return fullBlended;
-                    });
+                    zone.Terrain.Altitude.SetValue(rampSample.position.intX, rampSample.position.intY, rampAltShort);
                 }
             }
         }
