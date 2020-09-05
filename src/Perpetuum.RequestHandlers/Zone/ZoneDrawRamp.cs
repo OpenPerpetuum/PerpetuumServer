@@ -187,10 +187,10 @@ namespace Perpetuum.RequestHandlers.Zone
 
             using (var terrainUpdateMonitor = new TerrainUpdateMonitor(zone))
             {
-                double minX = 2048;
-                double minY = 2048;
-                double maxX = 0;
-                double maxY = 0;
+                int minX = 2048;
+                int minY = 2048;
+                int maxX = 0;
+                int maxY = 0;
                 foreach (var rampSample in dict.Values)
                 {
                     var mix = rampSample.mix / rampSample.samples;
