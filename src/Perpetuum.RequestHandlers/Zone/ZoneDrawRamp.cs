@@ -17,17 +17,6 @@ namespace Perpetuum.RequestHandlers.Zone
     {
         public void HandleRequest(IZoneRequest request)
         {
-
-            //var max = request.Data.GetOrDefault<int>(k.max);
-            //var size = request.Data.GetOrDefault<int>(k.size);
-            //var range = request.Data.GetOrDefault<double>(k.range);
-
-            //// calling these the origin, or start location of the ramp.
-            //var posx = request.Data.GetOrDefault<int>("positionx");
-            //var posy = request.Data.GetOrDefault<int>("positiony");
-
-            //var blend = request.Data.GetOrDefault<double>("blend");
-
             var width = request.Data.GetOrDefault(k.size, 5);
             var edge = request.Data.GetOrDefault(k.range, 0.4);
             var useMax = request.Data.GetOrDefault(k.max, 1) == 1;
@@ -93,8 +82,6 @@ namespace Perpetuum.RequestHandlers.Zone
             for (var i = 0; i < totalDistance; i++)
             {
                 var centerPosition = (directionUnit * i) + sourcePosition;
-
-                //BeamHelper.CreateSingleBeam(zone, BeamType.green_5sec, centerPosition, 60000);
 
                 for (var j = 0; j < rampWidth; j++)
                 {
