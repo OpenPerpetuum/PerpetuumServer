@@ -204,7 +204,11 @@ namespace Perpetuum.RequestHandlers.Zone
                     var rampAltShort = fullBlended;
                     if (setIfMax)
                     {
-                        rampAltShort =  origAlt < fullBlended ? fullBlended : origAlt;
+                        rampAltShort = Math.Max(origAlt, fullBlended);
+                    }
+                    if (rampAltShort == 0)
+                    {
+                        rampAltShort = origAlt;
                     }
                     var rx = rampSample.position.intX;
                     var ry = rampSample.position.intY;
