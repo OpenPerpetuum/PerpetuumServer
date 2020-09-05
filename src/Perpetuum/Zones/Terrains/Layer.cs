@@ -142,7 +142,7 @@ namespace Perpetuum.Zones.Terrains
             return RawData[y*Width + x];
         }
 
-        public void SetValue(int x, int y,T value)
+        public virtual void SetValue(int x, int y,T value)
         {
             Debug.Assert(x >= 0 && x < Width && y >= 0 && y < Height, "invalid position!");
             OnUpdating(x, y,ref value);

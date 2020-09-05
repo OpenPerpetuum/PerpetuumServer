@@ -13,6 +13,13 @@ namespace Perpetuum.Zones.Terrains
         {
         }
 
+        public override void SetValue(int x, int y, ushort value)
+        {
+            OnUpdating(x, y, ref value);
+            RawData[(y * Width) + x] = (ushort)((int)value << 5);
+            OnUpdated(x, y);
+        }
+
         public ushort GetAltitude(int x, int y)
         {
             // 0 ... 2047

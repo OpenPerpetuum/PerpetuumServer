@@ -187,7 +187,10 @@ namespace Perpetuum.RequestHandlers.Zone
 
             using (var terrainUpdateMonitor = new TerrainUpdateMonitor(zone))
             {
-
+                double minX = 2048;
+                double minY = 2048;
+                double maxX = 0;
+                double maxY = 0;
                 foreach (var rampSample in dict.Values)
                 {
                     var mix = rampSample.mix / rampSample.samples;
@@ -203,9 +206,17 @@ namespace Perpetuum.RequestHandlers.Zone
                     {
                         rampAltShort =  origAlt < fullBlended ? fullBlended : origAlt;
                     }
+                    var rx = rampSample.position.intX;
+                    var ry = rampSample.position.intY;
 
-                    zone.Terrain.Altitude.SetValue(rampSample.position.intX, rampSample.position.intY, rampAltShort);
+                    minX = Math.Min(minX, rx);
+                    maxX = Math.Max(maxX, rx);
+                    minY = Math.Min(minY, ry);
+                    maxY = Math.Max(maxY, ry);
+
+                    zone.Terrain.Altitude.SetValue(rx, ry, rampAltShort);
                 }
+                zone.Terrain.Slope.UpdateSlopeByArea(new Area(minX, minY, maxX, maxY));
             }
         }
 
