@@ -13,13 +13,9 @@ namespace Perpetuum.Zones.Terrains
         {
         }
 
-        public override void SetValue(int x, int y, ushort value)
-        {
-            OnUpdating(x, y, ref value);
-            RawData[(y * Width) + x] = (ushort)((int)value << 5);
-            OnUpdated(x, y);
-        }
-
+        // Be careful with this call! It will return an integer height
+        // e.g. the heights 6624 -> 6655 will all return 207
+        // For full granularity use the default Layer<T> GetValue
         public ushort GetAltitude(int x, int y)
         {
             // 0 ... 2047

@@ -55,6 +55,9 @@ namespace Perpetuum.RequestHandlers.Zone
 
         private static void DrawRamp(IZone zone, Position sourcePosition, Position targetPosition, int rampWidth, double edge, double fullBlend, bool setIfMax = false)
         {
+            // The Altitude layer is a ushort, but can be read as a decimal.
+            // The decimal representation can be converted to ushort by dividing by 32
+            // I suggest we work with just one unit and do a conversion
             var work = new List<RampSample>();
 
             sourcePosition = sourcePosition.Center;
@@ -181,21 +184,21 @@ namespace Perpetuum.RequestHandlers.Zone
                 foreach (var rampSample in dict.Values)
                 {
                     var mix = rampSample.mix / rampSample.samples;
-                    var avgAlt = (ushort)(rampSample.altitude / rampSample.samples);
+                    var avgAlt = rampSample.altitude / rampSample.samples;
 
-                    var origAlt = zone.Terrain.Altitude.GetAltitude(rampSample.position.intX, rampSample.position.intY);
+                    var origAlt = zone.Terrain.Altitude.GetAltitudeAsDouble(rampSample.position.intX, rampSample.position.intY);
 
-                    var altVal = Math.Round(MixValues(avgAlt, origAlt, mix));
-                    var fullBlended = (ushort)MixValues(origAlt, altVal, fullBlend);
+                    var altVal = MixValues(avgAlt, origAlt, mix);
+                    var fullBlended = MixValues(origAlt, altVal, fullBlend);
 
-                    var rampAltShort = fullBlended;
+                    var finalAlt = fullBlended;
                     if (setIfMax)
                     {
-                        rampAltShort = Math.Max(origAlt, fullBlended);
+                        finalAlt = Math.Max(origAlt, fullBlended);
                     }
-                    if (rampAltShort == 0)
+                    if (finalAlt == 0)
                     {
-                        rampAltShort = origAlt;
+                        finalAlt = origAlt;
                     }
                     var rx = rampSample.position.intX;
                     var ry = rampSample.position.intY;
@@ -205,7 +208,9 @@ namespace Perpetuum.RequestHandlers.Zone
                     minY = Math.Min(minY, ry);
                     maxY = Math.Max(maxY, ry);
 
-                    zone.Terrain.Altitude.SetValue(rx, ry, rampAltShort);
+                    var shortAlt = System.Convert.ToUInt16(finalAlt * 32);
+
+                    zone.Terrain.Altitude.SetValue(rx, ry, shortAlt);
                 }
                 zone.Terrain.Slope.UpdateSlopeByArea(new Area(minX, minY, maxX, maxY));
             }
