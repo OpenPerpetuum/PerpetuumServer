@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Perpetuum.Builders;
+using Perpetuum.ExportedTypes;
 using Perpetuum.Groups.Corporations;
 using Perpetuum.IO;
 using Perpetuum.Log;
@@ -145,13 +146,15 @@ namespace Perpetuum.Zones
             var error = deltaX - deltaY;
             deltaX *= 2;
             deltaY *= 2;
-
+            
             for (var i = 0; i <= travelDist; i++)
             {
                 if (!zone.IsWalkable(x, y, slope))
                 {
+                    zone.CreateAlignedDebugBeam(BeamType.red_5sec, new Position(x, y));
                     return false;
                 }
+                zone.CreateAlignedDebugBeam(BeamType.blue_5sec, new Position(x, y));
 
                 if (error > 0)
                 {

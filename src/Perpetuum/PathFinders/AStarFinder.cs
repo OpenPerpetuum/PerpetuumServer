@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
 using Perpetuum.Collections;
+using Perpetuum.ExportedTypes;
+using Perpetuum.Zones;
 
 namespace Perpetuum.PathFinders
 {
