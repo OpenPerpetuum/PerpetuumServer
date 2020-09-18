@@ -151,10 +151,8 @@ namespace Perpetuum.Zones
             {
                 if (!zone.IsWalkable(x, y, slope))
                 {
-                    zone.CreateAlignedDebugBeam(BeamType.red_5sec, new Position(x, y));
                     return false;
                 }
-                zone.CreateAlignedDebugBeam(BeamType.blue_5sec, new Position(x, y));
 
                 if (error > 0)
                 {

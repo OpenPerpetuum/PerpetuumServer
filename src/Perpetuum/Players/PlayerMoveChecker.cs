@@ -4,87 +4,85 @@ using Perpetuum.PathFinders;
 using Perpetuum.Zones;
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Perpetuum.Players
 {
-    public class PosPair
-    {
-        public Position Start { private set; get; }
-        public Position End { private set; get; }
-        public PosPair(Position start, Position end)
-        {
-            Start = start;
-            End = end;
-        }
-    }
-
     public class PlayerMoveCheckQueue
     {
-        private Task _task;
-        private CancellationTokenSource _tokenSrc;
+        private readonly Task _task;
+        private readonly CancellationTokenSource _tokenSrc;
         private CancellationToken _ct;
 
-        private Player _player;
-        private Checker checker;
+        private readonly Player _player;
+        private readonly PlayerMoveChecker _moveChecker;
+        private readonly ConcurrentQueue<Position> _movesToReview;
 
-        ConcurrentQueue<PosPair> q;
-        public PlayerMoveCheckQueue(Player player)
+        private Position Prev { get; set; }
+
+        public PlayerMoveCheckQueue(Player player, Position start)
         {
-            Console.WriteLine("NEW PlayerMoveCheckQueue");
+            Prev = start;
             _player = player;
-            checker = new Checker(player);
+            _moveChecker = new PlayerMoveChecker(player);
             _tokenSrc = new CancellationTokenSource();
-            q = new ConcurrentQueue<PosPair>();
+            _movesToReview = new ConcurrentQueue<Position>();
             _ct = _tokenSrc.Token;
-            _task = new Task(() => ThreadLoop(),
+            _task = new Task(() => ProcessQueue(),
                     TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness);
-            _task.ContinueWith((t) => Console.WriteLine("=======Task ended!============"));
+            Start();
         }
 
-        public void Start()
+        private void Start()
         {
-            Console.WriteLine("START PlayerMoveCheckQueue");
-            if(_task.Status == TaskStatus.Created)
+            if (_task.Status == TaskStatus.Created)
                 _task.Start();
         }
 
         public void Stop()
         {
-            Console.WriteLine("STOP PlayerMoveCheckQueue");
             _tokenSrc.Cancel();
         }
 
-        public void EnqueueMove(Position prev, Position target)
+        public void EnqueueMove(Position target)
         {
-            q.Enqueue(new PosPair(prev, target));
+            _movesToReview.Enqueue(target);
         }
 
-        private void ThreadLoop()
+        private bool IsCanceled()
         {
-            while (!_ct.IsCancellationRequested)
+            return _ct.IsCancellationRequested;
+        }
+
+        private void ProcessQueue()
+        {
+            while (!IsCanceled())
             {
                 try
                 {
-                    while (q.IsEmpty)
+                    while (_movesToReview.IsEmpty)
                     {
                         Thread.Sleep(50);
+                        if (IsCanceled())
+                            return;
                     }
-                    while (!q.IsEmpty)
+                    while (!_movesToReview.IsEmpty)
                     {
-                        q.TryDequeue(out PosPair pair);
-                        var moveGood = checker.IsUpdateValid(pair.Start, pair.End);
-                        if (!moveGood)
+                        if(_movesToReview.TryDequeue(out Position pos))
                         {
-                            q.Clear();
-                            _player.CurrentPosition = pair.Start;
-                            _player.SetLastValidPosition(pair.Start);
-                            _player.SendForceUpdate();
-                            break;
+                            if (!_moveChecker.IsUpdateValid(Prev, pos))
+                            {
+                                _movesToReview.Clear();
+                                _player.CurrentPosition = Prev;
+                                _player.SendForceUpdate();
+                                break;
+                            }
+                            Prev = pos;
                         }
-                        _player.SetLastValidPosition(pair.End);
+
+                        if (IsCanceled())
+                            return;
                     }
                 }
                 catch (Exception ex)
@@ -95,80 +93,8 @@ namespace Perpetuum.Players
         }
     }
 
-
-
-
-    public class Checker
-    {
-        private readonly Player _player;
-        private readonly AStarLimited _aStar;
-        private const int MAX_DIST = 10;
-
-        public Checker(Player player)
-        {
-            _player = player;
-            _aStar = new AStarLimited(Heuristic.Manhattan, _player.IsWalkable, MAX_DIST);
-            _aStar.RegisterDebugHandler((node, type) =>
-            {
-                if (type == PathFinderNodeType.Neighbour)
-                {
-                    _player.Zone.CreateAlignedDebugBeam(BeamType.blue_5sec, node.Location.ToPosition());
-                }
-                else if (type == PathFinderNodeType.Current)
-                {
-                    _player.Zone.CreateAlignedDebugBeam(BeamType.orange_5sec, node.Location.ToPosition());
-                }
-                else if (type == PathFinderNodeType.Path)
-                {
-                    _player.Zone.CreateAlignedDebugBeam(BeamType.green_5sec, node.Location.ToPosition());
-                }
-            });
-        }
-
-        public bool IsUpdateValid(Position prev, Position pos)
-        {
-            var dx = Math.Abs(prev.intX - pos.intX);
-            var dy = Math.Abs(prev.intY - pos.intY);
-            if (dx < 2 && dy < 2)
-            {
-                return true;
-            }
-            else if (dx > MAX_DIST || dy > MAX_DIST)
-            {
-                return false;
-            }
-            else if (_player.Zone.CheckLinearPath(prev, pos, _player.Slope))
-            {
-                return true;
-            }
-            else if (_aStar.HasPath(prev.ToPoint(), pos.ToPoint()))
-            {
-                return true;
-            }
-            return false;
-        }
-    }
-
-
-
-
-
-
     public class PlayerMoveChecker
     {
-        private Position _prev;
-        private readonly object _lock = new object();
-        public Position GetPrev()
-        {
-            lock (_lock)
-                return _prev;
-        }
-        public void SetPrev(Position prev)
-        {
-            lock (_lock)
-                _prev = prev;
-        }
-
         private readonly Player _player;
         private readonly AStarLimited _aStar;
         private const int MAX_DIST = 10;
@@ -179,9 +105,8 @@ namespace Perpetuum.Players
             _aStar = new AStarLimited(Heuristic.Manhattan, _player.IsWalkable, MAX_DIST);
         }
 
-        public bool IsUpdateValid(Position pos)
+        public bool IsUpdateValid(Position prev, Position pos)
         {
-            var prev = GetPrev();
             var dx = Math.Abs(prev.intX - pos.intX);
             var dy = Math.Abs(prev.intY - pos.intY);
             if (dx < 2 && dy < 2)

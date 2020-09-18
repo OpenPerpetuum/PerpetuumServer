@@ -96,17 +96,17 @@ namespace Perpetuum.Players
                     // csak akkor kell ha csempevaltas volt
                     if (!_player.IsWalkable((int)nx, (int)ny))
                     {
-                        _player.Zone.CreateAlignedDebugBeam(BeamType.red_10sec, new Position(nx, ny));
+                        //_player.Zone.CreateAlignedDebugBeam(BeamType.red_10sec, new Position(nx, ny));
                         break;
                     }
                 }
 
                 px = nx;
                 py = ny;
-                _player.Zone.CreateAlignedDebugBeam(BeamType.blue_10sec, new Position(px, py));
+                //_player.Zone.CreateAlignedDebugBeam(BeamType.blue_10sec, new Position(px, py));
             }
-            _player.HandleMove(new Position(px, py));
-            _player.Zone.CreateAlignedDebugBeam(BeamType.orange_10sec, new Position(px, py));
+            _player.TryMove(new Position(px, py));
+            //_player.Zone.CreateAlignedDebugBeam(BeamType.orange_10sec, new Position(px, py));
         }
     }
 
@@ -136,11 +136,8 @@ namespace Perpetuum.Players
         private readonly IBlobEmitter _blobEmitter;
         private readonly BlobHandler<Player> _blobHandler;
         private readonly PlayerMovement _movement;
-        private readonly PlayerMoveChecker _moveChecker;
         private readonly IZoneEffectHandler _zoneEffectHandler;
         private CombatLogger _combatLogger;
-
-
         private PlayerMoveCheckQueue _check;
 
         public Player(IExtensionReader extensionReader,
@@ -161,8 +158,6 @@ namespace Perpetuum.Players
             _zoneEffectHandler = zoneEffectHandler;
             Session = ZoneSession.None;
             _movement = new PlayerMovement(this);
-            _moveChecker = new PlayerMoveChecker(this);
-            
 
             _blobEmitter = new BlobEmitter(this);
             _blobHandler = new BlobHandler<Player>(this);
@@ -173,20 +168,12 @@ namespace Perpetuum.Players
         public Character Character { get; set; } = Character.None;
         public bool HasGMStealth { get; set; }
 
-        public Position Prev { get; private set; }
-
-
-        public void SetLastValidPosition(Position pos)
-        {
-            Prev = pos;
-        }
-
-        public bool HandleMove(Position position)
+        public bool TryMove(Position position)
         {
             if (!IsWalkable(position))
                 return false;
 
-            _check.EnqueueMove(Prev, position);
+            _check.EnqueueMove(position);
 
             CurrentPosition = position;
             return true;
@@ -261,9 +248,7 @@ namespace Perpetuum.Players
         protected override void OnEnterZone(IZone zone, ZoneEnterType enterType)
         {
             base.OnEnterZone(zone, enterType); //aa
-            _check = new PlayerMoveCheckQueue(this);
-            SetLastValidPosition(CurrentPosition);
-            _check.Start();
+            _check = new PlayerMoveCheckQueue(this, CurrentPosition);
 
             zone.SendPacketToGang(Gang, new GangUpdatePacketBuilder(Visibility.Visible, this));
             

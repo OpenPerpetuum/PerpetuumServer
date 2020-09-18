@@ -308,7 +308,7 @@ namespace Perpetuum.Zones
             var speed = (float)packet.ReadByte() / 255;
             var direction = (float)packet.ReadByte() / 255;
 
-            if (!player.HandleMove(position))
+            if (!player.TryMove(position))
                 throw new PerpetuumException(ErrorCodes.InvalidMovement);
 
             player.CurrentSpeed = speed;
