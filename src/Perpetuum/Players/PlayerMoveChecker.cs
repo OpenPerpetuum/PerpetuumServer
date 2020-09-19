@@ -1,23 +1,23 @@
-﻿using Perpetuum.ExportedTypes;
-using Perpetuum.Log;
-using Perpetuum.PathFinders;
-using Perpetuum.Zones;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Perpetuum.Log;
+using Perpetuum.PathFinders;
+using Perpetuum.Zones;
 
 namespace Perpetuum.Players
 {
-    public class PlayerMoveCheckQueue
+    public class PlayerMoveCheckQueue : IDisposable
     {
+        private const int TIMEOUT_MS = 1000;
         private readonly Task _task;
         private readonly CancellationTokenSource _tokenSrc;
         private CancellationToken _ct;
 
         private readonly Player _player;
         private readonly PlayerMoveChecker _moveChecker;
-        private readonly ConcurrentQueue<Position> _movesToReview;
+        private readonly BlockingCollection<Position> _movesToReview;
 
         private Position Prev { get; set; }
 
@@ -27,7 +27,7 @@ namespace Perpetuum.Players
             _player = player;
             _moveChecker = new PlayerMoveChecker(player);
             _tokenSrc = new CancellationTokenSource();
-            _movesToReview = new ConcurrentQueue<Position>();
+            _movesToReview = new BlockingCollection<Position>();
             _ct = _tokenSrc.Token;
             _task = new Task(() => ProcessQueue(),
                     TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness);
@@ -42,12 +42,30 @@ namespace Perpetuum.Players
 
         public void Stop()
         {
-            _tokenSrc.Cancel();
+            if (!_tokenSrc.IsCancellationRequested)
+                _tokenSrc.Cancel();
+
+            if (!_movesToReview.IsAddingCompleted)
+                _movesToReview.CompleteAdding();
         }
 
         public void EnqueueMove(Position target)
         {
-            _movesToReview.Enqueue(target);
+            try
+            {
+                if (_movesToReview.IsAddingCompleted)
+                    return;
+
+                _movesToReview?.TryAdd(target, TIMEOUT_MS, _ct);
+            }
+            catch (Exception ex)
+            {
+                if (ex is OperationCanceledException || ex is ObjectDisposedException)
+                {
+                    return;
+                }
+                Logger.Exception(ex);
+            }
         }
 
         private bool IsCanceled()
@@ -61,36 +79,64 @@ namespace Perpetuum.Players
             {
                 try
                 {
-                    while (_movesToReview.IsEmpty)
+                    if (_movesToReview != null && _movesToReview.TryTake(out Position pos, TIMEOUT_MS, _ct))
                     {
-                        Thread.Sleep(50);
-                        if (IsCanceled())
-                            return;
-                    }
-                    while (!_movesToReview.IsEmpty)
-                    {
-                        if(_movesToReview.TryDequeue(out Position pos))
+                        if(_moveChecker.IsUpdateValid(Prev, pos))
                         {
-                            if (!_moveChecker.IsUpdateValid(Prev, pos))
-                            {
-                                _movesToReview.Clear();
-                                _player.CurrentPosition = Prev;
-                                _player.SendForceUpdate();
-                                break;
-                            }
                             Prev = pos;
                         }
-
-                        if (IsCanceled())
-                            return;
+                        else
+                        {
+                            _movesToReview.Clear();
+                            _player.CurrentPosition = Prev;
+                            _player.SendForceUpdate();
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
+                    if (ex is OperationCanceledException || ex is ObjectDisposedException)
+                    {
+                        return;
+                    }
                     Logger.Exception(ex);
                 }
             }
         }
+
+        #region DISPOSAL
+        private bool _disposed = false;
+
+        ~PlayerMoveCheckQueue() => Dispose(false);
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                try
+                {
+                    _movesToReview?.Dispose();
+                }
+                catch (Exception e)
+                {
+                    Logger.Exception(e);
+                }
+                finally
+                {
+                    _disposed = true;
+                }
+            }
+        }
+        #endregion
     }
 
     public class PlayerMoveChecker

@@ -274,6 +274,7 @@ namespace Perpetuum.Players
                 Session.Stop();
 
             _check.Stop();
+            _check.Dispose();
             base.OnRemovedFromZone(zone);
         }
 
