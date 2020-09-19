@@ -173,7 +173,7 @@ namespace Perpetuum.Players
             if (!IsWalkable(position))
                 return false;
 
-            _check.EnqueueMove(position);
+            _check?.EnqueueMove(position);
 
             CurrentPosition = position;
             return true;
@@ -273,8 +273,7 @@ namespace Perpetuum.Players
             if (!States.LocalTeleport)
                 Session.Stop();
 
-            _check.Stop();
-            _check.Dispose();
+            _check?.StopAndDispose();
             base.OnRemovedFromZone(zone);
         }
 
