@@ -25,7 +25,9 @@ namespace Perpetuum.Players
 
         public static PlayerMoveCheckQueue Create(Player player, Position start)
         {
-            return new PlayerMoveCheckQueue(player, start);
+            var pmcq = new PlayerMoveCheckQueue(player, start);
+            pmcq.Start();
+            return pmcq;
         }
 
         private PlayerMoveCheckQueue(Player player, Position start)
@@ -37,8 +39,13 @@ namespace Perpetuum.Players
             _movesToReview = new BlockingCollection<Position>();
             _ct = _tokenSrc.Token;
             _task = new Task(() => ProcessQueue(),
-                    TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness);
-            _task.Start();
+                TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness);
+        }
+
+        private void Start()
+        {
+            if (_task.Status == TaskStatus.Created)
+                _task.Start();
         }
 
         public void Stop()

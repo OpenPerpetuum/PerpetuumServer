@@ -276,7 +276,6 @@ namespace Perpetuum.Players
                 _check.Dispose();
             });
 
-
             if (!States.LocalTeleport)
                 Session.Stop();
 
