@@ -270,7 +270,12 @@ namespace Perpetuum.Players
             Session.SendPacket(ExitPacketBuilder);
             zone.SendPacketToGang(Gang, new GangUpdatePacketBuilder(Visibility.Invisible, this));
 
-            _check.Stop();
+            Task.Run(() =>
+            {
+                _check.Stop();
+                _check.Dispose();
+            });
+
 
             if (!States.LocalTeleport)
                 Session.Stop();

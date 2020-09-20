@@ -38,7 +38,6 @@ namespace Perpetuum.Players
             _ct = _tokenSrc.Token;
             _task = new Task(() => ProcessQueue(),
                     TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness);
-            _task.ContinueWith(t => Dispose());
             _task.Start();
         }
 
@@ -49,6 +48,8 @@ namespace Perpetuum.Players
 
             if (!IsCompleted)
                 _movesToReview.CompleteAdding();
+
+            _task.Wait();
         }
 
         public void EnqueueMove(Position target)
