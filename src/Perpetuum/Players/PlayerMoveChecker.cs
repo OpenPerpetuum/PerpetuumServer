@@ -79,33 +79,29 @@ namespace Perpetuum.Players
 
         private void ProcessQueue()
         {
-            while (!IsStopped)
+            try
             {
-                try
+                foreach (var pos in _movesToReview?.GetConsumingEnumerable(_ct))
                 {
-                    var position = _movesToReview?.Take(_ct); //This still gets null ref exceptions...
-                    if (position is Position pos)
+                    if (_moveChecker.IsUpdateValid(Prev, pos))
                     {
-                        if (_moveChecker.IsUpdateValid(Prev, pos))
-                        {
-                            Prev = pos;
-                        }
-                        else
-                        {
-                            _movesToReview?.Clear();
-                            _player.CurrentPosition = Prev;
-                            _player.SendForceUpdate();
-                        }
+                        Prev = pos;
+                    }
+                    else
+                    {
+                        _movesToReview?.Clear();
+                        _player.CurrentPosition = Prev;
+                        _player.SendForceUpdate();
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                if (ex is OperationCanceledException || ex is ObjectDisposedException)
                 {
-                    if (ex is OperationCanceledException || ex is ObjectDisposedException)
-                    {
-                        return;
-                    }
-                    Logger.Exception(ex);
+                    return;
                 }
+                Logger.Exception(ex);
             }
         }
 
