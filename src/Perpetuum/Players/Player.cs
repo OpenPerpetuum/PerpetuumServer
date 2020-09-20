@@ -173,7 +173,7 @@ namespace Perpetuum.Players
             if (!IsWalkable(position))
                 return false;
 
-            _check?.EnqueueMove(position);
+            _check.EnqueueMove(position);
 
             CurrentPosition = position;
             return true;
@@ -270,7 +270,7 @@ namespace Perpetuum.Players
             Session.SendPacket(ExitPacketBuilder);
             zone.SendPacketToGang(Gang, new GangUpdatePacketBuilder(Visibility.Invisible, this));
 
-            _check?.StopAndDispose();
+            _check.Stop();
 
             if (!States.LocalTeleport)
                 Session.Stop();

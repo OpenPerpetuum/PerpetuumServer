@@ -22,7 +22,6 @@ namespace Perpetuum.Players
         private Position Prev { get; set; }
         private bool IsCompleted { get { return _movesToReview?.IsAddingCompleted ?? true; } }
         private bool IsCanceled { get { return _ct.IsCancellationRequested; } }
-        private bool IsStopped { get { return IsCanceled || IsCompleted; } }
 
         public PlayerMoveCheckQueue(Player player, Position start)
         {
@@ -34,28 +33,17 @@ namespace Perpetuum.Players
             _ct = _tokenSrc.Token;
             _task = new Task(() => ProcessQueue(),
                     TaskCreationOptions.LongRunning | TaskCreationOptions.PreferFairness);
-            Start();
+            _task.ContinueWith(t => Dispose());
+            _task.Start();
         }
 
-        private void Start()
-        {
-            if (_task.Status == TaskStatus.Created)
-                _task.Start();
-        }
-
-        public void StopAndDispose()
-        {
-            Stop();
-            Dispose();
-        }
-
-        private void Stop()
+        public void Stop()
         {
             if (!IsCanceled)
                 _tokenSrc.Cancel();
 
             if (!IsCompleted)
-                _movesToReview?.CompleteAdding();
+                _movesToReview.CompleteAdding();
         }
 
         public void EnqueueMove(Position target)
@@ -65,7 +53,7 @@ namespace Perpetuum.Players
                 if (IsCompleted)
                     return;
 
-                _movesToReview?.Add(target, _ct);
+                _movesToReview.Add(target, _ct);
             }
             catch (Exception ex)
             {
@@ -81,7 +69,7 @@ namespace Perpetuum.Players
         {
             try
             {
-                foreach (var pos in _movesToReview?.GetConsumingEnumerable(_ct))
+                foreach (var pos in _movesToReview.GetConsumingEnumerable(_ct))
                 {
                     if (_moveChecker.IsUpdateValid(Prev, pos))
                     {
@@ -89,7 +77,7 @@ namespace Perpetuum.Players
                     }
                     else
                     {
-                        _movesToReview?.Clear();
+                        _movesToReview.Clear();
                         _player.CurrentPosition = Prev;
                         _player.SendForceUpdate();
                     }
@@ -113,11 +101,7 @@ namespace Perpetuum.Players
 
             try
             {
-                if (!IsStopped)
-                {
-                    Stop();
-                }
-                _movesToReview?.Dispose();
+                _movesToReview.Dispose();
             }
             catch (Exception e)
             {
