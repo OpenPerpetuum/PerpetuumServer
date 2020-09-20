@@ -23,7 +23,12 @@ namespace Perpetuum.Players
         private bool IsCompleted { get { return _movesToReview?.IsAddingCompleted ?? true; } }
         private bool IsCanceled { get { return _ct.IsCancellationRequested; } }
 
-        public PlayerMoveCheckQueue(Player player, Position start)
+        public static PlayerMoveCheckQueue Create(Player player, Position start)
+        {
+            return new PlayerMoveCheckQueue(player, start);
+        }
+
+        private PlayerMoveCheckQueue(Player player, Position start)
         {
             Prev = start;
             _player = player;

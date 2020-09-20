@@ -248,7 +248,7 @@ namespace Perpetuum.Players
         protected override void OnEnterZone(IZone zone, ZoneEnterType enterType)
         {
             base.OnEnterZone(zone, enterType); //aa
-            _check = new PlayerMoveCheckQueue(this, CurrentPosition);
+            _check = PlayerMoveCheckQueue.Create(this, CurrentPosition);
 
             zone.SendPacketToGang(Gang, new GangUpdatePacketBuilder(Visibility.Visible, this));
             
