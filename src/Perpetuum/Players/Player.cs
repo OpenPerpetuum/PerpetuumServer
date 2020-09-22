@@ -274,10 +274,11 @@ namespace Perpetuum.Players
             {
                 _check.Stop();
                 _check.Dispose();
+            }).ContinueWith(t =>
+            {
+                if (!States.LocalTeleport)
+                    Session.Stop();
             });
-
-            if (!States.LocalTeleport)
-                Session.Stop();
 
             base.OnRemovedFromZone(zone);
         }
