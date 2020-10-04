@@ -49,20 +49,21 @@ namespace Perpetuum.Services.Channels
 
             string[] command = text.Split(new char[] { ',' });
 
+            var data = AdminCommandData.Create(sender, command, request, channel, ChannelManager, _sessionManager);
+
             // channel is not secured. must be secured first.
             if (channel.Type != ChannelType.Admin)
             {
                 if (command[0] == "#secure")
                 {
-                    channel.SetAdmin(true);
-                    channel.SendMessageToAll(_sessionManager, sender, "Channel Secured.");
+                    AdminCommands.Secure(data);
                     return;
                 }
                 channel.SendMessageToAll(_sessionManager, sender, "Channel must be secured before sending commands.");
                 return;
             }
 
-            ServerCommands(sender, command, request, channel);
+            ServerCommands(data);
 
             if (_config.EnableDev)
             {
@@ -70,20 +71,85 @@ namespace Perpetuum.Services.Channels
             }
         }
 
-        //TODO all of this needs a major refactor
-        private void ServerCommands(Character sender, string[] command, IRequest request, Channel channel)
+        private class CommandArgs
         {
-            if (command[0] == "#unsecure")
+            public string Name { get; private set; }
+            public string[] Args { get; private set; }
+            public CommandArgs(string[] commandArray)
             {
-                channel.SetAdmin(false);
-                channel.SendMessageToAll(_sessionManager, sender, "Channel is now public.");
+                Name = commandArray[0].ToLower().Trim();
+                Args = commandArray.Skip(1).ToArray();
+            }
+        }
+
+        private class AdminCommandData
+        {
+            public static AdminCommandData Create(Character sender, string[] command, IRequest request, Channel channel, IChannelManager channelManager, ISessionManager sessionManager)
+            {
+                return new AdminCommandData
+                {
+                    Sender = sender,
+                    Command = new CommandArgs(command),
+                    Request = request,
+                    Channel = channel,
+                    ChannelManager = channelManager,
+                    SessionManager = sessionManager
+                };
             }
 
-            if (command[0] == "#shutdown")
+            public Character Sender { get; private set; }
+            public CommandArgs Command { get; private set; }
+            public IRequest Request { get; private set; }
+            public Channel Channel { get; private set; }
+            public IChannelManager ChannelManager { get; private set; }
+            public ISessionManager SessionManager { get; private set; }
+        }
+
+        private void ServerCommands(AdminCommandData data)
+        {
+            switch (data.Command.Name)
+            {
+                case "#unsecure": { AdminCommands.UnSecure(data); break; }
+                case "#shutdown": { AdminCommands.Shutdown(data); break; }
+                case "#shutdowncancel": { AdminCommands.ShutdownCancel(data); break; }
+                case "#jumpto": { AdminCommands.JumpTo(data); break; }
+                case "#moveplayer": { AdminCommands.MovePlayer(data); break; }
+                case "#giveitem": { AdminCommands.GiveItem(data); break; }
+                case "#getlockedtileproperties": { AdminCommands.GetLockedTileProperties(data); break; }
+                case "#setvisibility": { AdminCommands.SetVisibility(data); break; }
+                case "#zonedrawstatmap": { AdminCommands.ZoneDrawStatMap(data); break; }
+                case "#listplayersinzone": { AdminCommands.ListAllPlayersInZone(data); break; }
+                case "#countofplayers": { AdminCommands.CountOfPlayers(data); break; }
+                case "#addtochannel": { AdminCommands.AddToChannel(data); break; }
+                case "#removefromchannel": { AdminCommands.RemoveFromChannel(data); break; }
+            }
+
+        }
+
+
+        private static class AdminCommands
+        {
+
+            private static void SendMessageToAll(AdminCommandData data, string message)
+            {
+                data.Channel.SendMessageToAll(data.SessionManager, data.Sender, message);
+            }
+
+            public static void Secure(AdminCommandData data)
+            {
+                data.Channel.SetAdmin(true);
+                data.Channel.SendMessageToAll(data.SessionManager, data.Sender, "Channel Secured.");
+            }
+            public static void UnSecure(AdminCommandData data)
+            {
+                data.Channel.SetAdmin(false);
+                data.Channel.SendMessageToAll(data.SessionManager, data.Sender, "Channel is now public.");
+            }
+            public static void Shutdown(AdminCommandData data)
             {
                 DateTime shutdownin = DateTime.Now;
                 int minutes = 1;
-                if (!int.TryParse(command[2], out minutes))
+                if (!int.TryParse(data.Command.Args[1], out minutes))
                 {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
                 }
@@ -91,26 +157,24 @@ namespace Perpetuum.Services.Channels
 
                 Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
-                    { "message", command[1] },
-                    { "date", shutdownin }
+                { "message", data.Command.Args[0] },
+                { "date", shutdownin }
                 };
 
                 string cmd = string.Format("serverShutDown:relay:{0}", GenxyConverter.Serialize(dictionary));
-                request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
+                data.Request.Session.HandleLocalRequest(data.Request.Session.CreateLocalRequest(cmd));
             }
-
-            if (command[0] == "#shutdowncancel")
+            public static void ShutdownCancel(AdminCommandData data)
             {
                 string cmd = string.Format("serverShutDownCancel:relay:null");
-                request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
+                data.Request.Session.HandleLocalRequest(data.Request.Session.CreateLocalRequest(cmd));
             }
-
-            if (command[0] == "#jumpto")
+            public static void JumpTo(AdminCommandData data)
             {
-                bool err = false;
-                err = !int.TryParse(command[1], out int zone);
-                err = !int.TryParse(command[2], out int x);
-                err = !int.TryParse(command[3], out int y);
+                bool err = false; //TODO this only throws on bad last-arg!
+                err = !int.TryParse(data.Command.Args[0], out int zone);
+                err = !int.TryParse(data.Command.Args[1], out int x);
+                err = !int.TryParse(data.Command.Args[2], out int y);
                 if (err)
                 {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
@@ -123,37 +187,36 @@ namespace Perpetuum.Services.Channels
                     { "y" , y }
                 };
 
-                string cmd = string.Format("jumpAnywhere:zone_{0}:{1}", sender.ZoneId, GenxyConverter.Serialize(dictionary));
-                request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
+                string cmd = string.Format("jumpAnywhere:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
+                data.Request.Session.HandleLocalRequest(data.Request.Session.CreateLocalRequest(cmd));
             }
-
-            if (command[0] == "#moveplayer")
+            public static void MovePlayer(AdminCommandData data)
             {
-                bool err = false;
-                err = !int.TryParse(command[1], out int characterID);
-                err = !int.TryParse(command[2], out int zoneID);
-                err = !int.TryParse(command[3], out int x);
-                err = !int.TryParse(command[4], out int y);
+                bool err = false; //TODO this parse checking is broken
+                err = !int.TryParse(data.Command.Args[0], out int characterID);
+                err = !int.TryParse(data.Command.Args[1], out int zoneID);
+                err = !int.TryParse(data.Command.Args[2], out int x);
+                err = !int.TryParse(data.Command.Args[3], out int y);
                 if (err)
                 {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
                 }
 
                 // get the target character's session.
-                var charactersession = _sessionManager.GetByCharacter(characterID);
+                var charactersession = data.SessionManager.GetByCharacter(characterID);
 
                 if (charactersession.Character.ZoneId == null)
                 {
-                    channel.SendMessageToAll(_sessionManager, sender, string.Format("ERR: Character with ID {0} does not have a zone. Are they docked?", characterID));
+                    SendMessageToAll(data, string.Format("ERR: Character with ID {0} does not have a zone. Are they docked?", characterID));
                     return;
                 }
 
                 // get destination zone.
-                var zone = request.Session.ZoneMgr.GetZone(zoneID);
+                var zone = data.Request.Session.ZoneMgr.GetZone(zoneID);
 
                 if (charactersession.Character.ZoneId == null)
                 {
-                    channel.SendMessageToAll(_sessionManager, sender, string.Format("ERR: Invalid Zone ID {0}", zoneID));
+                    SendMessageToAll(data, string.Format("ERR: Invalid Zone ID {0}", zoneID));
                     return;
                 }
 
@@ -161,7 +224,7 @@ namespace Perpetuum.Services.Channels
                 TeleportToAnotherZone tp = new TeleportToAnotherZone(zone);
 
                 // we need the player (robot, etc) to teleport on the origin zone
-                var player = request.Session.ZoneMgr.GetZone((int)charactersession.Character.ZoneId).GetPlayer(charactersession.Character.ActiveRobotEid);
+                var player = data.Request.Session.ZoneMgr.GetZone((int)charactersession.Character.ZoneId).GetPlayer(charactersession.Character.ActiveRobotEid);
                 //var player = zone.GetPlayer(charactersession.Character.Eid);
 
                 // set the position.
@@ -171,14 +234,12 @@ namespace Perpetuum.Services.Channels
                 tp.DoTeleportAsync(player);
                 tp = null;
 
-                channel.SendMessageToAll(_sessionManager, sender, string.Format("Moved Character {0}-{1} to Zone {2} @ {3},{4}", characterID, charactersession.Character.Nick, zone.Id, x, y));
+                SendMessageToAll(data, string.Format("Moved Character {0}-{1} to Zone {2} @ {3},{4}", characterID, charactersession.Character.Nick, zone.Id, x, y));
             }
-
-            if (command[0] == "#giveitem")
+            public static void GiveItem(AdminCommandData data)
             {
-
-                int.TryParse(command[1], out int definition);
-                int.TryParse(command[2], out int qty);
+                int.TryParse(data.Command.Args[0], out int definition);
+                int.TryParse(data.Command.Args[1], out int qty);
 
                 Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
@@ -186,136 +247,134 @@ namespace Perpetuum.Services.Channels
                     { "quantity", qty }
                 };
 
-
                 string cmd = string.Format("createItem:relay:{0}", GenxyConverter.Serialize(dictionary));
-                request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
+                data.Request.Session.HandleLocalRequest(data.Request.Session.CreateLocalRequest(cmd));
 
-                channel.SendMessageToAll(_sessionManager, sender, string.Format("Gave Item {0} ", definition));
+                SendMessageToAll(data, string.Format("Gave Item {0} ", definition));
             }
-
-            if (command[0] == "#getlockedtileproperties")
+            public static void GetLockedTileProperties(AdminCommandData data)
             {
-
-                var character = request.Session.Character;
-                var zone = request.Session.ZoneMgr.GetZone((int)character.ZoneId);
+                var character = data.Request.Session.Character;
+                var zone = data.Request.Session.ZoneMgr.GetZone((int)character.ZoneId);
                 var player = zone.GetPlayer(character.ActiveRobotEid);
 
                 var lockedtile = player.GetPrimaryLock();
 
                 TerrainControlInfo ti = zone.Terrain.Controls.GetValue((lockedtile as TerrainLock).Location);
 
-                channel.SendMessageToAll(_sessionManager, sender, string.Format("Tile at {0},{1} has the following flags..", (lockedtile as TerrainLock).Location.X, (lockedtile as TerrainLock).Location.Y));
-                channel.SendMessageToAll(_sessionManager, sender, "TerrainControlFlags:");
+                SendMessageToAll(data, string.Format("Tile at {0},{1} has the following flags..", (lockedtile as TerrainLock).Location.X, (lockedtile as TerrainLock).Location.Y));
+                SendMessageToAll(data, "TerrainControlFlags:");
                 foreach (TerrainControlFlags f in Enum.GetValues(typeof(TerrainControlFlags)))
                 {
                     if (ti.Flags.HasFlag(f) && f != TerrainControlFlags.Undefined)
                     {
-                        channel.SendMessageToAll(_sessionManager, sender, string.Format("{0}", f.ToString()));
+                        SendMessageToAll(data, string.Format("{0}", f.ToString()));
                     }
                 }
 
                 BlockingInfo bi = zone.Terrain.Blocks.GetValue((lockedtile as TerrainLock).Location);
 
-                channel.SendMessageToAll(_sessionManager, sender, "BlockingFlags:");
+                SendMessageToAll(data, "BlockingFlags:");
                 foreach (BlockingFlags f in Enum.GetValues(typeof(BlockingFlags)))
                 {
                     if (bi.Flags.HasFlag(f) && f != BlockingFlags.Undefined)
                     {
-                        channel.SendMessageToAll(_sessionManager, sender, string.Format("{0}", f.ToString()));
+                        SendMessageToAll(data, string.Format("{0}", f.ToString()));
                     }
                 }
 
                 PlantInfo pi = zone.Terrain.Plants.GetValue((lockedtile as TerrainLock).Location);
 
-                channel.SendMessageToAll(_sessionManager, sender, "PlantType:");
+                SendMessageToAll(data, "PlantType:");
                 foreach (PlantType f in Enum.GetValues(typeof(PlantType)))
                 {
                     if (pi.type.HasFlag(f) && f != PlantType.NotDefined)
                     {
-                        channel.SendMessageToAll(_sessionManager, sender, string.Format("{0}", f.ToString()));
+                        SendMessageToAll(data, string.Format("{0}", f.ToString()));
                     }
                 }
 
-                channel.SendMessageToAll(_sessionManager, sender, "GroundType:");
+                SendMessageToAll(data, "GroundType:");
                 foreach (GroundType f in Enum.GetValues(typeof(GroundType)))
                 {
                     if (pi.groundType.HasFlag(f))
                     {
-                        channel.SendMessageToAll(_sessionManager, sender, string.Format("{0}", f.ToString()));
+                        SendMessageToAll(data, string.Format("{0}", f.ToString()));
                     }
                 }
-
             }
-
-            if (command[0] == "#setvisibility")
+            public static void SetVisibility(AdminCommandData data)
             {
+                bool.TryParse(data.Command.Args[0], out bool visiblestate);
 
-                bool.TryParse(command[1], out bool visiblestate);
-
-                var character = request.Session.Character;
-                var zone = request.Session.ZoneMgr.GetZone((int)character.ZoneId);
+                var character = data.Request.Session.Character;
+                var zone = data.Request.Session.ZoneMgr.GetZone((int)character.ZoneId);
                 var player = zone.GetPlayer(character.ActiveRobotEid);
 
                 player.HasGMStealth = !visiblestate;
 
-                channel.SendMessageToAll(_sessionManager, sender, string.Format("Player {0} visibility is {1}", player.Character.Nick, visiblestate));
+                SendMessageToAll(data, string.Format("Player {0} visibility is {1}", player.Character.Nick, visiblestate));
             }
-
-            if (command[0] == "#zonedrawstatmap")
+            public static void ZoneDrawStatMap(AdminCommandData data)
             {
-
+                //TODO check args, maybe allow zone id, fallback to sender zone
                 Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
-                    { "type", command[1] }
+                    { "type", data.Command.Args[0] }
                 };
 
-                string cmd = string.Format("zoneDrawStatMap:zone_{0}:{1}", sender.ZoneId, GenxyConverter.Serialize(dictionary));
-                request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
+                string cmd = string.Format("zoneDrawStatMap:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
+                data.Request.Session.HandleLocalRequest(data.Request.Session.CreateLocalRequest(cmd));
             }
-
-            if (command[0] == "#listplayersinzone")
+            public static void ListAllPlayersInZone(AdminCommandData data)
             {
+                int.TryParse(data.Command.Args[0], out int zoneid);
 
-                int.TryParse(command[1], out int zoneid);
-
-                channel.SendMessageToAll(_sessionManager, sender, string.Format("Players On Zone {0}", zoneid));
-                channel.SendMessageToAll(_sessionManager, sender, string.Format("  AccountId    CharacterId    Nick    Access Level    Docked?    DockedAt    Position"));
-                foreach (Character c in _sessionManager.SelectedCharacters.Where(x => x.ZoneId == zoneid))
+                SendMessageToAll(data, string.Format("Players On Zone {0}", zoneid));
+                SendMessageToAll(data, string.Format("  AccountId    CharacterId    Nick    Access Level    Docked?    DockedAt    Position"));
+                foreach (Character c in data.SessionManager.SelectedCharacters.Where(x => x.ZoneId == zoneid))
                 {
-                    channel.SendMessageToAll(_sessionManager, sender, string.Format("   {0}       {1}        {2}        {3}       {4}       {5}      {6}",
+                    SendMessageToAll(data, string.Format("   {0}       {1}        {2}        {3}       {4}       {5}      {6}",
                         c.AccountId, c.Id, c.Nick, c.AccessLevel, c.IsDocked, c.GetCurrentDockingBase().Eid, c.GetPlayerRobotFromZone().CurrentPosition));
                 }
             }
-
-            if (command[0] == "#countofplayers")
+            public static void CountOfPlayers(AdminCommandData data)
             {
-                foreach (IZone z in request.Session.ZoneMgr.Zones)
+                foreach (IZone z in data.Request.Session.ZoneMgr.Zones)
                 {
-                    channel.SendMessageToAll(_sessionManager, sender, string.Format("Players On Zone {0}: {1}", z.Id, z.Players.ToList().Count));
+                    SendMessageToAll(data, string.Format("Players On Zone {0}: {1}", z.Id, z.Players.ToList().Count));
                 }
             }
-
-            if (command[0] == "#addtochannel")
+            public static void AddToChannel(AdminCommandData data)
             {
-                int.TryParse(command[1], out int characterid);
+                int.TryParse(data.Command.Args[0], out int characterid);
 
-                var c = _sessionManager.GetByCharacter(characterid);
+                var c = data.SessionManager.GetByCharacter(characterid);
 
-                ChannelManager.JoinChannel(channel.Name, c.Character, ChannelMemberRole.Operator, string.Empty);
+                data.ChannelManager.JoinChannel(data.Channel.Name, c.Character, ChannelMemberRole.Operator, string.Empty);
 
-                channel.SendMessageToAll(_sessionManager, sender, string.Format("Added character {0} to channel ", c.Character.Nick));
+                SendMessageToAll(data, string.Format("Added character {0} to channel ", c.Character.Nick));
+            }
+            public static void RemoveFromChannel(AdminCommandData data)
+            {
+                int.TryParse(data.Command.Args[0], out int characterid);
+
+                var c = data.SessionManager.GetByCharacter(characterid);
+
+                data.ChannelManager.LeaveChannel(data.Channel.Name, c.Character);
+
+                SendMessageToAll(data, string.Format("Removed character {0} from channel ", c.Character.Nick));
 
             }
+        }
+
+        //TODO all of this needs a major refactor
+        private void ServerCommands(Character sender, string[] command, IRequest request, Channel channel)
+        {
+
 
             if (command[0] == "#removefromchannel")
             {
-                int.TryParse(command[1], out int characterid);
-
-                var c = _sessionManager.GetByCharacter(characterid);
-
-                ChannelManager.LeaveChannel(channel.Name, c.Character);
-
-                channel.SendMessageToAll(_sessionManager, sender, string.Format("Removed character {0} from channel ", c.Character.Nick));
 
             }
 
