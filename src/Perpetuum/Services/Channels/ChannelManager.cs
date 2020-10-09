@@ -6,6 +6,7 @@ using System.Threading;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Common.Loggers;
 using Perpetuum.Host.Requests;
+using Perpetuum.Services.Channels.ChatCommands;
 using Perpetuum.Services.Sessions;
 
 namespace Perpetuum.Services.Channels
@@ -18,9 +19,9 @@ namespace Perpetuum.Services.Channels
         private readonly IChannelBanRepository _banRepository;
         private readonly ChannelLoggerFactory _channelLoggerFactory;
         private readonly ConcurrentDictionary<string, Channel> _channels = new ConcurrentDictionary<string, Channel>();
-        private readonly GameAdminCommands _adminCommand;
+        private readonly AdminCommandRouter _adminCommand;
 
-        public ChannelManager(ISessionManager sessionManager,IChannelRepository channelRepository,IChannelMemberRepository memberRepository,IChannelBanRepository banRepository,ChannelLoggerFactory channelLoggerFactory, GameAdminCommands adminCommand)
+        public ChannelManager(ISessionManager sessionManager,IChannelRepository channelRepository,IChannelMemberRepository memberRepository,IChannelBanRepository banRepository,ChannelLoggerFactory channelLoggerFactory, AdminCommandRouter adminCommand)
         {
             _sessionManager = sessionManager;
             _sessionManager.SessionAdded += OnSessionAdded;
@@ -30,7 +31,6 @@ namespace Perpetuum.Services.Channels
             _banRepository = banRepository;
             _channelLoggerFactory = channelLoggerFactory;
             _adminCommand = adminCommand;
-            _adminCommand.ChannelManager = this;
 
             foreach (var channel in channelRepository.GetAll())
             {
@@ -268,7 +268,7 @@ namespace Perpetuum.Services.Channels
             m.CanTalk.ThrowIfFalse(ErrorCodes.CharacterIsMuted);
             channel.SendMessageToAll(_sessionManager, sender, message);
 
-            _adminCommand.TryParseAdminCommand(sender, message, request, channel);
+            _adminCommand.TryParseAdminCommand(sender, message, request, channel, this);
         }
 
         public void Announcement(string channelName, Character sender, string message)
