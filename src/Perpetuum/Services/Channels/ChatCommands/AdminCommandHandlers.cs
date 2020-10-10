@@ -831,8 +831,8 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
             }
 
-            err = !int.TryParse(data.Command.Args[1], out int x);
-            err = !int.TryParse(data.Command.Args[2], out int y);
+            err = !int.TryParse(data.Command.Args[0], out int x);
+            err = !int.TryParse(data.Command.Args[1], out int y);
             if (err)
             {
                 SendMessageToAll(data, "Bad args");
@@ -892,8 +892,8 @@ namespace Perpetuum.Services.Channels.ChatCommands
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
                 }
                 err = !int.TryParse(data.Command.Args[0], out int xCommand);
-                err = !int.TryParse(data.Command.Args[2], out int yCommand);
-                err = !int.TryParse(data.Command.Args[3], out int zoneCommand);
+                err = !int.TryParse(data.Command.Args[1], out int yCommand);
+                err = !int.TryParse(data.Command.Args[2], out int zoneCommand);
                 if (err)
                 {
                     SendMessageToAll(data, "Bad args");
