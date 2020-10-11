@@ -53,7 +53,7 @@ namespace Perpetuum.Zones
                 return;
 
             _current = GetNextWeather();
-            _observable.OnNext(_current.CreateUpdatePacket());
+            SendWeatherUpdate(_current);
         }
 
         public IDisposable Subscribe(IObserver<Packet> observer)
@@ -66,11 +66,15 @@ namespace Perpetuum.Zones
             return _current;
         }
 
+        private void SendWeatherUpdate(WeatherInfo info)
+        {
+            _observable.OnNext(info.CreateUpdatePacket());
+        }
+
         public void SetCurrentWeather(WeatherInfo weather)
         {
             _current = weather;
-            var packet = _current.CreateUpdatePacket();
-            _observable.OnNext(packet);
+            SendWeatherUpdate(_current);
         }
     }
 }
