@@ -292,12 +292,14 @@
     <Compile Include="Services\EventServices\EventMessages\NpcEventMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\OreNpcSpawnMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\StabilityEffectMessage.cs" />
+    <Compile Include="Services\EventServices\EventMessages\WeatherEventMessage.cs" />
     <Compile Include="Services\EventServices\EventProcessors\AffectOutpostStability.cs" />
     <Compile Include="Services\EventServices\EventProcessors\ChatEcho.cs" />
     <Compile Include="Services\EventServices\EPBonusEventService.cs" />
     <Compile Include="Services\EventServices\EventListenerService.cs" />
     <Compile Include="Services\EventServices\EventProcessors\EventProcessor.cs" />
     <Compile Include="Services\EventServices\EventProcessors\OreNPCSpawner.cs" />
+    <Compile Include="Services\EventServices\EventProcessors\WeatherWatcher.cs" />
     <Compile Include="Services\Mail\PreMadeMailNames.cs" />
     <Compile Include="Services\MissionEngine\DisplayMissionSpotsProcess.cs" />
     <Compile Include="Services\MissionEngine\MissionResolveTester.cs" />
@@ -546,6 +548,10 @@
     <Compile Include="Services\Sparks\Teleports\SparkTeleportHelper.cs" />
     <Compile Include="Services\Sparks\Teleports\SparkTeleportRepository.cs" />
     <Compile Include="Services\Steam\SteamHelper.cs" />
+    <Compile Include="Services\Weather\IWeatherService.cs" />
+    <Compile Include="Services\Weather\WeatherInfo.cs" />
+    <Compile Include="Services\Weather\WeatherMonitor.cs" />
+    <Compile Include="Services\Weather\WeatherService.cs" />
     <Compile Include="SizeExtensions.cs" />
     <Compile Include="StateMachines\FiniteStateMachine.cs" />
     <Compile Include="StateMachines\IState.cs" />
@@ -614,10 +620,8 @@
     <Compile Include="Zones\CombatLogs\CombatSummary.cs" />
     <Compile Include="Zones\CombatLogs\ICombatLogSaver.cs" />
     <Compile Include="Zones\Effects\ZoneEffects\IZoneEffectHandler.cs" />
-    <Compile Include="Zones\Effects\ZoneEffects\IZoneEffectRepository.cs" />
     <Compile Include="Zones\Effects\ZoneEffects\ZoneEffect.cs" />
     <Compile Include="Zones\Effects\ZoneEffects\ZoneEffectHandler.cs" />
-    <Compile Include="Zones\Effects\ZoneEffects\ZoneEffectRepository.cs" />
     <Compile Include="Zones\Effects\ZoneEffects\ZoneEffectReader.cs" />
     <Compile Include="Zones\Intrusion\OutpostDecay.cs" />
     <Compile Include="Zones\IUsableItem.cs" />
@@ -682,7 +686,6 @@
     <Compile Include="Services\Trading\TradeItem.cs" />
     <Compile Include="Services\Trading\TradeService.cs" />
     <Compile Include="Services\Trading\TradeState.cs" />
-    <Compile Include="Zones\IWeatherService.cs" />
     <Compile Include="Zones\IZoneEnterQueueService.cs" />
     <Compile Include="Zones\LineOfSight.cs" />
     <Compile Include="Zones\NpcSystem\Flocks\FlockConfigurationBuilder.cs" />
@@ -1154,8 +1157,6 @@
     <Compile Include="Zones\Training\TrainingExitTeleportColumn.cs" />
     <Compile Include="Zones\Training\TrainingKillSwitch.cs" />
     <Compile Include="Zones\Visibility.cs" />
-    <Compile Include="Zones\WeatherInfo.cs" />
-    <Compile Include="Zones\WeatherService.cs" />
     <Compile Include="Zones\Zone.cs" />
     <Compile Include="Zones\ZoneCommand.cs" />
     <Compile Include="Zones\ZoneConfiguration.cs" />
@@ -1221,7 +1222,6 @@
     <Folder Include="Properties\" />
     <Folder Include="Services\ProductionEngine\Methods\" />
     <Folder Include="Services\Relay\RequestHandlers\" />
-    <Folder Include="Comparers\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

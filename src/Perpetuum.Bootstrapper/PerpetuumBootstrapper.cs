@@ -177,6 +177,7 @@ using SetItemName = Perpetuum.RequestHandlers.SetItemName;
 using TrashItems = Perpetuum.RequestHandlers.TrashItems;
 using UnpackItems = Perpetuum.RequestHandlers.UnpackItems;
 using UnstackAmount = Perpetuum.RequestHandlers.UnstackAmount;
+using Perpetuum.Services.Weather;
 
 namespace Perpetuum.Bootstrapper
 {
@@ -648,8 +649,7 @@ namespace Perpetuum.Bootstrapper
         {
             _builder.RegisterType<EffectBuilder>();
 
-            _builder.RegisterType<ZoneEffectRepository>().As<IZoneEffectRepository>().SingleInstance();
-            _builder.RegisterType<ZoneEffectHandler>().As<IZoneEffectHandler>().SingleInstance();
+            _builder.RegisterType<ZoneEffectHandler>().As<IZoneEffectHandler>();
 
             _builder.RegisterType<InvulnerableEffect>().Keyed<Effect>(EffectType.effect_invulnerable);
             _builder.RegisterType<CoTEffect>().Keyed<Effect>(EffectType.effect_eccm);

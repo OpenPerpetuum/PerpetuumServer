@@ -6,9 +6,11 @@ using Perpetuum.Groups.Corporations;
 using Perpetuum.Log;
 using Perpetuum.Players;
 using Perpetuum.Services.Relics;
+using Perpetuum.Services.Weather;
 using Perpetuum.Units;
 using Perpetuum.Zones.Beams;
 using Perpetuum.Zones.Decors;
+using Perpetuum.Zones.Effects.ZoneEffects;
 using Perpetuum.Zones.Environments;
 using Perpetuum.Zones.NpcSystem.Presences;
 using Perpetuum.Zones.NpcSystem.SafeSpawnPoints;
@@ -60,5 +62,8 @@ namespace Perpetuum.Zones
         void SetGang(Player player);
 
         void Enter(Character character,Command replyCommand);
+
+        void AddZoneEffect(ZoneEffect zoneEffect);
+        void RemoveZoneEffect(ZoneEffect zoneEffect);
     }
 }

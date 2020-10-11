@@ -18,12 +18,13 @@ using Perpetuum.Services.HighScores;
 using Perpetuum.Services.Relics;
 using Perpetuum.Services.RiftSystem;
 using Perpetuum.Services.Sessions;
+using Perpetuum.Services.Weather;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Zones.Beams;
 using Perpetuum.Zones.Blobs;
 using Perpetuum.Zones.Decors;
-using Perpetuum.Zones.Effects;
+using Perpetuum.Zones.Effects.ZoneEffects;
 using Perpetuum.Zones.Environments;
 using Perpetuum.Zones.NpcSystem.Presences;
 using Perpetuum.Zones.NpcSystem.SafeSpawnPoints;
@@ -76,6 +77,7 @@ namespace Perpetuum.Zones
         public IHighScoreService HighScores { get; set; }
 
         private readonly IGangManager _gangManager;
+        private readonly IZoneEffectHandler _zoneEffectHandler;
 
         public TcpListener Listener { get; set; }
 
@@ -89,6 +91,44 @@ namespace Perpetuum.Zones
             _gangManager.GangMemberRemoved += OnGangMemberRemoved;
             _gangManager.GangDisbanded += OnGangDisbanded;
             _sessionlessPlayerTimeout = new SessionlessPlayerTimeout(this);
+            _zoneEffectHandler = new ZoneEffectHandler(this);
+            _zoneEffectHandler.EffectRemoved += OnZoneEffectRemoved;
+            _zoneEffectHandler.EffectAdded += OnZoneEffectAdded;
+        }
+
+        private void OnZoneEffectRemoved(ZoneEffect effect)
+        {
+            var eligibleUnits = Units.Where(u =>
+            {
+                return u.EffectHandler.ContainsEffect(effect.Effect);
+            });
+            foreach (var unit in eligibleUnits)
+            {
+                unit.EffectHandler.RemoveEffectsByType(effect.Effect);
+            }
+        }
+
+        private void OnZoneEffectAdded(ZoneEffect effect)
+        {
+            var eligibleUnits = Units.Where(u =>
+            {
+                return !u.EffectHandler.ContainsEffect(effect.Effect) && effect.PlayerOnly == u is Player;
+            });
+            foreach (var unit in eligibleUnits)
+            {
+                var builder = unit.NewEffectBuilder().SetType(effect.Effect).SetOwnerToSource();
+                unit.ApplyEffect(builder);
+            }
+        }
+
+        public void AddZoneEffect(ZoneEffect zoneEffect)
+        {
+            _zoneEffectHandler.AddEffect(zoneEffect);
+        }
+
+        public void RemoveZoneEffect(ZoneEffect zoneEffect)
+        {
+            _zoneEffectHandler.RemoveEffect(zoneEffect);
         }
 
         private void OnCharacterDeselected(ISession session, Character character)
@@ -201,6 +241,8 @@ namespace Perpetuum.Zones
 
             unit.Updated += OnUnitUpdated;
             unit.Dead += OnUnitDead;
+
+            _zoneEffectHandler.ApplyZoneEffects(unit);
             Logger.Info($"Unit entered to zone. zone:{Id} eid = {unit.InfoString} ({unit.CurrentPosition})");
         }
 

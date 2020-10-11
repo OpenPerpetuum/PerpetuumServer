@@ -1,4 +1,6 @@
 ﻿using Perpetuum.Players;
+using Perpetuum.Units;
+using System;
 
 namespace Perpetuum.Zones.Effects.ZoneEffects
 {
@@ -7,6 +9,10 @@ namespace Perpetuum.Zones.Effects.ZoneEffects
     /// </summary>
     public interface IZoneEffectHandler
     {
-        void ApplyZoneEffects(Player player, IZone zone);
+        event Action<ZoneEffect> EffectAdded;
+        event Action<ZoneEffect> EffectRemoved;
+        void ApplyZoneEffects(Unit unit);
+        void RemoveEffect(ZoneEffect zoneEffect);
+        void AddEffect(ZoneEffect zoneEffect);
     }
 }

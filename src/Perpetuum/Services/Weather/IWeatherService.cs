@@ -1,9 +1,9 @@
 using System;
 using Perpetuum.Threading.Process;
 
-namespace Perpetuum.Zones
+namespace Perpetuum.Services.Weather
 {
-    public interface IWeatherService : IObservable<Packet>,IProcess
+    public interface IWeatherService : IObservable<WeatherInfo>, IProcess
     {
         [NotNull]
         WeatherInfo GetCurrentWeather();
