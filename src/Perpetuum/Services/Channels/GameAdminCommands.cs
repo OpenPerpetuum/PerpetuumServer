@@ -967,6 +967,51 @@ namespace Perpetuum.Services.Channels
                 request.Session.HandleLocalRequest(request.Session.CreateLocalRequest(cmd));
                 channel.SendMessageToAll(sessionManager, sender, $"Layer(s) Saved! ");
             }
+
+
+            if (command[0] == "#setweather")
+            {
+                if (command.Length < 3)
+                {
+                    channel.SendMessageToAll(sessionManager, sender, $"bad or missing args");
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+                var zoneId = sender.ZoneId ?? -1;
+                bool err = false;
+                err = !int.TryParse(command[1], out int weatherInt);
+                err = !int.TryParse(command[2], out int seconds);
+                if (command.Length > 3)
+                {
+                    err = !int.TryParse(command[3], out zoneId);
+                }
+                if (!request.Session.ZoneMgr.ContainsZone(zoneId))
+                {
+                    channel.SendMessageToAll(sessionManager, sender, $"Bad or missing zone id");
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+                var zone = request.Session.ZoneMgr.GetZone(zoneId);
+                var current = zone.Weather.GetCurrentWeather();
+                var weather = new WeatherInfo(current.Next, weatherInt.Min(255), TimeSpan.FromSeconds(seconds));
+                zone.Weather.SetCurrentWeather(weather);
+                channel.SendMessageToAll(sessionManager, sender, $"Weather set {zone.Weather.GetCurrentWeather().ToString()}");
+            }
+
+            if (command[0] == "#getweather")
+            {
+                var zoneId = sender.ZoneId ?? -1;
+                bool err = false;
+                if (command.Length > 1)
+                {
+                    err = !int.TryParse(command[1], out zoneId);
+                }
+                if (!request.Session.ZoneMgr.ContainsZone(zoneId) || err)
+                {
+                    channel.SendMessageToAll(sessionManager, sender, $"Bad or missing zone id");
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+                var zone = request.Session.ZoneMgr.GetZone(zoneId);
+                channel.SendMessageToAll(sessionManager, sender, $"Weather set {zone.Weather.GetCurrentWeather().ToString()}");
+            }
         }
     }
 }
