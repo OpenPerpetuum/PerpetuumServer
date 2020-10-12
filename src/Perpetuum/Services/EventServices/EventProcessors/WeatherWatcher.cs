@@ -9,8 +9,8 @@ namespace Perpetuum.Services.EventServices.EventProcessors
     public class WeatherWatcher : EventProcessor<EventMessage>
     {
         private IZone _zone;
-        private Lazy<ZoneEffect> _goodWeather;
-        private Lazy<ZoneEffect> _badWeather;
+        private readonly Lazy<ZoneEffect> _goodWeather;
+        private readonly Lazy<ZoneEffect> _badWeather;
         public WeatherWatcher(IZone zone)
         {
             _zone = zone;
@@ -20,12 +20,12 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 
         private ZoneEffect GetGoodWeather()
         {
-            return new ZoneEffect(_zone.Id, EffectType.effect_intrusion_detection_lvl1, true);
+            return new ZoneEffect(_zone.Id, EffectType.effect_weather_good, true);
         }
 
         private ZoneEffect GetBadWeather()
         {
-            return new ZoneEffect(_zone.Id, EffectType.effect_intrusion_masking_lvl1, true);
+            return new ZoneEffect(_zone.Id, EffectType.effect_weather_bad, true);
         }
 
         public override void OnNext(EventMessage value)

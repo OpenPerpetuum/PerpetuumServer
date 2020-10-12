@@ -32,18 +32,14 @@ namespace Perpetuum.Zones.Effects.ZoneEffects
 
         public void AddEffect(ZoneEffect zoneEffect)
         {
-            if (zoneEffect != null && effects.Value.TryAdd(zoneEffect, _))
-            {
-                EffectAdded?.Invoke(zoneEffect);
-            }
+            effects.Value.TryAdd(zoneEffect, _);
+            EffectAdded?.Invoke(zoneEffect);
         }
 
         public void RemoveEffect(ZoneEffect zoneEffect)
         {
-            if (zoneEffect != null && effects.Value.TryRemove(zoneEffect, out byte b))
-            {
-                EffectRemoved?.Invoke(zoneEffect);
-            }
+            effects.Value.TryRemove(zoneEffect, out byte b);
+            EffectRemoved?.Invoke(zoneEffect);
         }
 
         private IEnumerable<ZoneEffect> GetEffects()
