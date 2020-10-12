@@ -107,7 +107,7 @@ namespace Perpetuum.ExportedTypes
         effect_beta2_bonus = 104,
         effect_alpha_bonus = 105,
         effect_alpha2_bonus = 106,
-        effect_weather_good = 108,
-        effect_weather_bad = 109
+        effect_weather_good = 107,
+        effect_weather_bad = 108
     }
 }
