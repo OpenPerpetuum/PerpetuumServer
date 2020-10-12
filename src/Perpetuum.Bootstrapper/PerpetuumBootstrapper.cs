@@ -111,6 +111,7 @@ using Perpetuum.Services.Standing;
 using Perpetuum.Services.Steam;
 using Perpetuum.Services.TechTree;
 using Perpetuum.Services.Trading;
+using Perpetuum.Services.Weather;
 using Perpetuum.Threading.Process;
 using Perpetuum.Units;
 using Perpetuum.Units.DockingBases;
@@ -177,7 +178,6 @@ using SetItemName = Perpetuum.RequestHandlers.SetItemName;
 using TrashItems = Perpetuum.RequestHandlers.TrashItems;
 using UnpackItems = Perpetuum.RequestHandlers.UnpackItems;
 using UnstackAmount = Perpetuum.RequestHandlers.UnstackAmount;
-using Perpetuum.Services.Weather;
 
 namespace Perpetuum.Bootstrapper
 {
@@ -2471,8 +2471,19 @@ namespace Perpetuum.Bootstrapper
                 return new WeatherService(new TimeRange(TimeSpan.FromMinutes(30), TimeSpan.FromHours(1)));
             }).OnActivated(e =>
             {
-                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromMinutes(5)));
+                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(5)));
             }).As<IWeatherService>();
+
+            _builder.RegisterType<WeatherMonitor>();
+            _builder.RegisterType<WeatherEventListener>();
+            _builder.Register<Func<IZone, WeatherEventListener>>(x =>
+            {
+                var ctx = x.Resolve<IComponentContext>();
+                return zone =>
+                {
+                    return new WeatherEventListener(ctx.Resolve<EventListenerService>(), zone);
+                };
+            });
 
             _builder.RegisterType<DefaultZoneUnitRepository>().AsSelf().As<IZoneUnitRepository>();
             _builder.RegisterType<UserZoneUnitRepository>().AsSelf().As<IZoneUnitRepository>();
@@ -2542,6 +2553,10 @@ namespace Perpetuum.Bootstrapper
                         zone.HighwayHandler = ctx.Resolve<PBSHighwayHandler.Factory>().Invoke(zone);
                         zone.TerraformHandler = ctx.Resolve<TerraformHandler.Factory>().Invoke(zone);
                     }
+
+                    ctx.Resolve<EventListenerService>().AttachListener(new WeatherWatcher(zone));
+                    var listener = ctx.Resolve<Func<IZone, WeatherEventListener>>().Invoke(zone);
+                    listener.Subscribe(zone.Weather);
 
                     zone.LoadUnits();
                     return zone;

@@ -105,6 +105,7 @@ namespace Perpetuum.Zones
             foreach (var unit in eligibleUnits)
             {
                 unit.EffectHandler.RemoveEffectsByType(effect.Effect);
+                Logger.DebugWarning($"Removing {effect.Effect} to {unit} on zone:{Id}");
             }
         }
 
@@ -118,6 +119,7 @@ namespace Perpetuum.Zones
             {
                 var builder = unit.NewEffectBuilder().SetType(effect.Effect).SetOwnerToSource();
                 unit.ApplyEffect(builder);
+                Logger.DebugWarning($"Adding {effect.Effect} to {unit} on zone:{Id}");
             }
         }
 

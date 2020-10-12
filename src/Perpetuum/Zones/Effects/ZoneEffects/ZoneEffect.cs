@@ -20,6 +20,10 @@ namespace Perpetuum.Zones.Effects.ZoneEffects
 
         public override bool Equals(object obj)
         {
+            if (obj is ZoneEffect z)
+            {
+                return Equals(z);
+            }
             return base.Equals(obj);
         }
 
