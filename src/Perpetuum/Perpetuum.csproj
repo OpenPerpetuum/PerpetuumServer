@@ -550,7 +550,7 @@
     <Compile Include="Services\Steam\SteamHelper.cs" />
     <Compile Include="Services\Weather\IWeatherService.cs" />
     <Compile Include="Services\Weather\WeatherInfo.cs" />
-    <Compile Include="Services\Weather\WeatherMonitor.cs" />
+    <Compile Include="Services\Weather\WeatherObservers.cs" />
     <Compile Include="Services\Weather\WeatherService.cs" />
     <Compile Include="SizeExtensions.cs" />
     <Compile Include="StateMachines\FiniteStateMachine.cs" />

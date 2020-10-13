@@ -6,10 +6,11 @@ using System;
 
 namespace Perpetuum.Services.Weather
 {
-
+    /// <summary>
+    /// Weather observer for transmitting EventMessages to EventListenerService
+    /// </summary>
     public class WeatherEventListener : Observer<WeatherInfo>
     {
-
         private IZone _zone;
         private EventListenerService _listener;
         public WeatherEventListener(EventListenerService listener, IZone zone)
@@ -24,6 +25,9 @@ namespace Perpetuum.Services.Weather
         }
     }
 
+    /// <summary>
+    /// Generic weather observer that invokes the provided action on weather events
+    /// </summary>
     public class WeatherMonitor : Observer<WeatherInfo>
     {
         private Action<WeatherInfo> _onNext;
@@ -35,12 +39,6 @@ namespace Perpetuum.Services.Weather
         public override void OnNext(WeatherInfo info)
         {
             _onNext(info);
-        }
-
-        protected override void OnDispose()
-        {
-            _onNext = null;
-            base.OnDispose();
         }
     }
 }

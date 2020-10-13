@@ -1,8 +1,10 @@
-﻿using Perpetuum.Players;
+﻿using Perpetuum.Log;
+using Perpetuum.Players;
 using Perpetuum.Units;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Perpetuum.Zones.Effects.ZoneEffects
 {
@@ -10,62 +12,71 @@ namespace Perpetuum.Zones.Effects.ZoneEffects
     {
         private const byte _ = 0;
         private readonly IZone _zone;
-        private readonly Lazy<ConcurrentDictionary<ZoneEffect, byte>> effects;
+        private readonly ConcurrentDictionary<ZoneEffect, byte> _effects;
 
-        public event Action<ZoneEffect> EffectAdded;
-        public event Action<ZoneEffect> EffectRemoved;
         public ZoneEffectHandler(IZone zone)
         {
             _zone = zone;
-            effects = new Lazy<ConcurrentDictionary<ZoneEffect, byte>>(InitCollection);
+            _effects = new ConcurrentDictionary<ZoneEffect, byte>();
+            InitCollection();
         }
 
-        private ConcurrentDictionary<ZoneEffect, byte> InitCollection()
+        private void InitCollection()
         {
-            var dict = new ConcurrentDictionary<ZoneEffect, byte>();
             foreach (var zoneEffect in ZoneEffectReader.GetStaticZoneEffects(_zone))
             {
-                dict.Add(zoneEffect, _);
+                _effects.Add(zoneEffect, _);
             }
-            return dict;
         }
 
         public void AddEffect(ZoneEffect zoneEffect)
         {
-            effects.Value.TryAdd(zoneEffect, _);
-            EffectAdded?.Invoke(zoneEffect);
+            _effects.TryAdd(zoneEffect, _);
+            OnZoneEffectAdded(zoneEffect);
         }
 
         public void RemoveEffect(ZoneEffect zoneEffect)
         {
-            effects.Value.TryRemove(zoneEffect, out byte b);
-            EffectRemoved?.Invoke(zoneEffect);
+            _effects.TryRemove(zoneEffect, out byte b);
+            OnZoneEffectRemoved(zoneEffect);
+        }
+
+        private void OnZoneEffectRemoved(ZoneEffect effect)
+        {
+            var eligibleUnits = _zone.Units.Where(u => u.EffectHandler.ContainsEffect(effect.Effect));
+            foreach (var unit in eligibleUnits)
+            {
+                unit.EffectHandler.RemoveEffectsByType(effect.Effect);
+                Logger.DebugInfo($"Removing {effect.Effect} to {unit} on zone:{_zone.Id}");
+            }
+        }
+
+        private void OnZoneEffectAdded(ZoneEffect effect)
+        {
+            var eligibleUnits = _zone.Units.Where(u => CanApplyEffect(effect)(u));
+            foreach (var unit in eligibleUnits)
+            {
+                var builder = unit.NewEffectBuilder().SetType(effect.Effect).SetOwnerToSource();
+                unit.ApplyEffect(builder);
+                Logger.DebugInfo($"Adding {effect.Effect} to {unit} on zone:{_zone.Id}");
+            }
         }
 
         private IEnumerable<ZoneEffect> GetEffects()
         {
-            return effects.Value.Keys;
+            return _effects.Keys;
         }
 
-        private bool CheckCanApply(Unit unit, ZoneEffect zoneEffect)
+        private Func<Unit, bool> CanApplyEffect(ZoneEffect effect)
         {
-            if (unit.EffectHandler.ContainsEffect(zoneEffect.Effect)) //dont apply if already on
-            {
-                return false;
-            }
-            else if (unit is Player && zoneEffect.PlayerOnly) //apply if for player and is player
-            {
-                return true;
-            }
-            //apply if not player and is not for player
-            return !zoneEffect.PlayerOnly;
+            return u => !u.EffectHandler.ContainsEffect(effect.Effect) && effect.PlayerOnly == u is Player;
         }
 
-        public void ApplyZoneEffects(Unit unit)
+        public void OnEnterZone(Unit unit)
         {
             foreach (var zoneEffect in GetEffects())
             {
-                if (CheckCanApply(unit, zoneEffect))
+                if (CanApplyEffect(zoneEffect)(unit))
                 {
                     var builder = unit.NewEffectBuilder().SetType(zoneEffect.Effect).SetOwnerToSource();
                     unit.ApplyEffect(builder);

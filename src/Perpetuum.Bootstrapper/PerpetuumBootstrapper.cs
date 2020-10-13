@@ -651,6 +651,12 @@ namespace Perpetuum.Bootstrapper
 
             _builder.RegisterType<ZoneEffectHandler>().As<IZoneEffectHandler>();
 
+            _builder.Register<Func<IZone, IZoneEffectHandler>>(x =>
+            {
+                var ctx = x.Resolve<IComponentContext>();
+                return zone => new ZoneEffectHandler(zone);
+            });
+
             _builder.RegisterType<InvulnerableEffect>().Keyed<Effect>(EffectType.effect_invulnerable);
             _builder.RegisterType<CoTEffect>().Keyed<Effect>(EffectType.effect_eccm);
             _builder.RegisterType<CoTEffect>().Keyed<Effect>(EffectType.effect_stealth);
@@ -2518,7 +2524,6 @@ namespace Perpetuum.Bootstrapper
             RegisterZone<TrainingZone>(ZoneType.Training);
             RegisterZone<StrongHoldZone>(ZoneType.Stronghold);
 
-
             _builder.RegisterType<SettingsLoader>();
             _builder.RegisterType<PlantRuleLoader>();
 
@@ -2530,6 +2535,7 @@ namespace Perpetuum.Bootstrapper
                     var zone = ctx.ResolveKeyed<Zone>(configuration.Type);
                     zone.Configuration = configuration;
                     zone.Listener = new TcpListener(new IPEndPoint(IPAddress.Any, configuration.ListenerPort));
+                    zone.ZoneEffectHandler = ctx.Resolve<Func<IZone, IZoneEffectHandler>>().Invoke(zone);
                     zone.UnitService = ctx.Resolve<ZoneUnitServiceFactory>().Invoke(zone);
                     zone.Weather = ctx.Resolve<IWeatherService>();
                     zone.Beams = ctx.Resolve<IBeamService>();

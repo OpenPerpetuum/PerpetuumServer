@@ -51,6 +51,7 @@ namespace Perpetuum.Zones
         TerraformHandler TerraformHandler { get; }
         MiningLogHandler MiningLogHandler { get; }
         IRelicManager RelicManager { get; }
+        IZoneEffectHandler ZoneEffectHandler { get; }
 
         IZoneUnitService UnitService { get; }
         IZoneEnterQueueService EnterQueueService { get; }
@@ -61,9 +62,6 @@ namespace Perpetuum.Zones
         void RemoveUnit(Unit unit);
         void SetGang(Player player);
 
-        void Enter(Character character,Command replyCommand);
-
-        void AddZoneEffect(ZoneEffect zoneEffect);
-        void RemoveZoneEffect(ZoneEffect zoneEffect);
+        void Enter(Character character, Command replyCommand);
     }
 }

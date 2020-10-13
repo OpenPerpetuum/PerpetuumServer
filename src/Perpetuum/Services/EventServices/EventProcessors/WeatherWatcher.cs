@@ -1,5 +1,6 @@
 ﻿using Perpetuum.ExportedTypes;
 using Perpetuum.Services.EventServices.EventMessages;
+using Perpetuum.Services.Weather;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Effects.ZoneEffects;
 using System;
@@ -28,26 +29,36 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             return new ZoneEffect(_zone.Id, EffectType.effect_weather_bad, true);
         }
 
+        private bool IsBadWeather(WeatherInfo info)
+        {
+            return info.Current > 200 && info.Next > 200;
+        }
+
+        private bool IsGoodWeather(WeatherInfo info)
+        {
+            return info.Current < 100 && info.Next < 100;
+        }
+
         public override void OnNext(EventMessage value)
         {
             if (value is WeatherEventMessage msg && msg.ZoneId==_zone.Id)
             {
-                if (msg.Weather.Current > 200)
+                if (IsBadWeather(msg.Weather))
                 {
-                    _zone.AddZoneEffect(_badWeather.Value);
+                    _zone.ZoneEffectHandler.AddEffect(_badWeather.Value);
                 }
                 else
                 {
-                    _zone.RemoveZoneEffect(_badWeather.Value);
+                    _zone.ZoneEffectHandler.RemoveEffect(_badWeather.Value);
                 }
 
-                if (msg.Weather.Current < 100)
+                if (IsGoodWeather(msg.Weather))
                 {
-                    _zone.AddZoneEffect(_goodWeather.Value);
+                    _zone.ZoneEffectHandler.AddEffect(_goodWeather.Value);
                 }
                 else
                 {
-                    _zone.RemoveZoneEffect(_goodWeather.Value);
+                    _zone.ZoneEffectHandler.RemoveEffect(_goodWeather.Value);
                 }
             }
         }
