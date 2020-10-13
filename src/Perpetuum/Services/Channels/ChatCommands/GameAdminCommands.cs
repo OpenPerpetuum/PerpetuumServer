@@ -25,7 +25,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
         private bool IsAdminCommand(Character sender, string message)
         {
-            return message.Substring(0, 1) == "#" && sender.AccessLevel == AccessLevel.admin;
+            return message.StartsWith("#") && sender.AccessLevel == AccessLevel.admin;
         }
 
         private void ParseAdminCommand(Character sender, string text, IRequest request, Channel channel, IChannelManager channelManager)
