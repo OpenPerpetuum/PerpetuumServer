@@ -18,9 +18,8 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public string Command { get; private set; }
         public ChatCommand(string command)
         {
-            Command = command;
+            Command = command.ToLower();
         }
-
     }
 
 
@@ -75,19 +74,19 @@ namespace Perpetuum.Services.Channels.ChatCommands
         }
         #endregion
         #region AdminCommands
-        [ChatCommand("#secure")]
+        [ChatCommand("Secure")]
         public static void Secure(AdminCommandData data)
         {
             data.Channel.SetAdmin(true);
             data.Channel.SendMessageToAll(data.SessionManager, data.Sender, "Channel Secured.");
         }
-        [ChatCommand("#unsecure")]
+        [ChatCommand("UnSecure")]
         public static void UnSecure(AdminCommandData data)
         {
             data.Channel.SetAdmin(false);
             data.Channel.SendMessageToAll(data.SessionManager, data.Sender, "Channel is now public.");
         }
-        [ChatCommand("#shutdown")]
+        [ChatCommand("Shutdown")]
         public static void Shutdown(AdminCommandData data)
         {
             DateTime shutdownin = DateTime.Now;
@@ -107,13 +106,13 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("serverShutDown:relay:{0}", GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#shutdowncancel")]
+        [ChatCommand("ShutdownCancel")]
         public static void ShutdownCancel(AdminCommandData data)
         {
             string cmd = string.Format("serverShutDownCancel:relay:null");
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#jumpto")]
+        [ChatCommand("JumpTo")]
         public static void JumpTo(AdminCommandData data)
         {
             bool err = false; //TODO this only throws on bad last-arg!
@@ -135,7 +134,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("jumpAnywhere:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#moveplayer")]
+        [ChatCommand("MovePlayer")]
         public static void MovePlayer(AdminCommandData data)
         {
             bool err = false; //TODO this parse checking is broken
@@ -182,7 +181,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
             SendMessageToAll(data, string.Format("Moved Character {0}-{1} to Zone {2} @ {3},{4}", characterID, charactersession.Character.Nick, zone.Id, x, y));
         }
-        [ChatCommand("#giveitem")]
+        [ChatCommand("GiveItem")]
         public static void GiveItem(AdminCommandData data)
         {
             int.TryParse(data.Command.Args[0], out int definition);
@@ -198,7 +197,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             HandleLocalRequest(data, cmd);
             SendMessageToAll(data, string.Format("Gave Item {0} ", definition));
         }
-        [ChatCommand("#getlockedtileproperties")]
+        [ChatCommand("GetLockedTileProperties")]
         public static void GetLockedTileProperties(AdminCommandData data)
         {
             var character = data.Request.Session.Character;
@@ -250,7 +249,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 }
             }
         }
-        [ChatCommand("#setvisibility")]
+        [ChatCommand("SetVisibility")]
         public static void SetVisibility(AdminCommandData data)
         {
             bool.TryParse(data.Command.Args[0], out bool visiblestate);
@@ -263,7 +262,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
             SendMessageToAll(data, string.Format("Player {0} visibility is {1}", player.Character.Nick, visiblestate));
         }
-        [ChatCommand("#zonedrawstatmap")]
+        [ChatCommand("ZoneDrawStatMap")]
         public static void ZoneDrawStatMap(AdminCommandData data)
         {
             //TODO check args, maybe allow zone id, fallback to sender zone
@@ -275,7 +274,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneDrawStatMap:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#listplayersinzone")]
+        [ChatCommand("ListAllPlayersInZone")]
         public static void ListAllPlayersInZone(AdminCommandData data)
         {
             int.TryParse(data.Command.Args[0], out int zoneid);
@@ -288,7 +287,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
                     c.AccountId, c.Id, c.Nick, c.AccessLevel, c.IsDocked, c.GetCurrentDockingBase().Eid, c.GetPlayerRobotFromZone().CurrentPosition));
             }
         }
-        [ChatCommand("#countofplayers")]
+        [ChatCommand("CountOfPlayers")]
         public static void CountOfPlayers(AdminCommandData data)
         {
             foreach (IZone z in data.Request.Session.ZoneMgr.Zones)
@@ -296,7 +295,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 SendMessageToAll(data, string.Format("Players On Zone {0}: {1}", z.Id, z.Players.ToList().Count));
             }
         }
-        [ChatCommand("#addtochannel")]
+        [ChatCommand("AddToChannel")]
         public static void AddToChannel(AdminCommandData data)
         {
             int.TryParse(data.Command.Args[0], out int characterid);
@@ -307,7 +306,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
             SendMessageToAll(data, string.Format("Added character {0} to channel ", c.Character.Nick));
         }
-        [ChatCommand("#removefromchannel")]
+        [ChatCommand("RemoveFromChannel")]
         public static void RemoveFromChannel(AdminCommandData data)
         {
             int.TryParse(data.Command.Args[0], out int characterid);
@@ -318,7 +317,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
             SendMessageToAll(data, string.Format("Removed character {0} from channel ", c.Character.Nick));
         }
-        [ChatCommand("#listrifts")]
+        [ChatCommand("ListRifts")]
         public static void ListRifts(AdminCommandData data)
         {
             foreach (IZone z in data.Request.Session.ZoneMgr.Zones)
@@ -330,7 +329,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 }
             }
         }
-        [ChatCommand("#flagplayernameoffensive")]
+        [ChatCommand("FlagPlayerNameOffensive")]
         public static void FlagPlayerNameOffensive(AdminCommandData data)
         {
             bool err = false;
@@ -343,7 +342,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
             SendMessageToAll(data, string.Format("Player with nick {0} is offensive:{1}", charactersession.Character.Nick, charactersession.Character.IsOffensiveNick));
         }
-        [ChatCommand("#renamecorp")]
+        [ChatCommand("RenameCorp")]
         public static void RenameCorp(AdminCommandData data)
         {
             string currentCorpName = data.Command.Args[0];
@@ -356,7 +355,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
             SendMessageToAll(data, string.Format("Corp with nick {0} changed to: {1} [{2}]", currentCorpName, desiredCorpName, desiredCorpNick));
         }
-        [ChatCommand("#unlockallep")]
+        [ChatCommand("UnlockAllEP")]
         public static void UnlockAllEP(AdminCommandData data)
         {
             bool err = false;
@@ -375,7 +374,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             HandleLocalRequest(data, cmd);
             SendMessageToAll(data, "unlockallep: " + dictionary.ToDebugString());
         }
-        [ChatCommand("#epbonusset")]
+        [ChatCommand("EPBonusSet")]
         public static void EPBonusSet(AdminCommandData data)
         {
             bool err = false;
@@ -396,7 +395,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             HandleLocalRequest(data, cmd);
             SendMessageToAll(data, "EP Bonus Set with command: " + dictionary.ToDebugString());
         }
-        [ChatCommand("#listrelics")]
+        [ChatCommand("ListRelics")]
         public static void ListRelics(AdminCommandData data)
         {
             bool err = false;
@@ -445,7 +444,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
         }
         #endregion
         #region DevCommands
-        [ChatCommand("#currentzonecleanobstacleblocking")]
+        [ChatCommand("ZoneCleanObstacleBlocking")]
         public static void ZoneCleanObstacleBlocking(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -454,7 +453,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneCleanObstacleBlocking:zone_{0}:null", data.Sender.ZoneId);
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#currentzonedrawblockingbyeid")]
+        [ChatCommand("ZoneDrawBlockingByEid")]
         public static void ZoneDrawBlockingByEid(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -476,7 +475,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneDrawBlockingByEid:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#currentzoneremoveobjectbyeid")]
+        [ChatCommand("ZoneRemoveObjectByEid")]
         public static void ZoneRemoveObjectByEid(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -493,7 +492,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneRemoveObject:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#zonecreateisland")]
+        [ChatCommand("ZoneCreateIsland")]
         public static void ZoneCreateIsland(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -510,7 +509,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneCreateIsland:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#currentzoneplacewall")]
+        [ChatCommand("ZonePlaceWall")]
         public static void ZonePlaceWall(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -519,7 +518,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zonePlaceWall:zone_{0}:null", data.Sender.ZoneId);
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#currentzoneclearwalls")]
+        [ChatCommand("ZoneClearWalls")]
         public static void ZoneClearWalls(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -528,7 +527,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneClearWalls:zone_{0}:null", data.Sender.ZoneId);
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#currentzoneadddecor")]
+        [ChatCommand("ZoneAddDecor")]
         public static void ZoneAddDecor(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -568,7 +567,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneDecorAdd:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#adddecortolockedtile")]
+        [ChatCommand("ZoneAddDecorToLockedTile")]
         public static void ZoneAddDecorToLockedTile(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -613,7 +612,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneDecorAdd:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#zonedeletedecor")]
+        [ChatCommand("ZoneDeleteDecor")]
         public static void ZoneDeleteDecor(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -630,7 +629,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneDecorDelete:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#zoneclearlayer")]
+        [ChatCommand("ZoneClearLayer")]
         public static void ZoneClearLayer(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -644,7 +643,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneClearLayer:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#zonesetplantspeed")]
+        [ChatCommand("ZoneSetPlantSpeed")]
         public static void ZoneSetPlantSpeed(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -661,7 +660,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneSetPlantsSpeed:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#zonesetplantmode")]
+        [ChatCommand("ZoneSetPlantMode")]
         public static void ZoneSetPlantMode(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -675,7 +674,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneSetPlantsMode:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#currentzonerestoreoriginalgamma")]
+        [ChatCommand("ZoneRestoreOriginalGamma")]
         public static void ZoneRestoreOriginalGamma(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -689,7 +688,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneRestoreOriginalGamma:zone_{0}:null", data.Sender.ZoneId);
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#zonedrawblockingbydefinition")]
+        [ChatCommand("ZoneDrawBlockingByDefinition")]
         public static void ZoneDrawBlockingByDefinition(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -708,7 +707,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneDrawBlockingByDefinition:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#addblockingtotiles")]
+        [ChatCommand("ZoneAddBlockingToLockedTiles")]
         public static void ZoneAddBlockingToLockedTiles(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -732,7 +731,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
             SendMessageToAll(data, string.Format("Added Blocking To {0} Tiles.", lockedtiles.Count));
         }
-        [ChatCommand("#removeblockingfromtiles")]
+        [ChatCommand("ZoneRemoveBlockingToLockedTiles")]
         public static void ZoneRemoveBlockingToLockedTiles(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -756,7 +755,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
             SendMessageToAll(data, string.Format("Removed Blocking From {0} Tiles.", lockedtiles.Count));
         }
-        [ChatCommand("#zonedecorlock")]
+        [ChatCommand("ZoneLockDecor")]
         public static void ZoneLockDecor(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -775,62 +774,62 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string cmd = string.Format("zoneDecorLock:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
-        [ChatCommand("#zonetileshighway")]
+        [ChatCommand("ZoneSetTilesHighway")]
         public static void ZoneSetTilesHighway(AdminCommandData data)
         {
             ZoneSetTilesControl(data, TerrainControlFlags.Highway);
         }
-        [ChatCommand("#zonetilesconcretea")]
+        [ChatCommand("ZoneSetTilesConcreteA")]
         public static void ZoneSetTilesConcreteA(AdminCommandData data)
         {
             ZoneSetTilesControl(data, TerrainControlFlags.ConcreteA);
         }
-        [ChatCommand("#zonetilesconcreteb")]
+        [ChatCommand("ZoneSetTilesConcreteB")]
         public static void ZoneSetTilesConcreteB(AdminCommandData data)
         {
             ZoneSetTilesControl(data, TerrainControlFlags.ConcreteB);
         }
-        [ChatCommand("#zonetilesantiplant")]
+        [ChatCommand("ZoneSetTilesAntiPlant")]
         public static void ZoneSetTilesAntiPlant(AdminCommandData data)
         {
             ZoneSetTilesControl(data, TerrainControlFlags.AntiPlant);
         }
-        [ChatCommand("#zonetilesnpcrestrict")]
+        [ChatCommand("ZoneSetTilesNPCRestricted")]
         public static void ZoneSetTilesNPCRestricted(AdminCommandData data)
         {
             ZoneSetTilesControl(data, TerrainControlFlags.NpcRestricted);
         }
-        [ChatCommand("#zonetileshighwayPBS")]
+        [ChatCommand("ZoneSetTilesHighwayPBS")]
         public static void ZoneSetTilesHighwayPBS(AdminCommandData data)
         {
             ZoneSetTilesControl(data, TerrainControlFlags.PBSHighway);
         }
-        [ChatCommand("#zonetileshighwaycombo")]
+        [ChatCommand("ZoneSetTilesHighwayCombo")]
         public static void ZoneSetTilesHighwayCombo(AdminCommandData data)
         {
             ZoneSetTilesControl(data, TerrainControlFlags.HighWayCombo);
         }
-        [ChatCommand("#zonetilesroaming")]
+        [ChatCommand("ZoneSetTilesNPCRoaming")]
         public static void ZoneSetTilesNPCRoaming(AdminCommandData data)
         {
             ZoneSetTilesControl(data, TerrainControlFlags.Roaming);
         }
-        [ChatCommand("#ZoneSetTilesSyndicate")]
+        [ChatCommand("ZoneSetTilesSyndicate")]
         public static void ZoneSetTilesSyndicate(AdminCommandData data)
         {
             ZoneSetTilesControl(data, TerrainControlFlags.SyndicateArea);
         }
-        [ChatCommand("#zonetilesPBSTerraformProtected")]
+        [ChatCommand("ZoneSetTilesTerraformProtect")]
         public static void ZoneSetTilesTerraformProtect(AdminCommandData data)
         {
             ZoneSetTilesControl(data, TerrainControlFlags.TerraformProtected);
         }
-        [ChatCommand("#zonetilesPBSTerraformProtectedcombo")]
+        [ChatCommand("ZoneSetTilesTerraformProtectCombo")]
         public static void ZoneSetTilesTerraformProtectCombo(AdminCommandData data)
         {
             ZoneSetTilesControl(data, TerrainControlFlags.TerraformProtectedCombo);
         }
-        [ChatCommand("#savelayers")]
+        [ChatCommand("SaveLayers")]
         public static void SaveLayers(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -853,7 +852,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             HandleLocalRequest(data, cmd);
             SendMessageToAll(data, $"Layer(s) Saved! ");
         }
-        [ChatCommand("#zoneislandblock")]
+        [ChatCommand("ZoneIslandBlock")]
         public static void ZoneIslandBlock(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -879,7 +878,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             HandleLocalRequest(data, cmd);
             SendMessageToAll(data, $"Zone water level blocked! ");
         }
-        [ChatCommand("#zonecreategarden")]
+        [ChatCommand("ZoneCreateGarden")]
         public static void ZoneCreateGarden(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -907,7 +906,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             HandleLocalRequest(data, cmd);
             SendMessageToAll(data, $"Garden Created! ");
         }
-        [ChatCommand("#testmissions")]
+        [ChatCommand("TestMissions")]
         public static void TestMissions(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
@@ -933,7 +932,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             HandleLocalRequest(data, cmd);
             SendMessageToAll(data, string.Format("Running missionresolve test {0}", dictionary.ToDebugString()));
         }
-        [ChatCommand("#spawnrelic")]
+        [ChatCommand("SpawnRelic")]
         public static void SpawnRelic(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))

@@ -13,7 +13,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             public string[] Args { get; private set; }
             public CommandArgs(string[] commandArray)
             {
-                Name = commandArray[0].ToLower().Trim();
+                Name = commandArray[0].Substring(1).ToLower().Trim();
                 Args = commandArray.Skip(1).ToArray();
             }
         }
