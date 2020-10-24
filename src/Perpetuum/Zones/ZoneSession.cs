@@ -929,8 +929,6 @@ namespace Perpetuum.Zones
             UpdateLogout(time);
         }
 
-
-
         private class BeamsMonitor : Observer<Beam>
         {
             private readonly ZoneSession _session;

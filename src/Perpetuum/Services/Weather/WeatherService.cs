@@ -38,7 +38,7 @@ namespace Perpetuum.Services.Weather
         {
             var duration = FastRandom.NextTimeSpan(_updateInterval);
 
-            return _current == null ? new WeatherInfo(GetRandomWeather(),GetRandomWeather(), duration) : 
+            return _current == null ? new WeatherInfo(GetRandomWeather(), GetRandomWeather(), duration) :
                 new WeatherInfo(_current.Next, GetRandomWeather(), duration);
         }
 

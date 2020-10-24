@@ -12,7 +12,7 @@ namespace Perpetuum.Services.Weather
 
         private readonly TimeTracker _timer;
 
-        public WeatherInfo(int current, int next,TimeSpan duration)
+        public WeatherInfo(int current, int next, TimeSpan duration)
         {
             Current = current;
             Next = next;
