@@ -79,6 +79,7 @@ using Perpetuum.Robots;
 using Perpetuum.Services;
 using Perpetuum.Services.Channels;
 using Perpetuum.Services.Channels.ChatCommands;
+using Perpetuum.Services.Daytime;
 using Perpetuum.Services.EventServices;
 using Perpetuum.Services.EventServices.EventProcessors;
 using Perpetuum.Services.ExtensionService;
@@ -1710,6 +1711,14 @@ namespace Perpetuum.Bootstrapper
                 e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(0.75)));
                 e.Instance.AttachListener(e.Context.Resolve<ChatEcho>());
                 e.Instance.AttachListener(e.Context.Resolve<NpcChatEcho>());
+                e.Context.Resolve<IDayTimeService>();
+            });
+
+            _builder.RegisterType<DayTimeService>().As<IDayTimeService>().SingleInstance().OnActivated(e =>
+            {
+                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(15)));
+                var obs = new DayObserver(e.Context.Resolve<EventListenerService>());
+                e.Instance.Subscribe(obs);
             });
 
             // OPP: InterzoneNPCManager
@@ -2480,7 +2489,7 @@ namespace Perpetuum.Bootstrapper
                 return new WeatherService(new TimeRange(TimeSpan.FromMinutes(30), TimeSpan.FromHours(1)));
             }).OnActivated(e =>
             {
-                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(5)));
+                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromMinutes(3.5)));
             }).As<IWeatherService>();
 
             _builder.RegisterType<WeatherMonitor>();
@@ -2564,6 +2573,7 @@ namespace Perpetuum.Bootstrapper
                     }
 
                     ctx.Resolve<EventListenerService>().AttachListener(new WeatherWatcher(zone));
+                    ctx.Resolve<EventListenerService>().AttachListener(new DayTimeEventProcessor(zone));
                     var listener = ctx.Resolve<Func<IZone, WeatherEventListener>>().Invoke(zone);
                     listener.Subscribe(zone.Weather);
 

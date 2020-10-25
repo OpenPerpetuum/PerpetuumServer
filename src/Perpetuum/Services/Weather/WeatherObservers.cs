@@ -11,8 +11,8 @@ namespace Perpetuum.Services.Weather
     /// </summary>
     public class WeatherEventListener : Observer<WeatherInfo>
     {
-        private IZone _zone;
-        private EventListenerService _listener;
+        private readonly IZone _zone;
+        private readonly EventListenerService _listener;
         public WeatherEventListener(EventListenerService listener, IZone zone)
         {
             _zone = zone;
@@ -30,7 +30,7 @@ namespace Perpetuum.Services.Weather
     /// </summary>
     public class WeatherMonitor : Observer<WeatherInfo>
     {
-        private Action<WeatherInfo> _onNext;
+        private readonly Action<WeatherInfo> _onNext;
         public WeatherMonitor(Action<WeatherInfo> onNext)
         {
             _onNext = onNext;
