@@ -4,22 +4,22 @@ using System;
 
 namespace Perpetuum.Services.Daytime
 {
-    public class DayTimeService : Process, IDayTimeService
+    public class GameTimeService : Process, IGameTimeService
     {
-        private readonly Observable<DayTimeInfo> _observable;
-        private DayTimeInfo _current;
-        public DayTimeService()
+        private readonly Observable<GameTimeInfo> _observable;
+        private GameTimeInfo _current;
+        public GameTimeService()
         {
-            _current = DayTime.GetCurrentDayTime();
-            _observable = new AnonymousObservable<DayTimeInfo>(OnSubscribe);
+            _current = GameTime.GetCurrentDayTime();
+            _observable = new AnonymousObservable<GameTimeInfo>(OnSubscribe);
         }
 
         private void RefreshCurrentDayTime()
         {
-            _current = DayTime.GetCurrentDayTime();
+            _current = GameTime.GetCurrentDayTime();
         }
 
-        public DayTimeInfo GetCurrentDayTime()
+        public GameTimeInfo GetCurrentDayTime()
         {
             if (_current == null)
             {
@@ -28,12 +28,12 @@ namespace Perpetuum.Services.Daytime
             return _current;
         }
 
-        private void OnSubscribe(IObserver<DayTimeInfo> observer)
+        private void OnSubscribe(IObserver<GameTimeInfo> observer)
         {
             observer.OnNext(GetCurrentDayTime());
         }
 
-        public IDisposable Subscribe(IObserver<DayTimeInfo> observer)
+        public IDisposable Subscribe(IObserver<GameTimeInfo> observer)
         {
             return _observable.Subscribe(observer);
         }

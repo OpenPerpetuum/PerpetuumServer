@@ -2,10 +2,10 @@
 
 namespace Perpetuum.Services.EventServices.EventMessages
 {
-    public class DayTimeMessage : EventMessage
+    public class GameTimeMessage : EventMessage
     {
-        public DayTimeInfo TimeInfo { get; private set; }
-        public DayTimeMessage(DayTimeInfo time)
+        public GameTimeInfo TimeInfo { get; private set; }
+        public GameTimeMessage(GameTimeInfo time)
         {
             TimeInfo = time;
         }

@@ -4,17 +4,17 @@ using Perpetuum.Services.EventServices.EventMessages;
 
 namespace Perpetuum.Services.Daytime
 {
-    public class DayObserver : Observer<DayTimeInfo>
+    public class GameTimeObserver : Observer<GameTimeInfo>
     {
         private readonly EventListenerService _listener;
-        public DayObserver(EventListenerService listener)
+        public GameTimeObserver(EventListenerService listener)
         {
             _listener = listener;
         }
 
-        public override void OnNext(DayTimeInfo info)
+        public override void OnNext(GameTimeInfo info)
         {
-            _listener.PublishMessage(new DayTimeMessage(info));
+            _listener.PublishMessage(new GameTimeMessage(info));
         }
     }
 }

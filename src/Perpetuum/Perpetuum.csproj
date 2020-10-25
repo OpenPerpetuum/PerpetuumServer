@@ -289,11 +289,11 @@
     <Compile Include="Services\Channels\ChatCommands\AdminCommandHandlers.cs" />
     <Compile Include="Services\Channels\ChatCommands\GameAdminCommands.cs" />
     <Compile Include="Services\Channels\PreMadeChatMessageNames.cs" />
-    <Compile Include="Services\Daytime\DayObserver.cs" />
-    <Compile Include="Services\Daytime\DayTime.cs" />
-    <Compile Include="Services\Daytime\DayTimeInfo.cs" />
-    <Compile Include="Services\Daytime\DayTimeService.cs" />
-    <Compile Include="Services\Daytime\IDayTimeService.cs" />
+    <Compile Include="Services\GameTime\GameTimeObserver.cs" />
+    <Compile Include="Services\GameTime\GameTime.cs" />
+    <Compile Include="Services\GameTime\GameTimeInfo.cs" />
+    <Compile Include="Services\GameTime\GameTimeService.cs" />
+    <Compile Include="Services\GameTime\IGameTimeService.cs" />
     <Compile Include="Services\EventServices\EventMessages\DayTimeMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\EventMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\EventMessageSimple.cs" />

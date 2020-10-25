@@ -3,9 +3,9 @@ using System;
 
 namespace Perpetuum.Services.Daytime
 {
-    public interface IDayTimeService : IObservable<DayTimeInfo>, IProcess
+    public interface IGameTimeService : IObservable<GameTimeInfo>, IProcess
     {
         [NotNull]
-        DayTimeInfo GetCurrentDayTime();
+        GameTimeInfo GetCurrentDayTime();
     }
 }

@@ -1,18 +1,17 @@
 ﻿using System;
 using Perpetuum.ExportedTypes;
-using Perpetuum.Services.Daytime;
 using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Effects.ZoneEffects;
 
 namespace Perpetuum.Services.EventServices.EventProcessors
 {
-    public class DayTimeEventProcessor : EventProcessor<EventMessage>
+    public class GameTimeEventProcessor : EventProcessor<EventMessage>
     {
         private IZone _zone;
         private readonly Lazy<ZoneEffect> _dayEffect;
         private readonly Lazy<ZoneEffect> _nightEffect;
-        public DayTimeEventProcessor(IZone zone)
+        public GameTimeEventProcessor(IZone zone)
         {
             _zone = zone;
             _dayEffect = new Lazy<ZoneEffect>(GetDayEffect);
@@ -32,19 +31,19 @@ namespace Perpetuum.Services.EventServices.EventProcessors
         private static readonly int _sunrise = 150;
         private static readonly int _sunset = 750;
 
-        private bool IsDay(DayTimeMessage msg)
+        private bool IsDay(GameTimeMessage msg)
         {
-            return msg.TimeInfo.NLT < 500 && msg.TimeInfo.NLT > 300;
+            return msg.TimeInfo.GameTimeStamp < 500 && msg.TimeInfo.GameTimeStamp > 300;
         }
 
-        private bool IsNight(DayTimeMessage msg)
+        private bool IsNight(GameTimeMessage msg)
         {
-            return msg.TimeInfo.NLT < 50 || msg.TimeInfo.NLT > 850;
+            return msg.TimeInfo.GameTimeStamp < 50 || msg.TimeInfo.GameTimeStamp > 850;
         }
 
         public override void OnNext(EventMessage value)
         {
-            if (value is DayTimeMessage msg)
+            if (value is GameTimeMessage msg)
             {
                 if (IsNight(msg))
                 {

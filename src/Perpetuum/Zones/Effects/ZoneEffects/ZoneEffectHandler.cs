@@ -10,7 +10,6 @@ namespace Perpetuum.Zones.Effects.ZoneEffects
 {
     public class ZoneEffectHandler : IZoneEffectHandler
     {
-        private const byte _ = 0;
         private readonly IZone _zone;
         private readonly ConcurrentDictionary<ZoneEffect, byte> _effects;
 
@@ -25,13 +24,13 @@ namespace Perpetuum.Zones.Effects.ZoneEffects
         {
             foreach (var zoneEffect in ZoneEffectReader.GetStaticZoneEffects(_zone))
             {
-                _effects.Add(zoneEffect, _);
+                _effects.Add(zoneEffect, byte.MinValue);
             }
         }
 
         public void AddEffect(ZoneEffect zoneEffect)
         {
-            _effects.TryAdd(zoneEffect, _);
+            _effects.TryAdd(zoneEffect, byte.MinValue);
             OnZoneEffectAdded(zoneEffect);
         }
 
@@ -69,7 +68,7 @@ namespace Perpetuum.Zones.Effects.ZoneEffects
 
         private Func<Unit, bool> CanApplyEffect(ZoneEffect effect)
         {
-            return u => !u.EffectHandler.ContainsEffect(effect.Effect) && effect.PlayerOnly == u is Player;
+            return u => !u.EffectHandler.ContainsEffect(effect.Effect) && (!effect.PlayerOnly || (effect.PlayerOnly && u is Player));
         }
 
         public void OnEnterZone(Unit unit)

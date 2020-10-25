@@ -1711,13 +1711,13 @@ namespace Perpetuum.Bootstrapper
                 e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(0.75)));
                 e.Instance.AttachListener(e.Context.Resolve<ChatEcho>());
                 e.Instance.AttachListener(e.Context.Resolve<NpcChatEcho>());
-                e.Context.Resolve<IDayTimeService>();
+                e.Context.Resolve<IGameTimeService>();
             });
 
-            _builder.RegisterType<DayTimeService>().As<IDayTimeService>().SingleInstance().OnActivated(e =>
+            _builder.RegisterType<GameTimeService>().As<IGameTimeService>().SingleInstance().OnActivated(e =>
             {
                 e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(15)));
-                var obs = new DayObserver(e.Context.Resolve<EventListenerService>());
+                var obs = new GameTimeObserver(e.Context.Resolve<EventListenerService>());
                 e.Instance.Subscribe(obs);
             });
 
@@ -2573,7 +2573,7 @@ namespace Perpetuum.Bootstrapper
                     }
 
                     ctx.Resolve<EventListenerService>().AttachListener(new WeatherWatcher(zone));
-                    ctx.Resolve<EventListenerService>().AttachListener(new DayTimeEventProcessor(zone));
+                    ctx.Resolve<EventListenerService>().AttachListener(new GameTimeEventProcessor(zone));
                     var listener = ctx.Resolve<Func<IZone, WeatherEventListener>>().Invoke(zone);
                     listener.Subscribe(zone.Weather);
 

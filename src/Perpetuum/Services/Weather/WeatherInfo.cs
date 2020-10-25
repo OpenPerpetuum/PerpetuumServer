@@ -7,8 +7,8 @@ namespace Perpetuum.Services.Weather
 {
     public class WeatherInfo
     {
-        public int Current { get; private set; }
-        public int Next { get; private set; }
+        public readonly int Current;
+        public readonly int Next;
 
         private readonly TimeTracker _timer;
 
