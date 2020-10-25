@@ -10,13 +10,13 @@ namespace Perpetuum.Services.Daytime
         private GameTimeInfo _current;
         public GameTimeService()
         {
-            _current = GameTime.GetCurrentDayTime();
+            _current = GameTimeInfo.FromCurrentTime();
             _observable = new AnonymousObservable<GameTimeInfo>(OnSubscribe);
         }
 
         private void RefreshCurrentDayTime()
         {
-            _current = GameTime.GetCurrentDayTime();
+            _current = GameTimeInfo.FromCurrentTime();
         }
 
         public GameTimeInfo GetCurrentDayTime()

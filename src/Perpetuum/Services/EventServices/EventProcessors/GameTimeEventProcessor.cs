@@ -1,5 +1,6 @@
 ﻿using System;
 using Perpetuum.ExportedTypes;
+using Perpetuum.Services.Daytime;
 using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Effects.ZoneEffects;
@@ -8,13 +9,6 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 {
     public class GameTimeEventProcessor : EventProcessor<EventMessage>
     {
-        private const int NIGHT_END = 100;
-        //private const int SUNRISE = 150;
-        private const int DAY_START = 200;
-        private const int DAY_END = 700;
-        //private const int SUNSET = 750;
-        private const int NIGHT_START = 800;
-
         private readonly IZone _zone;
         private readonly Lazy<ZoneEffect> _dayEffect;
         private readonly Lazy<ZoneEffect> _nightEffect;
@@ -35,21 +29,11 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             return new ZoneEffect(_zone.Id, EffectType.effect_daytime_night, true);
         }
 
-        private bool IsDay(GameTimeMessage msg)
-        {
-            return msg.TimeInfo.GameTimeStamp > DAY_START && msg.TimeInfo.GameTimeStamp < DAY_END;
-        }
-
-        private bool IsNight(GameTimeMessage msg)
-        {
-            return msg.TimeInfo.GameTimeStamp > NIGHT_START || msg.TimeInfo.GameTimeStamp < NIGHT_END;
-        }
-
         public override void OnNext(EventMessage value)
         {
             if (value is GameTimeMessage msg)
             {
-                if (IsNight(msg))
+                if (msg.TimeInfo.IsNight)
                 {
                     _zone.ZoneEffectHandler.AddEffect(_nightEffect.Value);
                 }
@@ -58,7 +42,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
                     _zone.ZoneEffectHandler.RemoveEffect(_nightEffect.Value);
                 }
 
-                if (IsDay(msg))
+                if (msg.TimeInfo.IsDay)
                 {
                     _zone.ZoneEffectHandler.AddEffect(_dayEffect.Value);
                 }

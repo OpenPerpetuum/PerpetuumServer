@@ -9,9 +9,6 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 {
     public class WeatherWatcher : EventProcessor<EventMessage>
     {
-        private const int BAD_WEATHER = 200;
-        private const int GOOD_WEATHER = 100;
-
         private readonly IZone _zone;
         private readonly Lazy<ZoneEffect> _goodWeather;
         private readonly Lazy<ZoneEffect> _badWeather;
@@ -32,21 +29,11 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             return new ZoneEffect(_zone.Id, EffectType.effect_weather_bad, true);
         }
 
-        private bool IsBadWeather(WeatherInfo info)
-        {
-            return info.Current > BAD_WEATHER && info.Next > BAD_WEATHER;
-        }
-
-        private bool IsGoodWeather(WeatherInfo info)
-        {
-            return info.Current < GOOD_WEATHER && info.Next < GOOD_WEATHER;
-        }
-
         public override void OnNext(EventMessage value)
         {
             if (value is WeatherEventMessage msg && msg.ZoneId == _zone.Id)
             {
-                if (IsBadWeather(msg.Weather))
+                if (msg.Weather.IsBadWeather)
                 {
                     _zone.ZoneEffectHandler.AddEffect(_badWeather.Value);
                 }
@@ -55,7 +42,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
                     _zone.ZoneEffectHandler.RemoveEffect(_badWeather.Value);
                 }
 
-                if (IsGoodWeather(msg.Weather))
+                if (msg.Weather.IsGoodWeather)
                 {
                     _zone.ZoneEffectHandler.AddEffect(_goodWeather.Value);
                 }

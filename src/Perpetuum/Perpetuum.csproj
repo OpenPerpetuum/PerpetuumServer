@@ -290,7 +290,6 @@
     <Compile Include="Services\Channels\ChatCommands\GameAdminCommands.cs" />
     <Compile Include="Services\Channels\PreMadeChatMessageNames.cs" />
     <Compile Include="Services\GameTime\GameTimeObserver.cs" />
-    <Compile Include="Services\GameTime\GameTime.cs" />
     <Compile Include="Services\GameTime\GameTimeInfo.cs" />
     <Compile Include="Services\GameTime\GameTimeService.cs" />
     <Compile Include="Services\GameTime\IGameTimeService.cs" />

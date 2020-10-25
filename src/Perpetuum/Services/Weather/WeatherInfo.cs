@@ -7,6 +7,9 @@ namespace Perpetuum.Services.Weather
 {
     public class WeatherInfo
     {
+        private const int BAD_WEATHER = 200;
+        private const int GOOD_WEATHER = 100;
+
         public readonly int Current;
         public readonly int Next;
 
@@ -42,6 +45,22 @@ namespace Perpetuum.Services.Weather
             sb.AppendFormat("Command:{0}, current:{1}, next:{2}, elapsed:{3}, duration:{4}",
                 ZoneCommand.Weather, Current, Next, _timer.Elapsed.TotalSeconds, _timer.Duration.TotalSeconds);
             return sb.ToString();
+        }
+
+        public bool IsBadWeather
+        {
+            get
+            {
+                return Current > BAD_WEATHER && Next > BAD_WEATHER;
+            }
+        }
+
+        public bool IsGoodWeather
+        {
+            get
+            {
+                return Current < GOOD_WEATHER && Next < GOOD_WEATHER;
+            }
         }
     }
 }
