@@ -4,9 +4,7 @@ namespace Perpetuum.Services.Daytime
 {
     public static class GameTime
     {
-        private static readonly int _gameDayLength = 1000;
-        //private static readonly int _sunrise = 150;
-        //private static readonly int _sunset = 750;
+        private const int DAY_LENGTH = 1000;
         private static readonly double _gameDaySpan = TimeSpan.FromHours(3).TotalHours;
         public static GameTimeInfo GetCurrentDayTime()
         {
@@ -17,7 +15,7 @@ namespace Perpetuum.Services.Daytime
         {
             var currentDayTime = time.TimeOfDay.TotalHours;
             var nltDayFactor = (currentDayTime % _gameDaySpan) / _gameDaySpan;
-            var nlt = (int)(nltDayFactor.Clamp() * _gameDayLength);
+            var nlt = (int)(nltDayFactor.Clamp() * DAY_LENGTH);
             return new GameTimeInfo(nlt);
         }
     }

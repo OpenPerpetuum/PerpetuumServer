@@ -8,37 +8,42 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 {
     public class GameTimeEventProcessor : EventProcessor<EventMessage>
     {
-        private IZone _zone;
+        private const int NIGHT_START = 850;
+        private const int NIGHT_END = 50;
+        private const int DAY_START = 300;
+        private const int DAY_END = 500;
+
+        //private const int SUNRISE = 150;
+        //private const int SUNSET = 750;
+
+        private readonly IZone _zone;
         private readonly Lazy<ZoneEffect> _dayEffect;
         private readonly Lazy<ZoneEffect> _nightEffect;
         public GameTimeEventProcessor(IZone zone)
         {
             _zone = zone;
-            _dayEffect = new Lazy<ZoneEffect>(GetDayEffect);
-            _nightEffect = new Lazy<ZoneEffect>(GetNightEffect);
+            _dayEffect = new Lazy<ZoneEffect>(CreateDayEffect);
+            _nightEffect = new Lazy<ZoneEffect>(CreateNightEffect);
         }
 
-        private ZoneEffect GetDayEffect()
+        private ZoneEffect CreateDayEffect()
         {
             return new ZoneEffect(_zone.Id, EffectType.effect_daytime_day, true);
         }
 
-        private ZoneEffect GetNightEffect()
+        private ZoneEffect CreateNightEffect()
         {
             return new ZoneEffect(_zone.Id, EffectType.effect_daytime_night, true);
         }
 
-        private static readonly int _sunrise = 150;
-        private static readonly int _sunset = 750;
-
         private bool IsDay(GameTimeMessage msg)
         {
-            return msg.TimeInfo.GameTimeStamp < 500 && msg.TimeInfo.GameTimeStamp > 300;
+            return msg.TimeInfo.GameTimeStamp > DAY_START && msg.TimeInfo.GameTimeStamp < DAY_END;
         }
 
         private bool IsNight(GameTimeMessage msg)
         {
-            return msg.TimeInfo.GameTimeStamp < 50 || msg.TimeInfo.GameTimeStamp > 850;
+            return msg.TimeInfo.GameTimeStamp > NIGHT_START || msg.TimeInfo.GameTimeStamp < NIGHT_END;
         }
 
         public override void OnNext(EventMessage value)
