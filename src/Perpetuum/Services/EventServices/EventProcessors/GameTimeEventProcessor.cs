@@ -8,13 +8,12 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 {
     public class GameTimeEventProcessor : EventProcessor<EventMessage>
     {
-        private const int NIGHT_START = 850;
-        private const int NIGHT_END = 50;
-        private const int DAY_START = 300;
-        private const int DAY_END = 500;
-
+        private const int NIGHT_END = 100;
         //private const int SUNRISE = 150;
+        private const int DAY_START = 200;
+        private const int DAY_END = 700;
         //private const int SUNSET = 750;
+        private const int NIGHT_START = 800;
 
         private readonly IZone _zone;
         private readonly Lazy<ZoneEffect> _dayEffect;

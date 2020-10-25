@@ -305,7 +305,7 @@
     <Compile Include="Services\EventServices\EventProcessors\ChatEcho.cs" />
     <Compile Include="Services\EventServices\EPBonusEventService.cs" />
     <Compile Include="Services\EventServices\EventListenerService.cs" />
-    <Compile Include="Services\EventServices\EventProcessors\DayTimeEventProcessor.cs" />
+    <Compile Include="Services\EventServices\EventProcessors\GameTimeEventProcessor.cs" />
     <Compile Include="Services\EventServices\EventProcessors\EventProcessor.cs" />
     <Compile Include="Services\EventServices\EventProcessors\OreNPCSpawner.cs" />
     <Compile Include="Services\EventServices\EventProcessors\WeatherWatcher.cs" />
