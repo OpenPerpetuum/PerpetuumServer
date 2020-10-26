@@ -4,6 +4,9 @@ using Perpetuum.Services.EventServices.EventMessages;
 
 namespace Perpetuum.Services.Daytime
 {
+    /// <summary>
+    /// Observer responsible for capturing GameTime events from the GameTimeService and sending messages to the EventListenerService
+    /// </summary>
     public class GameTimeObserver : Observer<GameTimeInfo>
     {
         private readonly EventListenerService _listener;

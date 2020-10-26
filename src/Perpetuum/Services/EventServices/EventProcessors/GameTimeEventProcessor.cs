@@ -7,6 +7,9 @@ using Perpetuum.Zones.Effects.ZoneEffects;
 
 namespace Perpetuum.Services.EventServices.EventProcessors
 {
+    /// <summary>
+    /// GameTimeMessage processor to modify ZoneEffects on a zone
+    /// </summary>
     public class GameTimeEventProcessor : EventProcessor<EventMessage>
     {
         private readonly IZone _zone;

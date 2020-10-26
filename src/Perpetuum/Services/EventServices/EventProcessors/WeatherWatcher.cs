@@ -1,12 +1,14 @@
 ﻿using Perpetuum.ExportedTypes;
 using Perpetuum.Services.EventServices.EventMessages;
-using Perpetuum.Services.Weather;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Effects.ZoneEffects;
 using System;
 
 namespace Perpetuum.Services.EventServices.EventProcessors
 {
+    /// <summary>
+    /// WeatherEvent processor to modify ZoneEffects on a zone
+    /// </summary>
     public class WeatherWatcher : EventProcessor<EventMessage>
     {
         private readonly IZone _zone;

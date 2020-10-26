@@ -293,7 +293,7 @@
     <Compile Include="Services\GameTime\GameTimeInfo.cs" />
     <Compile Include="Services\GameTime\GameTimeService.cs" />
     <Compile Include="Services\GameTime\IGameTimeService.cs" />
-    <Compile Include="Services\EventServices\EventMessages\DayTimeMessage.cs" />
+    <Compile Include="Services\EventServices\EventMessages\GameTimeMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\EventMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\EventMessageSimple.cs" />
     <Compile Include="Services\EventServices\EventMessages\NpcEventMessage.cs" />
