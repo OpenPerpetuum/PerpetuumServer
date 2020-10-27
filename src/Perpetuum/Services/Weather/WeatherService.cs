@@ -18,7 +18,7 @@ namespace Perpetuum.Services.Weather
             //the full cycle
             for (var i = 0; i < _weatherLookUp.Length; i++)
             {
-                _weatherLookUp[i] = (byte)i.Min(254);
+                _weatherLookUp[i] = (byte)i.Min(255);
             }
         }
 

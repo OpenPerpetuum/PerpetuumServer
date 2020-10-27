@@ -1716,7 +1716,7 @@ namespace Perpetuum.Bootstrapper
 
             _builder.RegisterType<GameTimeService>().As<IGameTimeService>().SingleInstance().OnActivated(e =>
             {
-                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(15)));
+                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromMinutes(5)));
                 var obs = new GameTimeObserver(e.Context.Resolve<EventListenerService>());
                 e.Instance.Subscribe(obs);
             });
@@ -2489,7 +2489,7 @@ namespace Perpetuum.Bootstrapper
                 return new WeatherService(new TimeRange(TimeSpan.FromMinutes(30), TimeSpan.FromHours(1)));
             }).OnActivated(e =>
             {
-                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromMinutes(3.5)));
+                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromMinutes(5)));
             }).As<IWeatherService>();
 
             _builder.RegisterType<WeatherMonitor>();
