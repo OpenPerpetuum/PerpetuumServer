@@ -166,10 +166,7 @@ namespace Perpetuum.Zones.Terrains
                     }
 
                     var cell = _grid.GetCell(info.Position);
-                    if (cell != null)
-                    {
-                        cell.Updates.AddLast(info);
-                    }
+                    cell?.Updates.AddLast(info);
                 }
             }
             finally
