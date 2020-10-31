@@ -53,7 +53,7 @@ namespace Perpetuum.Zones.Terrains
 
         public unsafe void CopyFromStreamToArea(Stream stream, Area area)
         {
-            if (area.Width > Width || area.Height > Height)
+            if (area.Width > Width || area.Height > Height || area.X1 < 0 || area.Y1 < 0)
             {
                 var safeArea = area.Intersect(new Area(0, 0, Width, Height));
                 OnAreaUpdated(safeArea);
