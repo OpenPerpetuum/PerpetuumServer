@@ -235,11 +235,12 @@ namespace Perpetuum.Zones
         [Conditional("DEBUG")]
         private void LogGenxyException(Packet packet, PerpetuumException gex)
         {
+            var playerInfo = _player != null ? _player.InfoString : null;
             var e = new LogEvent
             {
                 LogType = LogType.Error,
                 Tag = "ZPACKET",
-                Message = $"command:{packet.Command} zone:{_zone.Id} player:{_player.InfoString} ex:{gex}"
+                Message = $"command:{packet.Command} zone:{_zone.Id} player:{playerInfo} ex:{gex}"
             };
 
             Logger.Log(e);
