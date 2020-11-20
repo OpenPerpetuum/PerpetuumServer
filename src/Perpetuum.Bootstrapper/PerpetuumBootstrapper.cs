@@ -1706,6 +1706,7 @@ namespace Perpetuum.Bootstrapper
             _builder.RegisterType<NpcChatEcho>();
             _builder.RegisterType<AffectOutpostStability>();
             _builder.RegisterType<OreNpcSpawner>();
+            _builder.RegisterType<NpcReinforcementSpawner>();
             _builder.RegisterType<EventListenerService>().SingleInstance().OnActivated(e =>
             {
                 e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(0.75)));
@@ -2570,7 +2571,7 @@ namespace Perpetuum.Bootstrapper
                         zone.HighwayHandler = ctx.Resolve<PBSHighwayHandler.Factory>().Invoke(zone);
                         zone.TerraformHandler = ctx.Resolve<TerraformHandler.Factory>().Invoke(zone);
                     }
-
+                    ctx.Resolve<EventListenerService>().AttachListener(new NpcReinforcementSpawner(zone, ctx.Resolve<INpcReinforcementsRepository>()));
                     ctx.Resolve<EventListenerService>().AttachListener(new WeatherWatcher(zone));
                     ctx.Resolve<EventListenerService>().AttachListener(new GameTimeEventProcessor(zone));
                     var listener = ctx.Resolve<Func<IZone, WeatherEventListener>>().Invoke(zone);

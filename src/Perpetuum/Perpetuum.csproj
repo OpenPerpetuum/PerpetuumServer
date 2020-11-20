@@ -289,6 +289,8 @@
     <Compile Include="Services\Channels\ChatCommands\AdminCommandHandlers.cs" />
     <Compile Include="Services\Channels\ChatCommands\GameAdminCommands.cs" />
     <Compile Include="Services\Channels\PreMadeChatMessageNames.cs" />
+    <Compile Include="Services\EventServices\EventMessages\NpcReinforcementsMessage.cs" />
+    <Compile Include="Services\EventServices\EventProcessors\NpcReinforcementSpawner.cs" />
     <Compile Include="Services\GameTime\GameTimeObserver.cs" />
     <Compile Include="Services\GameTime\GameTimeInfo.cs" />
     <Compile Include="Services\GameTime\GameTimeService.cs" />
