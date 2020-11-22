@@ -26,7 +26,5 @@ namespace Perpetuum.Services.EventServices.EventProcessors
         {
             throw new NotImplementedException();
         }
-
-
     }
 }

@@ -10,6 +10,10 @@ using System.Threading.Tasks;
 
 namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
 {
+    /// <summary>
+    /// Common functions and event handling procedure for NpcReinforcement related events
+    /// </summary>
+    /// <typeparam name="T">EventMessage</typeparam>
     public abstract class NpcSpawnEventHandler<T> : EventProcessor where T : EventMessage
     {
         protected abstract TimeSpan SPAWN_DELAY { get; }

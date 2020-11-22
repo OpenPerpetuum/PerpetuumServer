@@ -81,7 +81,9 @@ using Perpetuum.Services.Channels;
 using Perpetuum.Services.Channels.ChatCommands;
 using Perpetuum.Services.Daytime;
 using Perpetuum.Services.EventServices;
+using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Services.EventServices.EventProcessors;
+using Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers;
 using Perpetuum.Services.ExtensionService;
 using Perpetuum.Services.HighScores;
 using Perpetuum.Services.Insurance;
@@ -180,8 +182,6 @@ using SetItemName = Perpetuum.RequestHandlers.SetItemName;
 using TrashItems = Perpetuum.RequestHandlers.TrashItems;
 using UnpackItems = Perpetuum.RequestHandlers.UnpackItems;
 using UnstackAmount = Perpetuum.RequestHandlers.UnstackAmount;
-using Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers;
-using Perpetuum.Services.EventServices.EventMessages;
 
 namespace Perpetuum.Bootstrapper
 {
