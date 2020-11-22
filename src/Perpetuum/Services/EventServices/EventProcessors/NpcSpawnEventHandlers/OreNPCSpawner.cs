@@ -48,14 +48,10 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
         protected override void CheckReinforcements(OreNpcSpawnMessage msg)
         {
             var node = msg.Node;
-            if (_reinforcementsByNode.ContainsKey(node))
+            if (!_reinforcementsByNode.ContainsKey(node))
             {
-                var activeWaves = _reinforcementsByNode[node].GetAllActiveWaves();
-                foreach (var wave in activeWaves)
-                {
-                    ExpireWave(wave);
-                }
-                _reinforcementsByNode.Remove(node);
+                var oreSpawn = _npcReinforcementsRepo.CreateOreNPCSpawn(node.Type, msg.ZoneId);
+                _reinforcementsByNode.Add(node, oreSpawn);
             }
         }
 
