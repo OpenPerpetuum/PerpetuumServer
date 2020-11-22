@@ -10,7 +10,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
     /// <summary>
     /// GameTimeMessage processor to modify ZoneEffects on a zone
     /// </summary>
-    public class GameTimeEventProcessor : EventProcessor<EventMessage>
+    public class GameTimeEventProcessor : EventProcessor
     {
         private readonly IZone _zone;
         private readonly Lazy<ZoneEffect> _dayEffect;
@@ -32,7 +32,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             return new ZoneEffect(_zone.Id, EffectType.effect_daytime_night, true);
         }
 
-        public override void OnNext(EventMessage value)
+        public override void HandleMessage(EventMessage value)
         {
             if (value is GameTimeMessage msg)
             {

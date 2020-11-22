@@ -9,7 +9,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
     /// <summary>
     /// WeatherEvent processor to modify ZoneEffects on a zone
     /// </summary>
-    public class WeatherWatcher : EventProcessor<EventMessage>
+    public class WeatherWatcher : EventProcessor
     {
         private readonly IZone _zone;
         private readonly Lazy<ZoneEffect> _goodWeather;
@@ -31,7 +31,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             return new ZoneEffect(_zone.Id, EffectType.effect_weather_bad, true);
         }
 
-        public override void OnNext(EventMessage value)
+        public override void HandleMessage(EventMessage value)
         {
             if (value is WeatherEventMessage msg && msg.ZoneId == _zone.Id)
             {
