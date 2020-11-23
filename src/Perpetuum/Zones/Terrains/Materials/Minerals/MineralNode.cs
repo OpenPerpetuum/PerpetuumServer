@@ -245,6 +245,14 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
 
         public bool Equals(MineralNode other)
         {
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+            else if (other == null)
+            {
+                return false;
+            }
             return other.Type == Type && other.Area == _area;
         }
 
