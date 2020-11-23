@@ -49,7 +49,7 @@ namespace Perpetuum.Services.EventServices
         /// <param name="observer">Listener</param>
         public void AttachListener(IEventProcessor observer)
         {
-            lock(_lock)
+            lock (_lock)
                 _observers.Add(observer);
         }
 

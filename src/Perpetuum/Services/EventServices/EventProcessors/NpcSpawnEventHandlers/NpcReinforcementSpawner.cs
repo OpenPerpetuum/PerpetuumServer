@@ -21,6 +21,25 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
         private readonly IDictionary<NpcBossInfo, INpcReinforcements> _reinforcementsByNpc = new Dictionary<NpcBossInfo, INpcReinforcements>();
         public NpcReinforcementSpawner(IZone zone, INpcReinforcementsRepository reinforcementsRepo) : base(zone, reinforcementsRepo) { }
 
+        protected override IEnumerable<INpcReinforcements> GetActiveReinforcments(Presence presence)
+        {
+            return _reinforcementsByNpc.Where(p => p.Value.HasActivePresence(presence)).Select(p => p.Value);
+        }
+
+        protected override bool CheckMessage(EventMessage inMsg, out NpcReinforcementsMessage msg)
+        {
+            if (inMsg is NpcReinforcementsMessage message && _zone.Id == message.ZoneId)
+            {
+                msg = message;
+                return true;
+            }
+            else
+            {
+                msg = null;
+                return false;
+            }
+        }
+
         protected override void CheckReinforcements(NpcReinforcementsMessage msg)
         {
             var info = msg.Npc.BossInfo;
@@ -81,22 +100,6 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
                     npc.AddDirectThreat(threat.unit, threat.Threat + FastRandom.NextDouble(5, 10));
                 }
             }
-        }
-
-        protected override List<INpcReinforcements> GetActiveReinforcments(Presence presence)
-        {
-            return _reinforcementsByNpc.Where(p => p.Value.HasActivePresence(presence)).Select(p => p.Value).ToList();
-        }
-
-        protected override bool CheckMessage(EventMessage inMsg, out NpcReinforcementsMessage msg)
-        {
-            msg = null;
-            if (inMsg is NpcReinforcementsMessage message && _zone.Id == message.ZoneId)
-            {
-                msg = message;
-                return true;
-            }
-            return false;
         }
     }
 }

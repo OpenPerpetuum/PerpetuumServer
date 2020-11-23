@@ -28,7 +28,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
             _npcReinforcementsRepo = reinforcementsRepo;
         }
 
-        protected abstract List<INpcReinforcements> GetActiveReinforcments(Presence presence);
+        protected abstract IEnumerable<INpcReinforcements> GetActiveReinforcments(Presence presence);
 
         protected abstract bool CheckMessage(EventMessage inMsg, out T msg);
 

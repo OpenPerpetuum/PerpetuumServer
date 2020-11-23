@@ -29,20 +29,23 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
             _mineralConfigs = mineralConfigurationReader.ReadAll().Where(c => c.ZoneId == zone.Id);
         }
 
-        protected override List<INpcReinforcements> GetActiveReinforcments(Presence presence)
+        protected override IEnumerable<INpcReinforcements> GetActiveReinforcments(Presence presence)
         {
-            return _reinforcementsByNode.Where(p => p.Value.HasActivePresence(presence)).Select(p => p.Value).ToList();
+            return _reinforcementsByNode.Where(p => p.Value.HasActivePresence(presence)).Select(p => p.Value);
         }
 
         protected override bool CheckMessage(EventMessage inMsg, out OreNpcSpawnMessage msg)
         {
-            msg = null;
             if (inMsg is OreNpcSpawnMessage message && _zone.Id == message.ZoneId)
             {
                 msg = message;
                 return true;
             }
-            return false;
+            else
+            {
+                msg = null;
+                return false;
+            }
         }
 
         protected override void CheckReinforcements(OreNpcSpawnMessage msg)
