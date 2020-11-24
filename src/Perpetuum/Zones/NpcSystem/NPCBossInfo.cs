@@ -210,15 +210,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         public bool Equals(NpcBossInfo other)
         {
-            if (ReferenceEquals(this, other))
-            {
-                return true;
-            }
-            else if (other == null)
-            {
-                return false;
-            }
-            return other._id == _id && other.FlockId == FlockId;
+            return other != null && ReferenceEquals(this, other) || other._id == _id && other.FlockId == FlockId;
         }
 
         public override int GetHashCode()
