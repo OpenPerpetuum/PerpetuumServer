@@ -97,7 +97,7 @@ namespace Perpetuum.Zones.NpcSystem
             HandleBossOutpostAggro(aggressor);
         }
 
-        // Timer to buffer excessive decrease messages on ore mining
+        // Timer to buffer excessive decrease frequency of messages from OnDamageTaken
         private readonly TimeKeeper _time = new TimeKeeper(TimeSpan.FromSeconds(5));
         /// <summary>
         /// Handle events to dispatch when the npc boss takes damage
