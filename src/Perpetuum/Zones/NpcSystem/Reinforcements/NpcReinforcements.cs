@@ -22,9 +22,9 @@ namespace Perpetuum.Zones.NpcSystem.Reinforcements
         /// <returns>INpcReinforcementWave or null</returns>
         public INpcReinforcementWave GetNextPresence(double threshold)
         {
-            for (var i = 0; i < _presences.Length; i++)
+            for (var i = _presences.Length - 1; i >= 0; i--)
             {
-                if (_presences[i].Threshold > threshold)
+                if (_presences[i].Threshold < threshold)
                 {
                     return _presences[i].Spawned ? null : _presences[i];
                 }

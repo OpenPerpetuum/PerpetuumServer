@@ -93,13 +93,13 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
 
                 CheckReinforcements(msg);
 
+                var wave = GetNextWave(msg);
+                if (wave == null)
+                    return; // Presence not found for this message state or already spawned
+
                 var spawnPos = FindSpawnPosition(msg, MAX_SPAWN_DIST);
                 if (spawnPos == Position.Empty)
                     return; // Failed to find valid spawn location, try again on next cycle
-
-                var wave = GetNextWave(msg);
-                if (wave == null)
-                    return; // Presence already spawned once, or not found
 
                 var homePos = GetHomePos(msg, spawnPos);
 

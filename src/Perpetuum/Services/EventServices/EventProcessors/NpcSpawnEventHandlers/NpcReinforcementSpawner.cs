@@ -57,7 +57,21 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
                 CleanupAllReinforcements(msg);
                 return true;
             }
+            UpdateAggro(msg);
             return false;
+        }
+
+        private void UpdateAggro(NpcReinforcementsMessage msg)
+        {
+            var info = msg.Npc.BossInfo;
+            if (_reinforcementsByNpc.ContainsKey(info))
+            {
+                var activeWaves = _reinforcementsByNpc[info].GetAllActiveWaves().Where(w => w.ActivePresence != null);
+                foreach (var wave in activeWaves)
+                {
+                    SpreadAggro(wave.ActivePresence, msg.Npc);
+                }
+            }
         }
 
         protected override void CleanupAllReinforcements(NpcReinforcementsMessage msg)
@@ -93,9 +107,14 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
 
         protected override void OnSpawning(Presence pres, NpcReinforcementsMessage msg)
         {
-            foreach (var npc in pres.Flocks.GetMembers())
+            SpreadAggro(pres, msg.Npc);
+        }
+
+        private void SpreadAggro(Presence presenceToAggro, Npc npcWithAggro)
+        {
+            foreach (var npc in presenceToAggro.Flocks.GetMembers())
             {
-                foreach (var threat in msg.Npc.ThreatManager.Hostiles)
+                foreach (var threat in npcWithAggro.ThreatManager.Hostiles)
                 {
                     npc.AddDirectThreat(threat.unit, threat.Threat + FastRandom.NextDouble(5, 10));
                 }
