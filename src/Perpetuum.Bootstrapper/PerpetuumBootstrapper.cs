@@ -2571,8 +2571,7 @@ namespace Perpetuum.Bootstrapper
                         zone.TerraformHandler = ctx.Resolve<TerraformHandler.Factory>().Invoke(zone);
                     }
 
-                    ctx.Resolve<EventListenerService>().AttachListener(new WeatherWatcher(zone));
-                    ctx.Resolve<EventListenerService>().AttachListener(new GameTimeEventProcessor(zone));
+                    ctx.Resolve<EventListenerService>().AttachListener(new EnvironEffectHandler(zone));
                     var listener = ctx.Resolve<Func<IZone, WeatherEventListener>>().Invoke(zone);
                     listener.Subscribe(zone.Weather);
 
