@@ -56,7 +56,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 
         private void OnStateChange()
         {
-            if(_gameTime==null || _weatherState == null)
+            if (_gameTime == null || _weatherState == null)
                 return;
 
             ZoneEffect nextEffect = null;
