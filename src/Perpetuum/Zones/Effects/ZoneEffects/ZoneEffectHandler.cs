@@ -1,5 +1,4 @@
-﻿using Perpetuum.ExportedTypes;
-using Perpetuum.Log;
+﻿using Perpetuum.Log;
 using Perpetuum.Players;
 using Perpetuum.Units;
 using System;
