@@ -12,7 +12,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
     /// <summary>
     /// Environment Event processor to modify ZoneEffects on a zone based on weather and time of day
     /// </summary>
-    public class EnvironEffectHandler : EventProcessor<EventMessage>
+    public class EnvironmentalEffectHandler : EventProcessor<EventMessage>
     {
         private readonly IZone _zone;
         private WeatherInfo _weatherState;
@@ -28,28 +28,28 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             EffectType.effect_weather_good,
             EffectType.effect_weather_bad
         };
-        private readonly IDictionary<EffectType, Lazy<ZoneEffect>> _effects = new Dictionary<EffectType, Lazy<ZoneEffect>>();
-        public EnvironEffectHandler(IZone zone)
+        private readonly IDictionary<EffectType, ZoneEffect> _effects = new Dictionary<EffectType, ZoneEffect>();
+        public EnvironmentalEffectHandler(IZone zone)
         {
             _zone = zone;
             _effects = InitEffectCollection(_effectTypes);
         }
 
-        private IDictionary<EffectType, Lazy<ZoneEffect>> InitEffectCollection(EffectType[] effectTypes)
+        private IDictionary<EffectType, ZoneEffect> InitEffectCollection(EffectType[] effectTypes)
         {
-            var dict = new Dictionary<EffectType, Lazy<ZoneEffect>>();
+            var dict = new Dictionary<EffectType, ZoneEffect>();
             foreach (var effType in effectTypes)
             {
-                dict.Add(effType, new Lazy<ZoneEffect>(() => new ZoneEffect(_zone.Id, effType, true)));
+                dict.Add(effType, new ZoneEffect(_zone.Id, effType, true));
             }
             return dict;
         }
 
         private ZoneEffect GetEffect(EffectType type)
         {
-            if (_effects.TryGetValue(type, out Lazy<ZoneEffect> lazy))
+            if (_effects.TryGetValue(type, out ZoneEffect effect))
             {
-                return lazy.Value;
+                return effect;
             }
             return null;
         }
