@@ -292,6 +292,7 @@
     <Compile Include="Services\EventServices\EventMessages\NpcReinforcementsMessage.cs" />
     <Compile Include="Services\EventServices\EventProcessors\NpcSpawnEventHandlers\NpcSpawnEventHandler.cs" />
     <Compile Include="Services\EventServices\EventProcessors\NpcSpawnEventHandlers\NpcReinforcementSpawner.cs" />
+    <Compile Include="Services\EventServices\EventProcessors\EnvironmentalEffectHandler.cs" />
     <Compile Include="Services\GameTime\GameTimeObserver.cs" />
     <Compile Include="Services\GameTime\GameTimeInfo.cs" />
     <Compile Include="Services\GameTime\GameTimeService.cs" />
@@ -307,7 +308,6 @@
     <Compile Include="Services\EventServices\EventProcessors\ChatEcho.cs" />
     <Compile Include="Services\EventServices\EPBonusEventService.cs" />
     <Compile Include="Services\EventServices\EventListenerService.cs" />
-    <Compile Include="Services\EventServices\EventProcessors\GameTimeEventProcessor.cs" />
     <Compile Include="Services\EventServices\EventProcessors\EventProcessor.cs" />
     <Compile Include="Services\EventServices\EventProcessors\NpcSpawnEventHandlers\OreNPCSpawner.cs" />
     <Compile Include="Services\EventServices\EventProcessors\WeatherWatcher.cs" />

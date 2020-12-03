@@ -2505,6 +2505,17 @@ namespace Perpetuum.Bootstrapper
                 };
             });
 
+            _builder.Register<Func<IZone, EnvironmentalEffectHandler>>(x =>
+            {
+                var ctx = x.Resolve<IComponentContext>();
+                return zone =>
+                {
+                    var listener = new EnvironmentalEffectHandler(zone);
+                    ctx.Resolve<EventListenerService>().AttachListener(listener);
+                    return listener;
+                };
+            });
+
             _builder.RegisterType<DefaultZoneUnitRepository>().AsSelf().As<IZoneUnitRepository>();
             _builder.RegisterType<UserZoneUnitRepository>().AsSelf().As<IZoneUnitRepository>();
 
@@ -2573,9 +2584,8 @@ namespace Perpetuum.Bootstrapper
                         zone.HighwayHandler = ctx.Resolve<PBSHighwayHandler.Factory>().Invoke(zone);
                         zone.TerraformHandler = ctx.Resolve<TerraformHandler.Factory>().Invoke(zone);
                     }
+
                     ctx.Resolve<EventListenerService>().AttachListener(new NpcReinforcementSpawner(zone, ctx.Resolve<INpcReinforcementsRepository>()));
-                    ctx.Resolve<EventListenerService>().AttachListener(new WeatherWatcher(zone));
-                    ctx.Resolve<EventListenerService>().AttachListener(new GameTimeEventProcessor(zone));
                     var listener = ctx.Resolve<Func<IZone, WeatherEventListener>>().Invoke(zone);
                     listener.Subscribe(zone.Weather);
 
@@ -2591,6 +2601,8 @@ namespace Perpetuum.Bootstrapper
                 {
                     var zoneFactory = e.Context.Resolve<Func<ZoneConfiguration, IZone>>();
                     var zone = zoneFactory(c);
+
+                    e.Context.Resolve<Func<IZone, EnvironmentalEffectHandler>>().Invoke(zone);
 
                     Logger.Info("------------------");
                     Logger.Info("--");
