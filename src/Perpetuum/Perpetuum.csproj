@@ -310,7 +310,6 @@
     <Compile Include="Services\EventServices\EventListenerService.cs" />
     <Compile Include="Services\EventServices\EventProcessors\EventProcessor.cs" />
     <Compile Include="Services\EventServices\EventProcessors\NpcSpawnEventHandlers\OreNPCSpawner.cs" />
-    <Compile Include="Services\EventServices\EventProcessors\WeatherWatcher.cs" />
     <Compile Include="Services\Mail\PreMadeMailNames.cs" />
     <Compile Include="Services\MissionEngine\DisplayMissionSpotsProcess.cs" />
     <Compile Include="Services\MissionEngine\MissionResolveTester.cs" />
