@@ -168,6 +168,9 @@ namespace Perpetuum.Zones.NpcSystem
 
         public void Visit(BlobEmissionModulatorModule module)
         {
+            if (module.ParentRobot.Zone.Configuration.Protected)
+                return;
+
             if (module.ParentRobot.CorePercentage < BLOBBER_CORE_THRESHOLD)
                 return;
 
