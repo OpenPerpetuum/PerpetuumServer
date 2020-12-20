@@ -16,7 +16,6 @@ using Perpetuum.Modules.Weapons;
 using Perpetuum.PathFinders;
 using Perpetuum.Players;
 using Perpetuum.Services.EventServices;
-using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Services.Looting;
 using Perpetuum.Services.MissionEngine;
 using Perpetuum.Services.MissionEngine.MissionTargets;
@@ -78,13 +77,13 @@ namespace Perpetuum.Zones.NpcSystem
             if (npc.Behavior.Type == NpcBehaviorType.Passive)
                 return;
 
-            npc.AI.Push(new AggressorAI(npc));
+             npc.AI.Push(new AggressorAI(npc));
         }
 
         [Conditional("DEBUG")]
         protected void WriteLog(string message)
         {
-//            Logger.InfoFormat("NpcAI: {0}",message);
+            //Logger.DebugInfo($"NpcAI: {message}");
         }
     }
 
@@ -92,9 +91,7 @@ namespace Perpetuum.Zones.NpcSystem
     {
         private RandomMovement _movement;
 
-        public IdleAI(Npc npc) : base(npc)
-        {
-        }
+        public IdleAI(Npc npc) : base(npc) { }
 
         public override void Enter()
         {
@@ -123,14 +120,36 @@ namespace Perpetuum.Zones.NpcSystem
         }
     }
 
+    public class StationaryIdleAI : NpcAI
+    {
+        public StationaryIdleAI(Npc npc) : base(npc) { }
+
+        public override void Enter()
+        {
+            npc.StopAllModules();
+            npc.ResetLocks();
+            base.Enter();
+        }
+
+        public override void Update(TimeSpan time)
+        {
+            if (npc.ThreatManager.Hostiles.IsEmpty)
+            {
+                npc.LookingForHostiles();
+            }
+            else
+            {
+                npc.AI.Push(new CombatAI(npc));
+            }
+        }
+    }
+
     public class CombatAI : NpcAI
     {
         private List<ModuleActivator> _moduleActivators;
         private readonly IntervalTimer _processHostilesTimer = new IntervalTimer(1500);
 
-        protected CombatAI(Npc npc) : base(npc)
-        {
-        }
+        public CombatAI(Npc npc) : base(npc) { }
 
         public override void Enter()
         {
@@ -239,8 +258,8 @@ namespace Perpetuum.Zones.NpcSystem
 
         public override void Enter()
         {
-            var pathFinder = new AStarFinder(Heuristic.Manhattan, npc.IsWalkable);
             var randomHome = npc.HomePosition.GetRandomPositionInRange2D(1, npc.HomeRange * 0.4);
+            var pathFinder = new AStarFinder(Heuristic.Manhattan, npc.IsWalkable);
             pathFinder.FindPathAsync(npc.CurrentPosition, randomHome).ContinueWith(t =>
             {
                 var path = t.Result;
@@ -295,7 +314,6 @@ namespace Perpetuum.Zones.NpcSystem
 
         }
     }
-
 
     public class AggressorAI : CombatAI
     {
@@ -539,7 +557,6 @@ namespace Perpetuum.Zones.NpcSystem
                     return new NeutralBehavior();
                 case NpcBehaviorType.Aggressive:
                     return new AggressiveBehavior();
-               
                 case NpcBehaviorType.Passive:
                     return new PassiveBehavior();
                 default:
@@ -630,6 +647,11 @@ namespace Perpetuum.Zones.NpcSystem
         public int BestCombatRange
         {
             get { return (int) (_bestCombatRange ?? (_bestCombatRange = CalculateCombatRange())); }
+        }
+
+        public bool IsStationary
+        {
+            get { return MaxSpeed.IsZero(); }
         }
 
         public void Tag(Player tagger,TimeSpan duration)
@@ -911,7 +933,7 @@ namespace Perpetuum.Zones.NpcSystem
             LookingForHostiles();
         }
 
-        private void LookingForHostiles()
+        public void LookingForHostiles()
         {
             foreach (var visibility in GetVisibleUnits())
             {
@@ -936,7 +958,14 @@ namespace Perpetuum.Zones.NpcSystem
 
             base.OnEnterZone(zone, enterType);
 
-            AI.Push(new IdleAI(this));
+            if (IsStationary)
+            {
+                AI.Push(new StationaryIdleAI(this));
+            }
+            else
+            {
+                AI.Push(new IdleAI(this));
+            }
         }
 
         public override string InfoString
@@ -983,7 +1012,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         protected override void OnUnitTileChanged(Unit target)
         {
-            AddBodyPullThreat(target);                
+            AddBodyPullThreat(target);
         }
 
         internal override bool IsHostile(Player player)
@@ -1108,7 +1137,7 @@ namespace Perpetuum.Zones.NpcSystem
                 if (!_npc.ThreatManager.Hostiles.IsEmpty)
                     return;
 
-                if (!_npc.IsInAggroRange(player))
+                if (!_npc.IsStationary && !_npc.IsInAggroRange(player))
                     return;
 
                 var threat = Threat.BODY_PULL + FastRandom.NextDouble(0, 5);
