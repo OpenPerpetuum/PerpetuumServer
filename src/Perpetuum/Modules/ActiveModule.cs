@@ -5,6 +5,7 @@ using Perpetuum.Containers;
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
+using Perpetuum.Log;
 using Perpetuum.Modules.Weapons;
 using Perpetuum.Players;
 using Perpetuum.Robots;
@@ -213,7 +214,7 @@ namespace Perpetuum.Modules
 
         public double OptimalRange => optimalRange.Value;
 
-        protected double Falloff => falloff.Value;
+        public double Falloff => falloff.Value;
 
         public Lock Lock
         {
@@ -490,6 +491,7 @@ namespace Perpetuum.Modules
 
             var x = (distance - OptimalRange) / Falloff;
             var m = Math.Cos(x * Math.PI) / 2 + 0.5;
+            Logger.DebugInfo($"d:{distance}= o:{OptimalRange} + f:{Falloff};   cos(x:{x}*PI)/2+0.5 =>{m}");
             return value * m;
         }
 

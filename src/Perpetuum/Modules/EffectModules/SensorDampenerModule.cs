@@ -33,12 +33,15 @@ namespace Perpetuum.Modules.EffectModules
 
         protected override bool CanApplyEffect(Unit target)
         {
-            var sensorStrength = target.SensorStrength * FastRandom.NextDouble();
-            sensorStrength = ModifyValueByOptimalRange(target, sensorStrength);
-
-            if (sensorStrength < _ecmStrength.Value)
-                return true;
-
+            var rangeMod = ModifyValueByOptimalRange(target, 1.0);
+            if (FastRandom.NextDouble() <= rangeMod)
+            {
+                var targetSensorStrength = target.SensorStrength * FastRandom.NextDouble() * rangeMod;
+                if (targetSensorStrength < _ecmStrength.Value)
+                {
+                    return true;
+                }
+            }
             OnError(ErrorCodes.AccuracyCheckFailed);
             return false;
         }
@@ -48,11 +51,11 @@ namespace Perpetuum.Modules.EffectModules
             target.AddThreat(ParentRobot, new Threat(ThreatType.Ewar, Threat.SENSOR_DAMPENER));
         }
 
-        protected override void SetupEffect(EffectBuilder effectBuilder, Unit target)
+        protected override void SetupEffect(EffectBuilder effectBuilder)
         {
             effectBuilder.SetType(EffectType.effect_sensor_supress).SetSource(ParentRobot)
-                .WithPropertyModifier(GetRangeModifiedProperty(_effectSensorDampenerLockingRangeModifier, target))
-                .WithPropertyModifier(GetRangeModifiedProperty(_effectSensorDampenerLockingTimeModifier, target));
+                .WithPropertyModifier(_effectSensorDampenerLockingRangeModifier.ToPropertyModifier())
+                .WithPropertyModifier(_effectSensorDampenerLockingTimeModifier.ToPropertyModifier());
         }
     }
 }

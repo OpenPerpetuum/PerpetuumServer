@@ -1,5 +1,4 @@
 ﻿using Perpetuum.EntityFramework;
-using Perpetuum.Items;
 using Perpetuum.StateMachines;
 using Perpetuum.Units;
 using Perpetuum.Zones.Effects;
@@ -74,19 +73,8 @@ namespace Perpetuum.Modules.EffectModules
                 base.AcceptVisitor(visitor);
         }
 
-        protected virtual ItemPropertyModifier GetRangeModifiedProperty(ItemProperty property, Unit target)
-        {
-            var maxValue = property.Value;
-            var rangeModValue = ModifyValueByOptimalRange(target, maxValue).Clamp(0, maxValue);
-            return ItemPropertyModifier.Create(property.Field, rangeModValue);
-        }
-
         protected virtual void OnApplyingEffect(Unit target) {}
 
-        protected virtual void SetupEffect(EffectBuilder effectBuilder) { }
-        protected virtual void SetupEffect(EffectBuilder effectBuilder, Unit target)
-        {
-            SetupEffect(effectBuilder);
-        }
+        protected abstract void SetupEffect(EffectBuilder effectBuilder);
     }
 }

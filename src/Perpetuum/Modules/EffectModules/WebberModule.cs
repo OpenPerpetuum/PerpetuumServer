@@ -26,6 +26,12 @@ namespace Perpetuum.Modules.EffectModules
 
         protected override bool CanApplyEffect(Unit target)
         {
+            if (FastRandom.NextDouble() > ModifyValueByOptimalRange(target, 1.0))
+            {
+                OnError(ErrorCodes.AccuracyCheckFailed);
+                return false;
+            }
+
             if (!IsCategory(CategoryFlags.cf_longrange_webber))
                 return true;
 
@@ -42,10 +48,9 @@ namespace Perpetuum.Modules.EffectModules
             target.AddThreat(ParentRobot, new Threat(ThreatType.Debuff, Threat.WEBBER));
         }
 
-        protected override void SetupEffect(EffectBuilder effectBuilder, Unit target)
+        protected override void SetupEffect(EffectBuilder effectBuilder)
         {
-            var effectProperty = GetRangeModifiedProperty(_effectMassivnesSpeedMaxModifier, target);
-
+            var effectProperty = _effectMassivnesSpeedMaxModifier.ToPropertyModifier();
             effectProperty.Add(effectBuilder.Owner.Massiveness);
 
             if (effectProperty.Value >= 1.0)
