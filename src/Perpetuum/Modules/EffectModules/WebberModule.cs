@@ -42,17 +42,18 @@ namespace Perpetuum.Modules.EffectModules
             target.AddThreat(ParentRobot, new Threat(ThreatType.Debuff, Threat.WEBBER));
         }
 
-        protected override void SetupEffect(EffectBuilder effectBuilder)
+        protected override void SetupEffect(EffectBuilder effectBuilder, Unit target)
         {
-            var effectProperty = _effectMassivnesSpeedMaxModifier.ToPropertyModifier();
+            var effectProperty = GetRangeModifiedProperty(_effectMassivnesSpeedMaxModifier, target);
+
             effectProperty.Add(effectBuilder.Owner.Massiveness);
 
             if (effectProperty.Value >= 1.0)
                 effectProperty.ResetToDefaultValue();
 
             effectBuilder.SetType(EffectType.effect_demobilizer)
-                                            .SetSource(ParentRobot)
-                                            .WithPropertyModifier(effectProperty);
+                .SetSource(ParentRobot)
+                .WithPropertyModifier(effectProperty);
         }
     }
 

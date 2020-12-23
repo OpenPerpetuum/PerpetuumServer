@@ -48,11 +48,11 @@ namespace Perpetuum.Modules.EffectModules
             target.AddThreat(ParentRobot, new Threat(ThreatType.Ewar, Threat.SENSOR_DAMPENER));
         }
 
-        protected override void SetupEffect(EffectBuilder effectBuilder)
+        protected override void SetupEffect(EffectBuilder effectBuilder, Unit target)
         {
             effectBuilder.SetType(EffectType.effect_sensor_supress).SetSource(ParentRobot)
-                                .WithPropertyModifier(_effectSensorDampenerLockingRangeModifier.ToPropertyModifier())
-                                .WithPropertyModifier(_effectSensorDampenerLockingTimeModifier.ToPropertyModifier());
+                .WithPropertyModifier(GetRangeModifiedProperty(_effectSensorDampenerLockingRangeModifier, target))
+                .WithPropertyModifier(GetRangeModifiedProperty(_effectSensorDampenerLockingTimeModifier, target));
         }
     }
 }
