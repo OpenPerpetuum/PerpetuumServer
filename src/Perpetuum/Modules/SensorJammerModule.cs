@@ -32,11 +32,10 @@ namespace Perpetuum.Modules
             var robot = unitLock.Target.ThrowIfNotType<Robot>(ErrorCodes.InvalidTarget);
 
             var success = false;
-            var rangeMod = ModifyValueByOptimalRange(robot, 1.0);
-            if (FastRandom.NextDouble() <= rangeMod)
+            if (FastRandom.NextDouble() <= ModifyValueByOptimalRange(robot, 1.0))
             {
                 var targetSensorStrength = robot.SensorStrength * FastRandom.NextDouble();
-                if (targetSensorStrength < _ecmStrength.Value * rangeMod)
+                if (targetSensorStrength < _ecmStrength.Value)
                 {
                     robot.ResetLocks();
                     robot.AddThreat(ParentRobot, new Threat(ThreatType.Ewar, Threat.SENSOR_DAMPENER));
