@@ -36,8 +36,8 @@ namespace Perpetuum.Modules.EffectModules
             var rangeMod = ModifyValueByOptimalRange(target, 1.0);
             if (FastRandom.NextDouble() <= rangeMod)
             {
-                var targetSensorStrength = target.SensorStrength * FastRandom.NextDouble() * rangeMod;
-                if (targetSensorStrength < _ecmStrength.Value)
+                var targetSensorStrength = target.SensorStrength * FastRandom.NextDouble();
+                if (targetSensorStrength < _ecmStrength.Value * rangeMod)
                 {
                     return true;
                 }
