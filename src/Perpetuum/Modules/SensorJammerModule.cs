@@ -31,16 +31,15 @@ namespace Perpetuum.Modules
             var unitLock = GetLock().ThrowIfNotType<UnitLock>(ErrorCodes.InvalidLockType);
             var robot = unitLock.Target.ThrowIfNotType<Robot>(ErrorCodes.InvalidTarget);
 
-            var rangeMod = ModifyValueByOptimalRange(robot, 1.0);
-            var success = FastRandom.NextDouble() <= rangeMod;
-            if (success)
+            var success = false;
+            if (FastRandom.NextDouble() <= ModifyValueByOptimalRange(robot, 1.0))
             {
-                var targetSensorStrength = robot.SensorStrength * FastRandom.NextDouble() * rangeMod;
-                success = targetSensorStrength < _ecmStrength.Value;
-                if (success)
+                var targetSensorStrength = robot.SensorStrength * FastRandom.NextDouble();
+                if (targetSensorStrength < _ecmStrength.Value)
                 {
                     robot.ResetLocks();
                     robot.AddThreat(ParentRobot, new Threat(ThreatType.Ewar, Threat.SENSOR_DAMPENER));
+                    success = true;
                 }
             }
 
