@@ -1259,7 +1259,7 @@ namespace Perpetuum.Zones.NpcSystem
                 if (player.HasTeleportSicknessEffect)
                     return;
 
-                if (!_npc.ThreatManager.Hostiles.IsEmpty)
+                if (!_npc.ThreatManager.Hostiles.Any(h => h.unit.Eid == player.Eid))
                     return;
 
                 if (!_npc.IsInAggroRange(player))
