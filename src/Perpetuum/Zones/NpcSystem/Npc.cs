@@ -202,13 +202,18 @@ namespace Perpetuum.Zones.NpcSystem
                         continue;
                 }
 
-                validLocks.Add(unitLock);
+                if (unitLock.Target.GetDistance(npc) < npc.MaxCombatRange)
+                    validLocks.Add(unitLock);
             }
 
             if (validLocks.Count > 0)
             {
-                var newPrimary = validLocks.RandomElement();
-                npc.SetPrimaryLock(newPrimary);
+                var bestRandomLock = validLocks.Where(k => k.Target.GetDistance(npc) < npc.BestCombatRange).RandomElement();
+                if (bestRandomLock == null || FastRandom.NextDouble() < 0.5)
+                {
+                    bestRandomLock = validLocks.RandomElement();
+                }
+                npc.SetPrimaryLock(bestRandomLock);
                 return true;
             }
             return locks.Any(l => l.Primary);
@@ -692,13 +697,16 @@ namespace Perpetuum.Zones.NpcSystem
         private readonly TagHelper _tagHelper;
         private const double CALL_FOR_HELP_ARMOR_THRESHOLD = 0.2;
         private readonly ThreatManager _threatManager;
-        private object _bestCombatRange;
+        private Lazy<int> _maxCombatRange;
+        private Lazy<int> _optimalCombatRange;
         private TimeSpan _lastHelpCalled;
         private readonly EventListenerService _eventChannel;
         private readonly IPseudoThreatManager _pseudoThreatManager;
 
         public Npc(TagHelper tagHelper, EventListenerService eventChannel)
         {
+            _maxCombatRange = new Lazy<int>(CalculateMaxCombatRange);
+            _optimalCombatRange = new Lazy<int>(CalculateCombatRange);
             _eventChannel = eventChannel;
             _tagHelper = tagHelper;
             _threatManager = new ThreatManager();
@@ -747,7 +755,12 @@ namespace Perpetuum.Zones.NpcSystem
 
         public int BestCombatRange
         {
-            get { return (int) (_bestCombatRange ?? (_bestCombatRange = CalculateCombatRange())); }
+            get { return _optimalCombatRange.Value; }
+        }
+
+        public int MaxCombatRange
+        {
+            get { return _maxCombatRange.Value; }
         }
 
         public bool IsStationary
@@ -822,7 +835,8 @@ namespace Perpetuum.Zones.NpcSystem
             {
                 case AggregateField.locking_range:
                 {
-                    _bestCombatRange = null;
+                    _optimalCombatRange = new Lazy<int>(CalculateCombatRange);
+                    _maxCombatRange = new Lazy<int>(CalculateMaxCombatRange);
                     break;
                 }
                 case AggregateField.armor_current:
@@ -1214,6 +1228,16 @@ namespace Perpetuum.Zones.NpcSystem
             range *= BEST_COMBAT_RANGE_MODIFIER;
             range = Math.Max(3, range);
             return (int) range;
+        }
+
+        private int CalculateMaxCombatRange()
+        {
+            double range = ActiveModules.Where(m => m.IsRanged)
+                         .Select(module => (int)(module.OptimalRange + module.Falloff))
+                         .Max();
+
+            range = Math.Max(3, range);
+            return (int)range;
         }
 
         private const double BEST_COMBAT_RANGE_MODIFIER = 0.9;
