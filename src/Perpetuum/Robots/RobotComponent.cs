@@ -234,7 +234,7 @@ namespace Perpetuum.Robots
         {
             var modifier = base.GetPropertyModifier(field);
 
-            foreach (var module in Modules.Where(m => m.IsPassive))
+            foreach (var module in Modules)
             {
                 var m = module.GetBasePropertyModifier(field);
                 m.Modify(ref modifier);
