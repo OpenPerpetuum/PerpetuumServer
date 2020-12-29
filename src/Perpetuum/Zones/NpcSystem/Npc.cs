@@ -78,14 +78,13 @@ namespace Perpetuum.Zones.NpcSystem
             if (npc.Behavior.Type == NpcBehaviorType.Passive)
                 return;
 
-             npc.AI.Push(new AggressorAI(npc));
+            npc.AI.Push(new AggressorAI(npc));
         }
 
         [Conditional("DEBUG")]
         protected void WriteLog(string message)
         {
-            if(npc.IsStationary)
-                Logger.DebugInfo($"NpcAI: {message}");
+            //Logger.DebugInfo($"NpcAI: {message}");
         }
     }
 
@@ -292,7 +291,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         private bool PrimaryClosest(UnitLock[] locks)
         {
-            return TrySetPrimaryLock(locks.OrderBy(u=>u.Target.GetDistance(npc)).First());
+            return TrySetPrimaryLock(locks.OrderBy(u => u.Target.GetDistance(npc)).First());
         }
 
         private bool PrimaryRandom(UnitLock[] locks)
