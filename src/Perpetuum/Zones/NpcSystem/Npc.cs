@@ -137,15 +137,60 @@ namespace Perpetuum.Zones.NpcSystem
         {
             if (!npc.ThreatManager.Hostiles.IsEmpty)
             {
-                npc.AI.Push(new StationaryCombatAI(npc));
+                ToAggressorAI();
             }
+        }
+
+        protected override void ToHomeAI() { }
+
+        protected override void ToAggressorAI()
+        {
+            if (npc.Behavior.Type == NpcBehaviorType.Passive)
+                return;
+
+            npc.AI.Push(new StationaryCombatAI(npc));
         }
     }
 
     public class StationaryCombatAI : CombatAI
     {
+        private enum PrimaryLockStrategy
+        {
+            Random,
+            Hostile,
+            Closest,
+            OptimalRange
+        }
+
+        private class PrimaryLockSelectionStrategySelector
+        {
+            private readonly WeightedCollection<PrimaryLockStrategy> _selection;
+            public PrimaryLockSelectionStrategySelector()
+            {
+                _selection = new WeightedCollection<PrimaryLockStrategy>();
+                _selection.Add(PrimaryLockStrategy.Hostile, 1);
+                _selection.Add(PrimaryLockStrategy.Closest, 2);
+                _selection.Add(PrimaryLockStrategy.OptimalRange, 3);
+                _selection.Add(PrimaryLockStrategy.Random, 10);
+            }
+            public PrimaryLockStrategy GetStrategy()
+            {
+                return _selection.GetRandom();
+            }
+        }
+
         private readonly IntervalTimer _updateFrequency = new IntervalTimer(500);
+        private readonly IntervalTimer _primarySelectTimer = new IntervalTimer(0);
+        private readonly PrimaryLockSelectionStrategySelector _stratSelector = new PrimaryLockSelectionStrategySelector();
         public StationaryCombatAI(Npc npc) : base(npc) { }
+
+        public override void Update(TimeSpan time)
+        {
+            FindHostiles(time);
+            UpdateHostiles(time);
+            UpdatePrimaryTarget(time);
+            RunModules(time);
+        }
 
         private void FindHostiles(TimeSpan time)
         {
@@ -157,66 +202,45 @@ namespace Perpetuum.Zones.NpcSystem
             }
         }
 
-        public override void Update(TimeSpan time)
-        {
-            FindHostiles(time);
-            UpdateHostiles(time);
-            UpdatePrimaryTarget(time);
-            RunModules(time);
-        }
-
-        private readonly IntervalTimer _primarySelectTimer = new IntervalTimer(0);
         private void UpdatePrimaryTarget(TimeSpan time)
         {
             _primarySelectTimer.Update(time);
             if (_primarySelectTimer.Passed)
             {
-                _primarySelectTimer.Interval = FastRandom.NextTimeSpan(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(25));
-                SelectPrimaryTarget();
+                var success = SelectPrimaryTarget();
+                SetPrimaryUpdateDelay(success);
             }
+        }
+
+        private UnitLock[] GetValidLocks()
+        {
+            return npc.GetLocks().Select(l => (UnitLock)l).Where(u => IsLockValidTarget(u) && !u.Primary).ToArray();
         }
 
         private bool SelectPrimaryTarget()
         {
-            var locks = npc.GetLocks().Where(l => l.State == LockState.Locked).ToArray();
-            if (locks.Length <= 0)
+            var validLocks = GetValidLocks();
+            if (validLocks.Length < 1)
                 return false;
 
-            var validLocks = new List<UnitLock>();
-
-            foreach (var l in locks)
+            var strategy = _stratSelector.GetStrategy();
+            switch (strategy)
             {
-                var unitLock = (UnitLock)l;
-
-                if (unitLock.Primary)
-                    continue;
-
-                var visibility = npc.GetVisibility(unitLock.Target);
-                if (visibility == null)
-                    continue;
-
-                var r = visibility.GetLineOfSight(false);
-                if (r != null)
-                {
-                    if (r.hit && (r.blockingFlags & BlockingFlags.Plant) == 0)
-                        continue;
-                }
-
-                if (unitLock.Target.GetDistance(npc) < npc.MaxCombatRange)
-                    validLocks.Add(unitLock);
+                case PrimaryLockStrategy.Hostile:
+                    PrimaryMostHated(validLocks);
+                    break;
+                case PrimaryLockStrategy.Closest:
+                    PrimaryClosest(validLocks);
+                    break;
+                case PrimaryLockStrategy.OptimalRange:
+                    PrimaryRandomWithinOptimal(validLocks);
+                    break;
+                case PrimaryLockStrategy.Random:
+                default:
+                    PrimaryRandom(validLocks);
+                    break;
             }
-
-            if (validLocks.Count > 0)
-            {
-                var bestRandomLock = validLocks.Where(k => k.Target.GetDistance(npc) < npc.BestCombatRange).RandomElement();
-                if (bestRandomLock == null || FastRandom.NextDouble() < 0.5)
-                {
-                    bestRandomLock = validLocks.RandomElement();
-                }
-                npc.SetPrimaryLock(bestRandomLock);
-                return true;
-            }
-            return locks.Any(l => l.Primary);
+            return validLocks.Any(l => l.Primary);
         }
 
         protected override void SetLockForHostile(Hostile hostile)
@@ -233,6 +257,74 @@ namespace Perpetuum.Zones.NpcSystem
                 if (TryMakeFreeLockSlotFor(hostile))
                     npc.AddLock(hostile.unit, false);
             }
+        }
+
+        private bool IsLockValidTarget(UnitLock unitLock)
+        {
+            if (unitLock == null || unitLock.State != LockState.Locked)
+                return false;
+
+            var visibility = npc.GetVisibility(unitLock.Target);
+            if (visibility == null)
+                return false;
+
+            var r = visibility.GetLineOfSight(false);
+            if (r != null)
+            {
+                if (r.hit && (r.blockingFlags & BlockingFlags.Plant) == 0)
+                    return false;
+            }
+            return unitLock.Target.GetDistance(npc) < npc.MaxCombatRange;
+        }
+
+        private bool PrimaryMostHated(UnitLock[] locks)
+        {
+            var hostiles = npc.ThreatManager.Hostiles;
+            var hostileLocks = locks.Where(u => hostiles.Any(h => h.unit.Eid == u.Target.Eid));
+            var mostHostileLock = hostileLocks.OrderByDescending(u => hostiles.Where(h => h.unit.Eid == u.Target.Eid).FirstOrDefault()?.Threat ?? 0).FirstOrDefault();
+            return TrySetPrimaryLock(mostHostileLock);
+        }
+
+        private bool PrimaryRandomWithinOptimal(UnitLock[] locks)
+        {
+            return TrySetPrimaryLock(locks.Where(k => k.Target.GetDistance(npc) < npc.BestCombatRange).RandomElement());
+        }
+
+        private bool PrimaryClosest(UnitLock[] locks)
+        {
+            return TrySetPrimaryLock(locks.OrderBy(u=>u.Target.GetDistance(npc)).First());
+        }
+
+        private bool PrimaryRandom(UnitLock[] locks)
+        {
+            return TrySetPrimaryLock(locks.RandomElement());
+        }
+
+        private void SetPrimaryUpdateDelay(bool newPrimary)
+        {
+            if (newPrimary)
+            {
+                _primarySelectTimer.Interval = FastRandom.NextTimeSpan(TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(25));
+            }
+            else if (GetValidLocks().Length > 0)
+            {
+                _primarySelectTimer.Interval = TimeSpan.FromSeconds(1);
+            }
+            else if (npc.GetLocks().Count > 0)
+            {
+                _primarySelectTimer.Interval = TimeSpan.FromSeconds(1.5);
+            }
+            else
+            {
+                _primarySelectTimer.Interval = TimeSpan.FromSeconds(3.5);
+            }
+        }
+
+        private bool TrySetPrimaryLock(Lock l)
+        {
+            if (l == null) return false;
+            npc.SetPrimaryLock(l);
+            return true;
         }
     }
 
@@ -357,16 +449,19 @@ namespace Perpetuum.Zones.NpcSystem
     public class HomingAI : CombatAI
     {
         private PathMovement _movement;
+        private readonly double _maxReturnHomeRadius;
+        private readonly PathFinder _pathFinder;
 
         public HomingAI(Npc npc) : base(npc)
         {
+            _maxReturnHomeRadius = (npc.HomeRange * 0.4).Clamp(1, 20);
+            _pathFinder = new AStarFinder(Heuristic.Manhattan, npc.IsWalkable);
         }
 
         public override void Enter()
         {
-            var randomHome = npc.HomePosition.GetRandomPositionInRange2D(1, npc.HomeRange * 0.4);
-            var pathFinder = new AStarFinder(Heuristic.Manhattan, npc.IsWalkable);
-            pathFinder.FindPathAsync(npc.CurrentPosition, randomHome).ContinueWith(t =>
+            var randomHome = npc.HomePosition.GetRandomPositionInRange2D(1, _maxReturnHomeRadius);
+            _pathFinder.FindPathAsync(npc.CurrentPosition, randomHome).ContinueWith(t =>
             {
                 var path = t.Result;
                 if (path == null)
