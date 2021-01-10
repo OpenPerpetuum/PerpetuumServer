@@ -11,6 +11,7 @@ namespace Perpetuum.Players
 {
     public class PlayerMoveCheckQueue : Disposable
     {
+        private readonly TimeSpan MAX_TIMEOUT = TimeSpan.FromSeconds(1);
         private readonly Task _task;
         private readonly CancellationTokenSource _tokenSrc;
         private CancellationToken _ct;
@@ -56,7 +57,8 @@ namespace Perpetuum.Players
             if (!IsCompleted)
                 _movesToReview.CompleteAdding();
 
-            _task.Wait();
+            _movesToReview.Clear();
+            _task.Wait(MAX_TIMEOUT);
         }
 
         public void EnqueueMove(Position target)
