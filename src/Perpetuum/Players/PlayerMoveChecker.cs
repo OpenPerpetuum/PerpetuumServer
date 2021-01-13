@@ -49,7 +49,24 @@ namespace Perpetuum.Players
                 _task.Start();
         }
 
-        public bool Stop()
+        public void StopAndDispose()
+        {
+            try
+            {
+                if (!Stop())
+                {
+                    Logger.Warning("PMCQ failed to join Task under timeout");
+                }
+                Dispose();
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning("PMCQ errored on cleanup");
+                Logger.Exception(ex);
+            }
+        }
+
+        private bool Stop()
         {
             if (!IsCanceled)
                 _tokenSrc.Cancel();
