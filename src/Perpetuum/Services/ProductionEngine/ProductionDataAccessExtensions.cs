@@ -80,24 +80,16 @@ namespace Perpetuum.Services.ProductionEngine
         /// <returns>factor to multiply cost</returns>
         public static double GetProductionPriceModifier(this IProductionDataAccess dataAccess, int targetDefinition)
         {
+            var modifier = 1.0;
             if (!EntityDefault.TryGet(targetDefinition, out EntityDefault ed))
             {
                 Logger.Error("definition was not found: " + targetDefinition);
-                return 1.0;
+                return modifier;
             }
 
-            var modifier = 1.0;
-
-            var matchScores = dataAccess.ProductionCost.Values.GroupBy(c =>
-                (((CategoryFlags)(c.categoryFlag ?? 0) == ed.CategoryFlags) ? 5 : 0) +
-                (((TierType)(c.tierType ?? 0) == ed.Tier.type) ? 1 : 0) +
-                (((c.tierLevel ?? 0) == ed.Tier.level) ? 3 : 0));
-
-            var bestMatchScore = matchScores.Max(x => x.Key);
-            var resultCost = matchScores.FirstOrDefault(x => x.Key == bestMatchScore).Select(g => g).FirstOrDefault();
-            if (resultCost != null)
+            if (dataAccess.ProductionCost.TryGetValue(ed.Definition, out double value))
             {
-                modifier = resultCost.costModifier;
+                modifier = value;
             }
             return modifier;
         }

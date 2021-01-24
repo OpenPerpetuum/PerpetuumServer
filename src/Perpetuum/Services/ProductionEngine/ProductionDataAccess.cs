@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Perpetuum.Collections;
 using Perpetuum.Data;
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
@@ -18,10 +19,12 @@ namespace Perpetuum.Services.ProductionEngine
         private IDictionary<CategoryFlags, double> _productionDurations;
         private IDictionary<int, CalibrationDefault> _calibrationDefaults;
         private IDictionary<CategoryFlags, ProductionDecalibration> _productionDecalibrations;
+        private IProductionCostReader _productionCostReader;
 
-        public ProductionDataAccess(IEntityDefaultReader entityDefaultReader)
+        public ProductionDataAccess(IEntityDefaultReader entityDefaultReader, IProductionCostReader costReader)
         {
             _entityDefaultReader = entityDefaultReader;
+            _productionCostReader = costReader;
         }
 
         public void Init()
@@ -66,17 +69,11 @@ namespace Perpetuum.Services.ProductionEngine
                 return level;
             }, ItemResearchLevelFilter);
 
-            ProductionCost = Database.CreateCache<int, ProductionCost>("productioncost", "id", r =>
+            ProductionCost = new Dictionary<int, double>();
+            foreach (var ed in EntityDefault.All)
             {
-                var cost = new ProductionCost
-                {
-                    categoryFlag = r.GetValue<long?>(k.category),
-                    tierType = r.GetValue<int?>(k.tierType),
-                    tierLevel = r.GetValue<int?>(k.tierLevel),
-                    costModifier = r.GetValue<double>("costmodifier")
-                };
-                return cost;
-            });
+                ProductionCost.Add(ed.Definition, _productionCostReader.GetProductionCostModByED(ed));
+            }
         }
 
         public bool ItemResearchLevelFilter(IDataRecord record)
@@ -105,7 +102,7 @@ namespace Perpetuum.Services.ProductionEngine
         public ILookup<int, ProductionComponent> ProductionComponents => _productionComponents;
         public IDictionary<CategoryFlags, double> ProductionDurations => _productionDurations;
         public IDictionary<int, CalibrationDefault> CalibrationDefaults => _calibrationDefaults;
-        public IDictionary<int, ProductionCost> ProductionCost { get; private set; }
+        public IDictionary<int, double> ProductionCost { get; private set; }
 
         public ProductionDecalibration GetDecalibration(int targetDefinition)
         {
