@@ -1,5 +1,6 @@
 using System.Linq;
 using Perpetuum.EntityFramework;
+using Perpetuum.ExportedTypes;
 using Perpetuum.Log;
 using Perpetuum.Services.ProductionEngine.CalibrationPrograms;
 
@@ -81,15 +82,17 @@ namespace Perpetuum.Services.ProductionEngine
 
             var modifier = 1.0;
 
-            if (dataAccess.ProductionCostByCategory.TryGetValue(ed.CategoryFlags, out ProductionCost costByCat))
-            {
-                modifier = costByCat.costModifier;
-            }
-            else if (dataAccess.ProductionCostByTechLevel.TryGetValue(ed.Tier.level, out ProductionCost costByLevel))
-            {
-                modifier = costByLevel.costModifier;
-            }
+            var grouping = dataAccess.ProductionCost.Values.GroupBy(c =>
+            (((CategoryFlags)(c.categoryFlag ?? 0) == ed.CategoryFlags) ? 5 : 0) +
+            (((TierType)(c.tierType ?? 0) == ed.Tier.type) ? 3 : 0) +
+            (((c.tierLevel ?? 0) == ed.Tier.level) ? 1 : 0));
 
+            var maxCount = grouping.Max(x => x.Key);
+            var resultCost = grouping.FirstOrDefault(x => x.Key == maxCount).Select(g => g).FirstOrDefault();
+            if (resultCost != null)
+            {
+                modifier = resultCost.costModifier;
+            }
             return modifier;
         }
 
