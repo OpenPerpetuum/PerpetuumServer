@@ -1,6 +1,5 @@
 using System.Linq;
 using Perpetuum.EntityFramework;
-using Perpetuum.ExportedTypes;
 using Perpetuum.Log;
 using Perpetuum.Services.ProductionEngine.CalibrationPrograms;
 
