@@ -227,7 +227,7 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
         public virtual double GetPricePerSecond(int targetDefinition)
         {
             var mod = ProductionDataAccess.GetProductionPriceModifier(targetDefinition);
-            return GetPricePerSecond() * mod.Clamp(1,10);
+            return GetPricePerSecond() * mod.Clamp(1, 10);
         }
 
         public virtual double GetPricePerSecond()

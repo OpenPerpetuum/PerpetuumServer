@@ -72,6 +72,12 @@ namespace Perpetuum.Services.ProductionEngine
             return 1.0;
         }
 
+        /// <summary>
+        /// Applies EntityDefault specific cost modifiers based on tech level/type and category
+        /// </summary>
+        /// <param name="dataAccess"></param>
+        /// <param name="targetDefinition"></param>
+        /// <returns>factor to multiply cost</returns>
         public static double GetProductionPriceModifier(this IProductionDataAccess dataAccess, int targetDefinition)
         {
             if (!EntityDefault.TryGet(targetDefinition, out EntityDefault ed))
@@ -82,13 +88,13 @@ namespace Perpetuum.Services.ProductionEngine
 
             var modifier = 1.0;
 
-            var grouping = dataAccess.ProductionCost.Values.GroupBy(c =>
-            (((CategoryFlags)(c.categoryFlag ?? 0) == ed.CategoryFlags) ? 5 : 0) +
-            (((TierType)(c.tierType ?? 0) == ed.Tier.type) ? 3 : 0) +
-            (((c.tierLevel ?? 0) == ed.Tier.level) ? 1 : 0));
+            var matchScores = dataAccess.ProductionCost.Values.GroupBy(c =>
+                (((CategoryFlags)(c.categoryFlag ?? 0) == ed.CategoryFlags) ? 5 : 0) +
+                (((TierType)(c.tierType ?? 0) == ed.Tier.type) ? 1 : 0) +
+                (((c.tierLevel ?? 0) == ed.Tier.level) ? 3 : 0));
 
-            var maxCount = grouping.Max(x => x.Key);
-            var resultCost = grouping.FirstOrDefault(x => x.Key == maxCount).Select(g => g).FirstOrDefault();
+            var bestMatchScore = matchScores.Max(x => x.Key);
+            var resultCost = matchScores.FirstOrDefault(x => x.Key == bestMatchScore).Select(g => g).FirstOrDefault();
             if (resultCost != null)
             {
                 modifier = resultCost.costModifier;
