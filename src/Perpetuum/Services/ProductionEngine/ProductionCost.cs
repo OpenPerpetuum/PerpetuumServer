@@ -46,6 +46,13 @@ namespace Perpetuum.Services.ProductionEngine
             });
         }
 
+        /// <summary>
+        /// Map an EntityDefault to a ProductionCost based on matching CategoryFlags, tierType, tierLevel.
+        /// Tiebreaker logic is weighted such that a match on Category > TierLevel > TierType
+        /// And where a match on TierLevel and Type will not outweigh Category
+        /// </summary>
+        /// <param name="ed">EntityDefault</param>
+        /// <returns>ProductionCost</returns>
         public ProductionCost GetProductionCostByED(EntityDefault ed)
         {
             var matchScores = ProductionCost.GroupBy(c =>
