@@ -87,11 +87,18 @@ namespace Perpetuum.Services.RiftSystem
                 uses++;
         }
 
+        private bool IsExcluded(Player player)
+        {
+            return RiftConfig.IsExcluded(player.ED.CategoryFlags);
+        }
+
         public override void UseItem(Player player)
         {
             base.UseItem(player);
 
             IsUsageExceeded().ThrowIfTrue(ErrorCodes.MaximumAllowedRegistrationExceeded);
+
+            IsExcluded(player).ThrowIfTrue(ErrorCodes.RobotWrongType);
 
             var teleport = _teleportStrategyFactories.TeleportToAnotherZoneFactory(TargetZone);
             teleport.TargetPosition = TargetPosition;

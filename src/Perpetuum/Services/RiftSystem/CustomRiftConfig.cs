@@ -1,5 +1,6 @@
 ﻿using Perpetuum.Collections;
 using Perpetuum.Data;
+using Perpetuum.ExportedTypes;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Finders.PositionFinders;
 using Perpetuum.Zones.Terrains;
@@ -32,8 +33,17 @@ namespace Perpetuum.Services.RiftSystem
                 var destinationGroupId = r.GetValue<int>("destinationGroupId");
                 var lifetimeSeconds = r.GetValue<int?>("lifespanSeconds") ?? 0;
                 var maxUses = r.GetValue<int?>("maxUses") ?? -1;
+                var catExcludeGroupId = r.GetValue<int?>("categoryExclusionGroupId") ?? -1;
 
-                var group = Db.Query().CommandText(
+                var destinations = GetDestinations(destinationGroupId);
+                var excludedCats = GetExclusionCategories(catExcludeGroupId);
+                return new CustomRiftConfig(id, name, destinations, maxUses, TimeSpan.FromSeconds(lifetimeSeconds), excludedCats);
+            });
+        }
+
+        private WeightedCollection<Destination> GetDestinations(int destinationGroupId)
+        {
+            var group = Db.Query().CommandText(
                     @"SELECT id, groupId, zoneId, x, y, weight FROM riftdestinations WHERE groupId=@groupId;")
                     .SetParameter("@groupId", destinationGroupId)
                     .Execute()
@@ -47,13 +57,27 @@ namespace Perpetuum.Services.RiftSystem
 
                         return new Destination(groupId, zoneId, x, y, weight);
                     });
-                var collection = new WeightedCollection<Destination>();
-                foreach (var destination in group)
-                {
-                    collection.Add(destination, destination.Weight);
-                }
-                return new CustomRiftConfig(id, name, collection, maxUses, TimeSpan.FromSeconds(lifetimeSeconds));
-            });
+            var collection = new WeightedCollection<Destination>();
+            foreach (var destination in group)
+            {
+                collection.Add(destination, destination.Weight);
+            }
+            return collection;
+        }
+
+        private CategoryFlags[] GetExclusionCategories(int categoryGroupId)
+        {
+            var group = Db.Query().CommandText(
+                    @"SELECT id, groupId, category FROM categorygroups WHERE groupId=@groupId;")
+                    .SetParameter("@groupId", categoryGroupId)
+                    .Execute()
+                    .Select((record) =>
+                    {
+                        var catValue = record.GetValue<long>("category");
+
+                        return EnumHelper.GetEnum<CategoryFlags>(catValue);
+                    });
+            return group.ToArray();
         }
 
         public CustomRiftConfig GetById(int id)
@@ -68,15 +92,17 @@ namespace Perpetuum.Services.RiftSystem
         public string Name { get; private set; }
         public TimeSpan Lifespan { get; private set; }
         public int MaxUses { get; private set; }
+        public CategoryFlags[] ExcludeClasses { get; private set; }
         private readonly WeightedCollection<Destination> _destinations;
 
-        public CustomRiftConfig(int id, string name, WeightedCollection<Destination> destinations, int maxUses, TimeSpan lifespan)
+        public CustomRiftConfig(int id, string name, WeightedCollection<Destination> destinations, int maxUses, TimeSpan lifespan, CategoryFlags[] excludeClasses)
         {
             Id = id;
             Name = name;
             _destinations = destinations;
             MaxUses = maxUses;
             Lifespan = lifespan;
+            ExcludeClasses = excludeClasses;
         }
 
         public bool IsDespawning { get { return !Lifespan.Equals(TimeSpan.Zero); } }
@@ -86,6 +112,12 @@ namespace Perpetuum.Services.RiftSystem
         {
             return _destinations.GetRandom();
         }
+
+        public bool IsExcluded(CategoryFlags category)
+        {
+            return category.IsAny(ExcludeClasses);
+        }
+
     }
 
 
