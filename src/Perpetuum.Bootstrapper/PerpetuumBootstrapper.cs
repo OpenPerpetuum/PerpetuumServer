@@ -1314,7 +1314,7 @@ namespace Perpetuum.Bootstrapper
                 ByName<RandomRiftPortal>(DefinitionNames.RANDOM_RIFT_PORTAL);
                 ByName<ItemShop>(DefinitionNames.BASE_ITEM_SHOP);
                 ByName<Gift>(DefinitionNames.ANNIVERSARY_PACKAGE);
-                ByName<StrongholdExitRift>(DefinitionNames.STRONGHOLD_EXIT_RIFT); //OPP stronghold exit rift
+                ByName<StrongholdExitRift>(DefinitionNames.STRONGHOLD_EXIT_RIFT); //OPP stronghold static exit rift
                 ByName<TargettedPortal>(DefinitionNames.TARGETTED_RIFT); //OPP targetted rift
                 ByName<Relic>(DefinitionNames.RELIC); //OPP Relic
                 ByName<SAPRelic>(DefinitionNames.RELIC_SAP); //OPP outpost Relic
