@@ -61,7 +61,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
                 rift.SetTarget(zoneTarget, targetPos);
                 rift.SetConfig(msg.RiftConfig);
 
-                Logger.Info(string.Format("Rift spawned on zone {0} {1} ({2})", zone.Id, rift.ED.Name, rift.CurrentPosition));
+                Logger.Info(string.Format("TargettedRift spawned on zone {0} {1} ({2})", zone.Id, rift.ED.Name, rift.CurrentPosition));
             }
         }
 

@@ -74,7 +74,6 @@ namespace Perpetuum.Services.RiftSystem
                     .Select((record) =>
                     {
                         var catValue = record.GetValue<long>("category");
-
                         return EnumHelper.GetEnum<CategoryFlags>(catValue);
                     });
             return group.ToArray();
@@ -117,7 +116,6 @@ namespace Perpetuum.Services.RiftSystem
         {
             return category.IsAny(ExcludeClasses);
         }
-
     }
 
 
