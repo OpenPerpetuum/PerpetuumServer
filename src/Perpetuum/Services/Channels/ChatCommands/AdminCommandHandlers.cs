@@ -680,7 +680,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
             }
 
-            string cmdLogic() 
+            string cmd() 
             {
                 Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
@@ -699,9 +699,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 return string.Format("zoneDecorAdd:zone_{0}:{1}", zoneId, GenxyConverter.Serialize(dictionary));
             }
 
-            string cmd = cmdLogic();
-
-            HandleLocalRequest(data, cmd);
+            HandleLocalRequest(data, cmd());
         }
         [ChatCommand("ZoneAddDecorToLockedTile")]
         public static void ZoneAddDecorToLockedTile(AdminCommandData data)
