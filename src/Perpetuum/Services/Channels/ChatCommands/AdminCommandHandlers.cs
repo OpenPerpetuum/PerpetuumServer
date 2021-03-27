@@ -170,7 +170,6 @@ namespace Perpetuum.Services.Channels.ChatCommands
         [ChatCommand("JumpTo")]
         public static void JumpTo(AdminCommandData data)
         {
-
             int zone;
             int x;
             int y;
