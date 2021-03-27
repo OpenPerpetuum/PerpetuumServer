@@ -674,9 +674,12 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 qw = double.Parse(data.Command.Args[7]);
                 scale = double.Parse(data.Command.Args[8]);
                 cat = int.Parse(data.Command.Args[9]);
-            } catch (ArgumentNullException)
+            }
+            catch (Exception ex)
             {
-                throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                if (ex is FormatException || ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
             }
 
             string cmd() 
