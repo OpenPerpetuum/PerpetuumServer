@@ -671,7 +671,26 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
             }
 
-            string cmd = AdminCommandLogic.ZoneAddDecor(zoneId, definition, x, y, z, qx, qy, qz, qw, scale, cat);
+            string cmdLogic() 
+            {
+                Dictionary<string, object> dictionary = new Dictionary<string, object>()
+                {
+                    { "definition", definition },
+                    { "x", x*256 },
+                    { "y", y*256 },
+                    { "z", z*256 },
+                    { "quaternionX", qx },
+                    { "quaternionY", qy },
+                    { "quaternionZ", qz },
+                    { "quaternionW", qw },
+                    { "scale", scale },
+                    { "category", cat }
+                };
+
+                return string.Format("zoneDecorAdd:zone_{0}:{1}", zoneId, GenxyConverter.Serialize(dictionary));
+            }
+
+            string cmd = cmdLogic();
 
             HandleLocalRequest(data, cmd);
         }
