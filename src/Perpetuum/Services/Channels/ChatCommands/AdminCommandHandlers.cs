@@ -640,38 +640,39 @@ namespace Perpetuum.Services.Channels.ChatCommands
             if (!IsDevModeEnabled(data))
                 return;
 
-            bool err = false;
-            err = !int.TryParse(data.Command.Args[0], out int definition);
-            err = !int.TryParse(data.Command.Args[1], out int x);
-            err = !int.TryParse(data.Command.Args[2], out int y);
-            err = !int.TryParse(data.Command.Args[3], out int z);
-            err = !double.TryParse(data.Command.Args[4], out double qx);
-            err = !double.TryParse(data.Command.Args[5], out double qy);
-            err = !double.TryParse(data.Command.Args[6], out double qz);
-            err = !double.TryParse(data.Command.Args[7], out double qw);
-            err = !double.TryParse(data.Command.Args[8], out double scale);
-            err = !int.TryParse(data.Command.Args[9], out int cat);
+            int? zoneId = data.Sender.ZoneId;
+            int definition;
+            int x;
+            int y;
+            int z;
+            double qx;
+            double qy;
+            double qz;
+            double qw;
+            double scale;
+            int cat;
 
-            if (err)
+            try
+            {
+                if (zoneId == null)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                definition = int.Parse(data.Command.Args[0]);
+                x = int.Parse(data.Command.Args[1]);
+                y = int.Parse(data.Command.Args[2]);
+                z = int.Parse(data.Command.Args[3]);
+                qx = double.Parse(data.Command.Args[4]);
+                qy = double.Parse(data.Command.Args[5]);
+                qz = double.Parse(data.Command.Args[6]);
+                qw = double.Parse(data.Command.Args[7]);
+                scale = double.Parse(data.Command.Args[8]);
+                cat = int.Parse(data.Command.Args[9]);
+            } catch (ArgumentNullException)
             {
                 throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
             }
 
-            Dictionary<string, object> dictionary = new Dictionary<string, object>()
-                {
-                    { "definition", definition },
-                    { "x", x*256 },
-                    { "y", y*256 },
-                    { "z", z*256 },
-                    { "quaternionX", qx },
-                    { "quaternionY", qy },
-                    { "quaternionZ", qz },
-                    { "quaternionW", qw },
-                    { "scale", scale },
-                    { "category", cat }
-                };
+            string cmd = AdminCommandLogic.ZoneAddDecor(zoneId, definition, x, y, z, qx, qy, qz, qw, scale, cat);
 
-            string cmd = string.Format("zoneDecorAdd:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
         [ChatCommand("ZoneAddDecorToLockedTile")]
