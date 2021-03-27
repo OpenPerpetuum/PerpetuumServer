@@ -150,8 +150,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
         {
             string cmd = string.Format("relayClose:relay:null");
             HandleLocalRequest(data, cmd);
-            data.Channel.SendMessageToAll(data.SessionManager, data.Sender, string.Format("Relay Closed >> Only Admins can Login"));
-
+            data.Channel.SendMessageToAll(data.SessionManager, data.Sender, string.Format("Relay is Closed >> Only Admins can Login"));
         }
 
         [ChatCommand("RelayOpen")]
@@ -159,8 +158,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
         {
             string cmd = string.Format("relayOpen:relay:null");
             HandleLocalRequest(data, cmd);
-            data.Channel.SendMessageToAll(data.SessionManager, data.Sender, string.Format("Relay Open >> All Players can Login"));
-
+            data.Channel.SendMessageToAll(data.SessionManager, data.Sender, string.Format("Relay is Open >> All Players can Login"));
         }
 
         [ChatCommand("ShutdownCancel")]
