@@ -170,13 +170,22 @@ namespace Perpetuum.Services.Channels.ChatCommands
         [ChatCommand("JumpTo")]
         public static void JumpTo(AdminCommandData data)
         {
-            bool err = false; //TODO this only throws on bad last-arg!
-            err = !int.TryParse(data.Command.Args[0], out int zone);
-            err = !int.TryParse(data.Command.Args[1], out int x);
-            err = !int.TryParse(data.Command.Args[2], out int y);
-            if (err)
+
+            int zone;
+            int x;
+            int y;
+
+            try
             {
-                throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                zone = int.Parse(data.Command.Args[0]);
+                x = int.Parse(data.Command.Args[1]);
+                y = int.Parse(data.Command.Args[2]);
+            }
+            catch (Exception ex)
+            {
+                if(ex is FormatException || ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
             }
 
             Dictionary<string, object> dictionary = new Dictionary<string, object>()
