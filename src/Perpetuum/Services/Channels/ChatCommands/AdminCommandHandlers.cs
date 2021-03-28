@@ -406,15 +406,27 @@ namespace Perpetuum.Services.Channels.ChatCommands
         [ChatCommand("FlagPlayerNameOffensive")]
         public static void FlagPlayerNameOffensive(AdminCommandData data)
         {
-            bool err = false;
-            err = !int.TryParse(data.Command.Args[0], out int characterID);
-            err = !bool.TryParse(data.Command.Args[1], out bool isoffensive);
+
+            int characterId;
+            bool isOffensive;
+
+            try 
+            {
+                characterId = int.Parse(data.Command.Args[0]);
+                isOffensive = bool.Parse(data.Command.Args[1]);
+            }
+            catch(Exception ex)
+            {
+                if (ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
+            }
 
             //TODO does this work if the character doesnt have a session?
-            var charactersession = data.SessionManager.GetByCharacter(characterID);
-            charactersession.Character.IsOffensiveNick = isoffensive;
+            var characterSession = data.SessionManager.GetByCharacter(characterId);
+            characterSession.Character.IsOffensiveNick = isOffensive;
 
-            SendMessageToAll(data, string.Format("Player with nick {0} is offensive:{1}", charactersession.Character.Nick, charactersession.Character.IsOffensiveNick));
+            SendMessageToAll(data, string.Format("Player with nick {0} is offensive:{1}", characterSession.Character.Nick, characterSession.Character.IsOffensiveNick));
         }
         [ChatCommand("RenameCorp")]
         public static void RenameCorp(AdminCommandData data)
