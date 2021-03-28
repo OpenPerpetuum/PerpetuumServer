@@ -547,14 +547,24 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 SendMessageToAll(data, $"bad or missing args");
                 throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
             }
+
             var zoneId = data.Sender.ZoneId ?? -1;
-            bool err = false;
-            err = !int.TryParse(data.Command.Args[0], out int weatherInt);
-            err = !int.TryParse(data.Command.Args[1], out int seconds);
-            if (data.Command.Args.Length > 2)
+            int weatherInt;
+            int seconds;
+            try
             {
-                err = !int.TryParse(data.Command.Args[2], out zoneId);
+                weatherInt = int.Parse(data.Command.Args[0]);
+                seconds = int.Parse(data.Command.Args[1]);
+                if (data.Command.Args.Length > 2)
+                    zoneId = int.Parse(data.Command.Args[2]);
             }
+            catch (Exception ex)
+            {
+                if (ex is FormatException || ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
+            }
+
             CheckZoneId(data, zoneId);
             var zone = data.Request.Session.ZoneMgr.GetZone(zoneId);
             var current = zone.Weather.GetCurrentWeather();
