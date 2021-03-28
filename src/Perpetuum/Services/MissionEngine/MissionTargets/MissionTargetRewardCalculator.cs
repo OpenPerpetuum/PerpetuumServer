@@ -90,7 +90,7 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
                 var quantity = _targetInProgress.myTarget.Quantity;
                 var level = _missionInProgress.MissionLevel;
                 var reward = Target.Reward;
-                var pMult = PayOutMultipliers[level];
+                var pMult = PayOutMultipliers[level.Clamp(0, PayOutMultipliers.Length - 1)];
                 
                 dangerFee = pMult * quantity * reward; 
 
@@ -114,7 +114,7 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             var quantity = GetQuantityOrProgress;
             var level = _missionInProgress.MissionLevel;
             var reward = Target.Reward;
-            var pMult = PayOutMultipliers[level];
+            var pMult = PayOutMultipliers[level.Clamp(0, PayOutMultipliers.Length - 1)];
 
             _reward = pMult * quantity * reward;
             
