@@ -68,15 +68,15 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         }
 
         //ECONOMY!  TODO put this in DB!
-        public static readonly double[] PayOutMultipliers = new double[] { 100, 175, 250, 325, 400, 475, 550, 625, 700, 775 };
+        public static readonly double[] PayOutMultipliers = new double[] { 100, 190, 280, 370, 460, 550, 640, 625, 730, 820 };
 
         private void PayReward()
         {
             var level = _missionInProgress.MissionLevel;
-            var pMult = PayOutMultipliers[level];
+            var pMult = PayOutMultipliers[level.Clamp(0, PayOutMultipliers.Length - 1)];
             var reward = Target.Reward;
             _reward = reward * pMult;
-            
+
             Log("est:" + _estimation + " lvl:" + level + " bRwe:" + reward + " pMult:" + pMult + " SUM:" + _reward + " for " + Target);
             
         }
