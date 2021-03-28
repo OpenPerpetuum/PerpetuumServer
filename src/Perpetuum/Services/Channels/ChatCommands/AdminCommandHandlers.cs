@@ -406,7 +406,6 @@ namespace Perpetuum.Services.Channels.ChatCommands
         [ChatCommand("FlagPlayerNameOffensive")]
         public static void FlagPlayerNameOffensive(AdminCommandData data)
         {
-
             int characterId;
             bool isOffensive;
 
@@ -417,7 +416,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             }
             catch(Exception ex)
             {
-                if (ex is ArgumentNullException)
+                if (ex is FormatException || ex is ArgumentNullException)
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
                 throw;
             }
@@ -444,16 +443,22 @@ namespace Perpetuum.Services.Channels.ChatCommands
         [ChatCommand("UnlockAllEP")]
         public static void UnlockAllEP(AdminCommandData data)
         {
-            bool err = false;
-            err = !int.TryParse(data.Command.Args[0], out int accountID);
-            if (err)
+            int accountId;
+
+            try 
             {
-                throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                accountId = int.Parse(data.Command.Args[0]);
+            }
+            catch (Exception ex)
+            {
+                if (ex is FormatException || ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
             }
 
             Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
-                    { k.accountID, accountID }
+                    { k.accountID, accountId }
                 };
 
             string cmd = string.Format("{0}:relay:{1}", Commands.ExtensionFreeAllLockedEpCommand.Text, GenxyConverter.Serialize(dictionary));
@@ -463,12 +468,18 @@ namespace Perpetuum.Services.Channels.ChatCommands
         [ChatCommand("EPBonusSet")]
         public static void EPBonusSet(AdminCommandData data)
         {
-            bool err = false;
-            err = !int.TryParse(data.Command.Args[0], out int bonusBoost);
-            err = !int.TryParse(data.Command.Args[1], out int hours);
-            if (err)
+            int bonusBoost;
+            int hours;
+
+            try 
             {
-                throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                bonusBoost = int.Parse(data.Command.Args[0]);
+                hours = int.Parse(data.Command.Args[1]);
+            } catch (Exception ex)
+            {
+                if (ex is FormatException || ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
             }
 
             Dictionary<string, object> dictionary = new Dictionary<string, object>()
