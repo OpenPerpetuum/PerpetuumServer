@@ -765,12 +765,19 @@ namespace Perpetuum.Services.Channels.ChatCommands
             double y = terrainLock.Location.Y;
             double z = terrainLock.Location.Z;
 
-            bool err = !double.TryParse(data.Command.Args[1], out double scale);
-            err = !int.TryParse(data.Command.Args[0], out int definition);
+            int definition;
+            double scale;
 
-            if (err)
+            try
             {
-                throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                definition = int.Parse(data.Command.Args[0]);
+                scale = double.Parse(data.Command.Args[1]);
+            }
+            catch (Exception ex)
+            {
+                if (ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
             }
 
             Dictionary<string, object> dictionary = new Dictionary<string, object>()
