@@ -1062,7 +1062,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
             if (!IsDevModeEnabled(data))
                 return;
 
-            bool err = false;
+            int x;
+            int y;
+
             var dictionary = new Dictionary<string, object>();
             if (data.Command.Args.Length != 2)
             {
@@ -1070,13 +1072,19 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
             }
 
-            err = !int.TryParse(data.Command.Args[0], out int x);
-            err = !int.TryParse(data.Command.Args[1], out int y);
-            if (err)
+            try
+            {
+                x = int.Parse(data.Command.Args[0]);
+                y = int.Parse(data.Command.Args[1]);
+            }
+            catch (Exception ex)
             {
                 SendMessageToAll(data, "Bad args");
-                throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                if (ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
             }
+
             dictionary.Add(k.x, x);
             dictionary.Add(k.y, y);
             var cmd = string.Format("{0}:zone_{1}:{2}", Commands.ZoneCreateGarden.Text, data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
