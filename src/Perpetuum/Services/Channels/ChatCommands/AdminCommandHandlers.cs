@@ -1159,7 +1159,6 @@ namespace Perpetuum.Services.Channels.ChatCommands
             if (!IsDevModeEnabled(data))
                 return;
 
-            bool err = false;
             var character = data.Request.Session.Character;
             var zone = data.Request.Session.ZoneMgr.GetZone((int)character.ZoneId);
             var player = zone.GetPlayer(character.ActiveRobotEid);
@@ -1168,17 +1167,27 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
             int x, y, zoneid;
 
+            int xCommand;
+            int yCommand;
+            int zoneCommand;
+
+            try
+            {
+                xCommand = int.Parse(data.Command.Args[0]);
+                yCommand = int.Parse(data.Command.Args[1]);
+                zoneCommand = int.Parse(data.Command.Args[2]);
+            }
+            catch (Exception ex)
+            {
+                SendMessageToAll(data, "Bad args");
+                if (ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
+            }
+
             if (terrainLock == null)
             {
                 if (data.Command.Args.Length != 3)
-                {
-                    SendMessageToAll(data, "Bad args");
-                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
-                }
-                err = !int.TryParse(data.Command.Args[0], out int xCommand);
-                err = !int.TryParse(data.Command.Args[1], out int yCommand);
-                err = !int.TryParse(data.Command.Args[2], out int zoneCommand);
-                if (err)
                 {
                     SendMessageToAll(data, "Bad args");
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
