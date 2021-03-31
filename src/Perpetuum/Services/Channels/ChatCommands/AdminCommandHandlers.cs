@@ -200,31 +200,40 @@ namespace Perpetuum.Services.Channels.ChatCommands
         [ChatCommand("MovePlayer")]
         public static void MovePlayer(AdminCommandData data)
         {
-            bool err = false; //TODO this parse checking is broken
-            err = !int.TryParse(data.Command.Args[0], out int characterID);
-            err = !int.TryParse(data.Command.Args[1], out int zoneID);
-            err = !int.TryParse(data.Command.Args[2], out int x);
-            err = !int.TryParse(data.Command.Args[3], out int y);
-            if (err)
+            int characterId;
+            int zoneId;
+            int x;
+            int y;
+
+            try
             {
-                throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                characterId = int.Parse(data.Command.Args[0]);
+                zoneId = int.Parse(data.Command.Args[1]);
+                x = int.Parse(data.Command.Args[2]);
+                y = int.Parse(data.Command.Args[3]);
+            }
+            catch (Exception ex)
+            {
+                if (ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
             }
 
             // get the target character's session.
-            var charactersession = data.SessionManager.GetByCharacter(characterID);
+            var charactersession = data.SessionManager.GetByCharacter(characterId);
 
             if (charactersession.Character.ZoneId == null)
             {
-                SendMessageToAll(data, string.Format("ERR: Character with ID {0} does not have a zone. Are they docked?", characterID));
+                SendMessageToAll(data, string.Format("ERR: Character with ID {0} does not have a zone. Are they docked?", characterId));
                 return;
             }
 
             // get destination zone.
-            var zone = data.Request.Session.ZoneMgr.GetZone(zoneID);
+            var zone = data.Request.Session.ZoneMgr.GetZone(zoneId);
 
             if (charactersession.Character.ZoneId == null)
             {
-                SendMessageToAll(data, string.Format("ERR: Invalid Zone ID {0}", zoneID));
+                SendMessageToAll(data, string.Format("ERR: Invalid Zone ID {0}", zoneId));
                 return;
             }
 
@@ -242,7 +251,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             tp.DoTeleportAsync(player);
             tp = null;
 
-            SendMessageToAll(data, string.Format("Moved Character {0}-{1} to Zone {2} @ {3},{4}", characterID, charactersession.Character.Nick, zone.Id, x, y));
+            SendMessageToAll(data, string.Format("Moved Character {0}-{1} to Zone {2} @ {3},{4}", characterId, charactersession.Character.Nick, zone.Id, x, y));
         }
         [ChatCommand("GiveItem")]
         public static void GiveItem(AdminCommandData data)
