@@ -946,9 +946,20 @@ namespace Perpetuum.Services.Channels.ChatCommands
             if (!IsDevModeEnabled(data))
                 return;
 
-            bool err = false;
-            err = !int.TryParse(data.Command.Args[0], out int id);
-            err = !int.TryParse(data.Command.Args[1], out int locked);
+            int id;
+            int locked;
+
+            try
+            {
+                id = int.Parse(data.Command.Args[0]);
+                locked = int.Parse(data.Command.Args[1]);
+            }
+            catch (Exception ex)
+            {
+                if (ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
+            }
 
             Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
