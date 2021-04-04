@@ -100,6 +100,16 @@ namespace Perpetuum.AdminTool
                     return;
                 }
 
+                var adminOnlyMode = GetAdminOnlyModeFromIni(gameRoot);
+                if (!adminOnlyMode)
+                {
+                    _log.Log("AdminOnlyMode: Disabled (Default)");
+                }
+                else
+                {
+                    _log.Log("AdminOnlyMode: Enabled");
+                }
+
                 //RunNetStatProbe(listeningPort);
                 RunSocketProbe(listeningPort);
             }
@@ -353,6 +363,26 @@ namespace Perpetuum.AdminTool
             _log.Log($"Relay port loaded from {PERPETUUMINIFILE}: {portData.ListenerPort}");
 
             return portData.ListenerPort;
+        }
+
+        private bool GetAdminOnlyModeFromIni(string gameRoot)
+        {
+            var perpetuumIni = Path.Combine(gameRoot, PERPETUUMINIFILE);
+            if (!File.Exists(perpetuumIni))
+            {
+                _log.StatusError($"{PERPETUUMINIFILE} was not found in game root {gameRoot} folder. Check your settings!");
+                return false;
+            }
+
+            var json = File.ReadAllText(perpetuumIni);
+            var adminOnlyMode = JsonConvert.DeserializeAnonymousType(json, new
+            {
+                StartServerInAdminOnlyMode = false,
+            });
+
+            _log.Log($"Startup in Admin Only Mode loaded from {PERPETUUMINIFILE}: {adminOnlyMode.StartServerInAdminOnlyMode}");
+
+            return adminOnlyMode.StartServerInAdminOnlyMode;
         }
 
 
