@@ -356,7 +356,6 @@ namespace Perpetuum.AdminTool
             if (!File.Exists(perpetuumIni))
             {
                 _log.StatusError($"{PERPETUUMINIFILE} was not found in game root {gameRoot} folder. Check your settings!");
-                return null;
             }
 
             var json = File.ReadAllText(perpetuumIni);
