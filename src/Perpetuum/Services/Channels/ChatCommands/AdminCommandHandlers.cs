@@ -106,6 +106,15 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
             }
         }
+
+        public static void CheckRequiredArgLength(AdminCommandData data, int expectedLength)
+        {
+            if(data.Command.Args.Length != expectedLength)
+            {
+                SendMessageToAll(data, $"Error - Command requires " + expectedLength.ToString() + " args, but was given " +data.Command.Args.Length.ToString()+ " args");
+                throw PerpetuumException.Create(ErrorCodes.TooManyOrTooFewArguments);
+            }
+        }
         public static void Unknown(AdminCommandData data)
         {
             SendMessageToAll(data, $"Unknown command: {data.Command.Name}");
@@ -170,13 +179,15 @@ namespace Perpetuum.Services.Channels.ChatCommands
         [ChatCommand("JumpTo")]
         public static void JumpTo(AdminCommandData data)
         {
-            int zone;
+            int zoneId;
             int x;
             int y;
 
+            CheckRequiredArgLength(data, 3);
+
             try
             {
-                zone = int.Parse(data.Command.Args[0]);
+                zoneId = int.Parse(data.Command.Args[0]);
                 x = int.Parse(data.Command.Args[1]);
                 y = int.Parse(data.Command.Args[2]);
             }
@@ -187,9 +198,11 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 throw;
             }
 
+            CheckZoneId(data, zoneId);
+
             Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
-                    { "zoneID" , zone },
+                    { "zoneID" , zoneId },
                     { "x" , x },
                     { "y" , y }
                 };
@@ -205,6 +218,8 @@ namespace Perpetuum.Services.Channels.ChatCommands
             int x;
             int y;
 
+            CheckRequiredArgLength(data, 4);
+
             try
             {
                 characterId = int.Parse(data.Command.Args[0]);
@@ -218,6 +233,8 @@ namespace Perpetuum.Services.Channels.ChatCommands
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
                 throw;
             }
+
+            CheckZoneId(data, zoneId);
 
             // get the target character's session.
             var charactersession = data.SessionManager.GetByCharacter(characterId);
@@ -256,8 +273,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
         [ChatCommand("GiveItem")]
         public static void GiveItem(AdminCommandData data)
         {
+            CheckRequiredArgLength(data, 2);
+
             int.TryParse(data.Command.Args[0], out int definition);
-            int.TryParse(data.Command.Args[1], out int qty);
+            int.TryParse(data.Command.Args[1], out int qty);   
 
             Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
@@ -324,6 +343,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
         [ChatCommand("SetVisibility")]
         public static void SetVisibility(AdminCommandData data)
         {
+            CheckRequiredArgLength(data, 1);
             bool.TryParse(data.Command.Args[0], out bool visiblestate);
 
             var character = data.Request.Session.Character;
