@@ -111,7 +111,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
         {
             if(data.Command.Args.Length != expectedLength)
             {
-                SendMessageToAll(data, $"Error - Command requires " + expectedLength.ToString() + " args, but was given " +data.Command.Args.Length.ToString()+ " args");
+                SendMessageToAll(data, $"Error - Command expects " + expectedLength.ToString() + " args, but was given " +data.Command.Args.Length.ToString()+ " args");
                 throw PerpetuumException.Create(ErrorCodes.TooManyOrTooFewArguments);
             }
         }
@@ -182,7 +182,6 @@ namespace Perpetuum.Services.Channels.ChatCommands
             int zoneId;
             int x;
             int y;
-
             CheckRequiredArgLength(data, 3);
 
             try
@@ -217,7 +216,6 @@ namespace Perpetuum.Services.Channels.ChatCommands
             int zoneId;
             int x;
             int y;
-
             CheckRequiredArgLength(data, 4);
 
             try
@@ -274,7 +272,6 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void GiveItem(AdminCommandData data)
         {
             CheckRequiredArgLength(data, 2);
-
             int.TryParse(data.Command.Args[0], out int definition);
             int.TryParse(data.Command.Args[1], out int qty);   
 
@@ -381,6 +378,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ListAllPlayersInZone(AdminCommandData data)
         {
             int.TryParse(data.Command.Args[0], out int zoneid);
+            CheckZoneId(data, zoneid);
 
             SendMessageToAll(data, string.Format("Players On Zone {0}", zoneid));
             SendMessageToAll(data, string.Format("  AccountId    CharacterId    Nick    Access Level    Docked?    DockedAt    Position"));
@@ -438,6 +436,8 @@ namespace Perpetuum.Services.Channels.ChatCommands
             int characterId;
             bool isOffensive;
 
+            CheckRequiredArgLength(data, 2);
+
             try 
             {
                 characterId = int.Parse(data.Command.Args[0]);
@@ -462,6 +462,8 @@ namespace Perpetuum.Services.Channels.ChatCommands
             string currentCorpName = data.Command.Args[0];
             string desiredCorpName = data.Command.Args[1];
             string desiredCorpNick = data.Command.Args[2];
+
+            CheckRequiredArgLength(data, 3);
 
             Corporation.IsNameOrNickTaken(desiredCorpName, desiredCorpNick).ThrowIfTrue(ErrorCodes.NameTaken);
             var corp = Corporation.GetByName(currentCorpName);
@@ -499,6 +501,8 @@ namespace Perpetuum.Services.Channels.ChatCommands
         {
             int bonusBoost;
             int hours;
+
+            CheckRequiredArgLength(data, 2);
 
             try 
             {
