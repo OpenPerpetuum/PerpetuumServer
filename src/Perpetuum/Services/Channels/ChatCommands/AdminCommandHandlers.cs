@@ -273,7 +273,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
         {
             CheckRequiredArgLength(data, 2);
             int.TryParse(data.Command.Args[0], out int definition);
-            int.TryParse(data.Command.Args[1], out int qty);   
+            int.TryParse(data.Command.Args[1], out int qty);
 
             Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
