@@ -41,7 +41,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 
                 var zoneTarget = _zoneManager.GetZone(targetDestination.ZoneId);
                 var targetPos = targetDestination.GetPosition(zoneTarget);
-                var rift = (StrongholdEntranceTeleport)_entityServices.Factory.CreateWithRandomEID(DefinitionNames.TARGETTED_RIFT);
+                var rift = (StrongholdEntryRift)_entityServices.Factory.CreateWithRandomEID(DefinitionNames.TARGETTED_RIFT);
                 rift.AddToZone(zone, msg.SourcePosition, ZoneEnterType.NpcSpawn);
                 rift.SetTarget(zoneTarget, targetPos);
                 rift.SetConfig(msg.RiftConfig);

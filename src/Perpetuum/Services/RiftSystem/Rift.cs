@@ -138,9 +138,9 @@ namespace Perpetuum.Services.RiftSystem
         public StrongholdExitRift(ITeleportStrategyFactories teleportStrategyFactories) : base(teleportStrategyFactories) { }
     }
 
-    public class StrongholdEntranceTeleport : DespawningTargettedPortal
+    public class StrongholdEntryRift : DespawningTargettedPortal
     {
-        public StrongholdEntranceTeleport(ITeleportStrategyFactories teleportStrategyFactories) : base(teleportStrategyFactories) { }
+        public StrongholdEntryRift(ITeleportStrategyFactories teleportStrategyFactories) : base(teleportStrategyFactories) { }
     }
 
     /// <summary>
