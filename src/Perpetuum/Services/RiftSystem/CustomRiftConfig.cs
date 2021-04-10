@@ -107,14 +107,30 @@ namespace Perpetuum.Services.RiftSystem
         public bool IsDespawning { get { return !Lifespan.Equals(TimeSpan.Zero); } }
         public bool InfiniteUses { get { return MaxUses < 0; } }
 
+        public bool IsExcluded(CategoryFlags category)
+        {
+            return category.IsAny(ExcludeClasses);
+        }
+
         public Destination GetDestination()
         {
             return _destinations.GetRandom();
         }
 
-        public bool IsExcluded(CategoryFlags category)
+        [CanBeNull]
+        public Destination TryGetValidDestination(IZoneManager zoneManager)
         {
-            return category.IsAny(ExcludeClasses);
+            var attempts = 100;
+            while (attempts > 0)
+            {
+                attempts--;
+                var dest = GetDestination();
+                if (dest != null && zoneManager.ContainsZone(dest.ZoneId))
+                {
+                    return dest;
+                }
+            }
+            return null;
         }
     }
 

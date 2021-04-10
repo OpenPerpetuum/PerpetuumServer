@@ -13,14 +13,16 @@ namespace Perpetuum.Services.RiftSystem.StrongholdRifts
     public class StrongholdRiftManager : IRiftManager
     {
         private readonly IZone _zone;
+        private readonly IZoneManager _zoneManager;
         private readonly IEntityServices _entityServices;
         private readonly IEnumerable<StrongholdRiftLocation> _spawnLocations;
 
-        public StrongholdRiftManager(IZone zone, IEntityServices entityServices)
+        public StrongholdRiftManager(IZone zone, IEntityServices entityServices, ICustomRiftConfigReader customRiftConfigReader, IZoneManager zoneManager)
         {
             _zone = zone;
-            _spawnLocations = StrongholdRiftLocationRepository.GetAllInZone(zone);
+            _spawnLocations = StrongholdRiftLocationRepository.GetAllInZone(zone, customRiftConfigReader);
             _entityServices = entityServices;
+            _zoneManager = zoneManager;
         }
 
         private bool _spawnedAll = false;
@@ -46,10 +48,17 @@ namespace Perpetuum.Services.RiftSystem.StrongholdRifts
 
         private void SpawnRift(StrongholdRiftLocation spawn)
         {
+            var targetDestination = spawn.RiftConfig.TryGetValidDestination(_zoneManager);
+            if (targetDestination == null)
+                return;
+
+            var zoneTarget = _zoneManager.GetZone(targetDestination.ZoneId);
+            var targetPos = targetDestination.GetPosition(zoneTarget);
             var rift = (StrongholdExitRift)_entityServices.Factory.CreateWithRandomEID(DefinitionNames.STRONGHOLD_EXIT_RIFT);
             rift.AddToZone(_zone, spawn.Location, ZoneEnterType.NpcSpawn);
+            rift.SetTarget(zoneTarget, targetPos);
+            rift.SetConfig(spawn.RiftConfig);
             Logger.Info(string.Format("Rift spawned on zone {0} {1} ({2})", _zone.Id, rift.ED.Name, rift.CurrentPosition));
         }
     }
-
 }
