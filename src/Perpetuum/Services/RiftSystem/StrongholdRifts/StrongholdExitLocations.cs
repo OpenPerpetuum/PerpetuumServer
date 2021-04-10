@@ -17,14 +17,14 @@ namespace Perpetuum.Services.RiftSystem.StrongholdRifts
         /// <returns>IEnumerable of StrongholdRiftLocation</returns>
         public static IEnumerable<StrongholdRiftLocation> GetAllInZone(IZone zone, ICustomRiftConfigReader customRiftConfigReader)
         {
-            var locations = Db.Query().CommandText("SELECT id, zoneid, x, y, riftconfigid FROM strongholdexitconfig WHERE zoneid = @zoneId")
+            var locations = Db.Query().CommandText("SELECT id, zoneId, x, y, riftConfigId FROM strongholdexitconfig WHERE zoneId = @zoneId")
                 .SetParameter("@zoneId", zone.Id)
                 .Execute()
                 .Select((record) =>
                 {
                     var x = record.GetValue<int>("x");
                     var y = record.GetValue<int>("y");
-                    var riftConfigId = record.GetValue<int>("riftconfigid");
+                    var riftConfigId = record.GetValue<int>("riftConfigId");
                     var riftConfig = customRiftConfigReader.GetById(riftConfigId);
                     return new StrongholdRiftLocation(zone, new Position(x, y), riftConfig);
                 });
