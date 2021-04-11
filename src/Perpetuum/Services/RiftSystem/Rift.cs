@@ -79,7 +79,7 @@ namespace Perpetuum.Services.RiftSystem
         {
             RiftConfig = riftConfig;
             // Only set despawner if config is despawning
-            if(RiftConfig.IsDespawning)
+            if (RiftConfig.IsDespawning)
                 SetDespawnTime(RiftConfig.Lifespan);
         }
 
@@ -89,13 +89,7 @@ namespace Perpetuum.Services.RiftSystem
             TargetPosition = position;
         }
 
-        private bool HasTarget
-        {
-            get
-            {
-                return TargetZone != null && !TargetPosition.Equals(Position.Empty);
-            }
-        }
+        private bool HasTarget { get { return TargetZone != null && !TargetPosition.Equals(Position.Empty); } }
 
         private bool IsUsageExceeded()
         {

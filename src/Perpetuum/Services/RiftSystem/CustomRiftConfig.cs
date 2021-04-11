@@ -1,6 +1,5 @@
 ﻿using Perpetuum.Collections;
 using Perpetuum.Data;
-using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Log;
 using Perpetuum.Zones;
