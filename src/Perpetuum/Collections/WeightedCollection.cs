@@ -34,11 +34,11 @@ namespace Perpetuum.Collections
             var weightTarget = FastRandom.NextInt(_sumWeights - 1);
             var current = 0;
             var iterator = _list.GetEnumerator();
-            var next = true;
-            while (current <= weightTarget && next)
+            while (iterator.MoveNext())
             {
-                next = iterator.MoveNext();
                 current += iterator.Current.Weight;
+                if (current > weightTarget)
+                    break;
             }
             if (iterator.Current != null)
             {
