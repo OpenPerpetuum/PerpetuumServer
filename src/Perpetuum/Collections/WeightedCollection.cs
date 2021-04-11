@@ -28,10 +28,13 @@ namespace Perpetuum.Collections
             if (_sumWeights == 0)
                 return default;
 
-            var weightTarget = FastRandom.NextInt(_sumWeights);
+            if (_list.Count == 1)
+                return _list.First().Item;
+
+            var weightTarget = FastRandom.NextInt(_sumWeights - 1);
             var current = 0;
             var iterator = _list.GetEnumerator();
-            while (current <= weightTarget && iterator.MoveNext())
+            while (iterator.MoveNext() && current < weightTarget)
             {
                 current += iterator.Current.Weight;
             }
