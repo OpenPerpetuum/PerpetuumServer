@@ -1,6 +1,8 @@
 ﻿using Perpetuum.Collections;
 using Perpetuum.Data;
+using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
+using Perpetuum.Log;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Finders.PositionFinders;
 using Perpetuum.Zones.Terrains;
@@ -44,7 +46,8 @@ namespace Perpetuum.Services.RiftSystem
         private WeightedCollection<Destination> GetDestinations(int destinationGroupId)
         {
             var group = Db.Query().CommandText(
-                    @"SELECT id, groupId, zoneId, x, y, weight FROM riftdestinations WHERE groupId=@groupId;")
+                    @"SELECT id, groupId, zoneId, x, y, weight FROM riftdestinations WHERE groupId=@groupId 
+                    AND zoneId IN (SELECT id FROM zones WHERE enabled=1 AND zoneId=id);")
                     .SetParameter("@groupId", destinationGroupId)
                     .Execute()
                     .Select((record) =>
@@ -85,6 +88,36 @@ namespace Perpetuum.Services.RiftSystem
         }
     }
 
+    public static class CustomRiftSpawner
+    {
+        public static bool TrySpawnRift(CustomRiftConfig config, IZoneManager zoneManager, int sourceZoneId, Position sourcePosition, Func<DespawningTargettedPortal> riftFactory)
+        {
+            var zone = zoneManager.GetZone(sourceZoneId);
+            var targetDestination = config.GetDestination();
+            if (targetDestination == null)
+            {
+                Logger.Error($"TargettedRift failed to spawn with config {config} \ntargetDestination == null");
+                return false;
+            }
+
+            var zoneTarget = zoneManager.GetZone(targetDestination.ZoneId);
+            if (zoneTarget == null)
+            {
+                Logger.Error($"TargettedRift failed to spawn with config {config} \nzoneTarget == null");
+                return false;
+            }
+
+            var targetPos = targetDestination.GetPosition(zoneTarget);
+            var rift = riftFactory();
+            rift.AddToZone(zone, sourcePosition, ZoneEnterType.NpcSpawn);
+            rift.SetTarget(zoneTarget, targetPos);
+            rift.SetConfig(config);
+
+            Logger.Info(string.Format("Rift spawned on zone {0} {1} ({2})", zone.Id, rift.ED.Name, rift.CurrentPosition));
+            return true;
+        }
+    }
+
     public class CustomRiftConfig
     {
         public int Id { get; private set; }
@@ -112,25 +145,10 @@ namespace Perpetuum.Services.RiftSystem
             return category.IsAny(ExcludeClasses);
         }
 
+        [CanBeNull]
         public Destination GetDestination()
         {
             return _destinations.GetRandom();
-        }
-
-        [CanBeNull]
-        public Destination TryGetValidDestination(IZoneManager zoneManager)
-        {
-            var attempts = 100;
-            while (attempts > 0)
-            {
-                attempts--;
-                var dest = GetDestination();
-                if (dest != null && zoneManager.ContainsZone(dest.ZoneId))
-                {
-                    return dest;
-                }
-            }
-            return null;
         }
     }
 

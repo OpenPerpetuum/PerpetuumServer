@@ -48,17 +48,10 @@ namespace Perpetuum.Services.RiftSystem.StrongholdRifts
 
         private void SpawnRift(StrongholdRiftLocation spawn)
         {
-            var targetDestination = spawn.RiftConfig.TryGetValidDestination(_zoneManager);
-            if (targetDestination == null)
-                return;
-
-            var zoneTarget = _zoneManager.GetZone(targetDestination.ZoneId);
-            var targetPos = targetDestination.GetPosition(zoneTarget);
-            var rift = (StrongholdExitRift)_entityServices.Factory.CreateWithRandomEID(DefinitionNames.STRONGHOLD_EXIT_RIFT);
-            rift.AddToZone(_zone, spawn.Location, ZoneEnterType.NpcSpawn);
-            rift.SetTarget(zoneTarget, targetPos);
-            rift.SetConfig(spawn.RiftConfig);
-            Logger.Info(string.Format("Rift spawned on zone {0} {1} ({2})", _zone.Id, rift.ED.Name, rift.CurrentPosition));
+            CustomRiftSpawner.TrySpawnRift(spawn.RiftConfig, _zoneManager, _zone.Id, spawn.Location, () =>
+            {
+                return (StrongholdExitRift)_entityServices.Factory.CreateWithRandomEID(DefinitionNames.STRONGHOLD_EXIT_RIFT);
+            });
         }
     }
 }
