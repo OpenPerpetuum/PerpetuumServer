@@ -65,15 +65,14 @@ namespace Perpetuum.RequestHandlers.Zone.Containers
 
             var maxDepth = 9;
             var depth = 0;
-            var current = container;
-            var fieldTerminal = current.ParentEntity as FieldTerminal;
+            var fieldTerminal = container.ParentEntity as FieldTerminal;
             while (fieldTerminal == null && depth < maxDepth)
             {
-                current = current.ParentEntity;
-                if(current == null)
+                container = container.ParentEntity;
+                if(container == null)
                     break;
 
-                fieldTerminal = current.ParentEntity as FieldTerminal;
+                fieldTerminal = container.ParentEntity as FieldTerminal;
                 depth++;
             }
             return fieldTerminal;
