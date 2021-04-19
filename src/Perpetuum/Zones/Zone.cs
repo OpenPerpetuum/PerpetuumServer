@@ -18,6 +18,7 @@ using Perpetuum.Services.HighScores;
 using Perpetuum.Services.Relics;
 using Perpetuum.Services.RiftSystem;
 using Perpetuum.Services.Sessions;
+using Perpetuum.Services.Strongholds;
 using Perpetuum.Services.Weather;
 using Perpetuum.Timers;
 using Perpetuum.Units;
@@ -72,6 +73,9 @@ namespace Perpetuum.Zones
 
         [CanBeNull]
         public IRelicManager RelicManager { get; set; }
+
+        [CanBeNull]
+        public IStrongholdPlayerStateManager PlayerStateManager { get; set; }
 
         public IZoneEnterQueueService EnterQueueService { get; set; }
 
@@ -321,6 +325,7 @@ namespace Perpetuum.Zones
 
             RiftManager?.Update(time);
             RelicManager?.Update(time);
+            PlayerStateManager?.Update(time);
             MiningLogHandler.Update(time);
             MeasureUpdate(time);
         }
