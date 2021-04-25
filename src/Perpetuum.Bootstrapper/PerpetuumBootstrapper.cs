@@ -2563,7 +2563,7 @@ namespace Perpetuum.Bootstrapper
                 var ctx = x.Resolve<IComponentContext>();
                 return zone =>
                 {
-                    return new StrongholdPlayerStateManager(zone, ctx.Resolve<ISessionManager>());
+                    return new StrongholdPlayerStateManager(zone);
                 };
             });
 

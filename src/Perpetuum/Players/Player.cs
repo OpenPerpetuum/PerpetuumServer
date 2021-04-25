@@ -137,6 +137,7 @@ namespace Perpetuum.Players
         private readonly PlayerMovement _movement;
         private CombatLogger _combatLogger;
         private PlayerMoveCheckQueue _check;
+        private UnitDespawnHelper _despawnHelper;
 
         public Player(IExtensionReader extensionReader,
             ICorporationManager corporationManager,
@@ -320,6 +321,16 @@ namespace Perpetuum.Players
             MissionHandler.Update(time);
 
             _combatLogger?.Update(time);
+            _despawnHelper?.Update(time, this);
+        }
+
+        public void SetDespawn(TimeSpan time, UnitDespawnStrategy strategy)
+        {
+            if (HasDespawnEffect)
+                return;
+
+            _despawnHelper = UnitDespawnHelper.Create(this, time);
+            _despawnHelper.DespawnStrategy = strategy;
         }
 
         public void SendModuleProcessError(Module module, ErrorCodes error)
@@ -345,7 +356,6 @@ namespace Perpetuum.Players
         {
             EffectHandler.RemoveEffectsByType(EffectType.effect_invulnerable);
         }
-
 
         public void ApplyTeleportSicknessEffect()
         {
