@@ -205,7 +205,10 @@ namespace Perpetuum.Zones
                 return;
 
             if (unit is Player player)
+            {
                 ImmutableInterlocked.TryAdd(ref _players, player.Eid, player);
+                PlayerStateManager?.OnPlayerEnterZone(player);
+            }
 
             unit.Updated += OnUnitUpdated;
             unit.Dead += OnUnitDead;
@@ -238,7 +241,10 @@ namespace Perpetuum.Zones
                 return;
 
             if (u is Player player)
+            {
                 ImmutableInterlocked.TryRemove(ref _players, player.Eid, out player);
+                PlayerStateManager?.OnPlayerExitZone(player);
+            }
 
             u.Updated -= OnUnitUpdated;
             Logger.Info($"Unit exited from zone. zone:{Id} eid = {u.InfoString} ({u.CurrentPosition})");
@@ -325,7 +331,6 @@ namespace Perpetuum.Zones
 
             RiftManager?.Update(time);
             RelicManager?.Update(time);
-            PlayerStateManager?.Update(time);
             MiningLogHandler.Update(time);
             MeasureUpdate(time);
         }

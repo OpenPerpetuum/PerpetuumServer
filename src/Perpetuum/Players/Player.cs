@@ -25,6 +25,7 @@ using Perpetuum.Services.Looting;
 using Perpetuum.Services.MissionEngine;
 using Perpetuum.Services.MissionEngine.MissionTargets;
 using Perpetuum.Services.MissionEngine.TransportAssignments;
+using Perpetuum.Services.Strongholds;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Units.DockingBases;
@@ -137,7 +138,7 @@ namespace Perpetuum.Players
         private readonly PlayerMovement _movement;
         private CombatLogger _combatLogger;
         private PlayerMoveCheckQueue _check;
-        private UnitDespawnHelper _despawnHelper;
+        private StrongholdPlayerDespawnHelper _despawnHelper;
 
         public Player(IExtensionReader extensionReader,
             ICorporationManager corporationManager,
@@ -324,13 +325,19 @@ namespace Perpetuum.Players
             _despawnHelper?.Update(time, this);
         }
 
-        public void SetDespawn(TimeSpan time, UnitDespawnStrategy strategy)
+        public void SetStrongholdDespawn(TimeSpan time, UnitDespawnStrategy strategy)
         {
-            if (HasDespawnEffect)
-                return;
+            //if (StrongholdPlayerDespawnHelper.HasEffect(this))
+            //    return;
 
-            _despawnHelper = UnitDespawnHelper.Create(this, time);
+            _despawnHelper = StrongholdPlayerDespawnHelper.Create(this, time);
             _despawnHelper.DespawnStrategy = strategy;
+        }
+
+        public void ClearStrongholdDespawn()
+        {
+            _despawnHelper?.Cancel(this);
+            _despawnHelper = null;
         }
 
         public void SendModuleProcessError(Module module, ErrorCodes error)

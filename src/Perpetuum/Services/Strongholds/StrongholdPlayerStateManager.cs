@@ -1,76 +1,47 @@
 ﻿using Perpetuum.Data;
+using Perpetuum.ExportedTypes;
 using Perpetuum.Players;
-using Perpetuum.Threading.Process;
-using Perpetuum.Timers;
+using Perpetuum.Units;
 using Perpetuum.Zones;
 using System;
-using System.Linq;
 
 namespace Perpetuum.Services.Strongholds
 {
-    public interface IStrongholdPlayerStateManager : IProcess { }
-
-    public class StrongholdPlayerStateManager : Process, IStrongholdPlayerStateManager
+    public interface IStrongholdPlayerStateManager
     {
-        private readonly int MAX_MINUTES = 60;
+        void OnPlayerEnterZone(Player player);
+        void OnPlayerExitZone(Player player);
+    }
+
+    public class StrongholdPlayerStateManager : IStrongholdPlayerStateManager
+    {
+        private readonly TimeSpan MAX = TimeSpan.FromMinutes(60);
+        private readonly TimeSpan MIN = TimeSpan.FromSeconds(3);
         private readonly IZone _zone;
-        private readonly TimeTracker _updateTimer = new TimeTracker(TimeSpan.FromSeconds(31));
 
         public StrongholdPlayerStateManager(IZone zone)
         {
             _zone = zone;
-            MAX_MINUTES = _zone.Configuration.TimeLimitMinutes ?? MAX_MINUTES;
+            MAX = TimeSpan.FromMinutes(_zone.Configuration.TimeLimitMinutes ?? 60);
         }
 
-        public override void Update(TimeSpan time)
+        public void OnPlayerEnterZone(Player player)
         {
-            _updateTimer.Update(time);
-            if (_updateTimer.Expired)
-            {
-                RunUpdate();
-                _updateTimer.Reset();
-            }
+            var effectEnd = player.DynamicProperties.GetOrAdd(k.strongholdDespawnTime, DateTime.UtcNow.Add(MAX));
+            var effectDuration = (effectEnd - DateTime.UtcNow).Max(MIN);
+            ApplyDespawn(player, effectDuration);
         }
 
-        public void RunUpdate()
+        public void OnPlayerExitZone(Player player)
         {
-            DockUpOfflinePlayers();
-            SetDespawnOnlinePlayers();
+            player.ClearStrongholdDespawn();
+            player.DynamicProperties.Remove(k.strongholdDespawnTime);
         }
 
-        private void DockUpOfflinePlayers()
+        private void ApplyDespawn(Player player, TimeSpan remaining)
         {
-            using (var scope = Db.CreateTransaction())
-            {
-                // Query for all offline chars on zone
-                var offlineCharIds = Db.Query().CommandText($"SELECT characterID FROM characters WHERE " +
-                    $"inUse=0 AND @maxLogOffTimeMinutes < DATEDIFF(minute, lastLogOut, GETDATE()) AND zoneID=@zoneId;")
-                    .SetParameter("@zoneId", _zone.Id)
-                    .SetParameter("@maxLogOffTimeMinutes", MAX_MINUTES)
-                    .Execute()
-                    .Select(r => r.GetValue<int>("characterID"));
-
-                foreach (var charId in offlineCharIds)
-                {
-                    Db.Query().CommandText("opp.characterForceDockHome")
-                        .SetParameter("@characterId", charId)
-                        .ExecuteNonQuery();
-                }
-                scope.Complete();
-            }
-        }
-
-        private void SetDespawnOnlinePlayers()
-        {
-            foreach (var p in _zone.Players.Where(p => !p.HasDespawnEffect))
-            {
-                ApplyDespawn(p);
-            }
-        }
-
-        private void ApplyDespawn(Player player)
-        {
-            player.SetDespawn(TimeSpan.FromMinutes(MAX_MINUTES), (u) =>
+            player.DynamicProperties.Set(k.strongholdDespawnTime, DateTime.UtcNow.Add(remaining));
+            player.SetStrongholdDespawn(remaining, (u) =>
             {
                 using (var scope = Db.CreateTransaction())
                 {
@@ -78,10 +49,62 @@ namespace Perpetuum.Services.Strongholds
                     {
                         var dockingBase = p.Character.GetHomeBaseOrCurrentBase();
                         p.DockToBase(dockingBase.Zone, dockingBase);
+                        p.DynamicProperties.Remove(k.strongholdDespawnTime);
                     }
                     scope.Complete();
                 }
             });
         }
     }
+
+    public class StrongholdPlayerDespawnHelper : UnitDespawnHelper
+    {
+        private static readonly EffectType DespawnEffect = EffectType.effect_despawn_timer; //TODO new custom type
+
+        private StrongholdPlayerDespawnHelper(TimeSpan despawnTime) : base(despawnTime) { }
+
+        private bool _canceled = false;
+        public void Cancel(Unit unit)
+        {
+            _canceled = true;
+            RemoveDespawnEffect(unit);
+        }
+
+        public static bool HasEffect(Unit unit)
+        {
+            return unit.EffectHandler.ContainsEffect(DespawnEffect);
+        }
+
+        public override void Update(TimeSpan time, Unit unit)
+        {
+            _timer.Update(time).IsPassed(() =>
+            {
+                if (_canceled || HasEffect(unit))
+                    return;
+
+                DespawnStrategy?.Invoke(unit);
+            });
+        }
+
+        private void RemoveDespawnEffect(Unit unit)
+        {
+            unit.EffectHandler.RemoveEffectByToken(_effectToken);
+        }
+
+        private void ApplyDespawnEffect(Unit unit)
+        {
+            var effectBuilder = unit.NewEffectBuilder().SetType(DespawnEffect).WithDuration(_despawnTime).WithToken(_effectToken);
+            unit.ApplyEffect(effectBuilder);
+        }
+
+        public new static StrongholdPlayerDespawnHelper Create(Unit unit, TimeSpan despawnTime)
+        {
+            var helper = new StrongholdPlayerDespawnHelper(despawnTime);
+            helper.ApplyDespawnEffect(unit);
+            return helper;
+        }
+    }
 }
+
+
+

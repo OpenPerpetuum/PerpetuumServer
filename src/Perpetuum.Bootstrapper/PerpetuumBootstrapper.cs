@@ -2551,11 +2551,7 @@ namespace Perpetuum.Bootstrapper
             _builder.RegisterType<SettingsLoader>();
             _builder.RegisterType<PlantRuleLoader>();
 
-            _builder.RegisterType<StrongholdPlayerStateManager>().OnActivated(e =>
-            {
-                var pm = e.Context.Resolve<IProcessManager>();
-                pm.AddProcess(e.Instance.AsTimed(TimeSpan.FromSeconds(30)).ToAsync());
-            }).As<IStrongholdPlayerStateManager>();
+            _builder.RegisterType<StrongholdPlayerStateManager>().As<IStrongholdPlayerStateManager>();
 
 
             _builder.Register<Func<IZone, IStrongholdPlayerStateManager>>(x =>
