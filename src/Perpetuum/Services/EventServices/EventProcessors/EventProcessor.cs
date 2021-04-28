@@ -16,10 +16,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 
         public void OnNext(IEventMessage value)
         {
-            if (value.Type == Type)
-            {
-                HandleMessage(value);
-            }
+            HandleMessage(value);
         }
 
         public void OnCompleted()
