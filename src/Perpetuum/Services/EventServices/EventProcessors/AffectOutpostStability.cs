@@ -8,7 +8,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
     /// </summary>
     public class AffectOutpostStability : EventProcessor
     {
-        private Outpost _outpost;
+        private readonly Outpost _outpost;
         public AffectOutpostStability(Outpost outpost)
         {
             _outpost = outpost;

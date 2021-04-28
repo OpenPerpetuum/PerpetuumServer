@@ -12,6 +12,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
     public abstract class EventProcessor : IEventProcessor
     {
         public abstract EventType Type { get; }
+
         public abstract void HandleMessage(IEventMessage value);
 
         public void OnNext(IEventMessage value)
