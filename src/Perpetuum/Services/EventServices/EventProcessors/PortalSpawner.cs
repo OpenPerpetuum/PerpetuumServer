@@ -1,4 +1,5 @@
-﻿using Perpetuum.EntityFramework;
+﻿using System;
+using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Services.RiftSystem;
@@ -10,6 +11,8 @@ namespace Perpetuum.Services.EventServices.EventProcessors
     {
         private readonly IEntityServices _entityServices;
         private readonly IZoneManager _zoneManager;
+
+        public override EventType Type => EventType.PortalSpawn;
 
         public PortalSpawner(IEntityServices entityServices, IZoneManager zoneManager)
         {
@@ -26,7 +29,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             return true;
         }
 
-        public override void HandleMessage(EventMessage value)
+        public override void HandleMessage(IEventMessage value)
         {
             if (value is SpawnPortalMessage msg)
             {

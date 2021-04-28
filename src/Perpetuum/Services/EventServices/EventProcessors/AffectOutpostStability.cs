@@ -1,5 +1,6 @@
 ﻿using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Zones.Intrusion;
+using System;
 
 namespace Perpetuum.Services.EventServices.EventProcessors
 {
@@ -14,7 +15,9 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             _outpost = outpost;
         }
 
-        public override void HandleMessage(EventMessage value)
+        public override EventType Type => EventType.OutpostStability;
+
+        public override void HandleMessage(IEventMessage value)
         {
             if (value is StabilityAffectingEvent msg)
             {
