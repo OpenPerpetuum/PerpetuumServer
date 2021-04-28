@@ -4,7 +4,6 @@ using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Services.EventServices.EventProcessors;
 using Perpetuum.Units;
 using Perpetuum.Zones;
-using System;
 
 namespace Perpetuum.Services.EventServices
 {

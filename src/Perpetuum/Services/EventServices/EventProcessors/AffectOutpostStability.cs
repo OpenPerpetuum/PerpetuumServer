@@ -1,6 +1,5 @@
 ﻿using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Zones.Intrusion;
-using System;
 
 namespace Perpetuum.Services.EventServices.EventProcessors
 {

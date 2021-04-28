@@ -1,5 +1,4 @@
-﻿using System;
-using Perpetuum.EntityFramework;
+﻿using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Services.RiftSystem;
