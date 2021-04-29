@@ -207,7 +207,7 @@ namespace Perpetuum.Zones
             if (unit is Player player)
             {
                 ImmutableInterlocked.TryAdd(ref _players, player.Eid, player);
-                PlayerStateManager?.OnPlayerEnterZone(player);
+                //PlayerStateManager?.OnPlayerEnterZone(player);
             }
 
             unit.Updated += OnUnitUpdated;
@@ -243,7 +243,7 @@ namespace Perpetuum.Zones
             if (u is Player player)
             {
                 ImmutableInterlocked.TryRemove(ref _players, player.Eid, out player);
-                PlayerStateManager?.OnPlayerExitZone(player);
+                //PlayerStateManager?.OnPlayerExitZone(player);
             }
 
             u.Updated -= OnUnitUpdated;

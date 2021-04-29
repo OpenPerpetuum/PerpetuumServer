@@ -6,6 +6,7 @@ using Perpetuum.Groups.Corporations;
 using Perpetuum.Log;
 using Perpetuum.Players;
 using Perpetuum.Services.Relics;
+using Perpetuum.Services.Strongholds;
 using Perpetuum.Services.Weather;
 using Perpetuum.Units;
 using Perpetuum.Zones.Beams;
@@ -53,6 +54,9 @@ namespace Perpetuum.Zones
         MiningLogHandler MiningLogHandler { get; }
         IRelicManager RelicManager { get; }
         IZoneEffectHandler ZoneEffectHandler { get; }
+
+        [CanBeNull]
+        IStrongholdPlayerStateManager PlayerStateManager { get; }
 
         IZoneUnitService UnitService { get; }
         IZoneEnterQueueService EnterQueueService { get; }

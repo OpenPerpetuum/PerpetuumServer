@@ -16,7 +16,7 @@ namespace Perpetuum.Services.Strongholds
     public class StrongholdPlayerStateManager : IStrongholdPlayerStateManager
     {
         private readonly TimeSpan MAX = TimeSpan.FromMinutes(60);
-        private readonly TimeSpan MIN = TimeSpan.FromSeconds(3);
+        private readonly TimeSpan MIN = TimeSpan.FromSeconds(30);
         private readonly IZone _zone;
 
         public StrongholdPlayerStateManager(IZone zone)
@@ -40,7 +40,8 @@ namespace Perpetuum.Services.Strongholds
 
         private void ApplyDespawn(Player player, TimeSpan remaining)
         {
-            player.DynamicProperties.Set(k.strongholdDespawnTime, DateTime.UtcNow.Add(remaining));
+            player.DynamicProperties.Update(k.strongholdDespawnTime, DateTime.UtcNow.Add(remaining));
+            player.Save(); //TODO wrap in transaction?
             player.SetStrongholdDespawn(remaining, (u) =>
             {
                 using (var scope = Db.CreateTransaction())
@@ -50,6 +51,7 @@ namespace Perpetuum.Services.Strongholds
                         var dockingBase = p.Character.GetHomeBaseOrCurrentBase();
                         p.DockToBase(dockingBase.Zone, dockingBase);
                         p.DynamicProperties.Remove(k.strongholdDespawnTime);
+                        p.Save();
                     }
                     scope.Complete();
                 }
