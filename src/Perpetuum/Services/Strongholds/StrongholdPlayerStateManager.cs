@@ -27,9 +27,10 @@ namespace Perpetuum.Services.Strongholds
 
         public void OnPlayerEnterZone(Player player)
         {
-            var effectEnd = player.DynamicProperties.GetOrAdd(k.strongholdDespawnTime, DateTime.UtcNow.Add(MAX));
-            var effectDuration = (effectEnd - DateTime.UtcNow).Max(MIN);
-            ApplyDespawn(player, effectDuration);
+            var now = DateTime.UtcNow;
+            var effectEnd = player.DynamicProperties.GetOrAdd(k.strongholdDespawnTime, now.Add(MAX));
+            var effectDuration = (effectEnd - now).Max(MIN);
+            ApplyDespawn(player, effectDuration, effectEnd);
         }
 
         public void OnPlayerExitZone(Player player)
@@ -38,10 +39,14 @@ namespace Perpetuum.Services.Strongholds
             player.DynamicProperties.Remove(k.strongholdDespawnTime);
         }
 
-        private void ApplyDespawn(Player player, TimeSpan remaining)
+        private void ApplyDespawn(Player player, TimeSpan remaining, DateTime endTime)
         {
-            player.DynamicProperties.Update(k.strongholdDespawnTime, DateTime.UtcNow.Add(remaining));
-            player.Save(); //TODO wrap in transaction?
+            using (var scope = Db.CreateTransaction())
+            {
+                player.DynamicProperties.Update(k.strongholdDespawnTime, endTime);
+                player.Save();
+                scope.Complete();
+            }
             player.SetStrongholdDespawn(remaining, (u) =>
             {
                 using (var scope = Db.CreateTransaction())
@@ -72,16 +77,27 @@ namespace Perpetuum.Services.Strongholds
             RemoveDespawnEffect(unit);
         }
 
-        public static bool HasEffect(Unit unit)
+        public bool HasEffect(Unit unit)
         {
-            return unit.EffectHandler.ContainsEffect(DespawnEffect);
+            return unit.EffectHandler.ContainsToken(_effectToken);
+        }
+
+        private bool _detectedEffectApplied = false;
+        private bool EffectLive(Unit unit)
+        {
+            var effectRunning = HasEffect(unit);
+            if (!_detectedEffectApplied)
+            {
+                _detectedEffectApplied = effectRunning;
+            }
+            return _detectedEffectApplied == effectRunning;
         }
 
         public override void Update(TimeSpan time, Unit unit)
         {
             _timer.Update(time).IsPassed(() =>
             {
-                if (_canceled || HasEffect(unit))
+                if (_canceled || EffectLive(unit))
                     return;
 
                 DespawnStrategy?.Invoke(unit);

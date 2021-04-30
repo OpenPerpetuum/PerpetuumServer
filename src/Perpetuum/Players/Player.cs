@@ -255,8 +255,6 @@ namespace Perpetuum.Players
 
             Direction = FastRandom.NextDouble();
 
-            zone.PlayerStateManager?.OnPlayerEnterZone(this);
-
             var p = DynamicProperties.GetProperty<int>(k.pvpRemaining);
             if (!p.HasValue)
                 return;
@@ -271,8 +269,6 @@ namespace Perpetuum.Players
             zone.SendPacketToGang(Gang, new GangUpdatePacketBuilder(Visibility.Invisible, this));
 
             _check.StopAndDispose();
-
-            zone.PlayerStateManager?.OnPlayerExitZone(this);
 
             if (!States.LocalTeleport)
                 Session.Stop();
@@ -331,17 +327,11 @@ namespace Perpetuum.Players
 
         public void SetStrongholdDespawn(TimeSpan time, UnitDespawnStrategy strategy)
         {
-            //if (StrongholdPlayerDespawnHelper.HasEffect(this))
-            //    return;
-
-            Task.Delay(5000).ContinueWith(t =>
+            if (_despawnHelper == null)
             {
-                if (_despawnHelper == null)
-                {
-                    _despawnHelper = StrongholdPlayerDespawnHelper.Create(this, time);
-                    _despawnHelper.DespawnStrategy = strategy;
-                }
-            });
+                _despawnHelper = StrongholdPlayerDespawnHelper.Create(this, time);
+                _despawnHelper.DespawnStrategy = strategy;
+            }
         }
 
         public void ClearStrongholdDespawn()

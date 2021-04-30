@@ -55,9 +55,6 @@ namespace Perpetuum.Zones
         IRelicManager RelicManager { get; }
         IZoneEffectHandler ZoneEffectHandler { get; }
 
-        [CanBeNull]
-        IStrongholdPlayerStateManager PlayerStateManager { get; }
-
         IZoneUnitService UnitService { get; }
         IZoneEnterQueueService EnterQueueService { get; }
 

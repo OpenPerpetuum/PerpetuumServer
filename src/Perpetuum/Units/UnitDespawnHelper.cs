@@ -11,7 +11,7 @@ namespace Perpetuum.Units
     public class UnitDespawnHelper 
     {
         protected readonly TimeSpan _despawnTime;
-        protected readonly IntervalTimer _timer = new IntervalTimer(500);
+        protected readonly IntervalTimer _timer = new IntervalTimer(650);
 
         protected UnitDespawnHelper(TimeSpan despawnTime)
         {
