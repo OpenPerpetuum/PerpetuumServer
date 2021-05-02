@@ -66,7 +66,7 @@ namespace Perpetuum.Services.Strongholds
 
     public class StrongholdPlayerDespawnHelper : UnitDespawnHelper
     {
-        private static readonly EffectType DespawnEffect = EffectType.effect_despawn_timer; //TODO new custom type
+        private static readonly EffectType DespawnEffect = EffectType.effect_stronghold_despawn_timer;
 
         private StrongholdPlayerDespawnHelper(TimeSpan despawnTime) : base(despawnTime) { }
 
