@@ -1029,7 +1029,10 @@ namespace Perpetuum.Players
 
                 // keresunk neki valami jo poziciot
                 var finder = new ClosestWalkablePositionFinder(zone, spawnPosition, player);
-                var validPosition = finder.FindOrThrow();
+                if(!zone.IsWalkable(spawnPosition))
+                {
+                    finder.Find(out spawnPosition);
+                }
 
                 // parentoljuk a zonahoz <<< NAGYON FONTOS - TILOS MASHOGY kulonben bennmaradnak a (pbs) bazison a robotok, es pl letorlodnek amikor kilovik a bazist
                 var zoneStorage = zone.Configuration.GetStorage();
@@ -1047,7 +1050,7 @@ namespace Perpetuum.Players
                     player.CorporationEid = character.CorporationEid;
                     zone.SetGang(player);
 
-                    player.AddToZone(zone,validPosition,zoneEnterType);
+                    player.AddToZone(zone,spawnPosition,zoneEnterType);
                     player.ApplyInvulnerableEffect();
                 });
 
