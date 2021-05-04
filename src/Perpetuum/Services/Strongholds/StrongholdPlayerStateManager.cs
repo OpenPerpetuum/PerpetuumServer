@@ -1,6 +1,8 @@
 ﻿using Perpetuum.Data;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Players;
+using Perpetuum.Services.EventServices;
+using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Units;
 using Perpetuum.Zones;
 using System;
@@ -19,8 +21,11 @@ namespace Perpetuum.Services.Strongholds
         private readonly TimeSpan MIN = TimeSpan.FromSeconds(30);
         private readonly IZone _zone;
 
-        public StrongholdPlayerStateManager(IZone zone)
+        private readonly EventListenerService _eventChannel;
+
+        public StrongholdPlayerStateManager(IZone zone, EventListenerService eventChannel)
         {
+            _eventChannel = eventChannel;
             _zone = zone;
             MAX = TimeSpan.FromMinutes(_zone.Configuration.TimeLimitMinutes ?? 60);
         }
@@ -31,6 +36,7 @@ namespace Perpetuum.Services.Strongholds
             var effectEnd = player.DynamicProperties.GetOrAdd(k.strongholdDespawnTime, now.Add(MAX));
             var effectDuration = (effectEnd - now).Max(MIN);
             ApplyDespawn(player, effectDuration, effectEnd);
+            SendEntryMessage(player, effectDuration);
         }
 
         public void OnPlayerExitZone(Player player)
@@ -57,10 +63,28 @@ namespace Perpetuum.Services.Strongholds
                         p.DockToBase(dockingBase.Zone, dockingBase);
                         p.DynamicProperties.Remove(k.strongholdDespawnTime);
                         p.Save();
+                        SendRemovalMessage(p);
                     }
                     scope.Complete();
                 }
             });
+        }
+
+        private void SendEntryMessage(Player player, TimeSpan effectDuration)
+        {
+            var message = $"You only have {effectDuration.ToHumanTimeString()} remaining on this island before the Syndicate will teleport you home.\nGood luck!";
+            SendMessage(player, message);
+        }
+
+        private void SendRemovalMessage(Player player)
+        {
+            var message = $"You are back safely!\nThe Syndicate had to pull you out or risk losing your connection to those pesky Nians.";
+            SendMessage(player, message);
+        }
+
+        private void SendMessage(Player player, string message)
+        {
+            _eventChannel.PublishMessage(new DirectMessage(player.Character, message));
         }
     }
 
