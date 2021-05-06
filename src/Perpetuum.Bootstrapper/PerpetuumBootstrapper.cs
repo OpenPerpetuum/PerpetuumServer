@@ -186,20 +186,20 @@ using Perpetuum.Services.Strongholds;
 
 namespace Perpetuum.Bootstrapper
 {
-    class EntityAggregateServices : IEntityServices
+    public class EntityAggregateServices : IEntityServices
     {
         public IEntityFactory Factory { get; set; }
         public IEntityDefaultReader Defaults { get; set; }
         public IEntityRepository Repository { get; set; }
     }
-
-    class RobotTemplateServicesImpl : IRobotTemplateServices
+    
+    public class RobotTemplateServicesImpl : IRobotTemplateServices
     {
         public IRobotTemplateReader Reader { get; set; }
         public IRobotTemplateRelations Relations { get; set; }
     }
 
-    class TeleportStrategyFactoriesImpl : ITeleportStrategyFactories
+    public class TeleportStrategyFactoriesImpl : ITeleportStrategyFactories
     {
         public TeleportWithinZone.Factory TeleportWithinZoneFactory { get; set; }
         public TeleportToAnotherZone.Factory TeleportToAnotherZoneFactory { get; set; }
