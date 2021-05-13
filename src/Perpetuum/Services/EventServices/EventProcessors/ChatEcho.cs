@@ -29,9 +29,7 @@ namespace Perpetuum.Services.EventServices
             {
                 _channelManager.Announcement("General chat", _announcer, msg.GetMessage());
             }
-
         }
-
     }
 
     /// <summary>

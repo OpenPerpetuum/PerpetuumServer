@@ -6,6 +6,7 @@
         ChatEcho,
         OutpostStability,
         NpcChat,
+        NpcState,
         NpcOre,
         NpcReinforce,
         Environmental,
