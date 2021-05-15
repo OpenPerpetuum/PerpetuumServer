@@ -1,10 +1,10 @@
 ﻿using Perpetuum.Accounting.Characters;
-using Perpetuum.Collections;
+using Perpetuum.EntityFramework;
 using Perpetuum.Services.Channels;
 using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Zones.NpcSystem.Flocks;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Perpetuum.Services.EventServices.EventProcessors
 {
@@ -16,6 +16,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
         private readonly Character _announcer;
         private readonly IFlockConfigurationRepository _flockConfigReader;
         private readonly IDictionary<string, object> _nameDictionary;
+        private readonly IDictionary<int, NpcStateMessage> _state;
 
         public NpcStateAnnouncer(IChannelManager channelManager, IFlockConfigurationRepository flockConfigurationRepo, ICustomDictionary customDictionary)
         {
@@ -23,76 +24,111 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             _channelManager = channelManager;
             _flockConfigReader = flockConfigurationRepo;
             _nameDictionary = customDictionary.GetDictionary(0);
-            _channelManager.JoinChannel(CHANNEL, _announcer);
-            _channelManager.SetMemberRole(CHANNEL, _announcer, ChannelMemberRole.Operator);
+            _state = new Dictionary<int, NpcStateMessage>();
         }
 
-        private string GetNpcName(NpcStateMessage msg)
-        {
-            var config = _flockConfigReader.Get(msg.FlockId);
-            var nameToken = config.EntityDefault.Name + "_name";
-            var name = _nameDictionary[nameToken]?.ToString();
-            return name ?? string.Empty;
-        }
-
-        private IList<string> _aliveMessages = new List<string>()
+        //TODO use ChannelMessageHandler w/ PreMadeChatMessages
+        private readonly IList<string> _aliveMessages = new List<string>()
         {
             "has spawned!",
             "has appeared on Syndicate scanners",
             "has been detected"
         };
 
-        private IList<string> _deathMessages = new List<string>()
+        private readonly IList<string> _deathMessages = new List<string>()
         {
             "has been defeated",
             "is no longer a threat to Syndicate activity",
             "'s signature is no longer detected at this time"
         };
 
+        private int GetNpcDef(NpcStateMessage msg)
+        {
+            var config = _flockConfigReader.Get(msg.FlockId);
+            return config?.EntityDefault?.Definition ?? -1;
+        }
+
+        private string GetNpcName(int def)
+        {
+            var nameToken = EntityDefault.Get(def).Name + "_name";
+            var name = _nameDictionary[nameToken]?.ToString();
+            return name ?? string.Empty;
+        }
+
+
         private string GetStateMessage(NpcStateMessage msg)
         {
-            if(msg.State == NpcState.Alive)
+            if (msg.State == NpcState.Alive)
             {
-                return _aliveMessages[FastRandom.NextInt(_aliveMessages.Count-1)];
+                return _aliveMessages[FastRandom.NextInt(_aliveMessages.Count - 1)];
             }
             else if (msg.State == NpcState.Dead)
             {
-                return _deathMessages[FastRandom.NextInt(_deathMessages.Count-1)];
+                return _deathMessages[FastRandom.NextInt(_deathMessages.Count - 1)];
             }
             return string.Empty;
         }
 
         private string BuildChatAnnouncement(NpcStateMessage msg)
         {
-            var npcName = GetNpcName(msg);
+            var def = GetNpcDef(msg);
+            if (def < 0)
+                return string.Empty;
+
+            var npcName = GetNpcName(def);
             if (npcName == string.Empty)
                 return string.Empty;
+
             var stateMessage = GetStateMessage(msg);
             if (stateMessage == string.Empty)
                 return string.Empty;
+
             return $"{npcName} {stateMessage}";
         }
 
-        private string BuildMoTD(NpcStateMessage msg)
+        private static string Strip(string str)
         {
-            var npcName = GetNpcName(msg);
-            if (npcName == string.Empty)
-                return string.Empty;
-            var currentTopic = _channelManager.GetChannelByName(CHANNEL)?.Topic ?? "";
-            var pipeSplit = currentTopic.Split('|').ToList();
-            var npcIndex = pipeSplit.IndexOf(s => s.Contains(npcName));
-            var segment = $"{npcName}:{msg.State.ToString()}";
-            if (npcIndex == -1)
-            {
-                pipeSplit.Add(segment);
-            }
-            else
-            {
-                pipeSplit[npcIndex] = segment;
-            }
+            return Regex.Replace(str, "[^a-zA-Z0-9_.]+", "");
+        }
 
-            var motd = string.Join("|", pipeSplit);
-            return motd;
+        private static string Abbreviate(string name, int charLim)
+        {
+            var words = name.Split(' ');
+            var perWordLen = (charLim / (words.Length).Max(1)).Clamp(3, 24);
+            for (var i = 0; i < words.Length; i++)
+            {
+                words[i] = Strip(words[i]).Clamp(perWordLen) ?? "";
+            }
+            return string.Join(" ", words);
+        }
+
+        private string BuildTopicFromState()
+        {
+            var topic = "Current: ";
+            var allowableNameLens = (190 / (_state.Count).Max(1)).Clamp(3, 64);
+            foreach (var pair in _state)
+            {
+                var name = Abbreviate(GetNpcName(pair.Key), allowableNameLens);
+                if (name == string.Empty) continue;
+                if(pair.Value.State == NpcState.Alive)
+                    topic += $"{name}|";
+            }
+            return topic;
+        }
+
+        private bool IsUpdatable(NpcStateMessage current, NpcStateMessage next)
+        {
+            return next.TimeStamp > current.TimeStamp;
+        }
+
+        private void UpdateState(NpcStateMessage msg)
+        {
+            var defKey = GetNpcDef(msg);
+            if (defKey < 0) return;
+            if (!_state.ContainsKey(defKey) || IsUpdatable(_state[defKey], msg))
+            {
+                _state[defKey] = msg;
+            }
         }
 
         public override EventType Type => EventType.NpcState;
@@ -100,12 +136,16 @@ namespace Perpetuum.Services.EventServices.EventProcessors
         {
             if (value is NpcStateMessage msg)
             {
+                UpdateState(msg);
                 var announcement = BuildChatAnnouncement(msg);
-                var motd = BuildMoTD(msg);
+                var motd = BuildTopicFromState();
                 if (!announcement.IsNullOrEmpty())
                 {
                     _channelManager.Announcement(CHANNEL, _announcer, announcement);
-                    _channelManager.SetTopic(CHANNEL, Character.None, motd);
+                }
+                if (!motd.IsNullOrEmpty())
+                {
+                    _channelManager.SetTopic(CHANNEL, _announcer, motd);
                 }
             }
         }

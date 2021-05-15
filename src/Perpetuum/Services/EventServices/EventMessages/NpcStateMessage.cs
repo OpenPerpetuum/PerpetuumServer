@@ -1,4 +1,6 @@
-﻿namespace Perpetuum.Services.EventServices.EventMessages
+﻿using System;
+
+namespace Perpetuum.Services.EventServices.EventMessages
 {
     public enum NpcState
     {
@@ -14,10 +16,12 @@
         public EventType Type => EventType.NpcState;
         public int FlockId { get; }
         public NpcState State { get; }
-        public NpcStateMessage(int flockId, NpcState state)
+        public DateTime TimeStamp { get; }
+        public NpcStateMessage(int flockId, NpcState state, DateTime time)
         {
             FlockId = flockId;
             State = state;
+            TimeStamp = time;
         }
     }
 }

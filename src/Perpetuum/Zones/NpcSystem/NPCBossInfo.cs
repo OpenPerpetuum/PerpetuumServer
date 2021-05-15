@@ -6,6 +6,7 @@ using Perpetuum.Services.RiftSystem;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Zones.Intrusion;
+using Perpetuum.Zones.NpcSystem.Flocks;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -55,7 +56,7 @@ namespace Perpetuum.Zones.NpcSystem
             return info;
         }
 
-        public NpcBossInfo GetBossInfoByFlockID(int flockid)
+        public NpcBossInfo GetBossInfoByFlockID(int flockid, IFlockConfiguration config)
         {
             var bossInfos = Db.Query()
                 .CommandText(@"SELECT TOP 1 id, flockid, respawnNoiseFactor, lootSplitFlag, outpostEID,
@@ -66,7 +67,13 @@ namespace Perpetuum.Zones.NpcSystem
                 .Execute()
                 .Select(CreateBossInfoFromDB);
 
-            return bossInfos.SingleOrDefault();
+            var info = bossInfos.SingleOrDefault();
+            if(info == null)
+            {
+                return null;
+            }
+            info.RespawnTime = config.RespawnTime;
+            return info;
         }
     }
 
@@ -87,6 +94,7 @@ namespace Perpetuum.Zones.NpcSystem
         private bool _speak;
 
         public int FlockId { get; }
+        public TimeSpan RespawnTime { get; set; }
 
         private bool IsOutpostBoss { get { return _outpostEID != null; } }
         private int StabilityPoints { get { return _stabilityPts ?? 0; } }
@@ -181,10 +189,11 @@ namespace Perpetuum.Zones.NpcSystem
             if (!IsAnnounced)
                 return;
 
-            var randomDelay = FastRandom.NextTimeSpan(TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(60));
+            var randomDelay = FastRandom.NextTimeSpan(RespawnTime.Divide(5), RespawnTime.Divide(2));
+            var timeStamp = DateTime.UtcNow;
             Task.Delay(randomDelay).ContinueWith((t) =>
             {
-                PublishMessage(new NpcStateMessage(FlockId, NpcState.Alive));
+                PublishMessage(new NpcStateMessage(FlockId, NpcState.Alive, timeStamp));
             });
         }
 
@@ -193,7 +202,7 @@ namespace Perpetuum.Zones.NpcSystem
             if (!IsAnnounced)
                 return;
 
-            PublishMessage(new NpcStateMessage(FlockId, NpcState.Dead));
+            PublishMessage(new NpcStateMessage(FlockId, NpcState.Dead, DateTime.UtcNow));
         }
 
         /// <summary>
