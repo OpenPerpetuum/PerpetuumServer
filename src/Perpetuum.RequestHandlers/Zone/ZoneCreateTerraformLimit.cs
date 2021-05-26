@@ -2,7 +2,6 @@
 using Perpetuum.Zones;
 using Perpetuum.Zones.Terrains;
 using System.Drawing;
-using System.Drawing.Imaging;
 
 namespace Perpetuum.RequestHandlers.Zone
 {
@@ -20,7 +19,7 @@ namespace Perpetuum.RequestHandlers.Zone
         private void SetRadiusOnTeleports(IZoneRequest request, int radius)
         {
             var teleports = request.Zone.GetTeleportColumns();
-            request.Zone.Terrain.Controls.UpdateAll((x, y, c) =>
+            request.Zone.Terrain.Controls.UpdateAllParallel((x, y, c) =>
             {
                 var p = new Point(x, y);
                 var minDist = request.Zone.Size.Width;
@@ -50,7 +49,7 @@ namespace Perpetuum.RequestHandlers.Zone
                 }
             }
             bmp = bmp.DilateOrErode(radius, false);
-            zone.Terrain.Controls.UpdateAll((x, y, c) =>
+            zone.Terrain.Controls.UpdateAllParallel((x, y, c) =>
             {
                 c.TerraformProtected = bmp.GetPixel(x, y) == Color.Black;
                 return c;

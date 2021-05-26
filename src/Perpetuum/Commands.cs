@@ -1224,7 +1224,7 @@ namespace Perpetuum
 
         public static readonly Command ZoneCreateTerraformLimit = new Command
         {
-            Text = "zoneCreateIsland",
+            Text = "ZoneCreateTerraformLimit",
             AccessLevel = AccessLevel.admin,
             Arguments =
             {

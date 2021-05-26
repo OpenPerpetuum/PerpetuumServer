@@ -580,6 +580,7 @@
     <Compile Include="Zone\ZoneCreateGarder.cs" />
     <Compile Include="Zone\ZoneCreateIsland.cs" />
     <Compile Include="Zone\ZoneCreateTeleportColumn.cs" />
+    <Compile Include="Zone\ZoneCreateTerraformLimit.cs" />
     <Compile Include="Zone\ZoneDecorAdd.cs" />
     <Compile Include="Zone\ZoneDecorDelete.cs" />
     <Compile Include="Zone\ZoneDecorLock.cs" />
