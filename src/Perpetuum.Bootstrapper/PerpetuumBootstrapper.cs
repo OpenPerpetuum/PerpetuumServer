@@ -2768,6 +2768,7 @@ namespace Perpetuum.Bootstrapper
             RegisterZoneRequestHandler<ZoneSetPlantsMode>(Commands.ZoneSetPlantsMode);
             RegisterZoneRequestHandler<ZoneCreateGarder>(Commands.ZoneCreateGarden);
             RegisterZoneRequestHandler<ZoneCreateIsland>(Commands.ZoneCreateIsland);
+            RegisterZoneRequestHandler<ZoneCreateTerraformLimit>(Commands.ZoneCreateTerraformLimit);
             RegisterZoneRequestHandler<ZoneDrawBlockingByDefinition>(Commands.ZoneDrawBlockingByDefinition);
             RegisterZoneRequestHandler<ZoneCleanBlockingByDefinition>(Commands.ZoneCleanBlockingByDefinition);
             RegisterZoneRequestHandler<ZoneCleanObstacleBlocking>(Commands.ZoneCleanObstacleBlocking);

@@ -1222,6 +1222,17 @@ namespace Perpetuum
             }
         };
 
+        public static readonly Command ZoneCreateTerraformLimit = new Command
+        {
+            Text = "zoneCreateIsland",
+            AccessLevel = AccessLevel.admin,
+            Arguments =
+            {
+                new Argument<string>(k.mode),
+                new Argument<int>(k.distance)
+            }
+        };
+
         public static readonly Command ZoneSampleEnvironment = new Command
         {
             Text = "zoneSampleEnvironment",
