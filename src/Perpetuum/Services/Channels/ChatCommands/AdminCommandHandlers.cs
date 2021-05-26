@@ -684,10 +684,39 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
             Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
-                    { "low", lvl }
+                    { k.low, lvl }
                 };
 
             string cmd = string.Format("zoneCreateIsland:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
+            HandleLocalRequest(data, cmd);
+        }
+        [ChatCommand("ZoneCreateTerraformLimit")]
+        public static void ZoneCreateTerraformLimit(AdminCommandData data)
+        {
+            if (!IsDevModeEnabled(data))
+                return;
+
+            int radius;
+            string mode;
+            try
+            {
+                radius = int.Parse(data.Command.Args[0]);
+                mode = data.Command.Args[1];
+            }
+            catch (Exception ex)
+            {
+                if (ex is FormatException || ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
+            }
+
+            Dictionary<string, object> dictionary = new Dictionary<string, object>()
+                {
+                    { k.distance, radius },
+                    { k.mode,  mode }
+                };
+
+            string cmd = string.Format("ZoneCreateTerraformLimit:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
         [ChatCommand("ZonePlaceWall")]
