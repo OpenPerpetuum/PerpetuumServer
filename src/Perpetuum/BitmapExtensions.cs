@@ -6,7 +6,7 @@ namespace Perpetuum
     public static class BitmapExtensions
     {
         [CanBeNull]
-        public static Bitmap WithGraphics(this Bitmap bitmap,Action<Graphics> action)
+        public static Bitmap WithGraphics(this Bitmap bitmap, Action<Graphics> action)
         {
             if (bitmap == null)
                 return null;
@@ -38,4 +38,5 @@ namespace Perpetuum
 
             return bitmap;
         }
+    }
 }
