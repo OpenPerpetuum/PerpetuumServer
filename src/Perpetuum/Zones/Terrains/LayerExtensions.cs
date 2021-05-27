@@ -1,7 +1,6 @@
 using System;
 using System.Drawing;
 using System.Numerics;
-using System.Threading.Tasks;
 
 namespace Perpetuum.Zones.Terrains
 {
@@ -43,34 +42,6 @@ namespace Perpetuum.Zones.Terrains
                     if (current.Equals(updated))
                         continue;
                     layer[x, y] = updated;
-                }
-            }
-        }
-
-        public static void UpdateAllParallel<T>(this ILayer<T> layer, Func<int, int, T, T> updater)
-        {
-            var cores = 8;
-            var xStride = layer.Width / cores;
-            var yStride = layer.Height / cores;
-            for (var c = 0; c < cores -1 ; c++)
-            {
-                for (var d = 0; d < cores -1 ; d++)
-                {
-                    var reportTaskComplete = $"TASK COMPLETE for x:{(d * xStride)}, y:{(c * yStride)}";
-                    Task.Run(() =>
-                    {
-                        for (var y = (c * yStride); y < ((c + 1) * yStride); y++)
-                        {
-                            for (var x = (d * xStride); x < ((d + 1) * xStride); x++)
-                            {
-                                var current = layer[x, y];
-                                var updated = updater(x, y, current);
-                                if (current.Equals(updated))
-                                    continue;
-                                layer[x, y] = updated;
-                            }
-                        }
-                    }).ContinueWith((t) => { Console.WriteLine(reportTaskComplete); });
                 }
             }
         }

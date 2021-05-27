@@ -620,6 +620,7 @@
     <Compile Include="Zone\ZoneSampleDecorEnvironment.cs" />
     <Compile Include="Zone\ZoneSampleEnvironment.cs" />
     <Compile Include="Zone\ZoneServerMessage.cs" />
+    <Compile Include="Zone\ZoneSetLayerWithBitMap.cs" />
     <Compile Include="Zone\ZoneSetPlantsMode.cs" />
     <Compile Include="Zone\ZoneSetPlantSpeed.cs" />
     <Compile Include="Zone\ZoneSetQueueLength.cs" />
