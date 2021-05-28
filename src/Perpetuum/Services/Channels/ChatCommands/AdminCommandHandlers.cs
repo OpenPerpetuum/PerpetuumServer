@@ -700,12 +700,13 @@ namespace Perpetuum.Services.Channels.ChatCommands
             if (!IsDevModeEnabled(data))
                 return;
 
-            int radius;
+            int radius = 0;
             string mode;
             try
             {
-                radius = int.Parse(data.Command.Args[0]);
-                mode = data.Command.Args[1];
+                mode = data.Command.Args[0];
+                if(mode!="clear")
+                    radius = int.Parse(data.Command.Args[1]);
             }
             catch (Exception ex)
             {
