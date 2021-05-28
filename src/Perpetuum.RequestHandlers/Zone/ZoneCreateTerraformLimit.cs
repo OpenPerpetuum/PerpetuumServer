@@ -18,21 +18,31 @@ namespace Perpetuum.RequestHandlers.Zone
 
         private void SetRadiusOnTeleports(IZoneRequest request, int radius)
         {
+            var zone = request.Zone;
             var teleports = request.Zone.GetTeleportColumns();
-            request.Zone.Terrain.Controls.UpdateAll((x, y, c) =>
+            foreach (var tele in teleports)
             {
-                var p = new Point(x, y);
-                var minDist = request.Zone.Size.Width;
-                foreach (var tele in teleports)
+                var center = tele.CurrentPosition.ToPoint();
+                var x0 = (center.X - radius).Clamp(0, zone.Terrain.Controls.Width);
+                var x1 = (center.X + radius).Clamp(0, zone.Terrain.Controls.Width);
+                var y0 = (center.Y - radius).Clamp(0, zone.Terrain.Controls.Height);
+                var y1 = (center.Y + radius).Clamp(0, zone.Terrain.Controls.Height);
+                for (var y = y0; y < y1; y++)
                 {
-                    if(tele.CurrentPosition.IsInRangeOf2D(p, radius))
+                    for (var x = x0; x < x1; x++)
                     {
-                        c.TerraformProtected = true;
-                        return c;
+                        var p = new Point(x, y);
+                        if (center.Distance(p) < radius)
+                        {
+                            zone.Terrain.Controls.UpdateValue(x, y, (c) =>
+                            {
+                                c.TerraformProtected = true;
+                                return c;
+                            });
+                        }
                     }
                 }
-                return c;
-            });
+            }
         }
 
         public void HandleRequest(IZoneRequest request)
