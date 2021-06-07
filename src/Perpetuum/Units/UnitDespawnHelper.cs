@@ -8,27 +8,49 @@ namespace Perpetuum.Units
     public delegate bool UnitDespawnerCanApplyEffect(Unit unit);
     public delegate void UnitDespawnStrategy(Unit unit);
 
-    public class UnitDespawnHelper 
+    public class UnitDespawnHelper
     {
+        public UnitDespawnerCanApplyEffect CanApplyDespawnEffect { protected get; set; }
+        public UnitDespawnStrategy DespawnStrategy { protected get; set; }
+
+        public virtual EffectType DespawnEffect
+        {
+            get { return EffectType.effect_despawn_timer; }
+        }
+
         protected readonly TimeSpan _despawnTime;
+        protected readonly EffectToken _effectToken = EffectToken.NewToken();
         protected readonly IntervalTimer _timer = new IntervalTimer(650);
+
+        private bool _detectedEffectApplied = false;
 
         protected UnitDespawnHelper(TimeSpan despawnTime)
         {
             _despawnTime = despawnTime;
         }
 
-        public UnitDespawnerCanApplyEffect CanApplyDespawnEffect { protected get; set; }
+        private bool HasEffect(Unit unit)
+        {
+            return unit.EffectHandler.ContainsToken(_effectToken);
+        }
 
-        public UnitDespawnStrategy DespawnStrategy { protected get; set; }
+        protected bool EffectLive(Unit unit)
+        {
+            var effectRunning = HasEffect(unit);
+            if (!_detectedEffectApplied)
+            {
+                _detectedEffectApplied = effectRunning;
+            }
+            return _detectedEffectApplied == effectRunning;
+        }
 
-        public virtual void Update(TimeSpan time,Unit unit)
+        public virtual void Update(TimeSpan time, Unit unit)
         {
             _timer.Update(time).IsPassed(() =>
             {
                 TryReApplyDespawnEffect(unit);
 
-                if (unit.HasDespawnEffect)
+                if (EffectLive(unit))
                     return;
 
                 CanApplyDespawnEffect = null;
@@ -44,8 +66,6 @@ namespace Perpetuum.Units
             });
         }
 
-        protected readonly EffectToken _effectToken = EffectToken.NewToken();
-
         private void TryReApplyDespawnEffect(Unit unit)
         {
             var canApplyDespawnEffect = CanApplyDespawnEffect;
@@ -59,10 +79,11 @@ namespace Perpetuum.Units
             ApplyDespawnEffect(unit);
         }
 
-        private void ApplyDespawnEffect(Unit unit)
+        public void ApplyDespawnEffect(Unit unit)
         {
-            var effectBuilder = unit.NewEffectBuilder().SetType(EffectType.effect_despawn_timer).WithDuration(_despawnTime).WithToken(_effectToken);
+            var effectBuilder = unit.NewEffectBuilder().SetType(DespawnEffect).WithDuration(_despawnTime).WithToken(_effectToken);
             unit.ApplyEffect(effectBuilder);
+            _detectedEffectApplied = false;
         }
 
         public override string ToString()
@@ -70,12 +91,11 @@ namespace Perpetuum.Units
             return $"DespawnTime: {_despawnTime}";
         }
 
-        public static UnitDespawnHelper Create(Unit unit,TimeSpan despawnTime)
+        public static UnitDespawnHelper Create(Unit unit, TimeSpan despawnTime)
         {
             var helper = new UnitDespawnHelper(despawnTime);
             helper.ApplyDespawnEffect(unit);
             return helper;
         }
-
     }
 }

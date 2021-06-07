@@ -124,8 +124,10 @@ namespace Perpetuum.Services.Strongholds
 
     public class StrongholdPlayerDespawnHelper : UnitDespawnHelper
     {
-        private static readonly EffectType DespawnEffect = EffectType.effect_stronghold_despawn_timer;
-
+        public override EffectType DespawnEffect
+        {
+            get { return EffectType.effect_stronghold_despawn_timer; }
+        }
         private StrongholdPlayerDespawnHelper(TimeSpan despawnTime) : base(despawnTime) { }
 
         private bool _canceled = false;
@@ -133,22 +135,6 @@ namespace Perpetuum.Services.Strongholds
         {
             _canceled = true;
             RemoveDespawnEffect(unit);
-        }
-
-        public bool HasEffect(Unit unit)
-        {
-            return unit.EffectHandler.ContainsToken(_effectToken);
-        }
-
-        private bool _detectedEffectApplied = false;
-        private bool EffectLive(Unit unit)
-        {
-            var effectRunning = HasEffect(unit);
-            if (!_detectedEffectApplied)
-            {
-                _detectedEffectApplied = effectRunning;
-            }
-            return _detectedEffectApplied == effectRunning;
         }
 
         public override void Update(TimeSpan time, Unit unit)
@@ -165,12 +151,6 @@ namespace Perpetuum.Services.Strongholds
         private void RemoveDespawnEffect(Unit unit)
         {
             unit.EffectHandler.RemoveEffectByToken(_effectToken);
-        }
-
-        private void ApplyDespawnEffect(Unit unit)
-        {
-            var effectBuilder = unit.NewEffectBuilder().SetType(DespawnEffect).WithDuration(_despawnTime).WithToken(_effectToken);
-            unit.ApplyEffect(effectBuilder);
         }
 
         public new static StrongholdPlayerDespawnHelper Create(Unit unit, TimeSpan despawnTime)
