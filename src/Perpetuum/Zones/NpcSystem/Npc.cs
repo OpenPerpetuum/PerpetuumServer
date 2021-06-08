@@ -15,7 +15,6 @@ using Perpetuum.Log;
 using Perpetuum.Modules.Weapons;
 using Perpetuum.PathFinders;
 using Perpetuum.Players;
-using Perpetuum.Services.EventServices;
 using Perpetuum.Services.Looting;
 using Perpetuum.Services.MissionEngine;
 using Perpetuum.Services.MissionEngine.MissionTargets;
