@@ -40,6 +40,13 @@ namespace Perpetuum.Robots
         {
             _type = type;
             _extensionReader = extensionReader;
+            InitModules();
+        }
+
+        public override void Initialize()
+        {
+            InitModules();
+            base.Initialize();
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
@@ -74,14 +81,22 @@ namespace Perpetuum.Robots
             get { return _type.ToString().ToLower(); }
         }
 
+        private Lazy<IEnumerable<Module>> _modules;
+        private Lazy<IEnumerable<ActiveModule>> _activeModules;
+        private void InitModules()
+        {
+            _modules = new Lazy<IEnumerable<Module>>(() => Children.OfType<Module>().ToArray());
+            _activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Children.OfType<ActiveModule>().ToArray());
+        }
+
         public IEnumerable<Module> Modules
         {
-            get { return Children.OfType<Module>(); }
+            get { return _modules.Value; }
         }
 
         public IEnumerable<ActiveModule> ActiveModules
         {
-            get { return Modules.OfType<ActiveModule>(); }
+            get { return _activeModules.Value; }
         }
 
         public void Update(TimeSpan time)
@@ -122,6 +137,7 @@ namespace Perpetuum.Robots
         {
             var module = GetModule(slot);
             module?.Unequip(targetContainer);
+            InitModules();
         }
 
         public bool CheckUniqueModule(Module module)
@@ -185,6 +201,7 @@ namespace Perpetuum.Robots
 
             AddChild(module);
             module.Slot = slot;
+            InitModules();
         }
 
         private ErrorCodes CanChangeModule(int sourceSlot, int targetSlot)
@@ -216,6 +233,7 @@ namespace Perpetuum.Robots
 
             if (targetModule != null)
                 targetModule.Slot = sourceSlot;
+            InitModules();
         }
 
         public override Dictionary<string, object> ToDictionary()

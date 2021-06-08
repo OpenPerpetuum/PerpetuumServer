@@ -59,8 +59,17 @@ namespace Perpetuum.Robots
     {
         protected Robot()
         {
+            InitComponents();
+            InitModules();
             InitLockHander();
             InitProperties();
+        }
+
+        public override void Initialize()
+        {
+            InitComponents();
+            InitModules();
+            base.Initialize();
         }
 
         public RobotHelper RobotHelper { protected get; set; }
@@ -242,7 +251,7 @@ namespace Perpetuum.Robots
             {
                 module.Unequip(targetContainer);
             }
-
+            InitModules();
             if (!withContainer)
                 return;
 
@@ -316,24 +325,41 @@ namespace Perpetuum.Robots
             return RobotComponents.FirstOrDefault(c => c.Type == componentType);
         }
 
-        public IEnumerable<ActiveModule> ActiveModules
+        private Lazy<IEnumerable<Module>> _modules;
+        private Lazy<IEnumerable<ActiveModule>> _activeModules;
+        private void InitModules()
         {
-            get { return Modules.OfType<ActiveModule>(); }
+            _modules = new Lazy<IEnumerable<Module>>(() => RobotComponents.SelectMany(c => c.Modules).ToArray());
+            _activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().ToArray());
         }
 
         public IEnumerable<Module> Modules
         {
-            get { return RobotComponents.SelectMany(c => c.Modules); }
+            get { return _modules.Value; }
+        }
+
+        public IEnumerable<ActiveModule> ActiveModules
+        {
+            get { return _activeModules.Value; }
+        }
+
+        private Lazy<IEnumerable<Item>> _components;
+        private Lazy<IEnumerable<RobotComponent>> _robotComponents;
+        private void InitComponents()
+        {
+
+            _components = new Lazy<IEnumerable<Item>>(() => Children.OfType<Item>().ToArray());
+            _robotComponents = new Lazy<IEnumerable<RobotComponent>>(() => Components.OfType<RobotComponent>().ToArray());
         }
 
         public IEnumerable<Item> Components
         {
-            get { return Children.OfType<Item>(); }
+            get { return _components.Value; }
         }
 
         public IEnumerable<RobotComponent> RobotComponents
         {
-            get { return Components.OfType<RobotComponent>(); }
+            get { return _robotComponents.Value; }
         }
 
         public void CheckEnergySystemAndThrowIfFailed()
