@@ -53,7 +53,6 @@ namespace Perpetuum.Services.EventServices.EventProcessors
         {
             if (value is SpawnPortalMessage msg)
             {
-                Logger.DebugInfo($"{msg}");
                 if (!ValidateMessage(msg))
                 {
                     Logger.Warning($"SpawnPortalMessage was not valid!\n{msg}");

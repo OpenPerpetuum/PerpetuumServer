@@ -1,9 +1,7 @@
 ﻿using Perpetuum.Data;
-using Perpetuum.ExportedTypes;
 using Perpetuum.Players;
 using Perpetuum.Services.EventServices;
 using Perpetuum.Services.EventServices.EventMessages;
-using Perpetuum.Units;
 using Perpetuum.Zones;
 using System;
 
@@ -121,46 +119,4 @@ namespace Perpetuum.Services.Strongholds
             _eventChannel.PublishMessage(new DirectMessage(player.Character, message));
         }
     }
-
-    public class StrongholdPlayerDespawnHelper : UnitDespawnHelper
-    {
-        public override EffectType DespawnEffect
-        {
-            get { return EffectType.effect_stronghold_despawn_timer; }
-        }
-        private StrongholdPlayerDespawnHelper(TimeSpan despawnTime) : base(despawnTime) { }
-
-        private bool _canceled = false;
-        public void Cancel(Unit unit)
-        {
-            _canceled = true;
-            RemoveDespawnEffect(unit);
-        }
-
-        public override void Update(TimeSpan time, Unit unit)
-        {
-            _timer.Update(time).IsPassed(() =>
-            {
-                if (_canceled || EffectLive(unit))
-                    return;
-
-                DespawnStrategy?.Invoke(unit);
-            });
-        }
-
-        private void RemoveDespawnEffect(Unit unit)
-        {
-            unit.EffectHandler.RemoveEffectByToken(_effectToken);
-        }
-
-        public new static StrongholdPlayerDespawnHelper Create(Unit unit, TimeSpan despawnTime)
-        {
-            var helper = new StrongholdPlayerDespawnHelper(despawnTime);
-            helper.ApplyDespawnEffect(unit);
-            return helper;
-        }
-    }
 }
-
-
-
