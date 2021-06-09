@@ -59,11 +59,14 @@ namespace Perpetuum.Robots
     {
         protected Robot()
         {
-            InitComponents();
-            InitModules();
             InitLockHander();
             InitProperties();
         }
+
+        public RobotHelper RobotHelper { protected get; set; }
+        public InsuranceHelper InsuranceHelper { protected get; set; }
+
+        public RobotTemplate Template { get; set; }
 
         public override void Initialize()
         {
@@ -72,10 +75,21 @@ namespace Perpetuum.Robots
             base.Initialize();
         }
 
-        public RobotHelper RobotHelper { protected get; set; }
-        public InsuranceHelper InsuranceHelper { protected get; set; }
+        private Lazy<IEnumerable<Module>> _modules;
+        private Lazy<IEnumerable<ActiveModule>> _activeModules;
+        private void InitModules()
+        {
+            _modules = new Lazy<IEnumerable<Module>>(() => RobotComponents.SelectMany(c => c.Modules).ToArray());
+            _activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().ToArray());
+        }
 
-        public RobotTemplate Template { get; set; }
+        private Lazy<IEnumerable<Item>> _components;
+        private Lazy<IEnumerable<RobotComponent>> _robotComponents;
+        private void InitComponents()
+        {
+            _components = new Lazy<IEnumerable<Item>>(() => Children.OfType<Item>().ToArray());
+            _robotComponents = new Lazy<IEnumerable<RobotComponent>>(() => Components.OfType<RobotComponent>().ToArray());
+        }
 
         protected virtual void OnLockError(Lock @lock, ErrorCodes error)
         {
@@ -251,7 +265,7 @@ namespace Perpetuum.Robots
             {
                 module.Unequip(targetContainer);
             }
-            InitModules();
+
             if (!withContainer)
                 return;
 
@@ -325,14 +339,6 @@ namespace Perpetuum.Robots
             return RobotComponents.FirstOrDefault(c => c.Type == componentType);
         }
 
-        private Lazy<IEnumerable<Module>> _modules;
-        private Lazy<IEnumerable<ActiveModule>> _activeModules;
-        private void InitModules()
-        {
-            _modules = new Lazy<IEnumerable<Module>>(() => RobotComponents.SelectMany(c => c.Modules).ToArray());
-            _activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().ToArray());
-        }
-
         public IEnumerable<Module> Modules
         {
             get { return _modules.Value; }
@@ -341,15 +347,6 @@ namespace Perpetuum.Robots
         public IEnumerable<ActiveModule> ActiveModules
         {
             get { return _activeModules.Value; }
-        }
-
-        private Lazy<IEnumerable<Item>> _components;
-        private Lazy<IEnumerable<RobotComponent>> _robotComponents;
-        private void InitComponents()
-        {
-
-            _components = new Lazy<IEnumerable<Item>>(() => Children.OfType<Item>().ToArray());
-            _robotComponents = new Lazy<IEnumerable<RobotComponent>>(() => Components.OfType<RobotComponent>().ToArray());
         }
 
         public IEnumerable<Item> Components
