@@ -136,7 +136,6 @@ namespace Perpetuum.Robots
         {
             var module = GetModule(slot);
             module?.Unequip(targetContainer);
-            InitModules();
         }
 
         public bool CheckUniqueModule(Module module)
