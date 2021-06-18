@@ -1,5 +1,4 @@
 ﻿using Perpetuum.Data;
-using System;
 using System.Collections.Generic;
 
 namespace Perpetuum.Zones.NpcSystem
