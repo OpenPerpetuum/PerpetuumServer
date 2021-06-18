@@ -1159,7 +1159,7 @@ namespace Perpetuum.Zones.NpcSystem
                 return;
             }
 
-            var ep = Db.Query().CommandText("GetNpcKillEp").SetParameter("@definition", Definition).ExecuteScalar<int>();
+            var ep = NpcEp.GetEpForNpc(this);
 
             if (zone.Configuration.IsBeta)
                 ep *= 2;
