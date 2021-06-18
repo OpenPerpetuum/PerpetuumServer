@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using Perpetuum.Collections;
 using Perpetuum.ExportedTypes;
+using Perpetuum.Log;
 using Perpetuum.PathFinders;
 using Perpetuum.Zones.NpcSystem.Flocks;
 
@@ -24,11 +25,19 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
 
         public Point FindSpawnPosition(IRoamingPresence presence)
         {
-            var homeRange = presence.Flocks.Max(f => f.HomeRange);
-            var rangeMax = homeRange * 2;
+            try
+            {
+                var homeRange = presence.Flocks.Max(f => f.HomeRange).Clamp(10, 40);
+                var rangeMax = homeRange * 2;
 
-            var walkableArea = _zone.FindWalkableArea(presence.Area, rangeMax * rangeMax);
-            return walkableArea.RandomElement();
+                var walkableArea = _zone.FindWalkableArea(presence.Area, rangeMax * rangeMax);
+                return walkableArea.RandomElement();
+            }
+            catch (Exception e)
+            {
+                Logger.Exception(e);
+            }
+            return Point.Empty;
         }
 
         public Point FindNextRoamingPosition(IRoamingPresence presence)

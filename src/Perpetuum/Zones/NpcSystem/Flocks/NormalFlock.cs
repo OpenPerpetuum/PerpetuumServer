@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Perpetuum.Log;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Zones.NpcSystem.Presences;
+using Perpetuum.Zones.NpcSystem.Presences.PathFinders;
 
 namespace Perpetuum.Zones.NpcSystem.Flocks
 {
@@ -84,6 +86,16 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
 
             if (!Presence.Configuration.IsRespawnAllowed) 
                 return;
+
+            if(Presence is IRoamingPresence roaming)
+            {
+                if(roaming.StackFSM.Current is SpawnState) // TODO probably not a great place to handle this conflict, but does resolve the initial issue
+                {
+                    //Probably best to have all roaming presences respawn using the SpawnState on its FSM
+                    Logger.DebugWarning($"Presence {Presence.Name} is still in a Spawning state! --- BLOCK all flock-level spawning");
+                    return;
+                }
+            }
 
             RespawnAllDeadNpcs(time);
         }

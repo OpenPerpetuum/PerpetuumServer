@@ -117,6 +117,15 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
         protected virtual void CreateMemberInZone()
         {
             var npc = (Npc)EntityService.Factory.Create(Configuration.EntityDefault, EntityIDGenerator.Random);
+
+            var zone = Presence.Zone;
+            var spawnPosition = GetSpawnPosition(SpawnOrigin);
+            var finder = new ClosestWalkablePositionFinder(zone, spawnPosition, npc);
+            if (!finder.Find(out spawnPosition))
+            {
+                Log($"invalid spawnposition in CreateMemberInZone: {spawnPosition} {Configuration.Name} {Presence.Configuration.Name} zone:{zone.Id}");
+            }
+
             npc.Behavior = GetBehavior();
             npc.SpecialType = Configuration.SpecialType;
             npc.BossInfo = BossInfo;
@@ -128,16 +137,8 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
 
             npc.LootGenerator = gen;
             npc.HomeRange = HomeRange;
-            npc.HomePosition = SpawnOrigin;
+            npc.HomePosition = spawnPosition;
             npc.CallForHelp = Configuration.IsCallForHelp;
-
-            var zone = Presence.Zone;
-            var spawnPosition = GetSpawnPosition(SpawnOrigin);
-            var finder = new ClosestWalkablePositionFinder(zone, spawnPosition, npc);
-            if (!finder.Find(out spawnPosition))
-            {
-                Log($"invalid spawnposition in CreateMemberInZone: {spawnPosition} {Configuration.Name} {Presence.Configuration.Name} zone:{zone.Id}");
-            }
 
             OnNpcCreated(npc);
 
@@ -149,6 +150,10 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
 
         protected virtual Position GetSpawnPosition(Position spawnOrigin)
         {
+            if (Presence is IRoamingPresence presence)
+            {
+                spawnOrigin = presence.SpawnOrigin;
+            }
             var spawnRangeMin = Configuration.SpawnRange.Min;
             var spawnRangeMax = Configuration.SpawnRange.Max.Min(HomeRange);
 
@@ -222,7 +227,7 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
                 {
                     return rp.SpawnOriginForRandomPresence;
                 }
-                case RoamingPresence roaming:
+                case IRoamingPresence roaming:
                 {
                     return roaming.SpawnOrigin;
                 }
