@@ -150,10 +150,6 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
 
         protected virtual Position GetSpawnPosition(Position spawnOrigin)
         {
-            if (Presence is IRoamingPresence presence)
-            {
-                spawnOrigin = presence.SpawnOrigin;
-            }
             var spawnRangeMin = Configuration.SpawnRange.Min;
             var spawnRangeMax = Configuration.SpawnRange.Max.Min(HomeRange);
 
