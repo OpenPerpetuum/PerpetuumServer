@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Perpetuum.Log;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Zones.NpcSystem.Presences;
-using Perpetuum.Zones.NpcSystem.Presences.PathFinders;
 
 namespace Perpetuum.Zones.NpcSystem.Flocks
 {
@@ -84,7 +82,6 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
                 return;
 
             RespawnAllDeadNpcs(time);
-            base.Update(time);
         }
 
         private TimeTracker _nextSpawnTime;
