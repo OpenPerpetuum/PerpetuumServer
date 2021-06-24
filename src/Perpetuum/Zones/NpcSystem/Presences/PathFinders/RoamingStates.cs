@@ -87,6 +87,12 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
                 range--;
             } while (anyPlayersAround && range > 0);
 
+            if (anyPlayersAround)
+            {
+                _presence.Log("FAILED to resolve spawn position out of range of players: " + spawnPosition);
+                return;
+            }
+
             DoSpawning(spawnPosition);
         }
 

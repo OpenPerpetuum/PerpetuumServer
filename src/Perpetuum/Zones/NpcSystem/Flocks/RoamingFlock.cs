@@ -1,6 +1,6 @@
 ﻿using Perpetuum.Zones.NpcSystem.Presences;
 using Perpetuum.Zones.NpcSystem.Presences.PathFinders;
-using Perpetuum.Zones.NpcSystem.Presences.SpecialPresences;
+using Perpetuum.Zones.NpcSystem.Presences.RandomExpiringPresence;
 using System;
 
 namespace Perpetuum.Zones.NpcSystem.Flocks

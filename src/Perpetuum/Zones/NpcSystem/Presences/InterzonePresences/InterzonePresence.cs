@@ -28,7 +28,8 @@ namespace Perpetuum.Zones.NpcSystem.Presences.InterzonePresences
             base.OnUpdate(time);
         }
 
-        public void OnSpawned() {
+        public void OnSpawned()
+        {
             ResetDynamicDespawnTimer();
         }
     }

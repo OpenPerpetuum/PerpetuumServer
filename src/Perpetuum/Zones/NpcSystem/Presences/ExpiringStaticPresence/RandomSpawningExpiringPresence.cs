@@ -1,5 +1,4 @@
 ﻿using Perpetuum.StateMachines;
-using Perpetuum.Timers;
 using Perpetuum.Zones.NpcSystem.Presences.PathFinders;
 using System;
 using System.Linq;
@@ -8,15 +7,13 @@ using Perpetuum.ExportedTypes;
 using Perpetuum.Units.DockingBases;
 using Perpetuum.Units;
 using Perpetuum.Zones.Teleporting;
-using Perpetuum.Log;
-using Perpetuum.Zones.NpcSystem.Flocks;
 
-namespace Perpetuum.Zones.NpcSystem.Presences.SpecialPresences
+namespace Perpetuum.Zones.NpcSystem.Presences.RandomExpiringPresence
 {
     /// <summary>
     /// A non-roaming ExpiringPresence that would spawning with Roaming rules
     /// </summary>
-    public class SpecialPresence : ExpiringPresence, IRoamingPresence
+    public class RandomSpawningExpiringPresence : ExpiringPresence, IRoamingPresence
     {
         public StackFSM StackFSM { get; }
         public Position SpawnOrigin { get; set; }
@@ -24,7 +21,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.SpecialPresences
         public override Area Area => Configuration.Area;
         public Point CurrentRoamingPosition { get; set; }
 
-        public SpecialPresence(IZone zone, IPresenceConfiguration configuration) : base(zone, configuration)
+        public RandomSpawningExpiringPresence(IZone zone, IPresenceConfiguration configuration) : base(zone, configuration)
         {
             if (Configuration.DynamicLifeTime != null)
                 LifeTime = TimeSpan.FromSeconds((int)Configuration.DynamicLifeTime);
@@ -41,7 +38,6 @@ namespace Perpetuum.Zones.NpcSystem.Presences.SpecialPresences
 
         protected override void OnPresenceExpired()
         {
-            base.OnPresenceExpired();
             ResetDynamicDespawnTimer();
             foreach (var flock in Flocks)
             {
@@ -60,12 +56,6 @@ namespace Perpetuum.Zones.NpcSystem.Presences.SpecialPresences
         private readonly int BASE_RADIUS = 300;
         private readonly int PLAYER_RADIUS = 150;
         public StaticSpawnState(IRoamingPresence presence, int playerMinDist = 200) : base(presence, playerMinDist) { }
-
-        public override void Enter()
-        {
-            Logger.DebugWarning($"ENTERED StaticSpawnState");
-            base.Enter();
-        }
 
         protected override void OnSpawned()
         {
@@ -104,45 +94,8 @@ namespace Perpetuum.Zones.NpcSystem.Presences.SpecialPresences
                 _presence.Log("FAILED to resolve spawn position out of range of players: " + spawnPosition);
                 return;
             }
-            Logger.DebugWarning($"GAMMA BASE PRES SPAWNING! @: {spawnPosition}");
 
             DoSpawning(spawnPosition);
-        }
-    }
-
-    public class NullRoamingState : IState
-    {
-        protected readonly IRoamingPresence _presence;
-
-        public NullRoamingState(IRoamingPresence presence)
-        {
-            _presence = presence;
-        }
-
-        public virtual void Enter() { }
-        public virtual void Exit() { }
-
-        protected Npc[] GetAllMembers()
-        {
-            return _presence.Flocks.GetMembers().ToArray();
-        }
-
-        protected bool IsDeadAndExiting(Npc[] members)
-        {
-            if (members.Length <= 0)
-            {
-                _presence.StackFSM.Pop();
-                return true;
-            }
-            return false;
-        }
-
-        public virtual void Update(TimeSpan time)
-        {
-            var members = GetAllMembers();
-            IsDeadAndExiting(members);
-            if(members.Length > 0)
-                Logger.DebugWarning($"GAMMA BASE PRES @: {members[0].CurrentPosition} CHILLIN");
         }
     }
 }
