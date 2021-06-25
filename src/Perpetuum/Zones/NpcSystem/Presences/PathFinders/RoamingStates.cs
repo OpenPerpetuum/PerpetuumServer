@@ -29,6 +29,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
             _spawning = false;
             _spawned = false;
 
+            _presence.SpawnOrigin = Position.Empty;
+            _presence.CurrentRoamingPosition = Position.Empty;
+
             _elapsed = TimeSpan.Zero;
 
             _delay = TimeSpan.FromSeconds(_presence.Configuration.RoamingRespawnSeconds * _repawnDelayModifier);

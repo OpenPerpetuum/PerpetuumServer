@@ -72,6 +72,8 @@ namespace Perpetuum.Zones.NpcSystem.Presences.RandomExpiringPresence
                 return true;
             else if (zone.GetStaticUnits().OfType<Teleport>().WithinRange2D(position, PLAYER_RADIUS).Any())
                 return true;
+            else if (zone.PresenceManager.GetPresences().OfType<RandomSpawningExpiringPresence>().Where(p => p.SpawnOrigin.IsInRangeOf2D(position, BASE_RADIUS)).Any())
+                return true;
 
             return zone.Players.WithinRange2D(position, PLAYER_RADIUS).Any();
         }
