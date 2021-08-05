@@ -2773,6 +2773,7 @@ namespace Perpetuum.Bootstrapper
             RegisterZoneRequestHandler<ZoneDrawBlockingByDefinition>(Commands.ZoneDrawBlockingByDefinition);
             RegisterZoneRequestHandler<ZoneCleanBlockingByDefinition>(Commands.ZoneCleanBlockingByDefinition);
             RegisterZoneRequestHandler<ZoneCleanObstacleBlocking>(Commands.ZoneCleanObstacleBlocking);
+            RegisterZoneRequestHandler<ZoneFillGroundTypeRandom>(Commands.ZoneFillGroundTypeRandom);
 
 
 
