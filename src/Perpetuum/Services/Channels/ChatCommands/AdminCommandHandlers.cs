@@ -111,7 +111,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
         {
             if (data.Command.Args.Length != expectedLength)
             {
-                SendMessageToAll(data, $"Error - Command expects " + expectedLength.ToString() + " args, but was given " + data.Command.Args.Length.ToString() + " args");
+                SendMessageToAll(data, $"Command expects {expectedLength} args, but was given {data.Command.Args.Length} args");
                 throw PerpetuumException.Create(ErrorCodes.TooManyOrTooFewArguments);
             }
         }
@@ -179,18 +179,20 @@ namespace Perpetuum.Services.Channels.ChatCommands
         [ChatCommand("SetMaxSessions")]
         public static void SetMaxSessions(AdminCommandData data)
         {
+            int minSessionBound = 1;
+            int maxSessionBound = 10000;
             CheckRequiredArgLength(data, 1);
-            if (!int.TryParse(data.Command.Args[0], out int maxPlayerSessions))
+            if (!int.TryParse(data.Command.Args[0], out var maxPlayerSessions))
             {
                 throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
             }
-            if (maxPlayerSessions < 1 || maxPlayerSessions > 10000)
+            if (!maxPlayerSessions.IsInRange(minSessionBound, maxSessionBound))
             {
-                SendMessageToAll(data, $"maxPlayerSessions {maxPlayerSessions} is outside of accepted range [1,10000]");
+                SendMessageToAll(data, $"maxPlayerSessions {maxPlayerSessions} is outside of accepted range [{minSessionBound},{maxSessionBound}]");
                 throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
             }
             var dictionary = new Dictionary<string, object>() { { k.amount, maxPlayerSessions } };
-            string cmd = string.Format("SetMaxUserCount:relay:{0}", GenxyConverter.Serialize(dictionary));
+            string cmd = string.Format("{0}:relay:{1}", Commands.SetMaxUserCount.Text, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
         }
         [ChatCommand("JumpTo")]
