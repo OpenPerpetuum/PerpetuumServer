@@ -36,7 +36,7 @@ namespace Perpetuum.RequestHandlers.Zone
                     {
                         var smoothed = sum / count;
                         var shortAlt = System.Convert.ToUInt16(smoothed * 32);
-                        altBuffer[CalculateBufferOffset(p.intX, p.intY, workArea)] = shortAlt;
+                        altBuffer[CalculateBufferOffset(p.intX, p.intY, area)] = shortAlt;
                     }
                 }
             });
@@ -44,7 +44,7 @@ namespace Perpetuum.RequestHandlers.Zone
             {
                 foreach (var p in workArea.GetPositions())
                 {
-                    zone.Terrain.Altitude.SetValue(p.intX, p.intY, altBuffer[CalculateBufferOffset(p.intX, p.intY, workArea)]);
+                    zone.Terrain.Altitude.SetValue(p.intX, p.intY, altBuffer[CalculateBufferOffset(p.intX, p.intY, area)]);
                 }
                 zone.Terrain.Slope.UpdateSlopeByArea(workArea);
             });
