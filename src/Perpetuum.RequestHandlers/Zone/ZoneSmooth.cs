@@ -1,20 +1,26 @@
 ﻿using Perpetuum.Host.Requests;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Terrains;
+using System.Threading.Tasks;
 
 namespace Perpetuum.RequestHandlers.Zone
 {
     public class ZoneSmooth : IRequestHandler<IZoneRequest>
     {
+        private int CalculateBufferOffset(int x, int y, Area area)
+        {
+            return (x - area.X1) + (y - area.Y1) * area.Width;
+        }
         public void HandleRequest(IZoneRequest request)
         {
             var zone = request.Zone;
             zone.IsLayerEditLocked.ThrowIfTrue(ErrorCodes.TileTerraformProtected);
-            var area = zone.Size;
-            var targetArea = new Area(1, 1, area.Width - 1, area.Height - 1);
-            using (var terrainUpdateMonitor = new TerrainUpdateMonitor(zone))
+            var area = Area.FromRectangle(0, 0, zone.Size.Width, zone.Size.Height);
+            var altBuffer = new ushort[area.Ground];
+            var workAreas = area.Slice(32);
+            Parallel.ForEach(workAreas, (workArea) =>
             {
-                foreach (var p in targetArea.GetPositions())
+                foreach (var p in workArea.GetPositions())
                 {
                     var sum = 0.0;
                     var count = 0;
@@ -30,11 +36,18 @@ namespace Perpetuum.RequestHandlers.Zone
                     {
                         var smoothed = sum / count;
                         var shortAlt = System.Convert.ToUInt16(smoothed * 32);
-                        zone.Terrain.Altitude.SetValue(p.intX, p.intY, shortAlt);
+                        altBuffer[CalculateBufferOffset(p.intX, p.intY, workArea)] = shortAlt;
                     }
                 }
-                zone.Terrain.Slope.UpdateSlopeByArea(targetArea);
-            }
+            });
+            Parallel.ForEach(workAreas, (workArea) =>
+            {
+                foreach (var p in workArea.GetPositions())
+                {
+                    zone.Terrain.Altitude.SetValue(p.intX, p.intY, altBuffer[CalculateBufferOffset(p.intX, p.intY, workArea)]);
+                }
+                zone.Terrain.Slope.UpdateSlopeByArea(workArea);
+            });
         }
     }
 }
