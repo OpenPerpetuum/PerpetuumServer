@@ -70,7 +70,7 @@ namespace Perpetuum.Robots
 
         public override void Initialize()
         {
-            //InitComponents();
+            InitComponents();
             base.Initialize();
         }
 
@@ -336,24 +336,23 @@ namespace Perpetuum.Robots
 
         public IEnumerable<Module> Modules
         {
-            get { return RobotComponents.SelectMany(c => c.Modules); }// _modules.Value; }
+            get { return _modules.Value; }
         }
 
         public IEnumerable<ActiveModule> ActiveModules
         {
-            get { return Modules.OfType<ActiveModule>(); }// _activeModules.Value; }
+            get { return _activeModules.Value; }
         }
 
         public IEnumerable<Item> Components
         {
-            get { return Children.OfType<Item>(); }//_components.Value; }
+            get { return _components.Value; }
         }
 
         public IEnumerable<RobotComponent> RobotComponents
         {
-            get { return Components.OfType<RobotComponent>(); }// _robotComponents.Value; }
+            get { return _robotComponents.Value; }
         }
-
 
         public void CheckEnergySystemAndThrowIfFailed(Module module, bool isRemoving=false)
         {
