@@ -90,12 +90,12 @@ namespace Perpetuum.Robots
 
         public IEnumerable<Module> Modules
         {
-            get { return _modules.Value; }
+            get { return Children.OfType<Module>(); }// _modules.Value; }
         }
 
         public IEnumerable<ActiveModule> ActiveModules
         {
-            get { return _activeModules.Value; }
+            get { return Modules.OfType<ActiveModule>(); }// _activeModules.Value; }
         }
 
         public void Update(TimeSpan time)

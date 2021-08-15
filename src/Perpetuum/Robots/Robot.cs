@@ -70,7 +70,7 @@ namespace Perpetuum.Robots
 
         public override void Initialize()
         {
-            InitComponents();
+            //InitComponents();
             base.Initialize();
         }
 
@@ -336,22 +336,32 @@ namespace Perpetuum.Robots
 
         public IEnumerable<Module> Modules
         {
-            get { return _modules.Value; }
+            get { return RobotComponents.SelectMany(c => c.Modules); }// _modules.Value; }
         }
 
         public IEnumerable<ActiveModule> ActiveModules
         {
-            get { return _activeModules.Value; }
+            get { return Modules.OfType<ActiveModule>(); }// _activeModules.Value; }
         }
 
         public IEnumerable<Item> Components
         {
-            get { return _components.Value; }
+            get { return Children.OfType<Item>(); }//_components.Value; }
         }
 
         public IEnumerable<RobotComponent> RobotComponents
         {
-            get { return _robotComponents.Value; }
+            get { return Components.OfType<RobotComponent>(); }// _robotComponents.Value; }
+        }
+
+
+        public void CheckEnergySystemAndThrowIfFailed(Module module, bool isRemoving=false)
+        {
+            if (!CheckPowerGridForModule(module, isRemoving))
+                throw PerpetuumException.Create(ErrorCodes.OutOfPowergrid);
+
+            if (!CheckCpuForModule(module, isRemoving))
+                throw PerpetuumException.Create(ErrorCodes.OutOfCpu);
         }
 
         public void CheckEnergySystemAndThrowIfFailed()
