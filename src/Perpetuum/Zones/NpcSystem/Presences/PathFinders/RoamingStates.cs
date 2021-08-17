@@ -3,6 +3,7 @@ using Perpetuum.Units;
 using Perpetuum.Zones.NpcSystem.Flocks;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
@@ -149,7 +150,12 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
 
     public class RoamingState : NullRoamingState
     {
-        public RoamingState(IRoamingPresence presence) : base(presence) { }
+        private CancellationToken _token;
+        private readonly CancellationTokenSource _source;
+        public RoamingState(IRoamingPresence presence) : base(presence) {
+            _source = new CancellationTokenSource();
+            _token = _source.Token;
+        }
 
         private bool _finding;
 
@@ -157,6 +163,14 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
         {
             var idleMembersCount = members.Select(m => m.AI.Current).OfType<IdleAI>().Count();
             return idleMembersCount < members.Length;
+        }
+
+        public override void Exit() {
+            if (_finding)
+            {
+                _source.Cancel();
+                _token.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+            }
         }
 
         public override void Update(TimeSpan time)
@@ -172,7 +186,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
                 return;
 
             _finding = true;
-            Task.Run(() => FindNextRoamingPosition()).ContinueWith(t => _finding = false);
+            Task.Run(() => FindNextRoamingPosition(), _token).ContinueWith(t => _finding = false);
         }
 
         private void FindNextRoamingPosition()
