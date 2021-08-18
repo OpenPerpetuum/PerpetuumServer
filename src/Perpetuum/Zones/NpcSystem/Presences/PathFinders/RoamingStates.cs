@@ -1,4 +1,5 @@
-﻿using Perpetuum.StateMachines;
+﻿using Perpetuum.Log;
+using Perpetuum.StateMachines;
 using Perpetuum.Units;
 using Perpetuum.Zones.NpcSystem.Flocks;
 using System;
@@ -8,12 +9,45 @@ using System.Threading.Tasks;
 
 namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
 {
-    public class SpawnState : IState
+    public abstract class CancellableState
+    {
+        private static readonly TimeSpan MAX_WAIT = TimeSpan.FromSeconds(2);
+        protected CancellationToken _token;
+        private CancellationTokenSource _source;
+        private Task _task;
+
+        protected bool IsRunningTask { get; private set; }
+
+        protected void OnEnter()
+        {
+            IsRunningTask = false;
+            _source = new CancellationTokenSource();
+            _token = _source.Token;
+        }
+        protected void OnExit()
+        {
+            if (IsRunningTask && _task != null)
+            {
+                Logger.Warning($"Cancelling task...");
+                _source.Cancel();
+                _task.Wait(MAX_WAIT);
+                Logger.Warning($"Cancelled!");
+            }
+        }
+        protected bool IsCancelled => _token.IsCancellationRequested;
+
+        protected void RunTask(Action action, Action<Task> continuation)
+        {
+            IsRunningTask = true;
+            _task = Task.Run(action, _token).ContinueWith(continuation).ContinueWith(t => IsRunningTask = false);
+        }
+    }
+
+    public class SpawnState : CancellableState, IState
     {
         protected readonly IRoamingPresence _presence;
         private TimeSpan _delay = TimeSpan.Zero;
 
-        protected bool _spawning;
         protected bool _spawned;
         private double _repawnDelayModifier = 0.0;
 
@@ -25,9 +59,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
             _playerMinDist = playerMinDist;
         }
 
-        public virtual void Enter()
+        public void Enter()
         {
-            _spawning = false;
+            OnEnter();
             _spawned = false;
 
             _presence.SpawnOrigin = Position.Empty;
@@ -39,7 +73,10 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
             _repawnDelayModifier = FastRandom.NextDouble(1.0, 2.0);
         }
 
-        public void Exit() { }
+        public void Exit()
+        {
+            OnExit();
+        }
 
         protected virtual void OnSpawned()
         {
@@ -58,7 +95,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
         //updated
         public void Update(TimeSpan time)
         {
-            if (_spawning)
+            if (IsRunningTask)
                 return;
 
             if (_spawned)
@@ -70,15 +107,15 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
             if (CheckElapsed(time))
                 return;
 
-            _spawning = true;
-            Task.Run(() => SpawnFlocks()).ContinueWith(t =>
-            {
-                _spawned = true;
-                _spawning = false;
-            });
+            RunTask(() => SpawnFlocks(), t => _spawned = true);
         }
 
-        protected virtual void SpawnFlocks()
+        protected virtual bool IsInRange(Position position, int range)
+        {
+            return _presence.Zone.Players.WithinRange(position, range).Any();
+        }
+
+        private void SpawnFlocks()
         {
             Position spawnPosition;
             bool anyPlayersAround;
@@ -86,8 +123,13 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
 
             do
             {
+                if (IsCancelled)
+                {
+                    Logger.Warning("SpawnFlocks() cancelled");
+                    return;
+                }
                 spawnPosition = _presence.PathFinder.FindSpawnPosition(_presence).ToPosition();
-                anyPlayersAround = _presence.Zone.Players.WithinRange(spawnPosition, range).Any();
+                anyPlayersAround = IsInRange(spawnPosition, range);
                 range--;
             } while (anyPlayersAround && range > 0);
 
@@ -100,7 +142,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
             DoSpawning(spawnPosition);
         }
 
-        protected void DoSpawning(Position spawnPosition)
+        private void DoSpawning(Position spawnPosition)
         {
             _presence.SpawnOrigin = spawnPosition;
             _presence.CurrentRoamingPosition = spawnPosition;
@@ -114,7 +156,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
         }
     }
 
-    public class NullRoamingState : IState
+    public class NullRoamingState : CancellableState, IState
     {
         protected readonly IRoamingPresence _presence;
 
@@ -123,8 +165,8 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
             _presence = presence;
         }
 
-        public virtual void Enter() { }
-        public virtual void Exit() { }
+        public virtual void Enter() { OnEnter(); }
+        public virtual void Exit() { OnExit(); }
 
         protected Npc[] GetAllMembers()
         {
@@ -150,14 +192,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
 
     public class RoamingState : NullRoamingState
     {
-        private CancellationToken _token;
-        private readonly CancellationTokenSource _source;
-        public RoamingState(IRoamingPresence presence) : base(presence) {
-            _source = new CancellationTokenSource();
-            _token = _source.Token;
-        }
-
-        private bool _finding;
+        public RoamingState(IRoamingPresence presence) : base(presence) { }
 
         private bool IsAllNotIdle(Npc[] members)
         {
@@ -165,17 +200,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
             return idleMembersCount < members.Length;
         }
 
-        public override void Exit() {
-            if (_finding)
-            {
-                _source.Cancel();
-                _token.WaitHandle.WaitOne(TimeSpan.FromSeconds(1));
-            }
-        }
-
         public override void Update(TimeSpan time)
         {
-            if (_finding)
+            if (IsRunningTask)
                 return;
 
             var members = GetAllMembers();
@@ -185,8 +212,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
             if (IsAllNotIdle(members))
                 return;
 
-            _finding = true;
-            Task.Run(() => FindNextRoamingPosition(), _token).ContinueWith(t => _finding = false);
+            RunTask(() => FindNextRoamingPosition(), t => { });
         }
 
         private void FindNextRoamingPosition()
