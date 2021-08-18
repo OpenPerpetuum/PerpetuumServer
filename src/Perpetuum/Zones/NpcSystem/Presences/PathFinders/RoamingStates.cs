@@ -28,7 +28,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
         {
             if (IsRunningTask && _task != null)
             {
-                Logger.Warning($"Cancelling task...");
+                Logger.Warning($"Cancelling task on RoamingState");
                 _source.Cancel();
                 _task.Wait(MAX_WAIT);
                 Logger.Warning($"Cancelled!");
