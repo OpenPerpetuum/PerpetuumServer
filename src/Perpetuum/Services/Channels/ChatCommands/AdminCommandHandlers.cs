@@ -942,13 +942,28 @@ namespace Perpetuum.Services.Channels.ChatCommands
             if (!IsDevModeEnabled(data))
                 return;
 
-            Dictionary<string, object> dictionary = new Dictionary<string, object>()
-                {
-                    { "layerName", data.Command.Args[0] }
-                };
+            string layerName;
+            int zoneId = data.Sender.ZoneId ?? -1;
+            try
+            {
+                layerName = data.Command.Args[0];
+                if (data.Command.Args.Length > 1)
+                    zoneId = int.Parse(data.Command.Args[1]);
+            }
+            catch (Exception ex)
+            {
+                SendMessageToAll(data, "Bad args");
+                if (ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
+            }
 
-            string cmd = string.Format("{0}:zone_{1}:{2}", Commands.ZoneClearLayer.Text, data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
+            CheckZoneId(data, zoneId);
+
+            var dictionary = new Dictionary<string, object>() { { k.layerName, layerName } };
+            var cmd = string.Format("{0}:zone_{1}:{2}", Commands.ZoneClearLayer.Text, zoneId, GenxyConverter.Serialize(dictionary));
             HandleLocalRequest(data, cmd);
+            SendMessageToAll(data, $"{Commands.ZoneClearLayer.Text} executed on {zoneId} for layer: {layerName}");
         }
         [ChatCommand("ZoneSetPlantSpeed")]
         public static void ZoneSetPlantSpeed(AdminCommandData data)
@@ -1278,14 +1293,14 @@ namespace Perpetuum.Services.Channels.ChatCommands
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
                 throw;
             }
-            if(sourceZone == targetZone)
+            if (sourceZone == targetZone)
             {
                 SendMessageToAll(data, "copy to/from cannot be the same zone id");
                 return;
             }
             CheckZoneId(data, sourceZone);
             CheckZoneId(data, targetZone);
-            var dictionary = new Dictionary<string, object>() { { k.source, sourceZone }, { k.target, targetZone} };
+            var dictionary = new Dictionary<string, object>() { { k.source, sourceZone }, { k.target, targetZone } };
             var cmd = string.Format("{0}:relay:{1}", Commands.ZoneCopyGroundType.Text, GenxyConverter.Serialize(dictionary));
             SendMessageToAll(data, $"Sending: {cmd}");
             HandleLocalRequest(data, cmd);
@@ -1342,7 +1357,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
 
             try
             {
-                if(data.Command.Args.Length > 0)
+                if (data.Command.Args.Length > 0)
                     zoneId = int.Parse(data.Command.Args[0]);
             }
             catch (Exception ex)
