@@ -701,15 +701,25 @@ namespace Perpetuum.Services.Channels.ChatCommands
             if (!IsDevModeEnabled(data))
                 return;
 
-            bool err = false;
-            err = !int.TryParse(data.Command.Args[0], out int lvl);
+            int zoneId = data.Sender.ZoneId ?? -1;
+            int lvl;
+            try
+            {
+                lvl = int.Parse(data.Command.Args[0]);
+                if (data.Command.Args.Length > 1)
+                    zoneId = int.Parse(data.Command.Args[1]);
+            }
+            catch (Exception ex)
+            {
+                if (ex is FormatException || ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
+            }
+            CheckZoneId(data, zoneId);
 
-            Dictionary<string, object> dictionary = new Dictionary<string, object>()
-                {
-                    { k.low, lvl }
-                };
+            var dictionary = new Dictionary<string, object>() { { k.low, lvl } };
 
-            string cmd = string.Format("zoneCreateIsland:zone_{0}:{1}", data.Sender.ZoneId, GenxyConverter.Serialize(dictionary));
+            string cmd = string.Format("zoneCreateIsland:zone_{0}:{1}", zoneId, GenxyConverter.Serialize(dictionary));
             SendMessageToAll(data, $"zoneCreateIsland accepted: {dictionary.ToDebugString()} \r\nplease wait... ");
             HandleLocalRequest(data, cmd);
             SendMessageToAll(data, $"Complete!");
@@ -1243,6 +1253,40 @@ namespace Perpetuum.Services.Channels.ChatCommands
             CheckZoneId(data, zoneId);
             var dictionary = new Dictionary<string, object>() { { k.layerName, k.groundType } };
             var cmd = string.Format("{0}:zone_{1}:{2}", Commands.ZoneClearLayer.Text, zoneId, GenxyConverter.Serialize(dictionary));
+            SendMessageToAll(data, $"Sending: {cmd}");
+            HandleLocalRequest(data, cmd);
+            SendMessageToAll(data, $"Command completed");
+        }
+        [ChatCommand("ZoneCopyGroundType")]
+        public static void ZoneCopyGroundType(AdminCommandData data)
+        {
+            if (!IsDevModeEnabled(data))
+                return;
+
+            CheckRequiredArgLength(data, 2);
+            int sourceZone;
+            int targetZone;
+            try
+            {
+                sourceZone = int.Parse(data.Command.Args[0]);
+                targetZone = int.Parse(data.Command.Args[1]);
+            }
+            catch (Exception ex)
+            {
+                SendMessageToAll(data, "Bad args");
+                if (ex is ArgumentNullException)
+                    throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                throw;
+            }
+            if(sourceZone == targetZone)
+            {
+                SendMessageToAll(data, "copy to/from cannot be the same zone id");
+                return;
+            }
+            CheckZoneId(data, sourceZone);
+            CheckZoneId(data, targetZone);
+            var dictionary = new Dictionary<string, object>() { { k.source, sourceZone }, { k.target, targetZone} };
+            var cmd = string.Format("{0}:relay:{1}", Commands.ZoneCopyGroundType.Text, GenxyConverter.Serialize(dictionary));
             SendMessageToAll(data, $"Sending: {cmd}");
             HandleLocalRequest(data, cmd);
             SendMessageToAll(data, $"Command completed");
