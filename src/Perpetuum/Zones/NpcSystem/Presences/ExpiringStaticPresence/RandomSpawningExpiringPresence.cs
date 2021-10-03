@@ -119,7 +119,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.RandomExpiringPresence
             else if (zone.PresenceManager.GetPresences().OfType<RandomSpawningExpiringPresence>().Where(p => p.SpawnOrigin.IsInRangeOf2D(position, BASE_RADIUS)).Any())
                 return true;
 
-            return zone.Players.WithinRange2D(position, PLAYER_RADIUS).Any();
+            return zone.Players.WithinRange2D(position, range).Any();
         }
     }
 
@@ -135,6 +135,30 @@ namespace Perpetuum.Zones.NpcSystem.Presences.RandomExpiringPresence
         {
             _presence.OnSpawned();
             _presence.StackFSM.Push(new GrowthState(_growingPresence));
+        }
+    }
+
+    public class NPCBaseGrowState : GrowSpawnState
+    {
+        public NPCBaseGrowState(GrowingPresence presence, int playerMinDist = 200) : base(presence, playerMinDist) { }
+
+
+        protected override bool IsValidSpawnPosition(Position position, int range)
+        {
+            if(!_presence.Zone.Size.Contains(position.intX, position.intY))
+            {
+                return false;
+            }
+            else if(_presence.Zone.Terrain.Controls.GetValue(position.intX, position.intY).IsAnyTerraformProtected)
+            {
+                return false;
+            }
+            return IsInRange(position, range);
+        }
+
+        protected override Position FindSpawnPosition()
+        {
+            return _presence.PathFinder.FindSpawnPosition(_presence).ToPosition();
         }
     }
 
@@ -166,7 +190,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.RandomExpiringPresence
 
         private bool NextWaveReady(TimeSpan time)
         {
-            if(!CheckTimer(time))
+            if (!CheckTimer(time))
                 return false;
 
             _currentLevel++;

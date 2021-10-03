@@ -115,6 +115,16 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
             return _presence.Zone.Players.WithinRange(position, range).Any();
         }
 
+        protected virtual bool IsValidSpawnPosition(Position position, int range)
+        {
+            return IsInRange(position, range);
+        }
+
+        protected virtual Position FindSpawnPosition()
+        {
+            return _presence.PathFinder.FindSpawnPosition(_presence).ToPosition();
+        }
+
         private void SpawnFlocks()
         {
             Position spawnPosition;
@@ -128,8 +138,8 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
                     Logger.Warning("SpawnFlocks() cancelled");
                     return;
                 }
-                spawnPosition = _presence.PathFinder.FindSpawnPosition(_presence).ToPosition();
-                anyPlayersAround = IsInRange(spawnPosition, range);
+                spawnPosition = FindSpawnPosition();
+                anyPlayersAround = IsValidSpawnPosition(spawnPosition, range);
                 range--;
             } while (anyPlayersAround && range > 0);
 
