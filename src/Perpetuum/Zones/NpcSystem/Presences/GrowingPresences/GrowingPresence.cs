@@ -5,11 +5,17 @@ using System;
 
 namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
 {
-    public class GrowingPresence : RandomSpawningExpiringPresence
+    public interface IGrowingPresence
+    {
+        TimeSpan GrowTime { get; }
+        IEscalatingPresenceFlockSelector Selector { get; }
+        int CurrentGrowthLevel { get; }
+    }
+    public class GrowingPresence : RandomSpawningExpiringPresence, IGrowingPresence
     {
         public TimeSpan GrowTime { get; private set; }
-        public IEscalatingPresenceFlockSelector Selector { get; private set; }
-        public int CurrentGrowthLevel { get; private set; }
+        public virtual IEscalatingPresenceFlockSelector Selector { get; protected set; }
+        public int CurrentGrowthLevel { get; protected set; }
         public GrowingPresence(IZone zone, IPresenceConfiguration configuration, IEscalatingPresenceFlockSelector selector) : base(zone, configuration)
         {
             Selector = selector;
@@ -19,16 +25,15 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
 
         protected override void InitStateMachine()
         {
-            CurrentGrowthLevel = FastRandom.NextInt(9);
             StackFSM = new StackFSM();
-            StackFSM.Push(new NPCBaseGrowState(this));
+            StackFSM.Push(new GrowSpawnState(this));
         }
 
         public override void LoadFlocks()
         {
             for (var i = 0; i <= CurrentGrowthLevel; i++)
             {
-                var flockConfigs = Selector.GetFlocksForPresenceLevel(this, i);
+                var flockConfigs = Selector.GetFlocksForPresenceLevel(ID, i);
                 foreach (var config in flockConfigs)
                 {
                     CreateAndAddFlock(config);

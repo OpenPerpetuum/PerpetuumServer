@@ -8,7 +8,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
     public class GrowSpawnState : StaticSpawnState
     {
         private readonly GrowingPresence _growingPresence;
-        public GrowSpawnState(GrowingPresence presence, int playerMinDist = 200) : base(presence, playerMinDist)
+        public GrowSpawnState(GrowingPresence presence) : base(presence)
         {
             _growingPresence = presence;
         }
@@ -20,12 +20,18 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
         }
     }
 
-    public class NPCBaseGrowState : GrowSpawnState
+    public class NPCBaseSpawnState : GrowSpawnState
     {
-        private readonly GrowingPresence _growingPresence;
-        public NPCBaseGrowState(GrowingPresence presence, int playerMinDist = 200) : base(presence, playerMinDist)
+        private readonly GrowingNPCBasePresence _growingPresence;
+        public NPCBaseSpawnState(GrowingNPCBasePresence presence) : base(presence)
         {
             _growingPresence = presence;
+        }
+
+        protected override void OnSpawned()
+        {
+            _presence.OnSpawned();
+            _presence.StackFSM.Push(new NPCBaseGrowthState(_growingPresence));
         }
 
         protected override void SetSpawnDelay()
@@ -40,30 +46,40 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
 
         protected override bool IsValidSpawnPosition(Position position, int range)
         {
+            if (!IsLocalRadiusClearForBase(position))
+                return false;
+
+            return !IsInRange(position, range);
+        }
+        private bool IsLocalRadiusClearForBase(Position center, int radius = 5)
+        {
             var zone = _presence.Zone;
             if (zone == null)
-            {
                 return false;
-            }
 
-            var radiusToCheck = 4;
-            var centerPosition = position;
-            for (var j = centerPosition.intY - radiusToCheck; j < centerPosition.intY + radiusToCheck; j++)
+            int minX = (center.intX - radius).Clamp(0, zone.Size.Width - 1);
+            int maxX = (center.intX + radius).Clamp(0, zone.Size.Width - 1);
+            int minY = (center.intY - radius).Clamp(0, zone.Size.Height - 1);
+            int maxY = (center.intY + radius).Clamp(0, zone.Size.Height - 1);
+
+            var check = false;
+            for (var j = minY; j < maxY; j++)
             {
-                for (var i = centerPosition.intX - radiusToCheck; i < centerPosition.intX + radiusToCheck; i++)
+                for (var i = minX; i < maxX; i++)
                 {
                     var cPos = new Position(i, j);
                     if (!zone.Size.Contains(cPos.intX, cPos.intY))
                         continue;
 
-                    var controlInfo = zone.Terrain.Controls.GetValue(position.intX, position.intY);
+                    var controlInfo = zone.Terrain.Controls.GetValue(cPos.intX, cPos.intY);
                     if (controlInfo.IsAnyTerraformProtected || !zone.Terrain.Slope.CheckSlope(cPos.intX, cPos.intY, ZoneExtensions.MIN_SLOPE))
                     {
                         return false;
                     }
+                    check = true;
                 }
             }
-            return !IsInRange(position, range);
+            return check;
         }
 
         protected override Position FindSpawnPosition()
@@ -72,11 +88,19 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
         }
     }
 
+    public class NPCBaseGrowthState : GrowthState
+    {
+        public NPCBaseGrowthState(GrowingNPCBasePresence presence) : base(presence)
+        {
+            _currentLevel = presence.CurrentGrowthLevel;
+        }
+    }
+
     public class GrowthState : NullRoamingState
     {
         private readonly GrowingPresence _growingPresence;
         private readonly TimeTracker _timer;
-        private int _currentLevel = 0;
+        protected int _currentLevel = 0;
         public GrowthState(GrowingPresence presence) : base(presence)
         {
             _growingPresence = presence;
@@ -120,7 +144,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
 
         private void SpawnNextWave()
         {
-            var flockConfigs = _growingPresence.Selector.GetFlocksForPresenceLevel(_growingPresence, _currentLevel);
+            var flockConfigs = _growingPresence.Selector.GetFlocksForPresenceLevel(_growingPresence.ID, _currentLevel);
             foreach (var config in flockConfigs)
             {
                 var flock = _growingPresence.CreateAndAddFlock(config);

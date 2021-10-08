@@ -721,6 +721,7 @@
     <Compile Include="Zones\NpcSystem\Presences\ExpiringStaticPresence\StaticExpiringFlock.cs" />
     <Compile Include="Zones\NpcSystem\Presences\ExpiringStaticPresence\RandomSpawningExpiringPresence.cs" />
     <Compile Include="Zones\NpcSystem\Presences\ExpiringStaticPresence\StaticSpawnState.cs" />
+    <Compile Include="Zones\NpcSystem\Presences\GrowingPresences\GrowingNPCBasePresence.cs" />
     <Compile Include="Zones\NpcSystem\Presences\GrowingPresences\GrowingPresence.cs" />
     <Compile Include="Zones\NpcSystem\Presences\GrowingPresences\GrowthStates.cs" />
     <Compile Include="Zones\NpcSystem\Reinforcements\INpcReinforcementWave.cs" />

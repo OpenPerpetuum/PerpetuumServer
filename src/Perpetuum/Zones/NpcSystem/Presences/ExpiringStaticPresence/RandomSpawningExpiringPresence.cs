@@ -49,7 +49,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.RandomExpiringPresence
             base.OnPresenceExpired();
         }
 
-        public void OnSpawned()
+        public virtual void OnSpawned()
         {
             ResetDynamicDespawnTimer();
         }

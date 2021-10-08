@@ -9,8 +9,8 @@ namespace Perpetuum.Zones.NpcSystem.Presences.ExpiringStaticPresence
 {
     public class StaticSpawnState : SpawnState
     {
-        private int _baseRadius = 300;
-        private int _teleRadius = 150;
+        private readonly int _baseRadius = 300;
+        private readonly int _teleRadius = 150;
         public StaticSpawnState(IRoamingPresence presence, int playerMinDist = 200, int baseDist = 300, int teleportDist = 150) : base(presence, playerMinDist)
         {
             _baseRadius = baseDist;
@@ -35,7 +35,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.ExpiringStaticPresence
             else if (zone.PresenceManager.GetPresences().OfType<IRandomStaticPresence>().Where(p => p.SpawnOrigin.IsInRangeOf2D(position, _baseRadius)).Any())
                 return true;
 
-            return zone.Players.WithinRange2D(position, range).Any();
+            return base.IsInRange(position, range);
         }
     }
 }
