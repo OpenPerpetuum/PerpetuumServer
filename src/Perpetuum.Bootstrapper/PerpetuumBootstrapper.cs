@@ -185,6 +185,7 @@ using UnstackAmount = Perpetuum.RequestHandlers.UnstackAmount;
 using Perpetuum.Services.Strongholds;
 using Perpetuum.Zones.NpcSystem.Presences.RandomExpiringPresence;
 using Perpetuum.Zones.NpcSystem.Presences.ExpiringStaticPresence;
+using Perpetuum.Zones.NpcSystem.Presences.GrowingPresences;
 
 namespace Perpetuum.Bootstrapper
 {

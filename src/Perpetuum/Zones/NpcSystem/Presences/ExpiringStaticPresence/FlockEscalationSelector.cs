@@ -1,13 +1,12 @@
 ﻿using Perpetuum.Data;
 using Perpetuum.Zones.NpcSystem.Flocks;
-using Perpetuum.Zones.NpcSystem.Presences.RandomExpiringPresence;
+using Perpetuum.Zones.NpcSystem.Presences.GrowingPresences;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Perpetuum.Zones.NpcSystem.Presences.ExpiringStaticPresence
 {
-
     public interface IEscalatingPresenceFlockSelector
     {
         IFlockConfiguration[] GetFlocksForPresenceLevel(GrowingPresence presence, int level);
@@ -23,7 +22,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.ExpiringStaticPresence
         }
         public IFlockConfiguration[] GetFlocksForPresenceLevel(GrowingPresence presence, int level)
         {
-            var infos = _reader.GetByPresence(presence).Where(info=>info.Level==level);
+            var infos = _reader.GetByPresence(presence).Where(info => info.Level == level);
             var flocks = new List<IFlockConfiguration>();
             foreach (var info in infos)
             {
