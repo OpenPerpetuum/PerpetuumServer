@@ -3,8 +3,7 @@ using Perpetuum.EntityFramework;
 using Perpetuum.Groups.Corporations;
 using Perpetuum.Players;
 using Perpetuum.Units;
-using Perpetuum.Zones.NpcSystem.Presences.ExpiringStaticPresence;
-using System.Linq;
+using Perpetuum.Zones.NpcSystem.Presences.GrowingPresences;
 
 namespace Perpetuum.Zones.PBS
 {
@@ -37,12 +36,7 @@ namespace Perpetuum.Zones.PBS
             PBSHelper.CheckZoneForDeployment(zone, spawnPosition,pbsEd).ThrowIfError();
 
             //Check distance to NPC Base spawns
-            var isCloseToNPCBase = zone.PresenceManager.GetPresences()
-                .OfType<IRandomStaticPresence>()
-                .Where(p => p.Flocks.Count(f => f.Members.Count > 0) > 0)
-                .Select(p => p.SpawnOrigin)
-                .Any(pos=> pos.TotalDistance2D(spawnPosition) < DistanceConstants.PBS_DIST_FROM_NPC_BASE);
-            isCloseToNPCBase.ThrowIfTrue(ErrorCodes.TooCloseToNPCBase);
+            NPCBasePresenceUtils.WithinRangeOfNPCBase(zone, spawnPosition).ThrowIfTrue(ErrorCodes.TooCloseToNPCBase);
 
             //pass owner
             pbsEgg.DeployerPlayer = player;
