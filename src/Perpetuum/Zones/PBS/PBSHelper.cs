@@ -172,29 +172,35 @@ namespace Perpetuum.Zones.PBS
                 return ErrorCodes.ConsistencyError;
             }
 
-            var contructionRadius = (int) entityDefault.Config.constructionRadius;
-            var blockingRadius = (int) entityDefault.Config.blockingradius;
-
             if (!zone.Configuration.Terraformable)
             {
                 return ErrorCodes.ZoneNotTerraformable;
             }
+
+            var contructionRadius = (int)entityDefault.Config.constructionRadius;
+            var blockingRadius = (int)entityDefault.Config.blockingradius;
 
             if (!(entityDefault.CategoryFlags.IsCategory(CategoryFlags.cf_pbs_mining_towers) ||
                   entityDefault.CategoryFlags.IsCategory(CategoryFlags.cf_pbs_control_tower) ||
                   entityDefault.CategoryFlags.IsCategory(CategoryFlags.cf_pbs_energy_well) ||
                   entityDefault.CategoryFlags.IsCategory(CategoryFlags.cf_pbs_highway_node)))
             {
-
                 var terrainControlInfo = zone.Terrain.Controls.GetValue(position);
 
                 if (terrainControlInfo.IsAnyTerraformProtected)
                 {
                     return ErrorCodes.TileTerraformProtected;
                 }
-
             }
 
+            if (entityDefault.Name == DefinitionNames.PBS_EXPIRING_DOCKING_BASE)
+            {
+                var terrainControlInfo = zone.Terrain.Controls.GetValue(position);
+                if (!terrainControlInfo.IsAnyTerraformProtected)
+                {
+                    return ErrorCodes.OnlyBuildableOnTerraformProtected;
+                }
+            }
 
             var centerPosition = position.Center;
 
@@ -231,9 +237,7 @@ namespace Perpetuum.Zones.PBS
                 sessionError = ErrorCodes.TerrainTooSteepAndBlockedTilesWasFound;
             }
 
-
             return sessionError;
-
         }
 
         /// <summary>
