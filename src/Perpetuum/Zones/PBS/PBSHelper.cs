@@ -39,6 +39,7 @@ namespace Perpetuum.Zones.PBS
         public static ItemDeployerHelper ItemDeployerHelper { get; set; }
 
         private const int MAX_BASES_PER_CORP_PER_ZONE = 3;
+        private const int MAX_EXPIRING_BASES_PER_ZONE = 16;
 
 
         public static bool IsOfflineOnReinforce(Unit pbsUnit)
@@ -112,11 +113,36 @@ namespace Perpetuum.Zones.PBS
 
         }
 
-        public static ErrorCodes ValidatePBSDockingBasePlacement(IZone zone, Position position, long owner,
-            EntityDefault dockingbaseEntityDefault)
+        public static ErrorCodes ValidateExpiringPBSDockingBasePlacement(IZone zone, Position position, EntityDefault definition)
         {
-            //current total number of bases per zone
-            var baseCountPerZone = zone.Units.Count(u => u is PBSDockingBase);
+            var expiringBases = zone.Units.Count(u => u is ExpiringPBSDockingBase) + 1;
+
+            if (expiringBases > MAX_EXPIRING_BASES_PER_ZONE)
+            {
+                return ErrorCodes.MaxDockingBasePerZoneReached;
+            }
+
+            if (zone.GetTeleportColumns().Any(t => position.TotalDistance2D(t.CurrentPosition) < DistanceConstants.PBS_DIST_FROM_TELEPORT))
+            {
+                return ErrorCodes.TeleportIsTooClose;
+            }
+
+            return CheckRangeToOtherBases(zone, position, definition);
+        }
+
+        public static ErrorCodes ValidatePBSDockingBasePlacement(IZone zone, Position position, long owner,
+            EntityDefault definition)
+        {
+            // Special base
+            if (definition.Name == DefinitionNames.PBS_EXPIRING_DOCKING_BASE)
+            {
+                return ValidateExpiringPBSDockingBasePlacement(zone, position, definition);
+            }
+            //Regular bases
+            //Get PBS docking bases
+            var bases = zone.Units.Where(u => u is PBSDockingBase && !(u is ExpiringPBSDockingBase));
+            //Count of all
+            var baseCountPerZone = bases.Count();
 
             //the zone allows
             var maxBasesPerZone = zone.Configuration.MaxDockingBase;
@@ -129,7 +155,7 @@ namespace Perpetuum.Zones.PBS
             if (maxBasesPerZone > MAX_BASES_PER_CORP_PER_ZONE)
             {
                 //only a set number of bases for one corporation
-                var baseCountPerCorporation = zone.Units.Count(u => u is PBSDockingBase && u.Owner == owner);
+                var baseCountPerCorporation = bases.Count(u => u.Owner == owner);
 
                 if (baseCountPerCorporation + 1 > MAX_BASES_PER_CORP_PER_ZONE)
                 {
@@ -137,11 +163,16 @@ namespace Perpetuum.Zones.PBS
                 }
             }
 
-            var typeExclusiveRange = dockingbaseEntityDefault.Config.typeExclusiveRange;
+            return CheckRangeToOtherBases(zone, position, definition);
+        }
+
+        private static ErrorCodes CheckRangeToOtherBases(IZone zone, Position position, EntityDefault definition)
+        {
+            var typeExclusiveRange = definition.Config.typeExclusiveRange;
 
             if (typeExclusiveRange == null)
             {
-                Logger.Error("no typeExclusiveRange defined for " + dockingbaseEntityDefault);
+                Logger.Error("no typeExclusiveRange defined for " + definition);
                 return ErrorCodes.WTFErrorMedicalAttentionSuggested;
             }
 
@@ -149,8 +180,6 @@ namespace Perpetuum.Zones.PBS
                 ? ErrorCodes.PlacedTooCloseToPBSDockingbase
                 : ErrorCodes.NoError;
         }
-
-
 
         public static ErrorCodes CheckZoneForDeployment(IZone zone, Position position, EntityDefault entityDefault)
         {
@@ -180,25 +209,21 @@ namespace Perpetuum.Zones.PBS
             var contructionRadius = (int)entityDefault.Config.constructionRadius;
             var blockingRadius = (int)entityDefault.Config.blockingradius;
 
-            if (!(entityDefault.CategoryFlags.IsCategory(CategoryFlags.cf_pbs_mining_towers) ||
-                  entityDefault.CategoryFlags.IsCategory(CategoryFlags.cf_pbs_control_tower) ||
-                  entityDefault.CategoryFlags.IsCategory(CategoryFlags.cf_pbs_energy_well) ||
-                  entityDefault.CategoryFlags.IsCategory(CategoryFlags.cf_pbs_highway_node)))
-            {
-                var terrainControlInfo = zone.Terrain.Controls.GetValue(position);
-
-                if (terrainControlInfo.IsAnyTerraformProtected)
-                {
-                    return ErrorCodes.TileTerraformProtected;
-                }
-            }
-
             if (entityDefault.Name == DefinitionNames.PBS_EXPIRING_DOCKING_BASE)
             {
                 var terrainControlInfo = zone.Terrain.Controls.GetValue(position);
                 if (!terrainControlInfo.IsAnyTerraformProtected)
                 {
                     return ErrorCodes.OnlyBuildableOnTerraformProtected;
+                }
+            }
+            else if (!IsPlaceableOutsideOfBase(entityDefault.CategoryFlags))
+            {
+                var terrainControlInfo = zone.Terrain.Controls.GetValue(position);
+
+                if (terrainControlInfo.IsAnyTerraformProtected)
+                {
+                    return ErrorCodes.TileTerraformProtected;
                 }
             }
 
