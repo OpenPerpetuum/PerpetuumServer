@@ -7,9 +7,6 @@ using Perpetuum.Services.Sparks.Teleports;
 using Perpetuum.Units;
 using Perpetuum.Units.DockingBases;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Perpetuum.Zones.PBS.DockingBases
@@ -18,7 +15,8 @@ namespace Perpetuum.Zones.PBS.DockingBases
     {
         private IUnitDespawnHelper _despawnHelper;
         private TimeSpan _aliveElapsed;
-        private readonly TimeSpan _alertPeriod = TimeSpan.FromMinutes(1);
+        private readonly TimeSpan _alertPeriod = TimeSpan.FromHours(1);
+        private const int MIN_LIFE_HOURS = 72;
         private bool _alerted;
 
         public ExpiringPBSDockingBase(
@@ -44,7 +42,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
         {
             get
             {
-                return TimeSpan.FromSeconds(ED.Config.lifeTime ?? (60 * 5));
+                return TimeSpan.FromHours(ED.Config.lifeTime ?? MIN_LIFE_HOURS);
             }
         }
 

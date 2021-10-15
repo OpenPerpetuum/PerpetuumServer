@@ -39,8 +39,8 @@ namespace Perpetuum.Zones.PBS
         public static ItemDeployerHelper ItemDeployerHelper { get; set; }
 
         private const int MAX_BASES_PER_CORP_PER_ZONE = 3;
-        private const int MAX_EXPIRING_BASES_PER_ZONE = 16;
-
+        private const int MAX_EXPIRING_BASES_PER_ZONE = 24;
+        private const int MAX_EXPIRING_BASES_PER_ZONE_PER_CORP = 3;
 
         public static bool IsOfflineOnReinforce(Unit pbsUnit)
         {
@@ -113,41 +113,37 @@ namespace Perpetuum.Zones.PBS
 
         }
 
-        public static ErrorCodes ValidateExpiringPBSDockingBasePlacement(IZone zone, Position position, EntityDefault definition)
+        public static ErrorCodes ValidateExpiringPBSDockingBasePlacement(IZone zone, Position position, long owner, EntityDefault definition)
         {
-            var expiringBases = zone.Units.Count(u => u is ExpiringPBSDockingBase) + 1;
+            var expiringBases = zone.Units.Where(u => u is ExpiringPBSDockingBase);
 
-            if (expiringBases > MAX_EXPIRING_BASES_PER_ZONE)
+            if (expiringBases.Count() >= MAX_EXPIRING_BASES_PER_ZONE)
             {
-                return ErrorCodes.MaxDockingBasePerZoneReached;
+                return ErrorCodes.MaxExpiringBasePerZoneReached;
             }
-
-            if (zone.GetTeleportColumns().Any(t => position.TotalDistance2D(t.CurrentPosition) < DistanceConstants.PBS_DIST_FROM_TELEPORT))
+            else if (expiringBases.Count(u => u.Owner == owner) >= MAX_EXPIRING_BASES_PER_ZONE_PER_CORP)
+            {
+                return ErrorCodes.MaxExpiringBasePerZonePerCorpReached;
+            }
+            else if (zone.GetTeleportColumns().Any(t => position.TotalDistance2D(t.CurrentPosition) < DistanceConstants.PBS_DIST_FROM_TELEPORT))
             {
                 return ErrorCodes.TeleportIsTooClose;
             }
-
             return CheckRangeToOtherBases(zone, position, definition);
         }
 
         public static ErrorCodes ValidatePBSDockingBasePlacement(IZone zone, Position position, long owner,
             EntityDefault definition)
         {
-            // Special base
-            if (definition.Name == DefinitionNames.PBS_EXPIRING_DOCKING_BASE)
-            {
-                return ValidateExpiringPBSDockingBasePlacement(zone, position, definition);
-            }
-            //Regular bases
-            //Get PBS docking bases
+            //Get PBS docking bases - excluding Expiring types
             var bases = zone.Units.Where(u => u is PBSDockingBase && !(u is ExpiringPBSDockingBase));
-            //Count of all
+            //Total count
             var baseCountPerZone = bases.Count();
 
             //the zone allows
             var maxBasesPerZone = zone.Configuration.MaxDockingBase;
 
-            if (baseCountPerZone + 1 > maxBasesPerZone)
+            if (bases.Count() >= maxBasesPerZone)
             {
                 return ErrorCodes.MaxDockingBasePerZoneReached;
             }
@@ -155,9 +151,7 @@ namespace Perpetuum.Zones.PBS
             if (maxBasesPerZone > MAX_BASES_PER_CORP_PER_ZONE)
             {
                 //only a set number of bases for one corporation
-                var baseCountPerCorporation = bases.Count(u => u.Owner == owner);
-
-                if (baseCountPerCorporation + 1 > MAX_BASES_PER_CORP_PER_ZONE)
+                if (bases.Count(u => u.Owner == owner) >= MAX_BASES_PER_CORP_PER_ZONE)
                 {
                     return ErrorCodes.MaxDockingBasePerZonePerCorporationReached;
                 }

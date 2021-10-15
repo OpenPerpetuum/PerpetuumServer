@@ -707,6 +707,8 @@ namespace Perpetuum
         TooCloseToOtherDevice,
         TooCloseToNPCBase,
         OnlyBuildableOnTerraformProtected,
-        TechLevelTooLow
+        TechLevelTooLow,
+        MaxExpiringBasePerZoneReached,
+        MaxExpiringBasePerZonePerCorpReached
     }
 }
