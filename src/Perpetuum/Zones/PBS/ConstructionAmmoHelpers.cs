@@ -10,7 +10,6 @@ namespace Perpetuum.Zones.PBS
     {
         private static readonly Lazy<IDictionary<int, EntityDefault>> _constructionBlocksByLevel = new Lazy<IDictionary<int, EntityDefault>>(() =>
         {
-            var ed = EntityDefault.GetByName(DefinitionNames.CONSTRUCTION_MODULE_AMMO_T0);
             return new Dictionary<int, EntityDefault>()
             {
                 {0, EntityDefault.GetByName(DefinitionNames.CONSTRUCTION_MODULE_AMMO_T0) },
