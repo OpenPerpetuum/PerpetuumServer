@@ -191,10 +191,10 @@ namespace Perpetuum.Zones.NpcSystem
     {
         private List<ModuleActivator> _moduleActivators;
         protected bool _npcHasMissiles = false;
-
-        private TimeSpan _hostilesUpdateFrequency = TimeSpan.FromMilliseconds(1650);
-        private readonly IntervalTimer _processHostilesTimer = new IntervalTimer(1650);
-        private readonly IntervalTimer _primarySelectTimer = new IntervalTimer(1650);
+        private const int UPDATE_FREQ = 1650;
+        private TimeSpan _hostilesUpdateFrequency = TimeSpan.FromMilliseconds(UPDATE_FREQ);
+        private readonly IntervalTimer _processHostilesTimer = new IntervalTimer(UPDATE_FREQ);
+        private readonly IntervalTimer _primarySelectTimer = new IntervalTimer(UPDATE_FREQ);
         private PrimaryLockSelectionStrategySelector _stratSelector;
         public CombatAI(Npc npc) : base(npc) { }
 
@@ -253,7 +253,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         private UnitLock[] GetValidLocks()
         {
-            return npc.GetLocks().Select(l => (UnitLock)l).Where(u => IsLockValidTarget(u) && !u.Primary).ToArray();
+            return npc.GetLocks().Select(l => (UnitLock)l).Where(u => IsLockValidTarget(u)).ToArray();
         }
 
         private bool SelectPrimaryTarget()
