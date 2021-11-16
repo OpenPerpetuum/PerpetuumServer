@@ -201,7 +201,7 @@ namespace Perpetuum.Zones.NpcSystem
         protected virtual PrimaryLockSelectionStrategySelector InitSelector()
         {
             return PrimaryLockSelectionStrategySelector.Create()
-                .WithStrategy(PrimaryLockStrategy.Hostile, 19)
+                .WithStrategy(PrimaryLockStrategy.Hostile, 9)
                 .WithStrategy(PrimaryLockStrategy.Random, 1)
                 .Build();
         }
