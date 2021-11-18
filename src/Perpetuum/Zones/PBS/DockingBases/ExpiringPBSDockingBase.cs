@@ -16,6 +16,7 @@ namespace Perpetuum.Zones.PBS.DockingBases
         private IUnitDespawnHelper _despawnHelper;
         private TimeSpan _aliveElapsed;
         private readonly TimeSpan _alertPeriod = TimeSpan.FromHours(1);
+        private readonly TimeSpan _minLife = TimeSpan.FromMinutes(1);
         private const int MIN_LIFE_HOURS = 72;
         private bool _alerted;
 
@@ -46,9 +47,25 @@ namespace Perpetuum.Zones.PBS.DockingBases
             }
         }
 
+        public DateTime EndTime
+        {
+            get
+            {
+                return DynamicProperties.GetOrAdd(k.endTime, () => DateTime.Now + LifeTime);
+            }
+        }
+
+        public TimeSpan Remaining
+        {
+            get
+            {
+                return (EndTime - DateTime.Now).Max(_minLife);
+            }
+        }
+
         protected override void OnEnterZone(IZone zone, ZoneEnterType enterType)
         {
-            _despawnHelper = UnitDespawnHelper.Create(this, LifeTime);
+            _despawnHelper = UnitDespawnHelper.Create(this, Remaining);
             _despawnHelper.DespawnStrategy = Kill;
 
             base.OnEnterZone(zone, enterType);
