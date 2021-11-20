@@ -14,9 +14,8 @@ namespace Perpetuum.Zones.PBS.DockingBases
     public class ExpiringPBSDockingBase : PBSDockingBase
     {
         private IUnitDespawnHelper _despawnHelper;
-        private TimeSpan _aliveElapsed;
         private readonly TimeSpan _alertPeriod = TimeSpan.FromHours(1);
-        private readonly TimeSpan _minLife = TimeSpan.FromMinutes(1);
+        private readonly TimeSpan _minLife = TimeSpan.FromMinutes(5);
         private const int MIN_LIFE_HOURS = 72;
         private bool _alerted;
 
@@ -66,28 +65,30 @@ namespace Perpetuum.Zones.PBS.DockingBases
         protected override void OnEnterZone(IZone zone, ZoneEnterType enterType)
         {
             _despawnHelper = UnitDespawnHelper.Create(this, Remaining);
-            _despawnHelper.DespawnStrategy = Kill;
+            _despawnHelper.DespawnStrategy = (unit) =>
+            {
+                ReinforceHandler.ReinforceCounter = 0;
+                Kill();
+            };
 
             base.OnEnterZone(zone, enterType);
         }
 
         protected override void OnUpdate(TimeSpan time)
         {
-            if (!_alerted)
-                WarnIfAboutToExpire(time);
+            WarnIfAboutToExpire();
 
             _despawnHelper?.Update(time, this);
 
             base.OnUpdate(time);
         }
 
-        private void WarnIfAboutToExpire(TimeSpan time)
+        private void WarnIfAboutToExpire()
         {
-            _aliveElapsed += time;
-            if (LifeTime - _aliveElapsed < _alertPeriod)
+            if (!_alerted && Remaining < _alertPeriod)
             {
-                Task.Run(() => _pbsObjectHelper.SendAttackAlert());
                 _alerted = true;
+                Task.Run(() => _pbsObjectHelper.SendAttackAlert());
             }
         }
 
