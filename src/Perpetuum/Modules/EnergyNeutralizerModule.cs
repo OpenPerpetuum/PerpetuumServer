@@ -44,7 +44,7 @@ namespace Perpetuum.Modules
             if ( coreNeutralized > 0.0 )
             {
                 unitLock.Target.Core = unitLock.Target.Core - coreNeutralized;
-                coreNeutralizedDone = Math.Abs(coreNeutralized));
+                coreNeutralizedDone = Math.Abs(coreNeutralized);
 
                 unitLock.Target.OnCombatEvent(ParentRobot, new EnergyDispersionEventArgs(coreNeutralizedDone));
                 var threatValue = (coreNeutralizedDone / 2) + 1;
