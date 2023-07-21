@@ -38,7 +38,7 @@ namespace Perpetuum.Zones.Artifacts.Scanners
 
             foreach (var artifact in artifactsInScanRange)
             {
-                var dist = scanPosition.TotalDistance2D(artifact.Position);
+                var dist = scanPosition.Distance2D(artifact.Position);
                 if (dist > scanRange)
                     continue;
 
@@ -48,7 +48,8 @@ namespace Perpetuum.Zones.Artifacts.Scanners
                 {
                     player.SendArtifactRadarBeam(artifact.Position);
 
-                    scanResult.estimatedPosition = artifact.Position;
+                    // After activating the artifact, change the position in the report to the scan position.
+                    scanResult.estimatedPosition = scanPosition;
                     scanResult.radius = 0.0;
 
                     _artifactRepository.DeleteArtifact(artifact);
@@ -64,10 +65,14 @@ namespace Perpetuum.Zones.Artifacts.Scanners
                 }
                 else
                 {
-                    var radius = Math.Pow(dist, 1.5) / (scanAccuracy * 60);
-                    var p = artifact.Position.GetRandomPositionInRange2D(-radius, radius);
-                    scanResult.radius = p.TotalDistance2D(artifact.Position);
-                    scanResult.estimatedPosition = p;
+                    // The radius of the circle within which the new point is being searched.
+                    var radius = scanAccuracy > 0 ? Math.Pow(dist, 1.5) / (scanAccuracy * 60) : scanRange;
+                    // The radius should be no more than with zero scanning accuracy.
+                    radius = Math.Min(radius, scanRange);
+                    // New point for the scan result (client receives integer coordinates).
+                    scanResult.estimatedPosition = artifact.Position.GetRandomPositionInRange2D(0, radius);
+                    // The exact value of the distance between the true position of the artifact and the estimated point.
+                    scanResult.radius = artifact.Position.Distance2D(scanResult.estimatedPosition);
                 }
 
                 scanResults.Add(scanResult);

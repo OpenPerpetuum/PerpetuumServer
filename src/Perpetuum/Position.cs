@@ -107,7 +107,27 @@ namespace Perpetuum
             var az = (p._z - _z)/4.0;
             return ax*ax + ay*ay + az*az;
         }
-        
+
+        [System.Diagnostics.Contracts.Pure]
+        public double Distance2D(Position p)
+        {
+            return Distance2D(p.X, p.Y);
+        }
+
+        [System.Diagnostics.Contracts.Pure]
+        public double Distance2D(Point p)
+        {
+            return Distance2D(p.X, p.Y);
+        }
+
+        [System.Diagnostics.Contracts.Pure]
+        public double Distance2D(double x, double y)
+        {
+            var ax = x - _x;
+            var ay = y - _y;
+            return Math.Sqrt(ax * ax + ay * ay);
+        }
+
         [System.Diagnostics.Contracts.Pure]
         public double TotalDistance2D(Position p)
         {
