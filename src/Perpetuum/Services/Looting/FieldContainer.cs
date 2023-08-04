@@ -60,16 +60,22 @@ namespace Perpetuum.Services.Looting
 
                             //robotot lehet
                             if (tmpItem.ED.AttributeFlags.NonStackable)
+                            {
                                 continue;
+                            }
 
                             if (tmpItem is VolumeWrapperContainer)
+                            {
                                 continue;
+                            }
 
                             lock (container)
                             {
                                 var resultItem = container.RemoveItem(tmpItem, quantity);
                                 if ( resultItem == null )
+                                {
                                     continue;
+                                }
 
                                 Repository.Delete(resultItem);
                                 b.SetItem(resultItem);

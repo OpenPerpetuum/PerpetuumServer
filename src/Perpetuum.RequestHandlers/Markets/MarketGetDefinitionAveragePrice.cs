@@ -25,10 +25,14 @@ namespace Perpetuum.RequestHandlers.Markets
             var marketEid = request.Data.GetOrDefault<long>(k.eid);
 
             if (!_entityServices.Defaults.TryGet(definition, out EntityDefault ed))
+            {
                 throw new PerpetuumException(ErrorCodes.DefinitionNotSupported);
+            }
 
             if (!ed.Purchasable)
+            {
                 throw new PerpetuumException(ErrorCodes.ItemNotPurchasable);
+            }
 
             var market = marketEid == 0 ? character.GetCurrentDockingBase().GetMarketOrThrow() : Market.GetOrThrow(marketEid);
 

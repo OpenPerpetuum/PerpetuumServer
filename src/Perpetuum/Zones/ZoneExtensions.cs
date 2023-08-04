@@ -57,7 +57,9 @@ namespace Perpetuum.Zones
                 _fileSystem.WriteLayer(tmpFn,layerData);
 
                 if (!md5.ComputeHash(layerData).SequenceEqual(md5.ComputeHash(_fileSystem.ReadLayerAsByteArray(tmpFn))))
+                {
                     return;
+                }
 
                 _fileSystem.MoveLayerFile(tmpFn,baseFilename + "bin");
                 Logger.Info("Layer saved. (" + baseFilename + ")");
@@ -78,12 +80,16 @@ namespace Perpetuum.Zones
                     startPosition = area.GetRandomPosition();
 
                     if (!zone.Terrain.Blocks.GetValue(startPosition).Island && zone.IsWalkable(startPosition,slope))
+                    {
                         break;
+                    }
                 }
 
                 var p = FindWalkableArea(zone, startPosition, area, size,slope);
                 if (p != null)
+                {
                     return p;
+                }
 
                 Thread.Sleep(1);
             }
@@ -111,12 +117,16 @@ namespace Perpetuum.Zones
                 foreach (var np in position.GetNonDiagonalNeighbours())
                 {
                     if (closed.Contains(np))
+                    {
                         continue;
+                    }
 
                     closed.Add(np);
 
                     if (!area.Contains(np) || !zone.IsWalkable(np,slope))
+                    {
                         continue;
+                    }
 
                     q.Enqueue(np);
                 }
@@ -219,7 +229,9 @@ namespace Perpetuum.Zones
             {
                 var losResult = zone.IsInLineOfSight(damageInfo.attacker, unit, false);
                 if (losResult.hit)
+                {
                     continue;
+                }
 
                 unit.TakeDamage(damageInfo);
             }
@@ -249,11 +261,15 @@ namespace Perpetuum.Zones
             {
                 counter++;
                 if (counter > MAX_SAMPLES)
+                {
                     return default(Position);
+                }
 
                 var randomPos = origin.GetRandomPositionInRange2D(0, radius).Clamp(zone.Size);
                 if (zone.Terrain.IsPassable(randomPos))
+                {
                     return randomPos;
+                }
             }
         }
 

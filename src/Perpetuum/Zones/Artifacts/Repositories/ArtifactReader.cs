@@ -41,7 +41,9 @@ namespace Perpetuum.Zones.Artifacts.Repositories
 
             var missionGuid = record.GetValue<Guid?>("missionGuid");
             if (missionGuid != null)
+            {
                 a.MissionGuid = (Guid)missionGuid;
+            }
 
             return a;
         }

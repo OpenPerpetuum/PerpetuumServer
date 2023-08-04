@@ -44,7 +44,9 @@ namespace Perpetuum.Services.ItemShop
             var requestedQuantity = Amount * quantity;
             var qty = container.RemoveItemByDefinition(CoinED.Definition, requestedQuantity);
             if (qty < requestedQuantity)
+            {
                 throw new PerpetuumException(ErrorCodes.NotEnoughCoins);
+            }
         }
 
         public static Coin CreateTMCoin(int amount)

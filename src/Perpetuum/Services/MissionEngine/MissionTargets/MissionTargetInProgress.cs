@@ -250,7 +250,10 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             var ec = ErrorCodes.NoError;
 
             //safety
-            if (completed) return ErrorCodes.NothingToDo;
+            if (completed)
+            {
+                return ErrorCodes.NothingToDo;
+            }
 
             completed = true;
             progressCount = 1;
@@ -543,8 +546,10 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
 
             if (myMissionInProgress.isTestMode)
             {
-                if (_successTime == null) 
+                if (_successTime == null)
+                {
                     _successTime = DateTime.Now;
+                }
 
                 var si = new SuccessLogInfo()
                 {

@@ -37,7 +37,9 @@ namespace Perpetuum.RequestHandlers.Zone
 
                 var ed = _defaultReader.Get(definition);
                 if (!ed.CategoryFlags.IsCategory(CategoryFlags.cf_npc))
+                {
                     throw new PerpetuumException(ErrorCodes.DefinitionNotSupported);
+                }
 
                 var presence = request.Zone.PresenceManager.GetPresences().GetPresenceOrThrow(presenceID);
 

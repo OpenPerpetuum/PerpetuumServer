@@ -21,7 +21,9 @@ namespace Perpetuum.Modules.EffectModules
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         protected override bool CanApplyEffect(Unit target)
@@ -33,11 +35,15 @@ namespace Perpetuum.Modules.EffectModules
             }
 
             if (!IsCategory(CategoryFlags.cf_longrange_webber))
+            {
                 return true;
+            }
 
             var result = GetLineOfSight(target);
             if (!result.hit)
+            {
                 return true;
+            }
 
             OnError(ErrorCodes.LOSFailed);
             return false;
@@ -54,7 +60,9 @@ namespace Perpetuum.Modules.EffectModules
             effectProperty.Add(effectBuilder.Owner.Massiveness);
 
             if (effectProperty.Value >= 1.0)
+            {
                 effectProperty.ResetToDefaultValue();
+            }
 
             effectBuilder.SetType(EffectType.effect_demobilizer)
                 .SetSource(ParentRobot)

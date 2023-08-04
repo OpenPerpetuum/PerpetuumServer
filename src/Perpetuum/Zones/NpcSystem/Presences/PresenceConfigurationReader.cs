@@ -11,7 +11,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
         {
             var record = Db.Query().CommandText("select * from npcpresence where id = @presenceID and enabled = 1 and izgroupid IS NULL").SetParameter("@presenceID", presenceID).ExecuteSingleRow();
             if (record == null)
+            {
                 return null;
+            }
 
             return CreatePresenceConfigurationFromRecord(record);
         }

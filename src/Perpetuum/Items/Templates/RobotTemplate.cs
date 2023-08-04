@@ -44,7 +44,9 @@ namespace Perpetuum.Items.Templates
         public static RobotTemplate CreateFromDictionary(string name,IDictionary<string, object> dictionary)
         {
             if (dictionary == null)
+            {
                 return null;
+            }
 
             var template = new RobotTemplate(name)
             {
@@ -62,7 +64,9 @@ namespace Perpetuum.Items.Templates
         {
             var md = dictinary.GetOrDefault<IDictionary<string,object>>(key);
             if ( md == null )
+            {
                 return new ModuleTemplate[0];
+            }
 
             var templates = new List<ModuleTemplate>();
 
@@ -79,7 +83,9 @@ namespace Perpetuum.Items.Templates
         {
             var id = dd.GetOrDefault<IDictionary<string,object>>(key);
             if ( id == null )
+            {
                 return new ItemTemplate<Item>[0];
+            }
 
             var templates = new List<ItemTemplate<Item>>();
 
@@ -100,16 +106,24 @@ namespace Perpetuum.Items.Templates
         protected override bool OnValidate(Robot robot)
         {
             if (!Head.Validate())
+            {
                 return false;
+            }
 
             if (!Chassis.Validate())
+            {
                 return false;
+            }
 
             if (!Leg.Validate())
+            {
                 return false;
+            }
 
             if (!Inventory.Validate())
+            {
                 return false;
+            }
 
             return base.OnValidate(robot);
         }

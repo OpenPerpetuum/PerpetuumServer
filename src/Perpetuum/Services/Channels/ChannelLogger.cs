@@ -25,7 +25,9 @@ namespace Perpetuum.Services.Channels
         public void TopicChanged(Character member, string topic)
         {
             if (member == Character.None)
+            {
                 return;
+            }
 
             _logger.LogMessage(member, $" has changed the topic to: {topic}");
         }
@@ -33,7 +35,9 @@ namespace Perpetuum.Services.Channels
         public void MemberJoin(Character member)
         {
             if ( member == Character.None )
+            {
                 return;
+            }
 
             _logger.LogMessage(member," has joined the channel.");
         }
@@ -41,7 +45,9 @@ namespace Perpetuum.Services.Channels
         public void MemberLeft(Character member)
         {
             if (member == Character.None)
+            {
                 return;
+            }
 
             _logger.LogMessage(member, " has left the channel.");
         }

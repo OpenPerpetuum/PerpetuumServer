@@ -21,7 +21,9 @@ namespace Perpetuum.EntityFramework
         public void Insert(Entity entity)
         {
             if (entity.dbState != EntityDbState.New)
+            {
                 return;
+            }
 
             entity.OnInsertToDb();
 
@@ -49,7 +51,9 @@ namespace Perpetuum.EntityFramework
             entity.OnUpdateToDb();
 
             if (entity.dbState != EntityDbState.Updated)
+            {
                 return;
+            }
 
             const string query = "update entities set owner = @owner,parent = @parent,health = @health,quantity = @quantity,ename = @name,repackaged = @repackaged,dynprop = @dynprop where eid = @eid";
 
@@ -72,7 +76,9 @@ namespace Perpetuum.EntityFramework
         {
             // ha frissen keszult entity akkor nem probaljuk letorolni
             if (entity.dbState == EntityDbState.New)
+            {
                 return;
+            }
 
             entity.OnDeleteFromDb();
  
@@ -94,7 +100,9 @@ namespace Perpetuum.EntityFramework
         public Entity Load(long eid)
         {
             if (eid == 0L)
+            {
                 return null;
+            }
 
             // szokasos betoltes
             var record = Db.Query().CommandText("select eid,definition, owner, parent, health, ename, quantity, repackaged, dynprop from entities where eid = @eid")
@@ -102,7 +110,9 @@ namespace Perpetuum.EntityFramework
                 .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return null;
+            }
 
             var entity = CreateEntityFromRecord(record);
             entity.OnLoadFromDb();
@@ -135,14 +145,18 @@ namespace Perpetuum.EntityFramework
         private static Entity BuildTreeFromList(long rootEid, List<Entity> entities)
         {
             if (entities.Count == 0)
+            {
                 return null;
+            }
 
             // elso entity a fonok
             var entity = entities.FirstOrDefault(e => e.Eid == rootEid);
 
             // azaz remeljuk,h az volt...
             if (entity == null)
+            {
                 return null;
+            }
 
             // ossze is kell rakni a fat
             entity.RebuildTree(entities);

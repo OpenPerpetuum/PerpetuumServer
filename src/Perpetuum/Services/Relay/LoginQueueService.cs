@@ -66,7 +66,9 @@ namespace Perpetuum.Services.Relay
                 DequeueAccountInfo();
 
                 if (_signInInfos.Count == 0)
+                {
                     return;
+                }
 
                 var newQueue = new Queue<SignInInfo>();
 
@@ -113,7 +115,9 @@ namespace Perpetuum.Services.Relay
         {
             var q = _signInInfos.ToArray();
             if (q.Length == 0)
+            {
                 return;
+            }
 
             var messageBuilder = Message.Builder.SetCommand(new Command("signInQueueInfo")).SetData("length", q.Length);
 

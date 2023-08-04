@@ -32,7 +32,9 @@ namespace Perpetuum.Zones.Intrusion
         {
             lastSuccessfulIntrusion += time;
             if (lastSuccessfulIntrusion < noDecayBefore)
+            {
                 return;
+            }
 
             timeSinceLastDecay += time;
             if (timeSinceLastDecay > decayRate)

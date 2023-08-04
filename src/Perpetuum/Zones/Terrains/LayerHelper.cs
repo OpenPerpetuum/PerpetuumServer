@@ -28,8 +28,10 @@ namespace Perpetuum.Zones.Terrains
                             return pi;
                         });
 
-                        if (!rule.HasBlockingState) 
+                        if (!rule.HasBlockingState)
+                        {
                             continue;
+                        }
 
                         zone.Terrain.Blocks.UpdateValue(x,y + i,bi =>
                         {
@@ -57,9 +59,15 @@ namespace Perpetuum.Zones.Terrains
                 {
                     for (var x = area.X1; x <= area.X2; x++)
                     {
-                        if (x < 0 || x >= width || y < 0 || y >= height) continue;
+                        if (x < 0 || x >= width || y < 0 || y >= height)
+                        {
+                            continue;
+                        }
 
-                        if (!origin.IsWithinRangeOf2D(x + 0.5, y + 0.5, radius)) continue;
+                        if (!origin.IsWithinRangeOf2D(x + 0.5, y + 0.5, radius))
+                        {
+                            continue;
+                        }
 
                         action(x, y);
                     }
@@ -110,7 +118,10 @@ namespace Perpetuum.Zones.Terrains
             {
                 zone.Terrain.Plants.UpdateValue(x,y,pi =>
                 {
-                    if (pi.type == PlantType.Wall) return pi;
+                    if (pi.type == PlantType.Wall)
+                    {
+                        return pi;
+                    }
 
                     var plantRule = zone.Configuration.PlantRules.GetPlantRule(pi.type);
 
@@ -119,7 +130,9 @@ namespace Perpetuum.Zones.Terrains
                         zone.Terrain.Blocks.UpdateValue(x,y, bi =>
                         {
                             if (!bi.Plant)
+                            {
                                 return bi;
+                            }
 
                             bi.Plant = false;
                             bi.Height = 0;

@@ -19,7 +19,9 @@ namespace Perpetuum.RequestHandlers.Zone
                 var unit = request.Zone.GetUnit(eid);
                 var pbsObject = unit as IPBSObject;
                 if (pbsObject == null)
+                {
                     return;
+                }
 
                 pbsObject.ReinforceHandler.ReinforceCounter = value;
                 unit.DynamicProperties.Update(k.reinforceCounter, value);

@@ -93,7 +93,9 @@ namespace Perpetuum.Robots
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public void VisitModules(IEntityVisitor visitor)
@@ -185,7 +187,9 @@ namespace Perpetuum.Robots
             var coreMaxValue = CoreMax;
 
             if (currentCore >= coreMaxValue)
+            {
                 return;
+            }
 
             DynamicProperties.Update(k.currentCore,coreMaxValue);
             Core = CoreMax;
@@ -211,12 +215,16 @@ namespace Perpetuum.Robots
         {
             get
             {
-                if (IsRepackaged) 
+                if (IsRepackaged)
+                {
                     return false;
+                }
 
                 var robotInventory = GetContainer();
                 if (robotInventory == null)
+                {
                     return false;
+                }
 
                 return robotInventory.HasChildren;
             }
@@ -262,7 +270,9 @@ namespace Perpetuum.Robots
             }
 
             if (!withContainer)
+            {
                 return;
+            }
 
             var container = GetContainer();
             container?.RelocateItems(character, character, container.GetItems(), targetContainer);
@@ -357,19 +367,27 @@ namespace Perpetuum.Robots
         public void CheckEnergySystemAndThrowIfFailed(Module module, bool isRemoving=false)
         {
             if (!CheckPowerGridForModule(module, isRemoving))
+            {
                 throw PerpetuumException.Create(ErrorCodes.OutOfPowergrid);
+            }
 
             if (!CheckCpuForModule(module, isRemoving))
+            {
                 throw PerpetuumException.Create(ErrorCodes.OutOfCpu);
+            }
         }
 
         public void CheckEnergySystemAndThrowIfFailed()
         {
             if (PowerGrid < 0)
+            {
                 throw PerpetuumException.Create(ErrorCodes.OutOfPowergrid).SetData("powerGrid", Math.Abs(PowerGridMax - PowerGrid)).SetData("powerGridMax", PowerGridMax);
+            }
 
             if (Cpu < 0)
+            {
                 throw PerpetuumException.Create(ErrorCodes.OutOfCpu).SetData("cpu", Math.Abs(CpuMax - Cpu)).SetData("cpuMax", CpuMax);
+            }
         }
 
         public void CreateComponents()
@@ -383,7 +401,9 @@ namespace Perpetuum.Robots
         protected override bool IsDetected(Unit target)
         {
             if (_lockHandler.IsLocked(target))
+            {
                 return true;
+            }
 
             return base.IsDetected(target);
         }
@@ -393,7 +413,9 @@ namespace Perpetuum.Robots
             get
             {
                 if (IsRepackaged)
+                {
                     return base.Volume;
+                }
 
                 var volume = RobotComponents.Sum(c => c.Volume);
                 volume *= Quantity;

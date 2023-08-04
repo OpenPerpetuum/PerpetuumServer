@@ -23,7 +23,10 @@ namespace Perpetuum.Zones.PBS.ProductionNodes
         {
             //itt kell lekezelni, hogy be lett kotve
 
-            if (!connection.IsOutgoing) return;
+            if (!connection.IsOutgoing)
+            {
+                return;
+            }
 
             var dockingBase = connection.TargetPbsObject as PBSDockingBase;
 

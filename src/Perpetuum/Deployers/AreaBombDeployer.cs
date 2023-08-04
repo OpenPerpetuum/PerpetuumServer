@@ -21,20 +21,28 @@ namespace Perpetuum.Deployers
         protected override ErrorCodes CanDeploy(IZone zone, Unit unit, Position spawnPosition, Player player)
         {
             if (zone.Configuration.Protected)
+            {
                 return ErrorCodes.OnlyUnProtectedZonesAllowed;
+            }
 
             if (!zone.Configuration.Terraformable)
             {
                 if (zone.Units.OfType<DockingBase>().WithinRange(spawnPosition, DistanceConstants.AREA_BOMB_DISTANCE_TO_STATIONS).Any())
+                {
                     return ErrorCodes.NotDeployableNearObject;
+                }
 
                 if (zone.Units.OfType<TeleportColumn>().WithinRange(spawnPosition, DistanceConstants.AREA_BOMB_DISTANCE_TO_TELEPORTS).Any())
+                {
                     return ErrorCodes.NotDeployableNearObject;
+                }
             }
             else
             {
                 if (zone.Units.OfType<AreaBomb>().WithinRange(spawnPosition, DistanceConstants.GAMMA_BOMB_STACK_DISTANCE).Any())
+                {
                     return ErrorCodes.TooCloseToOtherDevice;
+                }
             }
 
             return base.CanDeploy(zone, unit, spawnPosition, player);

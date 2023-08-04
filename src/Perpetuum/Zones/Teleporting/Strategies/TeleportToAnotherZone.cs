@@ -23,7 +23,9 @@ namespace Perpetuum.Zones.Teleporting.Strategies
         public void DoTeleport(Player player)
         {
             if (!player.InZone )
+            {
                 return;
+            }
 
             player.States.Teleport = true;
             Entity.Repository.ForceUpdate(player);

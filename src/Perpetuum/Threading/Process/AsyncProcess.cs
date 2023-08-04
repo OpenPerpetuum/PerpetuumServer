@@ -34,7 +34,9 @@ namespace Perpetuum.Threading.Process
             _elapsed += time;
 
             if (_running )
+            {
                 return;
+            }
 
             _running = true;
 

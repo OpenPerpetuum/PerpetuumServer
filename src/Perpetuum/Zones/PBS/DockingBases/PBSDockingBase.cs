@@ -93,7 +93,9 @@ namespace Perpetuum.Zones.PBS.DockingBases
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override ErrorCodes IsAttackable
@@ -101,8 +103,10 @@ namespace Perpetuum.Zones.PBS.DockingBases
             get
             {
                 //no reinforce
-                if (_pbsReinforceHandler.CurrentState.IsReinforced) 
+                if (_pbsReinforceHandler.CurrentState.IsReinforced)
+                {
                     return ErrorCodes.TargetIsNonAttackable_Reinforced;
+                }
 
                 //no connections
                 //true if only production stuff is connected ONLY
@@ -111,7 +115,9 @@ namespace Perpetuum.Zones.PBS.DockingBases
                 var anyControlTower = _pbsObjectHelper.ConnectionHandler.GetConnections().Any(c => c.TargetPbsObject is PBSControlTower);
 
                 if (anyControlTower)
+                {
                     return ErrorCodes.TargetIsNonAttackable_ControlTowerConnected;
+                }
 
                 return ErrorCodes.NoError; //itt tilos a base-t meghivni, mert az mar docking base
             }
@@ -253,16 +259,24 @@ namespace Perpetuum.Zones.PBS.DockingBases
         public override ErrorCodes IsDockingAllowed(Character issuerCharacter)
         {
             if (!IsFullyConstructed)
+            {
                 return ErrorCodes.ObjectNotFullyConstructed;
+            }
 
             if (!OnlineStatus)
+            {
                 return ErrorCodes.NodeOffline;
+            }
 
             if (!StandingEnabled)
+            {
                 return ErrorCodes.NoError;
+            }
 
             if (!_corporationManager.IsStandingMatch(Owner, issuerCharacter.CorporationEid, StandingLimit))
+            {
                 return ErrorCodes.StandingTooLowForDocking;
+            }
 
             return ErrorCodes.NoError;
         }
@@ -461,7 +475,9 @@ namespace Perpetuum.Zones.PBS.DockingBases
         public override bool IsVisible(Character character)
         {
             if (DockingBaseMapVisibility == PBSDockingBaseVisibility.open)
+            {
                 return true;
+            }
 
             Corporation.GetCorporationEidAndRoleFromSql(character, out long corporationEid, out CorporationRole role);
             if (Owner == corporationEid)
@@ -498,7 +514,9 @@ namespace Perpetuum.Zones.PBS.DockingBases
         public int GetNetworkNodeRange()
         {
             if (ED.Config.network_node_range != null)
+            {
                 return (int) ED.Config.network_node_range;
+            }
 
             Logger.Error("no network_node_range defined for " + ED.Name );
             return 0;

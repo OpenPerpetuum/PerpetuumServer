@@ -24,7 +24,9 @@ namespace Perpetuum.Modules.EffectModules
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override void UpdateProperty(AggregateField field)

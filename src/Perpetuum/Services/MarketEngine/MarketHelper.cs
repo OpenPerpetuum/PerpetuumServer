@@ -130,9 +130,11 @@ namespace Perpetuum.Services.MarketEngine
 			{
 				var dockingBase = market.GetDockingBase() as PBSDockingBase;
 				if (dockingBase == null)
-					continue;
+                {
+                    continue;
+                }
 
-				Logger.Info("processing market: " + market.Eid);
+                Logger.Info("processing market: " + market.Eid);
 
 				Db.Query().CommandText(queryDelete)
 					.SetParameter("@marketEid", market.Eid)
@@ -176,7 +178,10 @@ namespace Perpetuum.Services.MarketEngine
             Logger.Info("cancelled " + count + " market items for cf:" + categoryFlag);
 
             if (!withVendor)
+            {
                 return;
+            }
+
             Logger.Info("removing vendor market items for cf:" + categoryFlag);
 
             query = "delete marketitems WHERE itemdefinition IN (" + defArrayString + ") and isvendoritem=1";

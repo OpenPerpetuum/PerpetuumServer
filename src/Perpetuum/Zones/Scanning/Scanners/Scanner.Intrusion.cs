@@ -71,8 +71,10 @@ namespace Perpetuum.Zones.Scanning.Scanners
             foreach (var unit in units)
             {
                 var pbsObject = unit as IPBSObject;
-                if (pbsObject == null) 
+                if (pbsObject == null)
+                {
                     continue;
+                }
 
                 stream.AppendInt(unit.Definition);
                 stream.AppendLong(unit.Eid);

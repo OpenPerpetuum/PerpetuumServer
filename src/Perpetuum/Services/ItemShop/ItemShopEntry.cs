@@ -110,16 +110,22 @@ namespace Perpetuum.Services.ItemShop
         {
             //do global limitation
             if (GlobalLimit == null)
+            {
                 return;
+            }
 
             if (GlobalLimit <= PurchaseCount)
+            {
                 throw new PerpetuumException(ErrorCodes.OutOfItemGlobally);
+            }
 
             var availableAmount = (int)GlobalLimit - PurchaseCount;
 
             //clamp to the available maximum
             if (availableAmount < quantity)
+            {
                 throw new PerpetuumException(ErrorCodes.ThisAmountIsNotAvailable);
+            }
         }
 
         public void RemoveFromContainer(Container container, int quantity)

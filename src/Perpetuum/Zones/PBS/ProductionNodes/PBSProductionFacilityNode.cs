@@ -36,7 +36,9 @@ namespace Perpetuum.Zones.PBS.ProductionNodes
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public ICoreUseHandler CoreUseHandler => _coreUseHandler;
@@ -184,7 +186,11 @@ namespace Perpetuum.Zones.PBS.ProductionNodes
 
                 //turn facility off
                 var dockingBase = Owner.GetConnectedDockingBase();
-                if (dockingBase == null) return;
+                if (dockingBase == null)
+                {
+                    return;
+                }
+
                 Owner.RefreshInfo(dockingBase.Eid, 0, false, true);
             }
 
@@ -200,7 +206,10 @@ namespace Perpetuum.Zones.PBS.ProductionNodes
             protected override void PostCoreSubtract()
             {
                 var dockingBase = Owner.GetConnectedDockingBase();
-                if (dockingBase == null) return;
+                if (dockingBase == null)
+                {
+                    return;
+                }
 
                 //bamulatos grafika
                 Owner.Zone.CreateBeam(BeamType.medium_laser, b => b.WithSource(Owner)

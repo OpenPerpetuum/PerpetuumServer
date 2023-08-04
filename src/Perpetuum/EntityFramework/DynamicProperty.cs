@@ -24,7 +24,9 @@ namespace Perpetuum.EntityFramework
                 var newValue = OnPropertyChanging(value);
 
                 if (Equals(Value, newValue))
+                {
                     return;
+                }
 
                 _properties.Update(Key, newValue);
                 OnPropertyChanged();

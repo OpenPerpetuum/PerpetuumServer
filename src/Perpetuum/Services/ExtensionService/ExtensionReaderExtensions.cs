@@ -25,7 +25,9 @@ namespace Perpetuum.Services.ExtensionService
         {
             var info = reader.GetExtensionByID(extensionId);
             if (info == null)
+            {
                 yield break;
+            }
 
             yield return info.id;
 
@@ -42,7 +44,9 @@ namespace Perpetuum.Services.ExtensionService
         {
             var info = reader.GetExtensionByID(extensionId);
             if (info == null)
+            {
                 yield break;
+            }
 
             foreach (var requiredExtension in info.RequiredExtensions)
             {
@@ -64,7 +68,9 @@ namespace Perpetuum.Services.ExtensionService
             foreach (var info in extensions.Values)
             {
                 if (enumerable.Contains(info.name))
+                {
                     yield return info.id;
+                }
             }
         }
 
@@ -72,7 +78,10 @@ namespace Perpetuum.Services.ExtensionService
         {
             var x = reader.GetExtensions().Select(kvp => kvp.Value).FirstOrDefault(e => e.name == extensionName);
             if (x == null)
+            {
                 return 0;
+            }
+
             return x.id;
         }
 
@@ -87,7 +96,10 @@ namespace Perpetuum.Services.ExtensionService
             var extensions = reader.GetExtensions();
             var info = extensions.GetOrDefault(extensionID);
             if (info == null)
+            {
                 return string.Empty;
+            }
+
             return info.name;
         }
 

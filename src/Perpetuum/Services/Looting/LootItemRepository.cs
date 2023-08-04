@@ -63,7 +63,9 @@ namespace Perpetuum.Services.Looting
                                  .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return null;
+            }
 
             var item = CreateLootItemFromRecord(record);
             return item;

@@ -20,9 +20,13 @@ namespace Perpetuum.RequestHandlers.Gangs
 
             var gang = _gangManager.GetGangByMember(character);
             if (gang == null)
+            {
                 messageBuilder.WithEmpty();
+            }
             else
+            {
                 messageBuilder.WithData(gang.ToDictionary());
+            }
 
             messageBuilder.Send();
         }

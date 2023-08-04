@@ -115,7 +115,10 @@ cprgeid
 
         public double GetMaterialAmountMultiplier()
         {
-            if (Math.Abs(MaterialEfficiency - 0) < double.Epsilon) return 1.0;
+            if (Math.Abs(MaterialEfficiency - 0) < double.Epsilon)
+            {
+                return 1.0;
+            }
 
             return 1 / MaterialEfficiency;
         }
@@ -273,7 +276,10 @@ cprgeid
 
             Rounds--;
 
-            if (Rounds < 0) Rounds = 0;
+            if (Rounds < 0)
+            {
+                Rounds = 0;
+            }
 
             SetRounds(Rounds, Id);
 
@@ -285,7 +291,10 @@ cprgeid
         {
             object rpid = DBNull.Value;
 
-            if (runningProductionId != null) rpid = (int)runningProductionId;
+            if (runningProductionId != null)
+            {
+                rpid = (int)runningProductionId;
+            }
 
             var res =
             Db.Query().CommandText("update productionlines set runningproductionid=@rpid where id=@lineID").SetParameter("@lineID", lineId).SetParameter("@rpid", rpid)
@@ -346,8 +355,10 @@ cprgeid
                                  .SetParameter("@rpid", productionInProgressId)
                                  .ExecuteSingleRow();
 
-            if (record == null) 
+            if (record == null)
+            {
                 return ErrorCodes.ItemNotFound;
+            }
 
             productionLine = CreateFromRecord(record);
 
@@ -362,8 +373,10 @@ cprgeid
                                  .SetParameter("@rpid", productionInProgressId)
                                  .ExecuteSingleRow();
 
-            if (record == null) 
+            if (record == null)
+            {
                 return null;
+            }
 
             return CreateFromRecord(record);
         }

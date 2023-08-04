@@ -33,7 +33,9 @@ namespace Perpetuum.Zones.Scanning.Results
         {
             var dictionary = _info.Value;
             if (dictionary.IsNullOrEmpty())
+            {
                 return null;
+            }
 
             var result = new MineralScanResult();
 

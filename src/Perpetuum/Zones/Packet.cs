@@ -137,7 +137,9 @@ namespace Perpetuum.Zones
             player?.Session.SendPacket(this);
 
             if ( target == otherTarget )
+            {
                 return;
+            }
 
             var otherPlayer = otherTarget as Player;
             otherPlayer?.Session.SendPacket(this);

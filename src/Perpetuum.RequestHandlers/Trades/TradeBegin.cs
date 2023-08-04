@@ -26,7 +26,9 @@ namespace Perpetuum.RequestHandlers.Trades
                 _tradeService.ClearTrade(character);
 
                 if (character == trader)
+                {
                     return;
+                }
 
                 CheckTradersAndThrowIfFailed(character, trader);
 

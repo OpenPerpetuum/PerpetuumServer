@@ -20,15 +20,21 @@ namespace Perpetuum.RequestHandlers.Zone
             foreach (var unit in request.Zone.Units)
             {
                 if (unit is TeleportColumn)
+                {
                     continue;
+                }
 
                 var position = unit.CurrentPosition.Center;
 
                 if (unit.TryGetConstructionRadius(out int constructionRadius))
+                {
                     LayerHelper.SetTerrafomProtectionCircle(request.Zone, position, constructionRadius);
+                }
 
                 if (unit is IPBSObject)
+                {
                     LayerHelper.SetConcreteCircle(request.Zone, position, constructionRadius);
+                }
             }
         }
     }

@@ -47,7 +47,10 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
             //let's collect the targets
             foreach (var processedCharacter in charactersToProcess)
             {
-                if (MissionAdministrator.RunningMissionsCount(processedCharacter) == 0) continue;
+                if (MissionAdministrator.RunningMissionsCount(processedCharacter) == 0)
+                {
+                    continue;
+                }
 
                 MissionInProgressCollector collector;
                 if (MissionAdministrator.GetMissionInProgressCollector(processedCharacter, out collector))
@@ -135,7 +138,10 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
 
                 //robot inventory full tree
                 if (robotInventory != null)
+                {
                     LookUpContainerForMissionDeliverItems(character, robotInventory, ref itemsAffected, deliveryHelpers, true);
+                }
+
                 itemsFromRobot = itemsAffected;
 
 
@@ -149,7 +155,10 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
 
                 //full tree
                 if (robotInventory != null)
+                {
                     LookUpContainerForMissionDeliverItems(character, robotInventory, ref itemsAffected, deliveryHelpers, true);
+                }
+
                 itemsFromRobot = itemsAffected;
 
                 //full tree
@@ -286,10 +295,14 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
                 var dh = kvp.Key;
 
                 if (targetInProgress.completed)
+                {
                     continue;
+                }
 
                 if (dh.IsCompleted)
+                {
                     continue;
+                }
 
                 //obtain data for checking
 
@@ -301,11 +314,15 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
                     .Where(i =>
                     {
                         if (i.Definition != dh.definition)
+                        {
                             return false;
+                        }
 
                         var volumeWrapper = i.ParentEntity as VolumeWrapperContainer;
                         if (volumeWrapper != null)
+                        {
                             return false;
+                        }
 
                         return true;
                     })
@@ -407,14 +424,20 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
             //let's collect the targets
             foreach (var processedCharacter in charactersToProcess)
             {
-                if (MissionAdministrator.RunningMissionsCount(processedCharacter) == 0) continue;
+                if (MissionAdministrator.RunningMissionsCount(processedCharacter) == 0)
+                {
+                    continue;
+                }
 
                 MissionInProgressCollector collector;
                 if (MissionAdministrator.GetMissionInProgressCollector(processedCharacter, out collector))
                 {
                     foreach (var mip in collector.GetMissionsInProgress())
                     {
-                        if (mip.IsMissionFinished) continue;
+                        if (mip.IsMissionFinished)
+                        {
+                            continue;
+                        }
 
                         interestingTargets.AddRange(mip.CollectTargetsWithDefinitionsToDeliverInCurrentState(location));
                     }

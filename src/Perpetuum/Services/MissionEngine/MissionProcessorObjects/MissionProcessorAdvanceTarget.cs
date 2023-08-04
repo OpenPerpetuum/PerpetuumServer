@@ -83,11 +83,15 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
             {
                 //any mission running?
                 if (!MissionAdministrator.GetMissionInProgressCollector(other, out MissionInProgressCollector collector))
+                {
                     continue;
+                }
 
                 //any targets waiting?
                 if (!collector.GetMissionsInProgress().SelectMany(m => m.CollectIncompleteTargetsByType(targetType)).Any(t => t.IsMyTurn))
+                {
                     continue;
+                }
 
                 var info = originalData.Clone();
 
@@ -101,7 +105,9 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
 
                 //if event got used up => end of its life
                 if (WasProgress(originalData))
+                {
                     return;
+                }
             }
         }
 
@@ -178,7 +184,9 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
             var kvpList = GetTargetInProgress_and_missionInProgressByTargetType(character, targetType);
 
             if (kvpList.IsNullOrEmpty())
+            {
                 return;
+            }
 
             Logger.Info("processing " + kvpList.Count + " running targets for type: " + targetType);
 
@@ -190,7 +198,9 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
                 ProcessTargetAdvancementLocked(missionInProgress, missionTargetInProgress, isComplete, data);
 
                 if (WasProgress(data))
+                {
                     return;
+                }
             }
         }
       
@@ -198,17 +208,38 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
         private void ProcessTargetAdvancementLocked(MissionInProgress missionInProgress, MissionTargetInProgress missionTargetInProgress, bool isComplete, IDictionary<string, object> data)
         {
             //pre filter
-            if (!missionTargetInProgress.IsMyTurn) return;
-            if (missionTargetInProgress.completed) return;
-            if (missionInProgress.IsMissionFinished) return;
+            if (!missionTargetInProgress.IsMyTurn)
+            {
+                return;
+            }
+
+            if (missionTargetInProgress.completed)
+            {
+                return;
+            }
+
+            if (missionInProgress.IsMissionFinished)
+            {
+                return;
+            }
 
             lock (missionInProgress.lockObject)
             {
                 //finally we got in, in the meanwhile the target and the mission might got done, progressed, etc
-                if (!missionTargetInProgress.IsMyTurn) return;
-                if (missionTargetInProgress.completed) return;
-                if (missionInProgress.IsMissionFinished) return;
-                
+                if (!missionTargetInProgress.IsMyTurn)
+                {
+                    return;
+                }
+
+                if (missionTargetInProgress.completed)
+                {
+                    return;
+                }
+
+                if (missionInProgress.IsMissionFinished)
+                {
+                    return;
+                }
 
                 ProcessAdvamcementForOneTarget(missionTargetInProgress, missionInProgress, data, isComplete);
             }
@@ -449,7 +480,9 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
         private IList<Item> TryFinishMission(MissionInProgress missionInProgress)
         {
             if (!missionInProgress.IsMissionFinished)
+            {
                 return null;
+            }
 
             lock (LockObject)
             {
@@ -485,7 +518,9 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
                 {
                     var oneMansEp = 0;
                     if (ep > 0)
+                    {
                         oneMansEp = participant.AddExtensionPointsBoostAndLog(EpForActivityType.Mission, ep);
+                    }
 
                     var oneEpEntry = new Dictionary<string, object>
                     {
@@ -553,7 +588,9 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
                     resultDict.Add(k.reward, rewardItems.ToDictionary("r", r => r.BaseInfoToDictionary()));
 
                     if (locationUsed != null)
+                    {
                         resultDict.Add("rewardLocation", locationUsed.id);
+                    }
                 }
 
                 missionInProgress.DeleteParticipants();
@@ -593,14 +630,18 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
             var resultList = new List<KeyValuePair<MissionTargetInProgress, MissionInProgress>>();
 
             if (!MissionAdministrator.GetMissionInProgressCollector(character,out MissionInProgressCollector collector))
+            {
                 return resultList;
+            }
 
             foreach (var missionInProgress in collector.GetMissionsInProgress())
             {
                 var list = missionInProgress.CollectIncompleteTargetsByType(targetType).ToArray();
 
                 if (list.IsNullOrEmpty())
+                {
                     continue;
+                }
 
                 foreach (var missionTargetInProgress in list)
                 {
@@ -656,15 +697,21 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
         public void NpcGotKilledInAway(Character character, Guid guid, Dictionary<string, object> data)
         {
             if (!FindMissionInProgress(character, guid, out MissionInProgress missionInProgress))
+            {
                 return;
+            }
 
             if (missionInProgress.myMission.behaviourType == MissionBehaviourType.Config)
+            {
                 return;
+            }
 
             var targetInProgress = missionInProgress.CollectIncompleteTargetsByType(MissionTargetType.kill_definition).FirstOrDefault(t => t.IsMyTurn);
 
             if (targetInProgress == null)
+            {
                 return;
+            }
 
             var isComplete = targetInProgress.progressCount + 1 == targetInProgress.myTarget.Quantity;
 

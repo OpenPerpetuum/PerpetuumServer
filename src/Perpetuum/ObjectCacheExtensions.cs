@@ -19,7 +19,9 @@ namespace Perpetuum
                 result = valueFactory();
 
                 if (result == null)
+                {
                     return default(T);
+                }
 
                 Set(cache,key,result,expiration);
             }
@@ -58,7 +60,9 @@ namespace Perpetuum
                 result = valueFactory();
 
                 if (result == null)
+                {
                     return default(T);
+                }
 
                 SetWithAbsoluteExpiration(cache, key, result, expiration);
             }

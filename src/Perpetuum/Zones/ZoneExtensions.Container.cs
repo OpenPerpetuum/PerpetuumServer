@@ -25,7 +25,9 @@ namespace Perpetuum.Zones
 
                 var container = finder.Container;
                 if (container == null)
+                {
                     continue;
+                }
 
                 return container;
             }
@@ -51,7 +53,9 @@ namespace Perpetuum.Zones
                 var container = robot.GetContainer();
 
                 if (container?.Eid == _containerEid)
+                {
                     Container = container;
+                }
             }
 
             public void Visit(FieldTerminal fieldTerminal)
@@ -69,7 +73,9 @@ namespace Perpetuum.Zones
 
                 var foundContainer = foundItem as Container;
                 if (foundContainer == null)
+                {
                     return;
+                }
 
                 Container = foundContainer;
                 

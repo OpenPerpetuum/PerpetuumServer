@@ -56,12 +56,16 @@ namespace Perpetuum.Modules
         public void ApplyMiningAmountModifier(ref ItemPropertyModifier propertyModifier)
         {
             MiningAmmoModifier modifier;
-            if (!TryGetMiningAmmoModifier(MaterialType, out modifier)) 
+            if (!TryGetMiningAmmoModifier(MaterialType, out modifier))
+            {
                 return;
+            }
 
             var parentRobot = GetParentRobot();
             if (parentRobot == null)
+            {
                 return;
+            }
 
             var amountMod = parentRobot.GetPropertyModifier(modifier.amountModifier);
             amountMod.Modify(ref propertyModifier);
@@ -77,10 +81,14 @@ namespace Perpetuum.Modules
             {
                 var parentRobot = ammo.GetParentRobot();
                 if (parentRobot == null)
+                {
                     return 1.0;
+                }
 
                 if (!TryGetMiningAmmoModifier(ammo.MaterialType, out MiningAmmoModifier modifier))
+                {
                     return 1.0;
+                }
 
                 var m = parentRobot.GetPropertyModifier(modifier.cycleTimeModifier);
                 return m.Value;

@@ -12,7 +12,9 @@ namespace Perpetuum.RequestHandlers.Intrusion
 
             var sap = request.Zone.GetUnit(sapEid) as SpecimenProcessingSAP;
             if (sap == null)
+            {
                 throw new PerpetuumException(ErrorCodes.AttackPointWasNotFound);
+            }
 
             sap.SendProgressToPlayer(character);
         }

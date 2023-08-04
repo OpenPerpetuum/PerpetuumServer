@@ -93,7 +93,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
         {
             var bmp = bitmapFactory();
             if (bmp == null)
+            {
                 return;
+            }
 
             bmp.WithGraphics(g => g.DrawString(_zone.Configuration.Name, new Font("Tahoma", 20), Brushes.Red, new PointF(10, 10)));
             var fileName = "stat_" + postfix;
@@ -275,8 +277,10 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 var slope = _zone.Terrain.Slope.GetValue(x, y);
                 var block = _zone.Terrain.Blocks.GetValue(x, y);
 
-                if (block.Flags > 0 || slope >= threshold) 
+                if (block.Flags > 0 || slope >= threshold)
+                {
                     return;
+                }
 
                 var c = 255 - (int)(((double)slope / threshold) * 255);
                 bmp.SetPixel(x, y,Color.FromArgb(c,c,c));
@@ -289,7 +293,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
             {
                 var b = _zone.Terrain.IsBlocked(x, y);
                 if ( !b )
+                {
                     return;
+                }
 
                 bmp.SetPixel(x,y,Color.White);
             });
@@ -424,8 +430,10 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
             return CreateAltitudeBitmap().ForEach((bmp, x, y) =>
             {
                 var blockingInfo = _zone.Terrain.Blocks.GetValue(x, y);
-                if (!blockingInfo.Decor) 
+                if (!blockingInfo.Decor)
+                {
                     return;
+                }
 
                 var color = blockingInfo.Height > 0 ? Color.Green : Color.Orange;
                 bmp.SetPixel(x, y,color);
@@ -439,7 +447,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 var plantInfo = _zone.Terrain.Plants.GetValue(x, y);
 
                 if (plantInfo.type != PlantType.ElectroPlant)
+                {
                     return;
+                }
 
                 var r = ((255 / 5) * (plantInfo.state)).Clamp(0, 255);
                 var color = Color.FromArgb(255, r, 128, 0);
@@ -461,7 +471,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 var plantInfo = _zone.Terrain.Plants.GetValue(x, y);
 
                 if (plantInfo.type != plantType)
+                {
                     return;
+                }
 
                 var r = ((255 / 5) * (plantInfo.state)).Clamp(0, 255);
                 var color = Color.FromArgb(255, r, 128, 0);
@@ -483,10 +495,14 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 var plantInfo = _zone.Terrain.Plants.GetValue(x, y);
 
                 if (plantInfo.type == PlantType.NotDefined)
+                {
                     return;
+                }
 
                 if (plantInfo.state == 0)
+                {
                     return;
+                }
 
                 bmp.SetPixel(x, y, Color.White);
             });
@@ -531,7 +547,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
             {
                 var pInfo = _zone.Terrain.Plants.GetValue(x, y);
                 if (pInfo.type != PlantType.Wall)
+                {
                     return;
+                }
 
                 var r = ((255 / 11) * (pInfo.state)).Clamp(0, 255);
                 var g = pInfo.health;
@@ -572,7 +590,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 }
 
                 if (!allowed && plantInfo.type != PlantType.Wall)
+                {
                     return;
+                }
 
                 var pixel = bmp.GetPixel(x, y);
 
@@ -638,7 +658,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
             {
                 var blockingInfo = _zone.Terrain.Blocks.GetValue(x, y);
                 if (!blockingInfo.Island)
+                {
                     return;
+                }
 
                 bmp.SetPixel(x, y, Color.White);
             });
@@ -652,7 +674,10 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 {
                     var control = _zone.Terrain.Controls.GetValue(x, y);
                     if (!control.Flags.HasFlag(flag))
+                    {
                         return;
+                    }
+
                     bmp.SetPixel(x, y, Color.White);
                 });
             };
@@ -745,7 +770,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
             bitmap = null;
             circlesBitmap = null;
             if (!_zone.Configuration.Terraformable)
+            {
                 return;
+            }
 
             var terrain = _zone.Terrain;
 
@@ -768,11 +795,16 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 var tmpBmp = bitmap;
                 area.ForEachXY((x, y) =>
                 {
-                    if (x < 0 || x >= _zone.Size.Width || y < 0 || y >= _zone.Size.Height) return;
+                    if (x < 0 || x >= _zone.Size.Width || y < 0 || y >= _zone.Size.Height)
+                    {
+                        return;
+                    }
 
                     var blockInfo = terrain.Blocks.GetValue(x, y);
                     if (!blockInfo.Decor)
+                    {
                         return;
+                    }
 
                     var currentDistance = td.CurrentPosition.TotalDistance2D(new Position(x, y));
                     if (currentDistance > maximumDistance)
@@ -786,7 +818,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 graphics.DrawString(maximumDistance.ToString(CultureInfo.InvariantCulture), font, Brushes.White, (float)td.CurrentPosition.X, (float)td.CurrentPosition.Y);
 
                 if (maximumDistance <= 0)
+                {
                     continue;
+                }
 
                 circlesGraphics.FillEllipse(Brushes.White, (float)(td.CurrentPosition.intX - maximumDistance), (float)(td.CurrentPosition.intY - maximumDistance), (float)(maximumDistance * 2), (float)(maximumDistance * 2));
 
@@ -794,7 +828,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 tpArea.ForEachXY((x, y) =>
                 {
                     if (x < 0 || x >= _zone.Size.Width || y < 0 || y >= _zone.Size.Height)
+                    {
                         return;
+                    }
 
                     var nearRadius = (int)maximumDistance + 4;
                     var farRadius = (int)maximumDistance + 296;
@@ -803,7 +839,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
 
                     var ratio = MathHelper.DistanceFalloff(nearRadius, farRadius, originX, originY, x, y);
                     if (ratio <= 0)
+                    {
                         return;
+                    }
 
                     var blendValue = (ushort)(ushort.MaxValue * ratio);
                     blendData[x + y * _zone.Size.Width] = blendValue;

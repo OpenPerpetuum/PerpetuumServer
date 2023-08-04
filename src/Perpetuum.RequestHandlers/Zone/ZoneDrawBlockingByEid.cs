@@ -18,7 +18,9 @@ namespace Perpetuum.RequestHandlers.Zone
             var eid = request.Data.GetOrDefault<long>(k.eid);
             var unit = _zoneManager.GetUnit<Unit>(eid);
             if (unit == null)
+            {
                 throw new PerpetuumException(ErrorCodes.ItemNotFound);
+            }
 
             unit.Zone.DrawEnvironmentByUnit(unit);
 

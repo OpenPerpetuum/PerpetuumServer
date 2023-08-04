@@ -219,7 +219,9 @@ namespace Perpetuum.GenXY
             foreach (var kvp in d)
             {
                 if (!HasValue(kvp.Value))
+                {
                     continue;
+                }
 
                 writer.WriteToken(GenxyToken.Prop);
                 writer.WriteString(kvp.Key);
@@ -233,10 +235,14 @@ namespace Perpetuum.GenXY
         private static bool HasValue(object value)
         {
             if (value == null)
+            {
                 return false;
+            }
 
             if (value is ICollection collection && collection.Count == 0)
+            {
                 return false;
+            }
 
             return true;
         }
@@ -253,7 +259,9 @@ namespace Perpetuum.GenXY
         private static void SerializeObject(GenxyWriter writer, object value)
         {
             if (value == null)
+            {
                 return;
+            }
 
             switch (value)
             {
@@ -290,14 +298,18 @@ namespace Perpetuum.GenXY
         public static string Serialize(IEnumerable<KeyValuePair<string, object>> value)
         {
             if (value == null)
+            {
                 return string.Empty;
+            }
 
             using (var w = new GenxyWriter())
             {
                 foreach (var kvp in value)
                 {
                     if (!HasValue(kvp.Value))
+                    {
                         continue;
+                    }
 
                     w.WriteChar('#');
                     w.WriteString(kvp.Key);
@@ -312,7 +324,9 @@ namespace Perpetuum.GenXY
         public static Dictionary<string, object> Deserialize(string genxyString)
         {
             if ( string.IsNullOrEmpty(genxyString))
+            {
                 return new Dictionary<string, object>();
+            }
 
             using (var reader = new GenxyReader(new StringReader(genxyString)))
             {
@@ -323,7 +337,9 @@ namespace Perpetuum.GenXY
         public static object DeserializeObject(string genxyString)
         {
             if (string.IsNullOrEmpty(genxyString))
+            {
                 return null;
+            }
 
             using (var reader = new GenxyReader(new StringReader(genxyString)))
             {

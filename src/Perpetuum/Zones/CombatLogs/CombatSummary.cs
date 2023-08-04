@@ -40,9 +40,11 @@ namespace Perpetuum.Zones.CombatLogs
                     _sensorJammerTotal++;
 
                     if (sje.Success)
-                        _sensorJammerSuccess++;
+                        {
+                            _sensorJammerSuccess++;
+                        }
 
-                    break;
+                        break;
                 }
                 case DemobilizerEventArgs de:
                 {

@@ -247,7 +247,9 @@ namespace Perpetuum.Bootstrapper
             s.StateChanged += (sender, state) =>
             {
                 if (state == HostState.Off)
+                {
                     are.Set();
+                }
             };
 
             are.WaitOne();
@@ -381,7 +383,9 @@ namespace Perpetuum.Bootstrapper
             success = false;
             var config = _container.Resolve<GlobalConfiguration>();
             if (!config.EnableUpnp)
+            {
                 return false;
+            }
 
             try
             {
@@ -608,7 +612,9 @@ namespace Perpetuum.Bootstrapper
                 return (id =>
                 {
                     if (id == 0)
+                    {
                         return ctx.ResolveNamed<Character>("nullcharacter");
+                    }
 
                     return ctx.Resolve<Character>(TypedParameter.From(id));
                 });
@@ -749,7 +755,9 @@ namespace Perpetuum.Bootstrapper
                 return effectType =>
                 {
                     if (!ctx.IsRegisteredWithKey<Effect>(effectType))
+                    {
                         return new Effect();
+                    }
 
                     return ctx.ResolveKeyed<Effect>(effectType);
                 };
@@ -1398,7 +1406,9 @@ namespace Perpetuum.Bootstrapper
 
                     var gex = e.ThrownException as PerpetuumException;
                     if (gex == null)
+                    {
                         return formatedEvent;
+                    }
 
                     var sb = new StringBuilder(formatedEvent);
 
@@ -1407,7 +1417,9 @@ namespace Perpetuum.Bootstrapper
                     sb.AppendFormat("Error = {0}\n", gex.error);
 
                     if (gex.Data.Count > 0)
+                    {
                         sb.AppendFormat("Data: {0}", gex.Data.ToDictionary().ToDebugString());
+                    }
 
                     return sb.ToString();
                 });
@@ -1544,7 +1556,9 @@ namespace Perpetuum.Bootstrapper
                 return ((zone, configuration) =>
                 {
                     if (!ctx.IsRegisteredWithKey<Presence>(configuration.PresenceType))
+                    {
                         return null;
+                    }
 
                     var p = ctx.ResolveKeyed<Presence>(configuration.PresenceType,TypedParameter.From(zone),TypedParameter.From(configuration));
 
@@ -2439,7 +2453,9 @@ namespace Perpetuum.Bootstrapper
                 return zone => 
                 {
                     if (zone is TrainingZone)
+                    {
                         return null;
+                    }
 
                     if (zone is StrongHoldZone)
                     {

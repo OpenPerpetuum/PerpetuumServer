@@ -45,7 +45,9 @@ namespace Perpetuum.Modules
                     }
 
                     if (cf == CategoryFlags.cf_robot_equipment)
+                    {
                         break;
+                    }
                 }
 
                 _modifiers[ed.Definition] = p.ToLookup(kvp => kvp.Key,kvp => kvp.Value);

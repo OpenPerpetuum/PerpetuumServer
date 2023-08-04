@@ -52,7 +52,9 @@ namespace Perpetuum.Collections.Spatial
                     foreach (var np in p.GetNeighbours())
                     {
                         if (np.X < 0 || np.X >= _numCellsX || np.Y < 0 || np.Y >= _numCellsY)
+                        {
                             continue;
+                        }
 
                         _neighbours[cell].Add(_cells[GetCellCoordIndex(np.X,np.Y)]);
                     }
@@ -78,7 +80,9 @@ namespace Perpetuum.Collections.Spatial
             var cy = y / _cellSizeY;
 
             if (cx < 0 || cx >= _numCellsX || cy < 0 || cy >= _numCellsY)
+            {
                 return null;
+            }
 
             var index = GetCellCoordIndex(cx, cy);
             return _cells[index];
@@ -105,12 +109,16 @@ namespace Perpetuum.Collections.Spatial
                 foreach (var neighbour in _neighbours[current])
                 {
                     if (closed.Contains(neighbour))
+                    {
                         continue;
+                    }
 
                     closed.Add(neighbour);
 
                     if ( !predicate(neighbour) )
+                    {
                         continue;
+                    }
 
                     s.Push(neighbour);
                 }

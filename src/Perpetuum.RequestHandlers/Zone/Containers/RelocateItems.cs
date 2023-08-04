@@ -27,7 +27,9 @@ namespace Perpetuum.RequestHandlers.Zone.Containers
 
                 sourceContainer.EnlistTransaction();
                 if (sourceContainer != targetContainer)
+                {
                     targetContainer.EnlistTransaction();
+                }
 
                 var itemEids = request.Data.GetOrDefault<long[]>(k.eid);
                 sourceContainer.RelocateItems(character, character, itemEids, targetContainer);

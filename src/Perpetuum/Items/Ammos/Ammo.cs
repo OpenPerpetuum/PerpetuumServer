@@ -16,7 +16,9 @@ namespace Perpetuum.Items.Ammos
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public virtual void ModifyOptimalRange(ref ItemPropertyModifier property) { }

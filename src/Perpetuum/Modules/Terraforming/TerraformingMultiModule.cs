@@ -25,9 +25,11 @@ namespace Perpetuum.Modules.Terraforming
         protected override void OnAction()
         {
             var terrainLock = GetLock() as TerrainLock;
-            if (terrainLock == null) 
+            if (terrainLock == null)
+            {
                 return;
-            
+            }
+
             var player = (ParentRobot as Player).ThrowIfNull(ErrorCodes.WTFErrorMedicalAttentionSuggested);
 
             (!player.InZone || player.States.Dead).ThrowIfTrue(ErrorCodes.PlayerNotFound);

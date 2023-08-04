@@ -32,7 +32,9 @@ namespace Perpetuum.Zones.PBS.EnergyWell
             get
             {
                 if (ED.Config.item_work_range != null)
+                {
                     return (int) ED.Config.item_work_range;
+                }
 
                 Logger.Error("no emitradius defined for " + ED.Definition + " " + ED.Name);
                 return 10;
@@ -44,7 +46,9 @@ namespace Perpetuum.Zones.PBS.EnergyWell
             get
             {
                 if (ED.Config.transferEfficiency != null)
+                {
                     return (double) ED.Config.transferEfficiency;
+                }
 
                 Logger.Error("no transfer efficiency is defined for " + ED.Definition + " " + ED.Name);
                 return 0.98;
@@ -56,7 +60,9 @@ namespace Perpetuum.Zones.PBS.EnergyWell
             get
             {
                 if (ED.Config.coreTransferred != null)
+                {
                     return (double)ED.Config.coreTransferred;
+                }
 
                 Logger.Error("no CoreTransferred is defined for " + ED.Definition + " " + ED.Name);
                 return 0.98;
@@ -134,11 +140,15 @@ namespace Perpetuum.Zones.PBS.EnergyWell
             {
                 var needed = amount - result.Sum(r => r.Quantity);
                 if (needed <= 0)
+                {
                     break;
+                }
 
                 var nearestNode = node.GetNearestMineralPosition(location);
                 if (nearestNode.Distance(location) > range)
+                {
                     continue;
+                }
 
                 var e = new MineralExtractor(nearestNode, (uint)needed,_materialHelper);
                 layer.AcceptVisitor(e);
@@ -150,15 +160,19 @@ namespace Perpetuum.Zones.PBS.EnergyWell
 
         protected override void PBSActiveObjectAction(IZone zone)
         {
-            if (IsDepleted) 
+            if (IsDepleted)
+            {
                 return; //kifogyott alola a mineral
+            }
 
             _lastCoreUsed = 0;
 
             // van-e reaktor a networkbe akinek hianyzik egy toltes
             var reactors = ConnectionHandler.NetworkNodes.OfType<PBSReactor>().Where(r => (r.CoreMax - r.Core) > CoreTransferred && r.OnlineStatus).ToList();
             if (reactors.Count == 0)
+            {
                 return; //no reactor to feed
+            }
 
             var mineralLayer = zone.Terrain.GetMaterialLayer(MaterialType.EnergyMineral) as MineralLayer;
             if (mineralLayer == null)

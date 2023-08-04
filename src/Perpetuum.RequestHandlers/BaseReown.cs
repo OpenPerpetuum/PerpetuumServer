@@ -83,7 +83,9 @@ namespace Perpetuum.RequestHandlers
                     //enqueue new children
 
                     if (!ed.CategoryFlags.IsCategory(CategoryFlags.cf_production_facilities))
+                    {
                         continue;
+                    }
 
                     foreach (var childrenEid in _entityServices.Repository.GetFirstLevelChildren(eid))
                     {

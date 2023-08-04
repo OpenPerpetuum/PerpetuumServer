@@ -40,7 +40,9 @@ namespace Perpetuum.Zones.Beams
         public BeamBuilder WithSource(Unit unit)
         {
             if (unit == null)
+            {
                 return this;
+            }
 
             _sourceEid = unit.Eid;
             return WithSourcePosition(unit.CurrentPosition);
@@ -57,7 +59,9 @@ namespace Perpetuum.Zones.Beams
         public BeamBuilder WithTarget(Unit target)
         {
             if (target == null)
+            {
                 return this;
+            }
 
             _targetEid = target.Eid;
             return WithTargetPosition(target.CurrentPosition);
@@ -74,7 +78,9 @@ namespace Perpetuum.Zones.Beams
         public BeamBuilder WithVisibility(int visibility)
         {
             if (visibility < BEAM_VISIBILITY)
+            {
                 visibility = BEAM_VISIBILITY;
+            }
 
             _visibility = visibility;
             return this;

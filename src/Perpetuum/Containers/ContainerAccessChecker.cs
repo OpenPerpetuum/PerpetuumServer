@@ -46,11 +46,15 @@ namespace Perpetuum.Containers
 
             //only docked character is allowed to relocate to corporate hangar
             if (!_character.IsDocked)
+            {
                 return ErrorCodes.CharacterHasToBeDocked;
+            }
 
             //check structure eid VS docked state
             if ( _character.CurrentDockingBaseEid != container.StructureRoot )
+            {
                 return ErrorCodes.ItemOutOfRange;
+            }
 
             return ErrorCodes.NoError;
         }
@@ -66,7 +70,9 @@ namespace Perpetuum.Containers
 
             //is it packed?
             if (container.IsRepackaged)
+            {
                 _error = ErrorCodes.ItemHasToBeUnpacked;
+            }
         }
 
         public void Visit(CorporateHangar hangar)
@@ -74,7 +80,9 @@ namespace Perpetuum.Containers
             Visit((Container)hangar);
 
             if ( _error != ErrorCodes.NoError )
+            {
                 return;
+            }
 
             if (hangar.IsLeaseExpired && _access != ContainerAccess.LogList)
             {
@@ -87,7 +95,9 @@ namespace Perpetuum.Containers
             {
                 _error = CheckDockedState(hangar);
                 if ( _error != ErrorCodes.NoError )
+                {
                     return;
+                }
             }
 
             //is the owner of this container is the corporation the character is a member of?
@@ -116,7 +126,9 @@ namespace Perpetuum.Containers
             //check role
             var memberRole = Corporation.GetRoleFromSql(_character);
             if ( !hangar.HasAccess(memberRole,_access) )
+            {
                 _error = ErrorCodes.InsufficientPrivileges;
+            }
         }
 
         public void Visit(CorporateHangarFolder folder)
@@ -191,7 +203,9 @@ namespace Perpetuum.Containers
             _error = inventory.CheckParentRobot(_character.Eid);
 
             if ( _error != ErrorCodes.NoError )
+            {
                 return;
+            }
 
             Visit((Container)inventory);
         }

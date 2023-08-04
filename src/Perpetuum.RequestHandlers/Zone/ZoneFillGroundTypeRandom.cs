@@ -32,7 +32,11 @@ namespace Perpetuum.RequestHandlers.Zone
                     var sin = (Math.Sin(angle * period) + 1.0) * 0.5;
                     var noise = (FastRandom.NextDouble()-0.5)* noiseMagnitude;
                     var boundary = radius * (1.0 - fuzzPercent) + (radius * sin * fuzzPercent);
-                    if (center.TotalDistance2D(x, y) > (boundary + noise).Clamp(1, radius)) continue;
+                    if (center.TotalDistance2D(x, y) > (boundary + noise).Clamp(1, radius))
+                    {
+                        continue;
+                    }
+
                     var info = plants.GetValue(x, y);
                     info.SetGroundType(groundType);
                     plants[x, y] = info;

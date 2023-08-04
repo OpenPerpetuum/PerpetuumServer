@@ -23,7 +23,9 @@ namespace Perpetuum.Services.ExtensionService
         {
             var now = DateTime.Now;
             if (now.Hour < 8 || now.Hour > 11)
+            {
                 return;
+            }
 
             if (_workInProgress)
             {
@@ -39,7 +41,10 @@ namespace Perpetuum.Services.ExtensionService
                 {
                     //was it done today?
                     if (WasExtensionPointsCheckToday(now))
+                    {
                         return;
+                    }
+
                     var sqlTime = DoGiveExtensionPointsToAccounts();
                     InformAffectedCharacters(sqlTime);
                 });

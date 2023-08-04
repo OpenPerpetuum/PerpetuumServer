@@ -113,7 +113,10 @@ namespace Perpetuum.Zones.PBS
             {
                 var t = CurrentState.ReinforceEndTime;
 
-                if (t.Equals(default(DateTime))) return null;
+                if (t.Equals(default(DateTime)))
+                {
+                    return null;
+                }
 
                 return t;
             }
@@ -326,7 +329,9 @@ namespace Perpetuum.Zones.PBS
             private void OnUnitDamageTaken(Unit owner, Unit attacker, DamageTakenEventArgs e)
             {
                 if (owner.ArmorPercentage >= REINFORCE_THRESHOLD)
+                {
                     return;
+                }
 
                 ToReinforce(attacker);
             }
@@ -339,7 +344,11 @@ namespace Perpetuum.Zones.PBS
 
             public override void ToReinforce(Unit attacker)
             {
-                if (!CanSwitchToReinforce) return;
+                if (!CanSwitchToReinforce)
+                {
+                    return;
+                }
+
                 base.ToReinforce(attacker);
             }
 
@@ -348,12 +357,19 @@ namespace Perpetuum.Zones.PBS
                 get
                 {
                     if (!ReinforceHandler._pbsUnit.IsFullyConstructed())
+                    {
                         return false;
+                    }
 
                     if (ReinforceHandler._pbsUnit.IsOrphaned)
+                    {
                         return false;
+                    }
 
-                    if (ReinforceHandler.ReinforceCounter <= 0) return false;
+                    if (ReinforceHandler.ReinforceCounter <= 0)
+                    {
+                        return false;
+                    }
 
                     return true;
                 }
@@ -365,7 +381,11 @@ namespace Perpetuum.Zones.PBS
                 base.Update(time);
 
                 _timer.Update(time);
-                if (!_timer.Passed) return;
+                if (!_timer.Passed)
+                {
+                    return;
+                }
+
                 _timer.Reset();
                 
 
@@ -469,7 +489,9 @@ namespace Perpetuum.Zones.PBS
 
                 var zone = pbsUnitObject.Zone;
                 if (zone == null)
+                {
                     return;
+                }
 
                 //ettol van rajta a grafikai effekt
                 pbsUnitObject.States.Reinforced = true;
@@ -524,10 +546,14 @@ namespace Perpetuum.Zones.PBS
                             foreach (var networkNode in networkNodes)
                             {
                                 if (networkNode.Equals(pbsUnitObject))
+                                {
                                     continue;
+                                }
 
                                 if (!networkNode.ReinforceHandler.CurrentState.IsReinforced)
+                                {
                                     continue;
+                                }
 
                                 //ebben a nodeban van, hogy mikor lesz vege a reinforcenak
                                 var tmpEnd = networkNode.ReinforceHandler.GetReinforceDetails();
@@ -587,12 +613,16 @@ namespace Perpetuum.Zones.PBS
             {
                 _timer.Update(time);
                 if (!_timer.Passed)
+                {
                     return;
+                }
 
                 _timer.Reset();
 
                 if (Interlocked.CompareExchange(ref _inProgress, 1, 0) == 1)
+                {
                     return;
+                }
 
                 Task.Run(() =>
                 {
@@ -614,11 +644,15 @@ namespace Perpetuum.Zones.PBS
 
                 var zone = pbsUnitObject.Zone;
                 if (zone == null)
+                {
                     return;
+                }
 
                 //if reinforce end is defined and is passed 
                 if (DateTime.Now <= _reinforceEnd)
+                {
                     return;
+                }
 
                 //reinforced state is ending
 
@@ -783,7 +817,9 @@ namespace Perpetuum.Zones.PBS
 
                 _timer.Update(time);
                 if (!_timer.Passed)
+                {
                     return;
+                }
 
                 ToNormal();
 

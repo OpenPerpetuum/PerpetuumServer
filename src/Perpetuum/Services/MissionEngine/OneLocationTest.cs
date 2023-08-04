@@ -51,7 +51,9 @@ namespace Perpetuum.Services.MissionEngine
                 {
                     var sHash = missionInProgress.GenerateStructureHash();
                     if (sHash > 0)
+                    {
                         structureHashList.Add(sHash);
+                    }
 
                     successCount++;
 

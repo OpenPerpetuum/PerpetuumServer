@@ -55,11 +55,15 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
             foreach (var missionCategory in Enum.GetValues(typeof (MissionCategory)).Cast<MissionCategory>())
             {
                 if (rndMissionsHere.All(m => m.missionCategory != missionCategory))
+                {
                     continue;
+                }
 
                 //one mission per category
                 if (missionFilter.IsMissionRunningWithThisCategory(missionCategory))
+                {
                     continue;
+                }
 
                 for (var missionLevel = 0; missionLevel <= location.maxMissionLevel; missionLevel++)
                 {

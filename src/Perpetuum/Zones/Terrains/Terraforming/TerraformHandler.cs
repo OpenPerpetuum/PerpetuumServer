@@ -66,7 +66,9 @@ namespace Perpetuum.Zones.Terrains.Terraforming
         private void DequeueTerraformingOperations()
         {
             if (_terraformingOperations.Count == 0)
+            {
                 return;
+            }
 
             using (new TerrainUpdateMonitor(_zone))
             {
@@ -79,7 +81,9 @@ namespace Perpetuum.Zones.Terrains.Terraforming
                     terraformingOperation.AcceptVisitor(selector);
 
                     if (selector.Type == TerraformType.Undefined)
+                    {
                         continue;
+                    }
 
                     var preparedArea = new Area(terraformingOperation.TerraformArea.X1 - 1,
                                                 terraformingOperation.TerraformArea.Y1 - 1,
@@ -145,7 +149,9 @@ namespace Perpetuum.Zones.Terrains.Terraforming
         private void ProcessAffectedPositions()
         {
             if (!_affectedTiles.Any())
+            {
                 return;
+            }
 
             SendAffectedPositions();
         }

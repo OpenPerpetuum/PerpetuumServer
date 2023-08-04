@@ -56,7 +56,9 @@ namespace Perpetuum.Services.EventServices.EventProcessors
         private void OnStateChange()
         {
             if (_gameTime == null || _weatherState == null)
+            {
                 return;
+            }
 
             var nextEffect = GetEffect(_gameTime.GetDayState(), _weatherState.getWeatherState());
 

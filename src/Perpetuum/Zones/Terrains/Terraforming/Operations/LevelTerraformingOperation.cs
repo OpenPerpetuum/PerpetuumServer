@@ -26,7 +26,9 @@
             var centerAltitude = altitude.GetValue(CenterPosition);
 
             if (CenterPosition.intX == x && CenterPosition.intY == y)
+            {
                 return 0;
+            }
 
             var currentAltitude = altitude.GetValue(x, y);
             var altitudeDifference = (centerAltitude - currentAltitude).Clamp(-1*(int) DistanceConstants.MAX_TERRAFORM_LEVEL_DIFFERENCE, (int) DistanceConstants.MAX_TERRAFORM_LEVEL_DIFFERENCE);

@@ -60,7 +60,9 @@ namespace Perpetuum.Collections.Spatial
             for (var i = 0; i < 4; i++)
             {
                 if (_nodes[i].TryAdd(x, y, value,out item))
+                {
                     return true;
+                }
             }
 
             item = null;

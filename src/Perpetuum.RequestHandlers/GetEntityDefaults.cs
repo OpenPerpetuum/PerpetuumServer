@@ -84,7 +84,9 @@ namespace Perpetuum.RequestHandlers
 
                 var container = robot.GetContainer();
                 if (container != null)
+                {
                     _info.Add(k.container, container.Definition);
+                }
 
                 _info[k.volume] = robot.Volume;
                 _info[k.repackedvolume] = robot.Volume * 0.5;
@@ -96,7 +98,9 @@ namespace Perpetuum.RequestHandlers
 
                 var bonus = component.ExtensionBonuses.ToDictionary("a", cb => cb.ToDictionary());
                 if (bonus.Count > 0)
+                {
                     _info[k.bonus] = bonus;
+                }
             }
 
             public static Dictionary<string, object> Build(IExtensionReader extensionReader,IRobotTemplateRelations robotTemplateRelations,EntityDefault ed)
@@ -109,7 +113,9 @@ namespace Perpetuum.RequestHandlers
 
                     var robotTemplate = robotTemplateRelations.GetRelatedTemplate(ed);
                     if (robotTemplate != null)
+                    {
                         entity = robotTemplate.Build();
+                    }
 
                     if (entity == null)
                     {

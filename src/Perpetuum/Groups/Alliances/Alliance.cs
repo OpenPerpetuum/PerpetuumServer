@@ -66,7 +66,9 @@ namespace Perpetuum.Groups.Alliances
                               .ExecuteScalar<long>();
 
             if (eid == 0L)
+            {
                 return null;
+            }
 
             return GetOrThrow(eid);
         }

@@ -13,7 +13,9 @@ namespace Perpetuum.Zones.Effects
         {
             var player = Owner as Player;
             if( player == null )
+            {
                 return;
+            }
 
             var isMoving = player.CurrentSpeed > 0;
             var hasAnyActiveModule = player.ActiveModules.Any(m => m.State.Type != ModuleStateType.Idle && m.State.Type != ModuleStateType.Disabled);

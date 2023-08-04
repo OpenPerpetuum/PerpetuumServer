@@ -20,7 +20,9 @@ namespace Perpetuum.RequestHandlers
         protected override Account LoadAccount(IRequest request)
         {
             if ( _steamManager.SteamAppID <= 0 )
+            {
                 throw new PerpetuumException(ErrorCodes.SteamLoginDisabled);
+            }
 
             var encryptedTicket = request.Data.GetOrDefault<byte[]>("encData");
             var accountId = request.Data.GetOrDefault<int>(k.accountID);

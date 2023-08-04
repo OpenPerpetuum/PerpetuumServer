@@ -70,7 +70,9 @@ namespace Perpetuum.EntityFramework
             {
                 double v;
                 if (_coreConsumption.TryGetValue(out v))
+                {
                     return v;
+                }
 
                 Logger.Warning($"no coreconsumption found for definition: {definition}");
                 v = 0;

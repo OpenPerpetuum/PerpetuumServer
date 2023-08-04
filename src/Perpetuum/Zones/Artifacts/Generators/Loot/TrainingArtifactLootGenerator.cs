@@ -16,7 +16,9 @@ namespace Perpetuum.Zones.Artifacts.Generators.Loot
             var lootItems = _lootGenerator.GenerateLoot(artifact);
 
             if (lootItems == null)
+            {
                 return null;
+            }
 
             var randomPosition = lootItems.Position.GetRandomPositionInRange2D(MIN_RANGE, MAX_RANGE);
             return new ArtifactLootItems(randomPosition,lootItems.LootItems);

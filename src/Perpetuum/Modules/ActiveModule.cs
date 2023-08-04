@@ -30,7 +30,9 @@ namespace Perpetuum.Modules
         public void AddEffectModifier(AggregateField field)
         {
             if ( _effectModifiers == null )
+            {
                 _effectModifiers = new List<AggregateField>();
+            }
 
             _effectModifiers.Add(field);
         }
@@ -45,7 +47,9 @@ namespace Perpetuum.Modules
         protected void ApplyEffectModifiers(ref ItemPropertyModifier m)
         {
             if (_effectModifiers == null)
+            {
                 return;
+            }
 
             foreach (var effectModifier in _effectModifiers)
             {
@@ -58,7 +62,9 @@ namespace Perpetuum.Modules
             if (_effectModifiers != null)
             {
                 if (_effectModifiers.Contains(field))
+                {
                     return true;
+                }
             }
 
             return base.IsRelated(field);
@@ -221,12 +227,16 @@ namespace Perpetuum.Modules
             set
             {
                 if (_lock != null)
+                {
                     _lock.Changed -= LockChangedHandler;
+                }
 
                 _lock = value;
 
                 if (_lock != null)
+                {
                     _lock.Changed += LockChangedHandler;
+                }
             }
         }
 
@@ -235,17 +245,23 @@ namespace Perpetuum.Modules
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         private void LockChangedHandler(Lock @lock)
         {
             if (State.Type == ModuleStateType.Idle || State.Type == ModuleStateType.AmmoLoad)
+            {
                 return;
+            }
 
             var shutdown = @lock.State == LockState.Disabled || (ED.AttributeFlags.PrimaryLockedTarget && !@lock.Primary);
-            if (!shutdown) 
+            if (!shutdown)
+            {
                 return;
+            }
 
             State.SwitchTo(ModuleStateType.Shutdown);
             _lock = null;
@@ -275,7 +291,9 @@ namespace Perpetuum.Modules
 
             var player = ParentRobot as Player;
             if (player == null)
+            {
                 return;
+            }
 
             var packet = new Packet(ZoneCommand.ModuleChangeState);
             Debug.Assert(ParentComponent != null, "ParentComponent != null");
@@ -373,12 +391,16 @@ namespace Perpetuum.Modules
             var beamType = GetBeamType();
 
             if (beamType <= 0)
+            {
                 return delay;
+            }
 
             delay = BeamHelper.GetBeamDelay(beamType);
 
             if (duration == 0)
+            {
                 duration = (int)CycleTime.TotalMilliseconds;
+            }
 
             Debug.Assert(ParentComponent != null, "ParentComponent != null");
             var slot = ParentComponent.Type == RobotComponentType.Chassis ? Slot : 0xff; // -1
@@ -411,13 +433,17 @@ namespace Perpetuum.Modules
             var delay = 0;
             var beamType = GetBeamType();
 
-            if (beamType <= 0) 
+            if (beamType <= 0)
+            {
                 return delay;
+            }
 
             delay = BeamHelper.GetBeamDelay(beamType);
 
             if (duration == 0)
+            {
                 duration = (int) CycleTime.TotalMilliseconds;
+            }
 
             Debug.Assert(ParentComponent != null, "ParentComponent != null");
             var slot = ParentComponent.Type == RobotComponentType.Chassis ? Slot : 0xff; // -1
@@ -483,10 +509,14 @@ namespace Perpetuum.Modules
 
             var distance = ParentRobot.GetDistance(target);
             if (distance <= OptimalRange)
+            {
                 return value;
+            }
 
             if (distance > OptimalRange + Falloff)
+            {
                 return 0.0;
+            }
 
             var x = (distance - OptimalRange) / Falloff;
             var m = Math.Cos(x * Math.PI) / 2 + 0.5;
@@ -530,7 +560,9 @@ namespace Perpetuum.Modules
         {
             var player = ParentRobot as Player;
             if (player == null)
+            {
                 return;
+            }
 
             var packet = new CombatLogPacket(error, this, _lock);
             player.Session.SendPacket(packet);
@@ -544,7 +576,9 @@ namespace Perpetuum.Modules
 
             var ammo = GetAmmo();
             if (ammo == null)
+            {
                 return result;
+            }
 
             result.Add(k.ammo, ammo.ToDictionary());
             result.Add(k.ammoQuantity, ammo.Quantity);
@@ -560,7 +594,9 @@ namespace Perpetuum.Modules
 
                 var ammo = GetAmmo();
                 if (ammo != null)
+                {
                     volume += ammo.Volume;
+                }
 
                 return volume;
             }

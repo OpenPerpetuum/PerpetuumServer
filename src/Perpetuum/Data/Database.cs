@@ -44,7 +44,9 @@ namespace Perpetuum.Data
             foreach (var record in records)
             {
                 if (!(selector?.Invoke(record) ?? true))
+                {
                     continue;
+                }
 
                 var key = record.GetValue<TKey>(columnKey);
 

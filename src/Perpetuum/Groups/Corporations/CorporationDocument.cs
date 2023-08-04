@@ -199,8 +199,11 @@ namespace Perpetuum.Groups.Corporations
         {
             DeleteAllRegistered();
          
-            if (registeredMembers.IsNullOrEmpty()) return;
-   
+            if (registeredMembers.IsNullOrEmpty())
+            {
+                return;
+            }
+
             foreach (var member in registeredMembers)
             {
 
@@ -209,7 +212,10 @@ namespace Perpetuum.Groups.Corporations
 
             }
 
-            if (writeMembers.IsNullOrEmpty()) return;
+            if (writeMembers.IsNullOrEmpty())
+            {
+                return;
+            }
 
             foreach (var writeMember in writeMembers)
             {

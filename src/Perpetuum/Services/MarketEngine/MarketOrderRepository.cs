@@ -146,7 +146,9 @@ namespace Perpetuum.Services.MarketEngine
             {
                 var marketItem = CreateMarketOrderFromRecord(record);
                 if (marketItem == null)
+                {
                     continue;
+                }
 
                 marketItem.duration = 0; //ezt itt miert nullazom le? biztos valami kliens info %%%
                 yield return marketItem;
@@ -252,7 +254,10 @@ namespace Perpetuum.Services.MarketEngine
         private MarketOrder CreateMarketOrderFromRecord(IDataRecord record)
         {
             if (record == null)
+            {
                 return null;
+            }
+
             var order = _marketOrderFactory();
             order.id             = record.GetValue<int>("marketitemid");
             order.marketEID      = record.GetValue<long>("marketeid");

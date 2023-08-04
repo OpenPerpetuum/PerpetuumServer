@@ -45,7 +45,10 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                     var oneTask = Task.Factory.StartNew(() => { DrawOneCategory(request,location, category1); }, new CancellationToken(),MissionResolveTester.ResolveTestTaskCreationOptions,TaskScheduler.Default);
                     tasks.Add(oneTask);
 
-                    if (tasks.Count(tsk => !tsk.IsCompleted) < cpus) continue;
+                    if (tasks.Count(tsk => !tsk.IsCompleted) < cpus)
+                    {
+                        continue;
+                    }
 
                     while (tasks.Count(tsk => !tsk.IsCompleted) > cpus)
                     {
@@ -117,8 +120,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
             var ft = _zone.GetUnit(missionLocation.LocationEid);
             var littleText = "locationID:" + missionLocation.id;
             if (ft != null)
+            {
                 littleText += " " + ft.Name;
-
+            }
 
             var category1 = category;
             bitmap.WithGraphics(gx => gx.DrawString(category1.ToString(), new Font("Tahoma", 15), new SolidBrush(Color.White), new PointF(20, 40)));

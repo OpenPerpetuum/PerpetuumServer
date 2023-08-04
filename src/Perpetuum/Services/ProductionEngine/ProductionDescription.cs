@@ -72,7 +72,10 @@ namespace Perpetuum.Services.ProductionEngine
 
             foreach (var component in components)
             {
-                if (component.IsSkipped(productionInProgressType)) continue;
+                if (component.IsSkipped(productionInProgressType))
+                {
+                    continue;
+                }
 
                 var oneComponent = new Dictionary<string, object>
                 {
@@ -151,7 +154,9 @@ namespace Perpetuum.Services.ProductionEngine
             {
                 //skip license, since that's only possible to get by creating it from the patent
                 if (EntityDefault.Get(component.EntityDefault.Definition).CategoryFlags.IsCategory(CategoryFlags.cf_documents))
+                {
                     continue;
+                }
 
                 var entity = Entity.Factory.CreateWithRandomEID(component.EntityDefault);
                 entity.Owner = character.Eid;

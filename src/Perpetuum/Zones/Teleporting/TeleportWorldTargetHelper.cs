@@ -27,7 +27,9 @@ namespace Perpetuum.Zones.Teleporting
                 var targetWorldPos = teleportColumn.Zone.ToWorldPosition(teleportColumn.CurrentPosition);
 
                 if (!myWorldPos.IsInRangeOf2D(targetWorldPos,collectColumnsDistance))
+                {
                     continue;
+                }
 
                 var builder = _descriptionBuilderFactory();
                 builder.SetId(descriptionId++)

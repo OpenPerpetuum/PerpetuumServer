@@ -24,7 +24,9 @@ namespace Perpetuum.Zones
             foreach (var zone in zoneManager.Zones)
             {
                 if (zone.GetUnit(eid) is T unit)
+                {
                     return unit;
+                }
             }
 
             return null;
@@ -35,8 +37,9 @@ namespace Perpetuum.Zones
             foreach (var zone in zoneManager.Zones)
             {
                 if (zone.TryGetPlayer(character, out player))
+                {
                     return true;
-
+                }
             }
 
             player = null;
@@ -46,7 +49,9 @@ namespace Perpetuum.Zones
         public static Player GetPlayer(this IZoneManager zoneManager, Character character)
         {
             if (zoneManager.TryGetPlayer(character, out Player player))
+            {
                 return player;
+            }
 
             return null;
         }

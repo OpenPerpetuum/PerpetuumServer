@@ -22,11 +22,15 @@ namespace Perpetuum.RequestHandlers
 
                 var dockingBase = character.GetCurrentDockingBase();
                 if (dockingBase == null)
+                {
                     throw new PerpetuumException(ErrorCodes.DockingBaseNotFound);
+                }
 
                 var shop = dockingBase.GetItemShop();
                 if (shop == null || shop.Eid != locationEid)
+                {
                     throw new PerpetuumException(ErrorCodes.ItemNotFound);
+                }
 
                 var publicContainer = character.GetPublicContainerWithItems();
                 shop.Buy(publicContainer,character, entryId, quantity);

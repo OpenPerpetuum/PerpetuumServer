@@ -26,7 +26,9 @@ namespace Perpetuum.Zones
         public static bool IsWalkableForNpc(this IZone zone, int x, int y, double slope = MIN_SLOPE)
         {
             if (!zone.IsWalkable(x, y, slope))
+            {
                 return false;
+            }
 
             return !zone.Terrain.Controls[x, y].NpcRestricted;
         }
@@ -44,14 +46,20 @@ namespace Perpetuum.Zones
         public static bool IsWalkable(this IZone zone, Position position, double slope = MIN_SLOPE)
         {
             if (zone == null)
+            {
                 return false;
+            }
 
             if (!position.IsValid(zone.Size))
+            {
                 return false;
+            }
 
             var isBlocked = zone.Terrain.IsBlocked(position);
             if (isBlocked)
+            {
                 return false;
+            }
 
             var validSlope = zone.Terrain.Slope.CheckSlope(position.intX, position.intY, slope);
             return validSlope;
@@ -70,7 +78,9 @@ namespace Perpetuum.Zones
         public static Position FixZ(this IZone zone, Position position)
         {
             if (zone == null)
+            {
                 return position;
+            }
 
             return new Position(position.X, position.Y,zone.GetZ(position));
         }

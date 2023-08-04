@@ -69,7 +69,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
         private void OnExpired()
         {
             if ( _expired )
+            {
                 return;
+            }
 
             _expired = true;
 
@@ -108,7 +110,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
         private uint DecreaseValue(int x, int y, uint value)
         {
             if (!_area.Contains(x, y))
+            {
                 return 0;
+            }
 
             var offset = GetOffset(x, y);
 
@@ -124,7 +128,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
 
             var maxAmount = GetMaxAmount();
             if (maxAmount <= 0)
+            {
                 OnExpired();
+            }
 
             return amount;
         }
@@ -135,7 +141,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
             for (var i = 0; i < _values.Length; i++)
             {
                 if (_values[i] > max)
+                {
                     max = _values[i];
+                }
             }
             return max;
         }
@@ -158,7 +166,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
         public uint GetValue(int x, int y)
         {
             if (!_area.Contains(x, y))
+            {
                 return 0;
+            }
 
             var offset = GetOffset(x,y);
 
@@ -174,7 +184,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
         private void SetValue(int x, int y,uint value)
         {
             if (!_area.Contains(x, y))
+            {
                 return;
+            }
 
             var offset = GetOffset(x,y);
             _values[offset] = value;
@@ -190,21 +202,29 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
             if (Expirable)
             {
                 if (_expired)
+                {
                     return;
+                }
 
                 _expiry.Update(time);
 
                 if (_expiry.Expired)
+                {
                     OnExpired();
+                }
             }
 
             if (!_updated)
+            {
                 return;
+            }
 
             _saveTimer.Update(time);
 
             if (!_saveTimer.Passed)
+            {
                 return;
+            }
 
             _saveTimer.Reset();
 
@@ -224,11 +244,15 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
                 {
                     var v = _values[offset++];
                     if (v <= 0)
+                    {
                         continue;
+                    }
 
                     var d =  p.SqrDistance(ax,ay);
                     if (d >= nearestDist)
+                    {
                         continue;
+                    }
 
                     nearest = new Point(ax,ay);
                     nearestDist = d;

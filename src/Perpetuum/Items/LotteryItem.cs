@@ -52,7 +52,9 @@ namespace Perpetuum.Items
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public EntityDefault PickRandomItem()

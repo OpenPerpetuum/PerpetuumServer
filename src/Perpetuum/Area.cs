@@ -188,7 +188,9 @@ namespace Perpetuum
                 var y2 = y1 + h;
 
                 if (y2 >= _y2)
+                {
                     y2 = _y2;
+                }
 
                 var x1 = _x1;
                 do
@@ -196,7 +198,9 @@ namespace Perpetuum
                     var x2 = x1 + w;
 
                     if (x2 >= _x2)
+                    {
                         x2 = _x2;
+                    }
 
                     yield return new Area(x1, y1, x2, y2);
                     x1 = x2;
@@ -247,14 +251,26 @@ namespace Perpetuum
         public double SqrDistance(int x, int y)
         {
             var dx = 0;
-            if (X1 > x) dx = X1 - x;
+            if (X1 > x)
+            {
+                dx = X1 - x;
+            }
             else 
-            if (X2 < x) dx = x - X2;
+            if (X2 < x)
+            {
+                dx = x - X2;
+            }
 
             var dy = 0;
-            if (Y1 > y) dy = Y1 - y;
+            if (Y1 > y)
+            {
+                dy = Y1 - y;
+            }
             else 
-            if (Y2 < y) dy = y - Y2;
+            if (Y2 < y)
+            {
+                dy = y - Y2;
+            }
 
             return dx*dx + dy*dy;
         }
@@ -268,7 +284,9 @@ namespace Perpetuum
         public double SqrDistance(Area area)
         {
             if (IntersectsWith(area))
+            {
                 return 0.0;
+            }
 
             var mostLeft = _x1 < area.X1 ? this : area;
             var mostRight = area.X2 < _x1 ? this : area;
@@ -305,7 +323,9 @@ namespace Perpetuum
             var y2 = Math.Min(a.Y2, b.Y2);
 
             if (x2 >= x1 && y2 >= y1)
+            {
                 return new Area(x1, y1, x2, y2);
+            }
 
             return Empty;
         }
@@ -351,7 +371,9 @@ namespace Perpetuum
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
+            {
                 return false;
+            }
 
             return obj is Area && Equals((Area)obj);
         }

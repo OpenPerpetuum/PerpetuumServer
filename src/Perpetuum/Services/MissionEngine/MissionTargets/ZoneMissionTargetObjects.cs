@@ -76,10 +76,14 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         protected override bool CanHandleMissionEvent(LootMissionEventInfo e)
         {
             if (MyTarget.Definition != e.LootedItem.Definition)
+            {
                 return false;
+            }
 
             if (!IsZoneOrPositionValid(e.LootedPosition.ToPosition()))
+            {
                 return false;
+            }
 
             var isGenericRandomItem = EntityDefault.Get(MyTarget.Definition).CategoryFlags.IsCategory(CategoryFlags.cf_generic_random_items);
             
@@ -87,10 +91,14 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             if (myMission.behaviourType == MissionBehaviourType.Random && isGenericRandomItem)
             {
                 if (e.MissionGuid != MyZoneMissionInProgress.missionGuid)
+                {
                     return false;
+                }
 
                 if (e.DisplayOrder != MyTarget.displayOrder)
+                {
                     return false;
+                }
             }
 
             return true;
@@ -137,7 +145,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             Log("checking position " + MyTarget.targetPosition + " VS " + e.ReachedPoint);
 
             if (!IsZoneOrPositionValid(e.ReachedPoint.ToPosition()))
+            {
                 return false;
+            }
 
             return true;
         }
@@ -197,7 +207,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             Log("pop npc checking position " + MyTarget.targetPosition + " VS " + e.PoppedAtPoint);
 
             if (!IsZoneOrPositionValid(e.PoppedAtPoint.ToPosition()))
+            {
                 return false;
+            }
 
             return true;
         }
@@ -285,7 +297,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             var npc = e.LockedNpc;
 
             if (MyZoneMissionInProgress.missionGuid != npc.GetMissionGuid())
+            {
                 return false;
+            }
 
             if (_lockedUnits.Contains(npc.Eid))
             {
@@ -384,7 +398,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             if (MyTarget.useQuantityOnly)
             {
                 if (MyZoneMissionInProgress.missionGuid != e.KilledNpc.GetMissionGuid())
+                {
                     return false;
+                }
 
                 Log("marked npc was killed " + this);
                 return true;
@@ -392,10 +408,14 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
 
             //definition mode - oldschool
             if (MyTarget.Definition != definitionKilled)
+            {
                 return false;
+            }
 
             if (!IsZoneOrPositionValid(e.KillPoint.ToPosition()))
+            {
                 return false;
+            }
 
             Log("kill target progressed " + this);
 
@@ -465,13 +485,19 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         protected override bool CanHandleMissionEvent(ScanMaterialEventInfo e)
         {
             if (e.ScanProbeType != MyTarget.GetProbeType)
+            {
                 return false;
+            }
 
             if (e.ScannedDefinition != MyTarget.MineralDefinition)
+            {
                 return false;
+            }
 
             if (!IsZoneOrPositionValid(e.ScanPoint.ToPosition()))
+            {
                 return false;
+            }
 
             return true;
         }
@@ -532,10 +558,14 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             }
 
             if (MyTarget.Definition != e.ScannedNpc.Definition)
+            {
                 return false;
+            }
 
             if (!IsZoneOrPositionValid(e.ScannedPoint.ToPosition()))
+            {
                 return false;
+            }
 
             return true;
         }
@@ -608,10 +638,14 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             }
 
             if (MyTarget.Definition != e.ScannedNpc.Definition)
+            {
                 return false;
+            }
 
             if (!IsZoneOrPositionValid(e.ScanPoint.ToPosition()))
+            {
                 return false;
+            }
 
             return true;
         }
@@ -692,17 +726,23 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             else
             {
                 if (_progressCounter.IsEveryNTurn(EVERY_N))
+                {
                     this.SendReportToMissionEngine();
+                }
             }
         }
 
         protected override bool CanHandleMissionEvent(HarvestPlantEventInfo e)
         {
             if (MyTarget.Definition != e.HarvestedDefinition)
+            {
                 return false;
+            }
 
             if (!IsZoneOrPositionValid(e.HarvestedPoint.ToPosition()))
+            {
                 return false;
+            }
 
             return true;
         }
@@ -770,10 +810,14 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         protected override bool CanHandleMissionEvent(DrillMineralEventInfo e)
         {
             if (MyTarget.Definition != e.DrilledDefinition)
+            {
                 return false;
+            }
 
             if (!IsZoneOrPositionValid(e.DrillPoint.ToPosition()))
+            {
                 return false;
+            }
 
             return true;
         }
@@ -790,7 +834,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             else
             {
                 if (_progressCounter.IsEveryNTurn(EVERY_N))
+                {
                     this.SendReportToMissionEngine();
+                }
             }
         }
 
@@ -854,10 +900,14 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         protected override bool CanHandleMissionEvent(SubmitItemEventInfo e)
         {
             if (MyTarget.Definition != e.SubmittedItem.Definition)
+            {
                 return false;
+            }
 
             if (!IsZoneOrPositionValid(e.SubmitPoint.ToPosition()))
+            {
                 return false;
+            }
 
             if (MyTarget.ValidMissionStructureEidSet)
             {
@@ -887,7 +937,10 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         [CanBeNull]
         public SubmitItemEventInfo CreateSubmitItemEventInfo(Player submitterPlayer, Kiosk kiosk, Item item)
         {
-            if (MyTarget.Definition != item.Definition) return null;
+            if (MyTarget.Definition != item.Definition)
+            {
+                return null;
+            }
 
             var amountNeeded = _progressCounter.MaxValue - _progressCounter.Current;
             var o = item.Unstack(amountNeeded);
@@ -938,7 +991,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             if (MyTarget.ValidMissionStructureEidSet)
             {
                 if (e.SwitchMissionStructure.Eid == MyTarget.MissionStructureEid)
+                {
                     return true;
+                }
             }
 
             return false;
@@ -996,7 +1051,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             if (MyTarget.ValidMissionStructureEidSet)
             {
                 if (e.ItemSupplyStructure.Eid == MyTarget.MissionStructureEid)
+                {
                     return true;
+                }
             }
 
             return false;
@@ -1075,10 +1132,14 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         protected override bool CanHandleMissionEvent(FindArtifactEventInfo e)
         {
             if (!IsZoneOrPositionValid(e.ArtifactPoint.ToPosition()))
+            {
                 return false;
+            }
 
             if (e.FoundArtifactType != MyTarget.TargetArtifactType)
+            {
                 return false;
+            }
 
             return true;
         }
@@ -1150,10 +1211,14 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         protected override bool CanHandleMissionEvent(SummonEggEventInfo e)
         {
             if (MyTarget.Definition != e.SummonedEggDefinition)
+            {
                 return false;
+            }
 
             if (!IsZoneOrPositionValid(e.SummonedPoint.ToPosition()))
+            {
                 return false;
+            }
 
             return true;
         }

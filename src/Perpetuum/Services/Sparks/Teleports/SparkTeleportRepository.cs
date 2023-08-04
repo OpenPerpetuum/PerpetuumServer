@@ -24,7 +24,9 @@ namespace Perpetuum.Services.Sparks.Teleports
                 .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return null;
+            }
 
             return CreateFromRecord(record);
         }
@@ -46,7 +48,9 @@ namespace Perpetuum.Services.Sparks.Teleports
                 .ExecuteNonQuery();
             
             if (sparkTeleport.ID == 0)
+            {
                 throw new PerpetuumException(ErrorCodes.SQLInsertError);
+            }
         }
 
         public void Update(SparkTeleport item)
@@ -62,7 +66,9 @@ namespace Perpetuum.Services.Sparks.Teleports
                 .ExecuteNonQuery();
             
             if (res == 0)
+            {
                 throw new PerpetuumException(ErrorCodes.SQLDeleteError);
+            }
         }
 
 

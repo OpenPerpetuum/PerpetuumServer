@@ -101,7 +101,9 @@ namespace Perpetuum.Zones.PBS
         {
             var unit = pbsObject as Unit;
             if (unit == null)
+            {
                 return;
+            }
 
             CheckAccessAndThrowIfFailed(unit.Owner, issuer);
         }
@@ -129,10 +131,14 @@ namespace Perpetuum.Zones.PBS
         {
             var unit = o as Unit;
             if (unit == null)
+            {
                 return 0;
+            }
 
             if (unit.ED.Config.bandwidthUsage != null)
+            {
                 return (int) unit.ED.Config.bandwidthUsage;
+            }
 
             Logger.Error("consistency error. no bandwidth usage max was defined for definition: " + unit.Definition + " " + unit.ED.Name);
             return 100; 

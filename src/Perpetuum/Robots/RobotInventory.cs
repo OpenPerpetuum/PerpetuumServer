@@ -16,7 +16,9 @@ namespace Perpetuum.Robots
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override void AddItem(Item item,long issuerEid, bool doStack)
@@ -46,16 +48,24 @@ namespace Perpetuum.Robots
         {
             var robot = GetOrLoadParentEntity() as Robot;
             if ( robot == null )
+            {
                 return ErrorCodes.NoError;
-                
+            }
+
             if (issuerEid != null && robot.Owner != issuerEid)
+            {
                 return ErrorCodes.AccessDenied;
+            }
 
             if ( !robot.IsSingleAndUnpacked )
+            {
                 return ErrorCodes.RobotMustbeSingleAndNonRepacked;
+            }
 
             if ( robot.IsTrashed )
+            {
                 return ErrorCodes.AccessDenied;
+            }
 
             return ErrorCodes.NoError;
         }

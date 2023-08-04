@@ -31,7 +31,9 @@ namespace Perpetuum
         public static string Clamp(this string str,int length)
         {
             if (string.IsNullOrEmpty(str))
+            {
                 return null;
+            }
 
             return str.Length >= length ? str.Substring(0, length) : str;
         }
@@ -39,8 +41,10 @@ namespace Perpetuum
         public static string[] GetLines(this string str)
         {
             if ( string.IsNullOrEmpty(str))
+            {
                 return new string[0];
-            
+            }
+
             var delimiters = new[] { '\r', '\n' };
             return str.Split(delimiters, StringSplitOptions.RemoveEmptyEntries).ToArray();
         }
@@ -75,11 +79,15 @@ namespace Perpetuum
         public static bool IsIPv4(this string ip)
         {
             if (string.IsNullOrWhiteSpace(ip))
+            {
                 return false;
+            }
 
             var splitValues = ip.Split('.');
             if (splitValues.Length != 4)
+            {
                 return false;
+            }
 
             return splitValues.All(r => byte.TryParse(r, out byte tempForParsing));
         }

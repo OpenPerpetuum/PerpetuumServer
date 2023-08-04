@@ -86,11 +86,15 @@ namespace Perpetuum.Services.ProductionEngine
 
             var calibrationPrg = record.GetValue<int?>(k.calibrationProgram.ToLower());
             if (calibrationPrg == null)
+            {
                 return true;
+            }
 
             var cprgED = _entityDefaultReader.Get((int)calibrationPrg);
             if (cprgED.CategoryFlags.IsCategory(CategoryFlags.cf_calibration_programs))
+            {
                 return true;
+            }
 
             Logger.Error("illegal calibration program was defined for definition:" + definition + " calibration program def:" + cprgED.Name + " " + cprgED.Definition);
             return false;
@@ -119,7 +123,9 @@ namespace Perpetuum.Services.ProductionEngine
             foreach (var flagInTree in target.CategoryFlags.GetCategoryFlagsTree())
             {
                 if (_productionDecalibrations.TryGetValue(flagInTree, out ProductionDecalibration productionDecalibration))
+                {
                     return productionDecalibration;
+                }
             }
 
             return ProductionDecalibration.Default;

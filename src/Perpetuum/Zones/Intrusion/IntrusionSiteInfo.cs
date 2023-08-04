@@ -40,8 +40,11 @@ namespace Perpetuum.Zones.Intrusion
         public IntrusionSiteInfo SetOwner(long? owner)
         {
             if (_owner == owner)
+            {
                 return this;
+            }
             else
+            {
                 return new IntrusionSiteInfo(_outpost,
                                              owner, 
                                              _stability, 
@@ -52,6 +55,7 @@ namespace Perpetuum.Zones.Intrusion
                                              _productionPoints, 
                                              _intrusionStartTime, 
                                              _defenseStandingLimit);
+            }
         }
 
         public int Stability

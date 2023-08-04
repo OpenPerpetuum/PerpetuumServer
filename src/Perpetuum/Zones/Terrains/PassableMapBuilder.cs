@@ -27,11 +27,15 @@ namespace Perpetuum.Zones.Terrains
             foreach (var position in _startPositions)
             {
                 if (!IsPassable(position))
+                {
                     continue;
+                }
 
                 var m = Generate(position);
                 if (m != null)
+                {
                     return m;
+                }
             }
 
             return null;
@@ -55,12 +59,16 @@ namespace Perpetuum.Zones.Terrains
                 foreach (var np in p.NonDiagonalNeighbours)
                 {
                     if (closedList.ContainsKey(np.GetUlongHashCode()))
+                    {
                         continue;
+                    }
 
                     closedList.Add(np.GetUlongHashCode(), true);
 
                     if ( !IsPassable(np) )
+                    {
                         continue;
+                    }
 
                     q.Enqueue(np);
                 }
@@ -75,12 +83,16 @@ namespace Perpetuum.Zones.Terrains
         private bool IsPassable(Position position)
         {
             if (!position.IsValid(_size))
+            {
                 return false;
+            }
 
             // plants excluded
             var bi = _blocksLayer.GetValue(position);
             if (bi.NonNaturally)
+            {
                 return false;
+            }
 
             var validSlope = _slopeLayer.CheckSlope(position);
             return validSlope;

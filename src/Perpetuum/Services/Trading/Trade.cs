@@ -45,7 +45,9 @@ namespace Perpetuum.Services.Trading
             set
             {
                 if (_state == value)
+                {
                     return;
+                }
 
                 _state = value;
 
@@ -81,7 +83,10 @@ namespace Perpetuum.Services.Trading
                 {
                     var item = myContainer.GetItem(newItemEid);
                     if (item == null)
+                    {
                         continue;
+                    }
+
                     _items.Add(new TradeItem(item));
                 }
 
@@ -134,7 +139,9 @@ namespace Perpetuum.Services.Trading
         private void TransferCredit()
         {
             if (Credit <= 0.0)
+            {
                 return;
+            }
 
             var ownerWallet = _characterWalletFactory(owner, TransactionType.TradeSpent);
             ownerWallet.Balance -= Credit;

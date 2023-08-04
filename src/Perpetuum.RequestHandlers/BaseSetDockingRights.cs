@@ -36,7 +36,9 @@ namespace Perpetuum.RequestHandlers
                 }
 
                 if (!(_dockingBaseHelper.GetDockingBase(baseEid) is Outpost outpost))
+                {
                     throw new PerpetuumException(ErrorCodes.OperationAllowedOnlyOnIntrusionSites);
+                }
 
                 var siteInfo = outpost.GetIntrusionSiteInfo();
                 if (siteInfo.DockingStandingLimit == standingLimit)

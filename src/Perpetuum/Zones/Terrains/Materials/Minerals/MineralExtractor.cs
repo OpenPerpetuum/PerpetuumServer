@@ -27,7 +27,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
         {
             var node = layer.GetNode(_location);
             if (node == null)
+            {
                 return;
+            }
 
             var amounts = Math.Min(node.GetValue(_location), _amount);
 
@@ -39,7 +41,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
         {
             var node = layer.GetNode(_location);
             if (node == null)
+            {
                 return;
+            }
 
             var amounts = node.DecreaseValue(_location, _amount);
             var m = _materialHelper.GetMaterialInfo(node.Type);
@@ -67,7 +71,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
         {
             var node = layer.GetNode(_location);
             if (node == null)
+            {
                 return;
+            }
 
             var pq = new PriorityQueue<MineralDistance>(node.Area.Ground);
 
@@ -76,7 +82,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
                 for (var x = node.Area.X1; x <= node.Area.X2; x++)
                 {
                     if ( !node.HasValue(x,y))
+                    {
                         continue;
+                    }
 
                     var d = _location.SqrDistance(x, y);
                     pq.Enqueue(new MineralDistance(new Point(x, y), d));
@@ -91,7 +99,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
                 extractedAmounts += node.DecreaseValue(md.location, need);
 
                 if (extractedAmounts >= _amount)
+                {
                     break;
+                }
             }
 
             var m = _materialHelper.GetMaterialInfo(node.Type);

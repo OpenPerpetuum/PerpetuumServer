@@ -26,7 +26,9 @@ namespace Perpetuum.Host
         public override void Update(TimeSpan time)
         {
             if (_hostStateService.State != HostState.Online)
+            {
                 return;
+            }
 
             UpdateHostStateToDb();
         }

@@ -8,7 +8,9 @@ namespace Perpetuum.RequestHandlers.Zone
         public void HandleRequest(IZoneRequest request)
         {
             if (!request.Zone.Configuration.Terraformable)
+            {
                 return;
+            }
 
             var altitudeLayer = (TerraformableAltitude)request.Zone.Terrain.Altitude;
 

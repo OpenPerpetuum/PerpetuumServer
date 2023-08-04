@@ -53,7 +53,9 @@ namespace Perpetuum.Services.MissionEngine.MissionStructures
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override void Use(Player player)

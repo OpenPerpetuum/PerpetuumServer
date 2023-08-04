@@ -137,21 +137,31 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         {
             var e = eventInfo as T;
             if (e == null)
+            {
                 return false;
+            }
 
             if (eventInfo.MissionTargetType != MyTarget.Type)
+            {
                 return false;
+            }
 
             if (IsCompleted)
+            {
                 return false;
+            }
 
             if (!IsMyTurn)
+            {
                 return false;
+            }
 
             _lastEventInfo = e;
 
             if (!CanHandleMissionEvent(e))
+            {
                 return false;
+            }
 
             OnHandleMissionEvent(e);
             return true;
@@ -219,7 +229,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         {
             var gang = missionOwner.Gang;
             if (gang == null)
+            {
                 return false;
+            }
 
             return gang.IsMember(doerPlayer.Character);
         }
@@ -250,11 +262,15 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         protected bool IsZoneOrPositionValid(Position currentP)
         {
             if (!MyTarget.ValidZoneSet)
+            {
                 return true;
+            }
             //zone set
 
             if (!MyTarget.ValidPositionSet)
+            {
                 return true;
+            }
 
             //position specified, it has to happen on the current zone
             if (Zone.Id != MyTarget.ZoneId)
@@ -275,7 +291,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         {
             //mission loot needed?
             if (!MyTarget.IsSecondaryItemSet)
+            {
                 return;
+            }
 
             var linkedDisplayOrder = GetAttachedDisplayOrderForContainer();
 
@@ -328,7 +346,10 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
 
         private void AttachToUnit(Unit unit, Guid missionGuid, int linkedDisplayOrder)
         {
-            if (linkedDisplayOrder < 0) return;
+            if (linkedDisplayOrder < 0)
+            {
+                return;
+            }
 
             unit.OptionalProperties.Add(new ReadOnlyOptionalProperty<Guid>(UnitDataType.MissionGuid, missionGuid));
             unit.OptionalProperties.Add(new ReadOnlyOptionalProperty<int>(UnitDataType.MissionDisplayOrder, linkedDisplayOrder));
@@ -344,7 +365,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         protected void SpawnNpcOnSuccess(IPresenceManager presenceManager,Position position)
         {
             if (!MyTarget.ValidQuantitySet)
+            {
                 return;
+            }
 
             _npcLinkedDisplayOrder = GetAttachedDisplayOrderForNpc();
 

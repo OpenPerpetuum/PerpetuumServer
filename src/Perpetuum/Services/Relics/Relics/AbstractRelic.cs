@@ -37,7 +37,10 @@ namespace Perpetuum.Services.Relics
         {
             var relic = (AbstractRelic)CreateUnitWithRandomEID(DefinitionNames.RELIC);
             if (relic == null)
+            {
                 return null;
+            }
+
             relic.Init(info, zone, position, lootItems);
             relic.AddToZone(zone, position);
             return relic;
@@ -72,38 +75,51 @@ namespace Perpetuum.Services.Relics
         public void SetAlive(bool isAlive)
         {
             using (_lock.Write(THREAD_TIMEOUT))
+            {
                 _alive = isAlive;
+            }
         }
 
         public bool IsAlive()
         {
             using (_lock.Read(THREAD_TIMEOUT))
+            {
                 return _alive;
+            }
         }
 
         private void incrementLifeSpan(TimeSpan time)
         {
             using (_lifespanLock.Write(THREAD_TIMEOUT))
+            {
                 lifespan += time;
+            }
         }
 
         private bool isLifeSpanExpired()
         {
             using (_lifespanLock.Read(THREAD_TIMEOUT))
+            {
                 return lifespan > MAXLIFESPAN;
+            }
         }
 
         private TimeSpan GetLifeSpan()
         {
             using (_lifespanLock.Read(THREAD_TIMEOUT))
+            {
                 return lifespan;
+            }
         }
 
         protected override void OnUpdate(TimeSpan time)
         {
             incrementLifeSpan(time);
             if (isLifeSpanExpired())
+            {
                 SetAlive(false);
+            }
+
             base.OnUpdate(time);
         }
 
@@ -134,12 +150,21 @@ namespace Perpetuum.Services.Relics
 
             //Compute loots
             if (_loots == null)
+            {
                 return;
+            }
 
             //Compute EP
             var ep = GetRelicInfo().GetEP();
-            if (_zone.Configuration.Type == ZoneType.Pvp) ep *= 2;
-            if (_zone.Configuration.Type == ZoneType.Training) ep = 0;
+            if (_zone.Configuration.Type == ZoneType.Pvp)
+            {
+                ep *= 2;
+            }
+
+            if (_zone.Configuration.Type == ZoneType.Training)
+            {
+                ep = 0;
+            }
 
             //Fork task to make the lootcan and log the ep
             Task.Run(() =>
@@ -147,7 +172,11 @@ namespace Perpetuum.Services.Relics
                 using (var scope = Db.CreateTransaction())
                 {
                     LootContainer.Create().SetOwner(player).SetEnterBeamType(BeamType.loot_bolt).AddLoot(_loots.LootItems).BuildAndAddToZone(_zone, CurrentPosition);
-                    if (ep > 0) player.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Artifact, ep);
+                    if (ep > 0)
+                    {
+                        player.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Artifact, ep);
+                    }
+
                     scope.Complete();
                 }
             });

@@ -17,7 +17,9 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
         public override void Update(TimeSpan time)
         {
             if (IsPresenceInSpawningState())
+            {
                 return;
+            }
 
             base.Update(time);
         }

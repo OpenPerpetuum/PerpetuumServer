@@ -49,7 +49,9 @@ namespace Perpetuum.Services.MarketEngine
         public Item GetItemByMarketOrder(MarketOrder marketOrder)
         {
             if ( marketOrder.itemEid == null)
+            {
                 throw new PerpetuumException(ErrorCodes.ServerError);
+            }
 
             // load market entity
             var itemOnMarket = Item.GetOrThrow((long) marketOrder.itemEid);
@@ -212,7 +214,10 @@ namespace Perpetuum.Services.MarketEngine
 
         private double GetTax()
         {
-            if (!IsPlayerControlledMarketTax()) return DEFAULT_MARKET_TAX;
+            if (!IsPlayerControlledMarketTax())
+            {
+                return DEFAULT_MARKET_TAX;
+            }
 
             var tmp = DynamicProperties.GetOrDefault<double>(k.tax);
             if (tmp >= 0)
@@ -286,7 +291,9 @@ namespace Perpetuum.Services.MarketEngine
         public void AddCentralBank(TransactionType transactionType, double amount)
         {
             if (IsOnTrainingZone())
+            {
                 return;
+            }
 
             _centralBank.AddAmount(amount,transactionType);
         }
@@ -594,7 +601,11 @@ namespace Perpetuum.Services.MarketEngine
                 _marketHandler.InsertAveragePrice(this, definition, price * quantity, quantity);
             }
 
-            if (forCorporation) return;
+            if (forCorporation)
+            {
+                return;
+            }
+
             var tax = price * quantity * (1 - taxRate);
 
             var dockingBase = GetDockingBase();
@@ -890,14 +901,22 @@ namespace Perpetuum.Services.MarketEngine
 
             foreach (var ed in _entityServices.Defaults.GetAll().GetByCategoryFlags(cf))
             {
-                if (!ed.IsSellable) continue;
-                
-                if (!addNamed && ed.Name.Contains("named"))
+                if (!ed.IsSellable)
+                {
                     continue;
+                }
+
+                if (!addNamed && ed.Name.Contains("named"))
+                {
+                    continue;
+                }
 
                 if (!nameFilter.IsNullOrEmpty())
                 {
-                    if (!ed.Name.Contains(nameFilter)) continue;
+                    if (!ed.Name.Contains(nameFilter))
+                    {
+                        continue;
+                    }
                 }
                 
                 const string insertCmdText = @"insert marketitems (marketeid, itemdefinition, submittereid, duration, isSell, price, quantity, isvendoritem) values
@@ -934,7 +953,9 @@ namespace Perpetuum.Services.MarketEngine
             var useSellerCorporationWallet = sellOrder.useCorporationWallet;
 
             if (sellOrder.itemEid == null)
+            {
                 return; //wtf
+            }
 
             var itemToSell = Item.GetOrThrow((long) sellOrder.itemEid);
             var buyer = Character.GetByEid(buyOrder.submitterEID);

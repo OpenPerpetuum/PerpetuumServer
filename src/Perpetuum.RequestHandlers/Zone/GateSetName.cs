@@ -17,7 +17,9 @@ namespace Perpetuum.RequestHandlers.Zone
             
                 var gate =  request.Zone.GetUnitOrThrow(eid) as Gate;
                 if (gate == null)
+                {
                     throw new PerpetuumException(ErrorCodes.WTFErrorMedicalAttentionSuggested);
+                }
 
                 var character = request.Session.Character;
                 gate.Rename(character, name);

@@ -16,8 +16,10 @@ namespace Perpetuum.RequestHandlers.Zone
         private void CheckRoamingConditions(IZone zone,int x, int y)
         {
             var controlInfo = zone.Terrain.Controls.GetValue(x, y);
-            if (!controlInfo.Roaming) 
+            if (!controlInfo.Roaming)
+            {
                 return;
+            }
 
             if (zone.Terrain.IsBlocked(x,y))
             {

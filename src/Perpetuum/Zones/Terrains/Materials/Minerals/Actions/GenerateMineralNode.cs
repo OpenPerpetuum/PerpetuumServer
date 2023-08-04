@@ -20,7 +20,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals.Actions
         {
             var node = _nodeGenerator.Generate(layer);
             if (node == null)
+            {
                 return;
+            }
 
             layer.NodeRepository.Insert(node);
             layer.AddNode(node);

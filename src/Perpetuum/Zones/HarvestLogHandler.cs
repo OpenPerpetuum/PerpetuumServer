@@ -43,7 +43,9 @@ namespace Perpetuum.Zones
         private void WriteHarvestLogToSql()
         {
             if (_HarvestLogs.Count == 0)
+            {
                 return;
+            }
 
             Logger.Info("flushing Harvestlog. " + _HarvestLogs.Count + " long entries. ");
 
@@ -67,7 +69,9 @@ namespace Perpetuum.Zones
 
             var counter = 0;
             if (finalList.Count <= 0)
+            {
                 return;
+            }
 
             foreach (var me in finalList)
             {

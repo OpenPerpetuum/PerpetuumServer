@@ -56,7 +56,9 @@ namespace Perpetuum
         {
             var m = Length;
             if ( m <= 0.0 )
+            {
                 return;
+            }
 
             _x /= m;
             _y /= m;
@@ -85,7 +87,9 @@ namespace Perpetuum
             var dy = Math.Abs(p.intY - intY);
 
             if (dx == 1 && dy == 1)
+            {
                 return true;
+            }
 
             return (dx + dy) <= 1;
         }
@@ -195,15 +199,21 @@ namespace Perpetuum
             var y = p.Y;
 
             if (Math.Abs(x) < double.Epsilon)
+            {
                 return y > 0 ? 0.5 : 0;
+            }
 
             if (Math.Abs(y) < double.Epsilon)
+            {
                 return x > 0 ? 0.25 : 0.75;
+            }
 
             var direction = (Math.Atan(y / x) + Math.PI / 2) / Math.PI * 0.5;
 
             if (x < 0)
+            {
                 direction += 0.5;
+            }
 
             MathHelper.NormalizeDirection(ref direction);
             return direction;
@@ -243,8 +253,10 @@ namespace Perpetuum
             var yDiff = position._y - _y;
             var totalDistance = TotalDistance2D(position);
 
-            if (totalDistance.IsZero()) 
+            if (totalDistance.IsZero())
+            {
                 return position;
+            }
 
             var xNorm = xDiff/totalDistance;
             var yNorm = yDiff/totalDistance;
@@ -305,8 +317,11 @@ namespace Perpetuum
 
         public static Position RotateCWWithTurns(Position sourcePosition, int rotationTurns)
         {
-            if (rotationTurns == 0) return sourcePosition;
-            
+            if (rotationTurns == 0)
+            {
+                return sourcePosition;
+            }
+
             while (rotationTurns > 0)
             {
                 sourcePosition = sourcePosition.Rotate90CW();
@@ -323,7 +338,10 @@ namespace Perpetuum
 
         public static Position RotateCCWWithTurns(Position sourcePosition, int rotationTurns)
         {
-            if (rotationTurns == 0) return sourcePosition;
+            if (rotationTurns == 0)
+            {
+                return sourcePosition;
+            }
 
             while (rotationTurns > 0)
             {
@@ -425,8 +443,16 @@ namespace Perpetuum
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (obj.GetType() != typeof (Position)) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (obj.GetType() != typeof (Position))
+            {
+                return false;
+            }
+
             return Equals((Position) obj);
         }
 

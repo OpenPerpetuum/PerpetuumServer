@@ -56,7 +56,9 @@ namespace Perpetuum.RequestHandlers
                         }
 
                         if (!corporationEiDs.Contains((long)pair.Value))
+                        {
                             continue;
+                        }
 
                         Logger.Info("item belongs to corp. itemEID:" + pair.Key + "  corpEID:" + pair.Value);
 

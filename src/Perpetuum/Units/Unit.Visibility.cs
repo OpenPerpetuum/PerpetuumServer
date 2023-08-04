@@ -83,12 +83,16 @@ namespace Perpetuum.Units
                 {
                     UnitVisibility v;
                     if ( ImmutableInterlocked.TryRemove(ref _visibleUnits,target.Eid,out v))
+                    {
                         OnUnitVisibilityUpdated(target, Visibility.Invisible);
+                    }
                 }
             }
 
             if (info != null && visibility == Visibility.Visible)
+            {
                 info.ResetLineOfSight();
+            }
         }
 
         protected virtual void OnUnitVisibilityUpdated(Unit target, Visibility visibility)
@@ -102,7 +106,9 @@ namespace Perpetuum.Units
             if (robot != null)
             {
                 if (robot.IsLocked(this))
+                {
                     return true;
+                }
             }
 
             var range = 100 / Math.Max(1, target.StealthStrength) * Math.Max(1, DetectionStrength);
@@ -115,12 +121,16 @@ namespace Perpetuum.Units
 
             var zone = Zone;
             if (zone == null)
+            {
                 return result;
+            }
 
             foreach (var unit in zone.Units.OfType<T>())
             {
                 if (unit.IsVisible(this))
+                {
                     result.Add(unit);
+                }
             }
 
             return result;

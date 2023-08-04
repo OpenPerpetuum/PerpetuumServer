@@ -47,7 +47,9 @@ namespace Perpetuum.Services.HighScores
                 .ExecuteSingleRow();
 
             if ( record == null )
+            {
                 return new HighScore(characterID,0);
+            }
 
             return CreateHighScoreFromRecord(record);
         }
@@ -61,7 +63,9 @@ namespace Perpetuum.Services.HighScores
             {
                 //exit if the target was an arkhe
                 if (victim.ED == Robot.NoobBotEntityDefault)
+                {
                     return;
+                }
 
                 killedPlayers = 1;
             }
@@ -71,7 +75,9 @@ namespace Perpetuum.Services.HighScores
             }
 
             if (killedPlayers == 0 && killedNpcs == 0)
+            {
                 return;
+            }
 
             var timeRange = DateTime.Now.ToRange(-TimeSpan.FromDays(30));
 

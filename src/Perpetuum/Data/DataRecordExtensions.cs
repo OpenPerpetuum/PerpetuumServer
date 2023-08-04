@@ -27,7 +27,9 @@ namespace Perpetuum.Data
         public static T GetValue<T>(this IDataRecord record, int index)
         {
             if (record == null || record.IsDBNull(index))
+            {
                 return default(T);
+            }
 
             return (T)record.GetValue(index);
         }
@@ -35,7 +37,9 @@ namespace Perpetuum.Data
         public static T GetValueOrDefault<T>(this IDataRecord record,string name,T defaultValue = default(T))
         {
             if (record.TryGetValue(name, out T value))
+            {
                 return value;
+            }
 
             return defaultValue;
         }
@@ -43,7 +47,9 @@ namespace Perpetuum.Data
         public static T GetValueOrDefault<T>(this IDataRecord record,string name,Func<T> valueFactory)
         {
             if (record.TryGetValue(name, out T value))
+            {
                 return value;
+            }
 
             return valueFactory();
         }
@@ -67,12 +73,16 @@ namespace Perpetuum.Data
         public static object GetValue(this IDataRecord record, string name)
         {
             if (record == null)
+            {
                 return null;
+            }
 
             var index = record.GetOrdinal(name);
 
             if (record.IsDBNull(index))
+            {
                 return null;
+            }
 
             return record.GetValue(index);
         }
@@ -80,7 +90,9 @@ namespace Perpetuum.Data
         public static bool IsDBNull(this IDataRecord record, string name)
         {
             if (record == null)
+            {
                 return true;
+            }
 
             var index = record.GetOrdinal(name);
             return record.IsDBNull(index);
@@ -102,7 +114,9 @@ namespace Perpetuum.Data
         public static IEnumerable<KeyValuePair<string, object>> ToEnumerable(this IDataRecord record)
         {
             if (record == null)
+            {
                 yield break;
+            }
 
             for (var i = 0; i < record.FieldCount; i++)
             {

@@ -19,7 +19,9 @@ namespace Perpetuum.RequestHandlers
             var targetEid = request.Data.GetOrDefault<long>(k.targetEID);
             var unit = _zoneManager.GetUnit<Unit>(targetEid);
             if (unit == null)
+            {
                 throw new PerpetuumException(ErrorCodes.ItemNotFound);
+            }
 
             var info = new Dictionary<string, object>
             {

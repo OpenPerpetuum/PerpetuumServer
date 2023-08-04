@@ -34,7 +34,9 @@ namespace Perpetuum.Services.Relics
             var loots = _relicLootRepository.GetRelicLoots(relicInfo).ToArray();
 
             if (!HasValidLoots(loots))
+            {
                 return null;
+            }
 
             do
             {
@@ -42,7 +44,9 @@ namespace Perpetuum.Services.Relics
                 {
                     var chance = _random.NextDouble();
                     if (chance > loot.Chance)
+                    {
                         continue;
+                    }
 
                     var builder = loot.GetLootItemBuilder();
                     var lootItem = builder.Build();

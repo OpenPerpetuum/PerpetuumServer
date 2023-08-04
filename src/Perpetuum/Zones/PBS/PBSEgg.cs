@@ -69,7 +69,9 @@ namespace Perpetuum.Zones.PBS
 
                     dockingBase = deployableItem as PBSDockingBase;
                     if (dockingBase != null)
+                    {
                         PBSHelper.CreatePBSDockingBase(dockingBase);
+                    }
 
                     deployableItem.Owner = corporation.Eid;
                     deployableItem.Orientation = FastRandom.NextInt(0, 3)*0.25;

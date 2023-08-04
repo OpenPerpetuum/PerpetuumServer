@@ -40,10 +40,14 @@ namespace Perpetuum.RequestHandlers
                     }
 
                     if (robot == null)
+                    {
                         throw new PerpetuumException(ErrorCodes.RobotNotFound);
+                    }
 
                     if (!robot.IsSingleAndUnpacked)
+                    {
                         throw new PerpetuumException(ErrorCodes.RobotMustbeSingleAndNonRepacked);
+                    }
 
                     if (ForFitting)
                     {
@@ -84,7 +88,9 @@ namespace Perpetuum.RequestHandlers
             {
                 robot = zone.GetPlayer(request.Session.Character);
                 if (robot != null)
+                {
                     return true;
+                }
             }
 
             robot = null;

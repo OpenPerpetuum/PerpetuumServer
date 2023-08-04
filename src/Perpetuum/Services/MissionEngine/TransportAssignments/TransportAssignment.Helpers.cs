@@ -26,7 +26,9 @@ namespace Perpetuum.Services.MissionEngine.TransportAssignments
         public static void SubmitTransportAssignment(Character character, long wrapperContainerEid, long reward, long collateral, long sourceBaseEid, long targetBaseEid, int durationDays)
         {
             if (durationDays <= 0)
+            {
                 durationDays = 1;
+            }
 
             reward.ThrowIfLessOrEqual(0, ErrorCodes.IllegalTransportAssignmentReward);
             collateral.ThrowIfLess(0, ErrorCodes.IllegalTransportAssignmentCollateral);
@@ -209,10 +211,14 @@ namespace Perpetuum.Services.MissionEngine.TransportAssignments
         {
             volumeWrapperContainer = Container.GetOrThrow(wrapperEid) as VolumeWrapperContainer;
             if (volumeWrapperContainer == null)
+            {
                 return ErrorCodes.DefinitionNotSupported;
+            }
 
             if (volumeWrapperContainer.Owner != character.Eid)
+            {
                 return ErrorCodes.AccessDenied;
+            }
 
             var transportAssignmentInfo = GetByContainer(volumeWrapperContainer);
             
@@ -240,7 +246,9 @@ namespace Perpetuum.Services.MissionEngine.TransportAssignments
             var baseOfWrapper = volumeWrapperContainer.TraverseForStructureRootEid();
 
             if (transportAssignmentInfo.targetbaseeid != baseOfWrapper)
+            {
                 return ErrorCodes.TransportAssignmentCannotBeDeliveredHere;
+            }
 
             var publicContainer = Container.GetFromStructure(transportAssignmentInfo.targetbaseeid);
             publicContainer.ReloadItems(character);
@@ -418,7 +426,9 @@ namespace Perpetuum.Services.MissionEngine.TransportAssignments
                 Message.Builder.SetCommand(Commands.TransportAssignmentRetrieved).WithData(result).ToCharacter(transportAssignmentInfo.ownercharacter).Send();
 
                 if (transportAssignmentInfo.volunteercharacter == Character.None)
+                {
                     return;
+                }
 
                 var privateResult = new Dictionary<string, object>
                 {
@@ -455,7 +465,9 @@ namespace Perpetuum.Services.MissionEngine.TransportAssignments
                 }
 
                 if (assignment.volunteercharacter != character)
+                {
                     continue;
+                }
 
                 //this assigment was accepted by the deleted character
 

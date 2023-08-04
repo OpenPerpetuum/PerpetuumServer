@@ -33,7 +33,9 @@ namespace Perpetuum.Zones.Terrains
         public void SetMany(IList<LayerType> layerTypes,bool value)
         {
             if ( layerTypes == null )
+            {
                 return;
+            }
 
             for (var i = 0; i < layerTypes.Count; i++)
             {

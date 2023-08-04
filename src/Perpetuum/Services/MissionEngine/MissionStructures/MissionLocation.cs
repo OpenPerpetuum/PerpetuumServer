@@ -205,7 +205,10 @@ VALUES  ( @agentId,
             issuerCorporationEid = corporationEid;
 
 #if DEBUG
-            if (MissionResolveTester.isTestMode) return;
+            if (MissionResolveTester.isTestMode)
+            {
+                return;
+            }
 
             var allianceName = DefaultCorporationDataCache.GetAllianceName(issuerAllianceEid);
             var corporationName = DefaultCorporationDataCache.GetCorporationName(issuerCorporationEid);

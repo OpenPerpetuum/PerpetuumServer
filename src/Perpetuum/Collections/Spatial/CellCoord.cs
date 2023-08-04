@@ -67,7 +67,9 @@ namespace Perpetuum.Collections.Spatial
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
+            {
                 return false;
+            }
 
             return obj is CellCoord && Equals((CellCoord)obj);
         }
@@ -121,7 +123,9 @@ namespace Perpetuum.Collections.Spatial
                 var district = gridDistricts & (GridDistricts)mask;
 
                 if (district == GridDistricts.Undefined)
+                {
                     continue;
+                }
 
                 var n = _neighbours[district];
 

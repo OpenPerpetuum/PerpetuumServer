@@ -23,10 +23,14 @@ namespace Perpetuum.RequestHandlers.Gangs
 
                 var gang = _gangManager.GetGangByMember(character);
                 if (gang == null)
+                {
                     throw new PerpetuumException(ErrorCodes.CharacterNotInGang);
+                }
 
                 if (character != gang.Leader)
+                {
                     throw new PerpetuumException(ErrorCodes.OnlyGangLeaderCanDoThis);
+                }
 
                 _gangManager.ChangeLeader(gang, member);
 

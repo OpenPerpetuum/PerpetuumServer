@@ -34,7 +34,9 @@ namespace Perpetuum.Groups.Corporations
             foreach (var kvp in _invites)
             {
                 if (kvp.Value.startInviteTime.AddMinutes(1) >= DateTime.Now)
+                {
                     continue;
+                }
 
                 var character = kvp.Key;
                 var sender = kvp.Value.sender;
@@ -150,7 +152,9 @@ namespace Perpetuum.Groups.Corporations
         {
             //run it once a day
             if ((DateTime.Now - _lastCollect).TotalDays < 1)
+            {
                 return;
+            }
 
             CorporateHangar.CollectHangarRentAsync(_standingHandler).ContinueWith(t =>
             {
@@ -171,7 +175,9 @@ namespace Perpetuum.Groups.Corporations
         {
             //this function is still running. ->
             if (_leaveProcessWorking)
+            {
                 return;
+            }
 
             try
             {
@@ -187,11 +193,15 @@ namespace Perpetuum.Groups.Corporations
                     {
                         var leaveDate = record.GetValue<DateTime>(0);
                         var character = Character.Get(record.GetValue<int>(1));
-                        if (character == Character.None) 
+                        if (character == Character.None)
+                        {
                             continue;
+                        }
 
                         if (leaveDate > DateTime.Now)
+                        {
                             continue;
+                        }
 
                         using (var scope = Db.CreateTransaction())
                         {
@@ -280,11 +290,15 @@ namespace Perpetuum.Groups.Corporations
         public string GetCorporationNameByMember(Character member)
         {
             if (member == Character.None)
+            {
                 return string.Empty;
+            }
 
             var corporationEid = member.CorporationEid;
             if (corporationEid == 0L)
+            {
                 return string.Empty;
+            }
 
             return Db.Query().CommandText("select name from corporations where eid = @corporationEid").SetParameter("@corporationEid", corporationEid).ExecuteScalar<string>();
         }
@@ -296,7 +310,9 @@ namespace Perpetuum.Groups.Corporations
                 .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return new Dictionary<string, object>();
+            }
 
             return record.RecordToDictionary();
         }
@@ -352,10 +368,15 @@ namespace Perpetuum.Groups.Corporations
 
         public ErrorCodes IsInJoinOrLeave(Character character)
         {
-            if (IsInLeavePeriod(character)) 
+            if (IsInLeavePeriod(character))
+            {
                 return ErrorCodes.CorporationMemberInLeavePeriod;
-            if (!IsJoinPeriodExpired(character,character.CorporationEid)) 
+            }
+
+            if (!IsJoinPeriodExpired(character,character.CorporationEid))
+            {
                 return ErrorCodes.CorporationCharacterInJoinPeriod;
+            }
 
             return ErrorCodes.NoError;
         }
@@ -399,7 +420,9 @@ namespace Perpetuum.Groups.Corporations
                 .ExecuteScalar<DateTime>();
 
             if (DateTime.Now.Subtract(lastJoinedTime).TotalMinutes < Settings.LeavePeriod)
+            {
                 return false;
+            }
 
             return true;
         }
@@ -480,11 +503,15 @@ namespace Perpetuum.Groups.Corporations
         public bool IsStandingMatch(long sourceCorporationEid, long targetCorporationEid, double? standingLimit)
         {
             if (standingLimit == null || sourceCorporationEid == 0)
+            {
                 return true;
+            }
 
             //my corp -> ok
             if (sourceCorporationEid == targetCorporationEid)
+            {
                 return true;
+            }
 
             var standing = _standingHandler.GetStanding(sourceCorporationEid, targetCorporationEid);
             return standing >= standingLimit;

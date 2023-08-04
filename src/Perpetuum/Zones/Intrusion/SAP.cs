@@ -111,7 +111,9 @@ namespace Perpetuum.Zones.Intrusion
                 _expiryTimer.Update(time);
 
                 if (!_expiryTimer.Expired)
+                {
                     return;
+                }
             }
 
             // lejart
@@ -214,7 +216,9 @@ namespace Perpetuum.Zones.Intrusion
         protected void OnTakeOver()
         {
             if ( Interlocked.CompareExchange(ref _takeOver,1,0) == 1)
+            {
                 return;
+            }
 
             OnRemove();
             TakeOver?.Invoke(this);
@@ -223,8 +227,10 @@ namespace Perpetuum.Zones.Intrusion
         private void BroadcastSAPInfoPacket()
         {
             var zone = Zone;
-            if (zone == null) 
+            if (zone == null)
+            {
                 return;
+            }
 
             Task.Run(() => SendSapInfoPacketToPlayers(zone));
         }
@@ -237,8 +243,10 @@ namespace Perpetuum.Zones.Intrusion
 
             var players = playersWithScore.Concat(playersInRange).Distinct().ToArray();
 
-            if (players.Length <= 0) 
+            if (players.Length <= 0)
+            {
                 return;
+            }
 
             var sapInfoPacket = BuildSAPInfoPacket();
             players.ForEach(player =>
@@ -311,7 +319,9 @@ namespace Perpetuum.Zones.Intrusion
         {
             var scores = GetPlayerTopScores(1);
             if (scores.Length > 0)
+            {
                 return scores[0].corporationEid;
+            }
 
             return 0L;
         }

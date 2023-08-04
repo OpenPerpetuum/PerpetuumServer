@@ -75,7 +75,9 @@ namespace Perpetuum.Zones.NpcSystem
         public void AddThreat(Threat threat)
         {
             if ( threat.value <= 0.0 )
+            {
                 return;
+            }
 
             Threat += threat.value;
         }
@@ -91,7 +93,9 @@ namespace Perpetuum.Zones.NpcSystem
             private set
             {
                 if (Math.Abs(_threat - value) <= double.Epsilon)
+                {
                     return;
+                }
 
                 _threat = value;
 
@@ -109,10 +113,14 @@ namespace Perpetuum.Zones.NpcSystem
         public int CompareTo(Hostile other)
         {
             if (other._threat < _threat)
+            {
                 return -1;
+            }
 
             if (other._threat > _threat)
+            {
                 return 1;
+            }
 
             return 0;
         }
@@ -176,7 +184,9 @@ namespace Perpetuum.Zones.NpcSystem
          public string ToDebugString()
         {
             if ( _hostiles.Count == 0 )
+            {
                 return string.Empty;
+            }
 
             var sb = new StringBuilder();
 
@@ -254,7 +264,9 @@ namespace Perpetuum.Zones.NpcSystem
         public void Remove(Unit hostile)
         {
             lock(_lock)
+            {
                 _pseudoThreats.RemoveAll(x => x.Unit == hostile);
+            }
         }
 
         public void Update(TimeSpan time)

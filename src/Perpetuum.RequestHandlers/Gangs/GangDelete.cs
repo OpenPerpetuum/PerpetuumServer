@@ -23,7 +23,10 @@ namespace Perpetuum.RequestHandlers.Gangs
 
                 var gang = _gangManager.GetGangByMember(character);
                 if (gang.Leader != character)
+                {
                     throw new PerpetuumException(ErrorCodes.OnlyGangLeaderCanDoThis);
+                }
+
                 _gangManager.DisbandGang(gang);
 
                 _gangInviteService.RemoveInvitesByGang(gang);

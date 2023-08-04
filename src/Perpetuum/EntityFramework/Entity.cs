@@ -67,7 +67,9 @@ namespace Perpetuum.EntityFramework
             set
             {
                 if (_parent == value)
+                {
                     return;
+                }
 
                 _parent = value;
                 OnPropertyChanged();
@@ -103,8 +105,10 @@ namespace Perpetuum.EntityFramework
             set
             {
                 if (Equals(_health, value))
+                {
                     return;
-                
+                }
+
                 _health = value;
                 OnPropertyChanged();
             }
@@ -116,8 +120,10 @@ namespace Perpetuum.EntityFramework
             set
             {
                 if ( _name == value )
+                {
                     return;
-                
+                }
+
                 _name = value;
                 OnPropertyChanged();
             }
@@ -129,8 +135,10 @@ namespace Perpetuum.EntityFramework
             set
             {
                 if ( _quantity == value )
+                {
                     return;
-                
+                }
+
                 _quantity = value;
                 OnPropertyChanged();
             }
@@ -142,8 +150,10 @@ namespace Perpetuum.EntityFramework
             set
             {
                 if ( _repackaged == value )
+                {
                     return;
-                
+                }
+
                 _repackaged = value;
                 OnPropertyChanged();
             }
@@ -198,7 +208,9 @@ namespace Perpetuum.EntityFramework
         private void OnPropertyChanged()
         {
             if ( dbState == EntityDbState.New )
+            {
                 return;
+            }
 
             dbState = EntityDbState.Updated;
         }
@@ -257,7 +269,9 @@ namespace Perpetuum.EntityFramework
         public void AddChild(Entity entity)
         {
             if (entity == null)
+            {
                 return;
+            }
 
             entity._parentEntity?.RemoveChild(entity);
 
@@ -316,14 +330,20 @@ namespace Perpetuum.EntityFramework
         {
             var currentTx = Transaction.Current;
             if (currentTx == null)
+            {
                 return;
+            }
 
             if (_txEntities == null)
+            {
                 _txEntities = new HashSet<Entity>();
+            }
             else
             {
                 if (_txEntities.Contains(this))
+                {
                     return;
+                }
             }
 
             _txEntities.Add(this);

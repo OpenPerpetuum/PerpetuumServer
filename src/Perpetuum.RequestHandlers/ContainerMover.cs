@@ -46,7 +46,9 @@ namespace Perpetuum.RequestHandlers
         {
             var itemName = container?.Name;
             if (string.IsNullOrEmpty(itemName))
+            {
                 return false;
+            }
 
             return itemName.StartsWith(containerName);
         }

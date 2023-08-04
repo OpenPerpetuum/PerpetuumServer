@@ -58,7 +58,9 @@ namespace Perpetuum
         public static double Ratio(this double current, double max)
         {
             if (max.IsZero() || double.IsNaN(max))
+            {
                 return 0.0;
+            }
 
             return (current/max).Clamp();
         }
@@ -132,7 +134,9 @@ namespace Perpetuum
         public static double Mix(this double source, double target, double mix, bool safe = true)
         {
             if (safe)
+            {
                 mix = mix.Clamp();
+            }
 
             var diff = (target - source)*mix;
             return source + diff;
@@ -144,10 +148,14 @@ namespace Perpetuum
         public static double LimitWithFalloff(this double value, double thresholdLimit, double thresholdLenght)
         {
             if (value <= thresholdLimit)
+            {
                 return 1.0;
+            }
 
             if (value >= thresholdLimit + thresholdLenght)
+            {
                 return 0.0;
+            }
 
             var remaining = (value - thresholdLimit)/thresholdLenght;
 

@@ -14,7 +14,9 @@ namespace Perpetuum.RequestHandlers.Zone
             var character = request.Session.Character;
             var player = request.Zone.GetPlayer(character);
             if (player == null)
+            {
                 throw new PerpetuumException(ErrorCodes.PlayerNotFound);
+            }
 
             var unit = request.Zone.GetUnitOrThrow<ItemShop>(locationEid);
             unit.IsInOperationRange(player).ThrowIfError();

@@ -28,14 +28,19 @@ namespace Perpetuum.Units.DockingBases
         {
             var unit = GetUnit<T>(unitEid);
             if (unit == null)
+            {
                 throw new PerpetuumException(ErrorCodes.ItemNotFound);
+            }
+
             return unit;
         }
 
         public T GetUnit<T>(long unitEid) where T : Unit
         {
             if (unitEid == 0)
+            {
                 return null;
+            }
 
             var unit = _zoneManager.GetUnit<T>(unitEid);
             if (unit == null)

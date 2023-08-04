@@ -28,7 +28,9 @@ namespace Perpetuum.Zones.Beams
         public void Add(Beam beam)
         {
             if ( beam.Type == BeamType.undefined )
+            {
                 return;
+            }
 
             _beams[beam.Id] = beam;
 

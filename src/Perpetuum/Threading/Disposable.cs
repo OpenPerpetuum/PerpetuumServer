@@ -18,7 +18,9 @@ namespace Perpetuum.Threading
         public void Dispose()
         {
             if (Interlocked.Exchange(ref _disposed, 1) == 1)
+            {
                 return;
+            }
 
             Dispose(true);
             GC.SuppressFinalize(this);

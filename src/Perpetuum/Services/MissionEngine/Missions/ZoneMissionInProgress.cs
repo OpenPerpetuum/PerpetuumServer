@@ -121,7 +121,10 @@ namespace Perpetuum.Services.MissionEngine.Missions
             {
 
                 var completed = record.GetValue<bool>("completed");
-                if (completed) continue;
+                if (completed)
+                {
+                    continue;
+                }
 
                 var targetId = record.GetValue<int>("targetid");
 

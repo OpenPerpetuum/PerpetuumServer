@@ -24,7 +24,9 @@ namespace Perpetuum.RequestHandlers.Sparks
 
                 var teleport = _sparkTeleportHelper.Get(id);
                 if (teleport.Character != character)
+                {
                     return;
+                }
 
                 _sparkTeleportHelper.DeleteAndInform(teleport);
 

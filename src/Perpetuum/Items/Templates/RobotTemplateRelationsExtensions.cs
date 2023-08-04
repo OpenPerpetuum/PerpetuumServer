@@ -68,7 +68,9 @@ namespace Perpetuum.Items.Templates
         {
             var template = relations.GetRelatedTemplate(definition);
             if (template != null)
+            {
                 return template;
+            }
 
             Logger.Warning("robot template was not found for definition: " + definition + ", falling back to starter_master.");
             //fallback to arkhe

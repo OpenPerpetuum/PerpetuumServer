@@ -52,7 +52,9 @@ namespace Perpetuum.Units
             _owner.ApplyEffectPropertyModifiers(AggregateField.effect_massivness_speed_max_modifier,ref speedMax);
 
             if (_owner.ActualMass > 0)
+            {
                 speedMax.Multiply(_owner.Mass / _owner.ActualMass);
+            }
 
             _owner.ApplyEffectPropertyModifiers(AggregateField.effect_speed_highway_modifier,ref speedMax);
             return speedMax.Value;
@@ -156,7 +158,9 @@ namespace Perpetuum.Units
         {
             var p = (ReadOnlyOptionalProperty<int>)_optionalProperties.Get(UnitDataType.MissionDisplayOrder);
             if (p == null)
+            {
                 return -1;
+            }
 
             return p.Value;
         }
@@ -164,7 +168,9 @@ namespace Perpetuum.Units
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         private IZone _zone;
@@ -186,7 +192,9 @@ namespace Perpetuum.Units
             set
             {
                 if ( Math.Abs(_currentSpeed - value) < double.Epsilon )
+                {
                     return;
+                }
 
                 _currentSpeed = value;
                 UpdateTypes |= UnitUpdateTypes.Speed;
@@ -199,7 +207,9 @@ namespace Perpetuum.Units
             set
             {
                 if ( Math.Abs(_direction - value) < double.Epsilon )
+                {
                     return;
+                }
 
                 _direction = value;
                 UpdateTypes |= UnitUpdateTypes.Direction;
@@ -212,7 +222,9 @@ namespace Perpetuum.Units
             set
             {
                 if ( Math.Abs(_orientation - value) < double.Epsilon )
+                {
                     return;
+                }
 
                 _orientation = value;
                 UpdateTypes |= UnitUpdateTypes.Orientation;
@@ -228,7 +240,9 @@ namespace Perpetuum.Units
             get
             {
                 if ( !ED.AttributeFlags.NonAttackable && !States.Dead)
+                {
                     return ErrorCodes.NoError;
+                }
 
                 return ErrorCodes.TargetIsNonAttackable;
             }
@@ -272,7 +286,9 @@ namespace Perpetuum.Units
                 UpdateTypes |= UnitUpdateTypes.Position;
 
                 if (!lastPosition.IsTileChange(_currentPosition))
+                {
                     return;
+                }
 
                 UpdateTypes |= UnitUpdateTypes.TileChanged;
 
@@ -282,7 +298,9 @@ namespace Perpetuum.Units
                 var currentCellCoord = _currentPosition.ToCellCoord();
 
                 if (lastCellCoord == currentCellCoord)
+                {
                     return;
+                }
 
                 OnCellChanged(lastCellCoord, currentCellCoord);
             }
@@ -299,7 +317,9 @@ namespace Perpetuum.Units
         public void Update(TimeSpan time)
         {
             if ( !InZone || States.Dead )
+            {
                 return;
+            }
 
             OnUpdate(time);
         }
@@ -337,7 +357,9 @@ namespace Perpetuum.Units
                 if (changedProperties != ImmutableHashSet<ItemProperty>.Empty)
                 {
                     if (e == null)
+                    {
                         e = new UnitUpdatedEventArgs();
+                    }
 
                     e.UpdatedProperties = changedProperties;
 
@@ -347,7 +369,9 @@ namespace Perpetuum.Units
             }
 
             if (e == null)
+            {
                 return;
+            }
 
             OnUpdated(e);
         }
@@ -387,7 +411,9 @@ namespace Perpetuum.Units
             zone.AddUnit(this);
 
             if (enterBeamBuilder != null)
+            {
                 zone.CreateBeam(enterBeamBuilder);
+            }
 
             EnterPacketBuilder = UnitEnterPacketBuilder.Create(this, enterType);
             zone.UpdateUnitRelations(this);
@@ -402,12 +428,16 @@ namespace Perpetuum.Units
         {
             IZone zone;
             if ((zone = Interlocked.CompareExchange(ref _zone,null,_zone)) == null)
+            {
                 return;
+            }
 
             Debug.Assert(zone != null, "zone != null");
 
             if (exitBeamBuilder != null)
+            {
                 zone.CreateBeam(exitBeamBuilder);
+            }
 
             zone.RemoveUnit(this);
 
@@ -436,7 +466,9 @@ namespace Perpetuum.Units
             packet.Send(this, source);
 
             if (!(e.TotalDamage >= 0.0))
+            {
                 return;
+            }
 
             Armor -= e.TotalDamage;
 
@@ -475,10 +507,14 @@ namespace Perpetuum.Units
         {
             var zone = Zone;
             if ( zone == null )
+            {
                 return;
+            }
 
             if ( zone.Configuration.Protected )
+            {
                 return;
+            }
 
             var damageBuilder = GetExplosionDamageBuilder();
             Task.Delay(FastRandom.NextInt(0, 3000)).ContinueWith(t => zone.DoAoeDamage(damageBuilder));
@@ -507,12 +543,16 @@ namespace Perpetuum.Units
             var armorMaxValue = ArmorMax;
 
             if (armorMaxValue.IsZero())
+            {
                 armorMaxValue = 1.0;
+            }
 
             var coreMax = CoreMax;
 
             if (coreMax.IsZero())
+            {
                 coreMax = 1.0;
+            }
 
             var damage = (Math.Sin(Core.Ratio(coreMax) * Math.PI) + 1) * (armorMaxValue * 0.1);
             damageBuilder.WithAllDamageTypes(damage);
@@ -553,7 +593,9 @@ namespace Perpetuum.Units
         public void Kill(Unit killer = null)
         {
             if (!Monitor.TryEnter(_killSync) )
+            {
                 return;
+            }
 
             try
             {
@@ -562,10 +604,14 @@ namespace Perpetuum.Units
                 AcceptVisitor(detector);
 
                 if (!detector.CanBeKilledResult)
+                {
                     return;
+                }
 
                 if (States.Dead || !InZone)
+                {
                     return;
+                }
 
                 if (killer != null)
                 {
@@ -624,8 +670,10 @@ namespace Perpetuum.Units
         {
             var result = base.ToDictionary();
 
-            if (!InZone) 
+            if (!InZone)
+            {
                 return result;
+            }
 
             result.Add(k.px, CurrentPosition.X);
             result.Add(k.py, CurrentPosition.Y);
@@ -889,16 +937,24 @@ namespace Perpetuum.Units
                 get
                 {
                     if (_unit.States.Dead)
+                    {
                         return ZoneExitType.Died;
+                    }
 
                     if (_unit.States.Dock)
+                    {
                         return ZoneExitType.Docked;
+                    }
 
                     if (_unit.States.Teleport)
+                    {
                         return ZoneExitType.Teleport;
+                    }
 
                     if (_unit.States.LocalTeleport)
+                    {
                         return ZoneExitType.LocalTeleport;
+                    }
 
                     return ZoneExitType.LeftGrid;
                 }
@@ -932,7 +988,9 @@ namespace Perpetuum.Units
         {
             var zone = Zone;
             if (zone == null)
+            {
                 return Enumerable.Empty<T>();
+            }
 
             return zone.Units.OfType<T>().WithinRange(CurrentPosition, distance);
         }
@@ -1066,7 +1124,10 @@ namespace Perpetuum.Units
             _core.PropertyChanged += property =>
             {
                 if (property.Value > 1.0)
+                {
                     return;
+                }
+
                 EffectHandler.RemoveEffectsByCategory(EffectCategory.effcat_zero_core_drop);
             };
             AddProperty(_core);
@@ -1174,7 +1235,9 @@ namespace Perpetuum.Units
             private double CalculateArmorByPercentage(double percent)
             {
                 if (double.IsNaN(percent))
+                {
                     percent = 0.0;
+                }
 
                 // 0.0 - 1.0
                 percent = percent.Clamp();

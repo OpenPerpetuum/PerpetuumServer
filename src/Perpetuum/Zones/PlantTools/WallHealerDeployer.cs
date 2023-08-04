@@ -56,8 +56,10 @@ namespace Perpetuum.Zones.PlantTools
 
             _interval.Update(time);
 
-            if (!_interval.Passed) 
+            if (!_interval.Passed)
+            {
                 return;
+            }
 
             _interval.Reset();
 
@@ -68,7 +70,10 @@ namespace Perpetuum.Zones.PlantTools
         {
             var zone = Zone;
 
-            if (zone == null) return;
+            if (zone == null)
+            {
+                return;
+            }
 
             var zoneWidth = zone.Size.Width;
             var zoneHeight = zone.Size.Height;
@@ -118,7 +123,9 @@ namespace Perpetuum.Zones.PlantTools
             {
                 var dc = EntityDefault.Get(Definition).Config;
                 if (dc.lifeTime != null)
+                {
                     return TimeSpan.FromMilliseconds((int) dc.lifeTime);
+                }
 
                 Logger.Error("consistency error in " + Definition + " " + ED.Name + " no lifetime defined. ");
                 return TimeSpan.FromSeconds(20);
@@ -189,7 +196,9 @@ namespace Perpetuum.Zones.PlantTools
         {
             var dc = EntityDefault.Get(Definition).Config;
             if (dc.cycle_time != null)
+            {
                 return (int) dc.cycle_time;
+            }
 
             Logger.Error("consistency error in " + Definition + " " + ED.Name + " no cycletime defined. ");
             return (int) TimeSpan.FromSeconds(10).TotalMilliseconds;

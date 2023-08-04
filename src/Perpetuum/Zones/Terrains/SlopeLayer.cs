@@ -39,7 +39,9 @@ namespace Perpetuum.Zones.Terrains
         public void UpdateSlope(int x, int y)
         {
             if ( x < 0 || x >= Width || y < 0 || y >= Height)
+            {
                 return;
+            }
 
             var value = CalculateSlope(x, y);
             SetValue(x, y, value);

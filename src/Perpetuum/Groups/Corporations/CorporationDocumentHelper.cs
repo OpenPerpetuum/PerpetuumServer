@@ -157,7 +157,9 @@ namespace Perpetuum.Groups.Corporations
                 .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return ErrorCodes.ItemNotFound;
+            }
 
             corporationDocument = new CorporationDocument(record);
             

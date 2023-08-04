@@ -31,8 +31,9 @@ namespace Perpetuum.RequestHandlers.Zone.Containers
 
                 sourceContainer.EnlistTransaction();
                 if (sourceContainer != targetContainer)
+                {
                     targetContainer.EnlistTransaction();
-
+                }
 
                 sourceContainer.UnstackItem(itemEid, character, amount, size, targetContainer);
                 sourceContainer.Save();

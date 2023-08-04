@@ -19,7 +19,9 @@ namespace Perpetuum.Zones.Locking.Locks
             private set
             {
                 if (_state == value)
+                {
                     return;
+                }
 
                 _state = value;
                 OnChanged();
@@ -42,7 +44,9 @@ namespace Perpetuum.Zones.Locking.Locks
             set
             {
                 if ( _primary == value )
+                {
                     return;
+                }
 
                 _primary = value;
                 OnChanged();
@@ -68,8 +72,11 @@ namespace Perpetuum.Zones.Locking.Locks
                     Timer.Update(time);
 
                     if (Timer.Expired)
-                        State = LockState.Locked;
-                    break;
+                        {
+                            State = LockState.Locked;
+                        }
+
+                        break;
                 }
             }
         }
@@ -95,8 +102,16 @@ namespace Perpetuum.Zones.Locking.Locks
 
         public virtual bool Equals(Lock other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
             return Id == other.Id;
         }
     }

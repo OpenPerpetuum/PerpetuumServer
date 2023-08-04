@@ -30,7 +30,9 @@ namespace Perpetuum.Modules
         public Ammo GetAmmo()
         {
             if (!IsAmmoable)
+            {
                 return null;
+            }
 
             return _ammo ?? (_ammo = Children.OfType<Ammo>().FirstOrDefault());
         }
@@ -38,7 +40,9 @@ namespace Perpetuum.Modules
         public void SetAmmo(Ammo ammo)
         {
             if (!IsAmmoable)
+            {
                 return;
+            }
 
             _ammo = null;
             ClearChildren();
@@ -56,14 +60,20 @@ namespace Perpetuum.Modules
         protected void ConsumeAmmo()
         {
             if (!IsAmmoable || !ParentIsPlayer())
+            {
                 return;
+            }
 
             var ammo = GetAmmo();
             if (ammo == null)
+            {
                 return;
+            }
 
             if (ammo.Quantity > 0)
+            {
                 ammo.Quantity--;
+            }
 
             SendAmmoUpdatePacketToPlayer();
         }
@@ -72,7 +82,9 @@ namespace Perpetuum.Modules
         {
             var player = ParentRobot as Player;
             if (player == null)
+            {
                 return;
+            }
 
             var packet = new Packet(ZoneCommand.AmmoQty);
             packet.AppendLong(Eid);
@@ -97,7 +109,9 @@ namespace Perpetuum.Modules
         public bool CheckLoadableAmmo(int ammoDefinition)
         {
             if (!IsAmmoable)
+            {
                 return false;
+            }
 
             var ammoEntityDefault = EntityDefault.GetOrThrow(ammoDefinition);
             return ammoEntityDefault.CategoryFlags.IsCategory(_ammoCategoryFlags);

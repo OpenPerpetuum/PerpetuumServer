@@ -84,7 +84,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
             _updateTimer.Update(time);
 
             if (!_updateTimer.Passed)
+            {
                 return;
+            }
 
             OnUpdate(_updateTimer.Elapsed);
 

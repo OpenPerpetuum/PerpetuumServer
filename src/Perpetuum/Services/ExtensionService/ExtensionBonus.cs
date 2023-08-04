@@ -40,8 +40,16 @@ namespace Perpetuum.Services.ExtensionService
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (obj.GetType() != typeof (ExtensionBonus)) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (obj.GetType() != typeof (ExtensionBonus))
+            {
+                return false;
+            }
+
             return Equals((ExtensionBonus) obj);
         }
 

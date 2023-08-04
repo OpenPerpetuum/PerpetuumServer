@@ -30,7 +30,9 @@ namespace Perpetuum.Services.Social
         private void LoadFromDb()
         {
             if ( character == Character.None )
+            {
                 return;
+            }
 
             var records = Db.Query().CommandText("select friendid,socialstate,note,laststateupdate from charactersocial where characterid = @characterId").SetParameter("@characterId",character.Id).Execute();
 
@@ -58,14 +60,18 @@ namespace Perpetuum.Services.Social
         public ErrorCodes SetFriendSocialState(Character friend, SocialState socialState,string note = null)
         {
             if (character.Id == 0 || character == friend)
+            {
                 return ErrorCodes.NoError;
+            }
 
             if (socialState == SocialState.Blocked)
             {
                 var friendAccessLevel = friend.AccessLevel;
 
                 if (friendAccessLevel.IsAdminOrGm())
+                {
                     return ErrorCodes.AdminIsNotBlockable;
+                }
             }
 
             var lastStateUpdate = DateTime.Now;
@@ -74,7 +80,9 @@ namespace Perpetuum.Services.Social
             if (_friends.TryGetValue(friend, out friendInfo))
             {
                 if (friendInfo.socialState == socialState)
+                {
                     return ErrorCodes.NoError;
+                }
 
                 friendInfo.socialState = socialState;
 
@@ -90,7 +98,9 @@ namespace Perpetuum.Services.Social
                                        .ExecuteNonQuery();
 
                 if (sqlResult == 0)
+                {
                     return ErrorCodes.SQLUpdateError;
+                }
             }
             else
             {
@@ -105,7 +115,9 @@ namespace Perpetuum.Services.Social
                                        .ExecuteNonQuery();
 
                 if (sqlResult == 0)
+                {
                     return ErrorCodes.SQLInsertError;
+                }
 
                 friendInfo = new FriendInfo(friend, socialState);
             }
@@ -124,7 +136,9 @@ namespace Perpetuum.Services.Social
         public void RemoveFriend(Character friend)
         {
             if (character.Id == 0 || character == friend)
+            {
                 return;
+            }
 
             // delete
             Db.Query().CommandText("delete from charactersocial where characterid = @characterId and friendid = @friendId").SetParameter("@characterId",character.Id).SetParameter("@friendId",friend.Id).ExecuteNonQuery();

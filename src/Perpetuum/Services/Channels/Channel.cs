@@ -53,7 +53,9 @@ namespace Perpetuum.Services.Channels
         public Channel SetId(int id)
         {
             if (id == Id)
+            {
                 return this;
+            }
 
             return new Channel
             {
@@ -70,10 +72,14 @@ namespace Perpetuum.Services.Channels
         public Channel SetTopic(string topic)
         {
             if (!string.IsNullOrEmpty(topic) && topic.Length > 200)
+            {
                 topic = topic.Substring(0, 199);
+            }
 
             if (topic == Topic)
+            {
                 return this;
+            }
 
             return new Channel
             {
@@ -90,7 +96,9 @@ namespace Perpetuum.Services.Channels
         public Channel SetPassword(string password)
         {
             if (password == Password)
+            {
                 return this;
+            }
 
             return new Channel
             {
@@ -107,7 +115,9 @@ namespace Perpetuum.Services.Channels
         public Channel SetMember(ChannelMember member)
         {
             if (member == null)
+            {
                 return this;
+            }
 
             var members = new Dictionary<Character, ChannelMember>(_members) { [member.character] = member };
 
@@ -140,7 +150,9 @@ namespace Perpetuum.Services.Channels
         {
             var members = new Dictionary<Character, ChannelMember>(_members);
             if (!members.Remove(member))
+            {
                 return this;
+            }
 
             return new Channel
             {
@@ -164,7 +176,9 @@ namespace Perpetuum.Services.Channels
         public void CheckPasswordAndThrowIfMismatch(string password)
         {
             if (!HasPassword)
+            {
                 return;
+            }
 
             Equals(Password, password ?? string.Empty).ThrowIfFalse(ErrorCodes.PasswordMismatch,gex => gex.SetData("channel",Name));
         }
@@ -172,7 +186,9 @@ namespace Perpetuum.Services.Channels
         public void CheckRoleAndThrowIfFailed(Character member, ChannelMemberRole role)
         {
             if (member == Character.None || Character.IsSystemCharacter(member))
+            {
                 return;
+            }
 
             GetMember(member).ThrowIfNull(ErrorCodes.NotMemberOfChannel).HasRole(role).ThrowIfFalse(ErrorCodes.InsufficientPrivileges);
         }
@@ -186,7 +202,9 @@ namespace Perpetuum.Services.Channels
         {
             var isMember = true;
             if (issuer != Character.None)
+            {
                 isMember = IsOnline(issuer);
+            }
 
             var hasPassword = HasPassword;
 
@@ -204,7 +222,9 @@ namespace Perpetuum.Services.Channels
             }
 
             if (withMembers)
+            {
                 result.Add(k.members, _members.Values.ToDictionary("m", m => m.ToDictionary()));
+            }
 
             return result;
         }
@@ -248,7 +268,9 @@ namespace Perpetuum.Services.Channels
         public void SendToAll(ISessionManager sessionManager,MessageBuilder messageBuilder, Character sender)
         {
             if ( sessionManager == null || messageBuilder == null )
+            {
                 return;
+            }
 
             var message = messageBuilder.Build();
 
@@ -257,7 +279,9 @@ namespace Perpetuum.Services.Channels
                 if (sender != Character.None)
                 {
                     if (member.IsBlocked(sender))
+                    {
                         continue;
+                    }
                 }
 
                 var session = sessionManager.GetByCharacter(member);
@@ -286,7 +310,9 @@ namespace Perpetuum.Services.Channels
         public void SendMemberOnlineStateToAll(ISessionManager sessionManager,ChannelMember member,bool isOnline)
         {
             if ( member == null )
+            {
                 return;
+            }
 
             var data = new Dictionary<string, object> { { k.member, member.ToDictionary() }, { k.state, isOnline } };
             var n = CreateNotificationMessage(ChannelNotify.OnlineState, data);
@@ -296,7 +322,9 @@ namespace Perpetuum.Services.Channels
         public void SendAddMemberToAll(ISessionManager sessionManager,ChannelMember member)
         {
             if ( member == null || !sessionManager.IsOnline(member.character))
+            {
                 return;
+            }
 
             var n = CreateNotificationMessage(ChannelNotify.AddMember, member.ToDictionary());
             SendToAll(sessionManager, n);
@@ -305,7 +333,9 @@ namespace Perpetuum.Services.Channels
         public void SendJoinedToMember(ISessionManager sessionManager,ChannelMember member)
         {
             if ( member == null )
+            {
                 return;
+            }
 
             var d = new Dictionary<string, object>
                 {

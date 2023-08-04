@@ -89,15 +89,21 @@ namespace Perpetuum.Services.EventServices.EventProcessors
         {
             var def = GetNpcDef(msg);
             if (def < 0)
+            {
                 return string.Empty;
+            }
 
             var npcName = GetNpcName(def);
             if (npcName == string.Empty)
+            {
                 return string.Empty;
+            }
 
             var stateMessage = GetStateMessage(msg);
             if (stateMessage == string.Empty)
+            {
                 return string.Empty;
+            }
 
             return $"{npcName} {stateMessage}";
         }
@@ -125,9 +131,15 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             foreach (var pair in _state)
             {
                 var name = Abbreviate(GetNpcName(pair.Key), allowableNameLens);
-                if (name == string.Empty) continue;
-                if(pair.Value.State == NpcState.Alive)
+                if (name == string.Empty)
+                {
+                    continue;
+                }
+
+                if (pair.Value.State == NpcState.Alive)
+                {
                     topic += $"{name}|";
+                }
             }
             return topic;
         }

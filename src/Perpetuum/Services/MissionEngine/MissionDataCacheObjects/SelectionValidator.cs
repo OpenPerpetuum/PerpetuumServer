@@ -26,7 +26,9 @@ namespace Perpetuum.Services.MissionEngine.MissionDataCacheObjects
             {
                 var bi = _zone.Terrain.Blocks.GetValue(vec2);
                 if (bi.Island)
+                {
                     return false;
+                }
             }
 
             return true;
@@ -76,7 +78,9 @@ namespace Perpetuum.Services.MissionEngine.MissionDataCacheObjects
             {
                 var zone = zoneManager.GetZone(zoneId);
                 if (zone == null)
+                {
                     continue;
+                }
 
                 initValues.Add(zone);
             }

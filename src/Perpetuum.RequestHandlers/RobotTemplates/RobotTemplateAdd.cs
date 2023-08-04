@@ -22,7 +22,9 @@ namespace Perpetuum.RequestHandlers.RobotTemplates
                 var description = request.Data.GetOrDefault<Dictionary<string, object>>(k.description);
 
                 if (string.IsNullOrEmpty(templateName))
+                {
                     templateName = "template_" + FastRandom.NextString(7);
+                }
 
                 var template = RobotTemplate.CreateFromDictionary(templateName, description).ThrowIfNull(ErrorCodes.TemplateError);
                 template.Validate().ThrowIfFalse(ErrorCodes.TemplateError);

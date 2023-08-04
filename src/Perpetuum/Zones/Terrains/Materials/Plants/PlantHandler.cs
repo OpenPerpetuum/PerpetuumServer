@@ -69,13 +69,17 @@ namespace Perpetuum.Zones.Terrains.Materials.Plants
         {
             _plantsTimer.Update(time);
 
-            if (!_plantsTimer.Passed) 
+            if (!_plantsTimer.Passed)
+            {
                 return;
+            }
 
             _plantsTimer.Reset();
 
             if ( Interlocked.CompareExchange(ref _isInProcess,1,0) == 1)
+            {
                 return;
+            }
 
             Task.Run(() => ProcessPlants()).ContinueWith(t =>
             {
@@ -121,7 +125,11 @@ namespace Perpetuum.Zones.Terrains.Materials.Plants
             //do full map in one round            
             while (!_zoneFinished)
             {
-                if (_stopSignal) return;
+                if (_stopSignal)
+                {
+                    return;
+                }
+
                 ScanZone();
             }
 
@@ -231,7 +239,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Plants
             set
             {
                 if ( _scannerMode == value )
+                {
                     return;
+                }
 
                 var preValue = _scannerMode;
                 _scannerMode = value;

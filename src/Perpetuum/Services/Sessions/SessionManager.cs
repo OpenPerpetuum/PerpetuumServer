@@ -157,7 +157,9 @@ namespace Perpetuum.Services.Sessions
         public ISession GetByCharacter(Character character)
         {
             if (character == Character.None)
+            {
                 return null;
+            }
 
             return !_charactersIndex.TryGetValue(character, out ISession session) ? null : session;
         }
@@ -172,7 +174,9 @@ namespace Perpetuum.Services.Sessions
         public ISession GetByAccount(int accountId)
         {
             if (accountId == 0)
+            {
                 return null;
+            }
 
             return _sessions.Values.FirstOrDefault(s => s.AccountId == accountId);
         }

@@ -117,8 +117,9 @@ namespace Perpetuum.Groups.Corporations
                 CorporationData.RemoveFromCache(Eid);
 
                 if (_characterProfiles is CachedReadOnlyRepository<int,CharacterProfile> c)
+                {
                     c.Remove(newMember.Id);
-
+                }
             });
         }
 
@@ -261,7 +262,9 @@ namespace Perpetuum.Groups.Corporations
         public IEnumerable<VoteEntry> GetVoteEntries(Vote vote)
         {
             if (vote.groupEID != Eid)
+            {
                 return Enumerable.Empty<VoteEntry>();
+            }
 
             return _voteHandler.GetVoteEntries(vote);
         }
@@ -269,13 +272,17 @@ namespace Perpetuum.Groups.Corporations
         public void StartVote(Character issuer, string name, string topic, int participation, int consensusRate)
         {
             if (!CanStartVote(issuer))
+            {
                 throw new PerpetuumException(ErrorCodes.InsufficientPrivileges);
+            }
 
             var maxNofVote = CEO.GetExtensionBonusWithPrerequiredExtensions(ExtensionNames.ALLIANCE_VOTING);
             var corpCurrentVotes = _voteHandler.VoteCount(Eid);
 
             if (maxNofVote < corpCurrentVotes)
+            {
                 throw new PerpetuumException(ErrorCodes.MaxNumberOfVotesReached);
+            }
 
             var vote = new Vote
             {
@@ -307,11 +314,15 @@ namespace Perpetuum.Groups.Corporations
         public void SetVoteTopic(Character issuer, int voteId, string topic)
         {
             if (!CanSetVoteTopic(issuer))
+            {
                 throw new PerpetuumException(ErrorCodes.InsufficientPrivileges);
+            }
 
             var vote = GetVote(voteId);
             if (vote == null)
+            {
                 throw new PerpetuumException(ErrorCodes.ItemNotFound);
+            }
 
             vote.voteTopic = topic;
             _voteHandler.UpdateTopic(vote);
@@ -331,11 +342,15 @@ namespace Perpetuum.Groups.Corporations
         public void DeleteVote(Character issuer, int voteId)
         {
             if (!CanDeleteVote(issuer))
+            {
                 throw new PerpetuumException(ErrorCodes.InsufficientPrivileges);
+            }
 
             var vote = GetVote(voteId);
             if (vote == null)
+            {
                 throw new PerpetuumException(ErrorCodes.ItemNotFound);
+            }
 
             _voteHandler.DeleteVote(vote);
 
@@ -361,7 +376,9 @@ namespace Perpetuum.Groups.Corporations
         public void PayOut(Character member, double amount, Character issuer)
         {
             if ( amount <= 0 )
+            {
                 return;
+            }
 
             CanPayOut(issuer).ThrowIfFalse(ErrorCodes.InsufficientPrivileges);
             IsMember(member).ThrowIfFalse(ErrorCodes.NotMemberOfCorporation);
@@ -398,7 +415,9 @@ namespace Perpetuum.Groups.Corporations
         public void Transfer(PrivateCorporation target, double amount,Character issuer)
         {
             if ( Eid == target.Eid )
+            {
                 return;
+            }
 
             CanTransfer(issuer).ThrowIfFalse(ErrorCodes.InsufficientPrivileges);
             target.IsActive.ThrowIfFalse(ErrorCodes.CorporationMustBeActive);

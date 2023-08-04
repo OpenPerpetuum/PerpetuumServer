@@ -168,7 +168,9 @@ namespace Perpetuum.Zones.Terrains
         {
             var currPlant = zone.Terrain.Plants[x, y];
             if (currPlant.type == PlantType.NotDefined || currPlant.health <= 0)
+            {
                 return;
+            }
 
             var plantRule = zone.Configuration.PlantRules.GetPlantRule(currPlant.type);
             if (plantRule == null)
@@ -283,7 +285,9 @@ namespace Perpetuum.Zones.Terrains
             snapshot.Check();
 
             if ( cube.Equals(snapshot) )
+            {
                 return;
+            }
 
             snapshot.Commit();
 
@@ -306,7 +310,9 @@ namespace Perpetuum.Zones.Terrains
         {
             var layer = terrain.GetLayerByType(layerType) as IUpdateableLayer;
             if (layer == null)
+            {
                 return null;
+            }
 
             var packet = new Packet(ZoneCommand.LayerUpdate);
 
@@ -350,12 +356,16 @@ namespace Perpetuum.Zones.Terrains
             {
                 var isPassable = terrain.Passable.GetValue(x,y);
                 if (!isPassable)
+                {
                     return false;
+                }
             }
 
             var bi = terrain.Blocks.GetValue(x,y);
             if (bi.Flags > 0)
+            {
                 return false;
+            }
 
             return terrain.Slope.CheckSlope(x,y);
         }

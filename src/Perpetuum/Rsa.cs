@@ -75,7 +75,9 @@ namespace Perpetuum
         public static byte[] Decrypt(byte[] input)
         {
             if (input.Length > _modulusKey.Length)
+            {
                 return null;
+            }
 
             var encryptedData = input.Reverse().ConcatSingle((byte)0).ToArray();
 
@@ -88,7 +90,9 @@ namespace Perpetuum
         public static byte[] Encrypt(byte[] input)
         {
             if (input.Length > _modulusKey.Length)
+            {
                 return null;
+            }
 
             var encryptedData = input.Reverse().ConcatSingle((byte)0).ToArray();
 

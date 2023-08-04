@@ -58,7 +58,9 @@ namespace Perpetuum.Zones.Artifacts.Generators
 
                 var artifactTypeInfo = _repository.GetArtifactInfo(artifactType);
                 if ( artifactTypeInfo == null )
+                {
                     continue;
+                }
 
                 range = range - artifactTypeInfo.goalRange;
 

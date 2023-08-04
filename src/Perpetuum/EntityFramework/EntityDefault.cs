@@ -43,12 +43,17 @@ namespace Perpetuum.EntityFramework
         {
             get
             {
-                if (CategoryFlags.IsCategory(CategoryFlags.cf_documents)) 
+                if (CategoryFlags.IsCategory(CategoryFlags.cf_documents))
+                {
                     return false;
+                }
 
                 //... other category flags here...
 
-                if (!Purchasable) return false;
+                if (!Purchasable)
+                {
+                    return false;
+                }
                 //... other conditions
 
                 return true;
@@ -121,7 +126,9 @@ namespace Perpetuum.EntityFramework
             var perPieceVolume = Quantity == 1 ? Volume : Volume / Quantity;
 
             if (repackaged)
+            {
                 perPieceVolume *= 0.5;
+            }
 
             return perPieceVolume * quantity;
         }

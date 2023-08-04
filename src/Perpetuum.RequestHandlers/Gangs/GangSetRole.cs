@@ -24,13 +24,19 @@ namespace Perpetuum.RequestHandlers.Gangs
 
                 var gang = _gangManager.GetGangByMember(character);
                 if (gang == null)
+                {
                     throw new PerpetuumException(ErrorCodes.CharacterNotInGang);
+                }
 
                 if (member == gang.Leader)
+                {
                     return;
+                }
 
                 if (!gang.CanSetRole(character))
+                {
                     throw new PerpetuumException(ErrorCodes.OnlyGangLeaderOrAssistantCanDoThis);
+                }
 
                 _gangManager.SetRole(gang, member, newRole);
 

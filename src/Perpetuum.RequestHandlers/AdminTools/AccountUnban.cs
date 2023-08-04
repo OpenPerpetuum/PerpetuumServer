@@ -19,8 +19,10 @@ namespace Perpetuum.RequestHandlers.AdminTools
 
             var account = _accountRepository.Get(id);
             if (account == null)
+            {
                 throw new PerpetuumException(ErrorCodes.AccountNotFound);
-           
+            }
+
             account.State = AccountState.normal;
             account.BanTime = null;
             account.BanNote = null;

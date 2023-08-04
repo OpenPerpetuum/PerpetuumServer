@@ -68,7 +68,9 @@ namespace Perpetuum.Services.TechTree
             {
                 TechTreeNode parentNode;
                 if (!nodes.TryGetValue(parentDefinition, out parentNode))
-                break;
+                {
+                    break;
+                }
 
                 r.Add(parentNode);
                 parentDefinition = parentNode.ParentDefinition;

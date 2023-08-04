@@ -22,7 +22,9 @@ namespace Perpetuum.Modules.EffectModules
         protected override bool CanApplyEffect(Unit target)
         {
             if (!ParentIsPlayer() || !(target is Npc))
+            {
                 return true;
+            }
 
             OnError(ErrorCodes.ThisModuleIsNotSupportedOnNPCs);
             return false;

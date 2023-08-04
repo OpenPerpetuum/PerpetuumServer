@@ -17,7 +17,9 @@ namespace Perpetuum.Zones.Teleporting
             {
                 var d = descriptions.GetOrDefault(id);
                 if (d != null)
+                {
                     yield return d;
+                }
             }
         }
     }

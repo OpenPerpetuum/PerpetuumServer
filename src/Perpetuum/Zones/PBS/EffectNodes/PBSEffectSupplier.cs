@@ -123,7 +123,10 @@ namespace Perpetuum.Zones.PBS.EffectNodes
             public void Update(TimeSpan time)
             {
                 _timer.Update(time);
-                if (!_timer.Passed) return;
+                if (!_timer.Passed)
+                {
+                    return;
+                }
 
                 //20 masodperc mulva visszavalt emitbe
                 _supplier._fsm.Pop();

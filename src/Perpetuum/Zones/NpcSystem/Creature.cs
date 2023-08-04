@@ -77,7 +77,9 @@ namespace Perpetuum.Zones.NpcSystem
             var locks = GetLocks().OfType<UnitLock>().Where(l =>
             {
                 if (l.State != LockState.Locked)
+                {
                     return false;
+                }
 
                 var isInOptimalRange = IsInRangeOf3D(l.Target, range);
                 return isInOptimalRange;
@@ -87,11 +89,15 @@ namespace Perpetuum.Zones.NpcSystem
             var primaryLock = locks.FirstOrDefault(l => l.Primary);
 
             if (module.ED.AttributeFlags.PrimaryLockedTarget)
+            {
                 return primaryLock;
+            }
 
             var chance = FastRandom.NextDouble() <= PRIMARY_LOCK_CHANCE_FOR_SECONDARY_MODULE;
             if (primaryLock != null && chance)
+            {
                 return primaryLock;
+            }
 
             return locks.RandomElement();
         }

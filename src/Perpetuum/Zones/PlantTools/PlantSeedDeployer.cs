@@ -134,8 +134,10 @@ namespace Perpetuum.Zones.PlantTools
         {
             IsPositionValidForPlantingOrThrow(zone, x, y, _targetPlantType);
 
-            if (_targetPlantType == PlantType.NotDefined) 
+            if (_targetPlantType == PlantType.NotDefined)
+            {
                 return;
+            }
 
             using (new TerrainUpdateMonitor(zone))
             {
@@ -173,7 +175,9 @@ namespace Perpetuum.Zones.PlantTools
                 var j = pair.Value;
 
                 if (i < 0 || i >= zone.Size.Width || j < 0 || j >= zone.Size.Height)
+                {
                     continue;
+                }
 
                 try
                 {
@@ -183,7 +187,10 @@ namespace Perpetuum.Zones.PlantTools
                 catch (Exception ex)
                 {
                     if (ex is PerpetuumException)
+                    {
                         continue;
+                    }
+
                     throw;
                 }
 
@@ -304,7 +311,9 @@ namespace Perpetuum.Zones.PlantTools
             var plantCount = CountNonDiagonalPlants(zone, PlantType.Wall, x, y, x, y);
 
             if (plantCount > 3)
+            {
                 return false;
+            }
 
             for (var i = 0; i <= 3; i++)
             {
@@ -317,8 +326,10 @@ namespace Perpetuum.Zones.PlantTools
                 plantCount = CountNonDiagonalPlants(zone,PlantType.Wall, tx, ty, x, y);
 
                 if (plantCount > 3)
+                {
                     return false;
                 }
+            }
 
             return true;
         }

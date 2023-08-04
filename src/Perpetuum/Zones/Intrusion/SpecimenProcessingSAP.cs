@@ -83,7 +83,9 @@ namespace Perpetuum.Zones.Intrusion
         private ItemInfo GetItemInfo(int index)
         {
             if (index >= _itemInfos.Count)
+            {
                 return default(ItemInfo);
+            }
 
             return _itemInfos[index];
         }
@@ -136,8 +138,10 @@ namespace Perpetuum.Zones.Intrusion
 
             container.SendUpdateToOwnerAsync();
 
-            if (progress.index >= _itemInfos.Count) 
+            if (progress.index >= _itemInfos.Count)
+            {
                 return;
+            }
 
             SendProgressToPlayer(player.Character);
         }

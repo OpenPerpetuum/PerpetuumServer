@@ -23,13 +23,17 @@ namespace Perpetuum.Zones
             foreach (var targetUnit in zone.Units)
             {
                 if (sourceUnit == targetUnit)
+                {
                     continue;
+                }
 
                 sourceUnit.UpdateVisibilityOf(targetUnit);
                 targetUnit.UpdateVisibilityOf(sourceUnit);
 
                 if (zone.Configuration.Protected)
+                {
                     continue;
+                }
 
                 var bSource = sourceUnit as IBlobableUnit;
                 bSource?.BlobHandler.UpdateBlob(targetUnit);
@@ -97,7 +101,9 @@ namespace Perpetuum.Zones
         public static bool IsAnyConstructibleWithinRadius2D(this IZone zone, Position position, int constructionRadius)
         {
             if (zone == null)
+            {
                 return false;
+            }
 
             foreach (var unit in zone.Units)
             {
@@ -111,12 +117,16 @@ namespace Perpetuum.Zones
                 else
                 {
                     if (!unit.TryGetConstructionRadius(out radius))
+                    {
                         continue;
+                    }
                 }
                 
                 var inRange = position.IsWithinRangeOf2D(unit.CurrentPosition, constructionRadius + radius);
                 if (!inRange)
+                {
                     continue;
+                }
 #if DEBUG
                 Logger.Error("too close to:" + unit.ED.Name + " " + unit.Definition + " range:" + (constructionRadius + radius) + " distance:" + position.TotalDistance2D(unit.CurrentPosition));
 #endif
@@ -142,7 +152,10 @@ namespace Perpetuum.Zones
                     matchRange = egg.TargetPBSNodeDefault.Config.typeExclusiveRange;
                 }
 
-                if (matchRange == null) return false;
+                if (matchRange == null)
+                {
+                    return false;
+                }
 
                 var range = typeExclusiveRange + (int)matchRange;
 
@@ -186,7 +199,9 @@ namespace Perpetuum.Zones
         public static IEnumerable<Unit> GetUnitsWithinRange2D(this IZone zone,Position position,double range)
         {
             if (zone == null)
+            {
                 return Enumerable.Empty<Unit>();
+            }
 
             return zone.Units.WithinRange2D(position, range);
         }

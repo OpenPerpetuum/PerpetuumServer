@@ -37,7 +37,9 @@ namespace Perpetuum.Zones.DamageProcessors
         public void TakeDamage(DamageInfo damageInfo)
         {
             if (!_unit.InZone || _unit.IsAttackable != ErrorCodes.NoError || _unit.States.Dead || _unit.IsInvulnerable)
+            {
                 return;
+            }
 
             lock (_damageInfos)
             {
@@ -61,7 +63,9 @@ namespace Perpetuum.Zones.DamageProcessors
                 lock (_damageInfos)
                 {
                     if ( _damageInfos.Count == 0 )
+                    {
                         return;
+                    }
 
                     info = _damageInfos.Dequeue();
                 }
@@ -71,7 +75,9 @@ namespace Perpetuum.Zones.DamageProcessors
         private void ProcessDamage(DamageInfo damageInfo)
         {
             if (!_unit.InZone || _unit.IsAttackable != ErrorCodes.NoError || _unit.States.Dead || _unit.IsInvulnerable)
+            {
                 return;
+            }
 
             var totalDamage = 0.0;
             var totalKers = 0.0;
@@ -81,7 +87,9 @@ namespace Perpetuum.Zones.DamageProcessors
             {
                 var partialDamage = CalculateAbsorbedDamage(damage.value,ref totalAbsorbedDamage);
                 if (partialDamage <= 0.0)
+                {
                     continue;
+                }
 
                 var resist = _unit.GetResistByDamageType(damage.type);
                 partialDamage -= (partialDamage * resist);
@@ -98,7 +106,9 @@ namespace Perpetuum.Zones.DamageProcessors
 
             var h = DamageTaken;
             if (h == null)
+            {
                 return;
+            }
 
             var e = new DamageTakenEventArgs
             {
@@ -115,15 +125,21 @@ namespace Perpetuum.Zones.DamageProcessors
         private double CalculateAbsorbedDamage(double damage, ref double absorbed)
         {
             if (_shield.Value == null || !_unit.HasShieldEffect)
+            {
                 return damage;
+            }
 
             var absorbtionModifier = _shield.Value.AbsorbtionModifier;
             if (absorbtionModifier <= 0.0)
+            {
                 return damage;
+            }
 
             var currCore = _unit.Core;
             if (currCore < 1.0)
+            {
                 return damage;
+            }
 
             // damage = 100
             // absorb = 1.2 / 0.8
@@ -151,12 +167,16 @@ namespace Perpetuum.Zones.DamageProcessors
             var kersModifier = _unit.GetKersByDamageType(damageType);
 
             if (Math.Abs(kersModifier - 1.0) < double.Epsilon)
+            {
                 return 0.0;
+            }
 
             var kers = damage * kersModifier;
 
             if (kers <= 0.0)
+            {
                 return 0.0;
+            }
 
             var kersMod = (Math.Sin(_unit.Core / _unit.CoreMax * Math.PI)/2) + 0.5;
             return kers * kersMod;

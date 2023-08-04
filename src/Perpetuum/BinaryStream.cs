@@ -53,8 +53,10 @@ namespace Perpetuum
             var length = ReadInt();
 
             if (length == 0)
+            {
                 return string.Empty;
-            
+            }
+
             var data = ReadBytes(length);
             return Encoding.UTF8.GetString(data);
         }
@@ -161,7 +163,9 @@ namespace Perpetuum
         public void AppendStream(BinaryStream stream)
         {
             if ( stream == null )
+            {
                 return;
+            }
 
             AppendByteArray(stream.ToArray());
         }

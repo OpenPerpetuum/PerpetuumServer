@@ -33,26 +33,36 @@ namespace Perpetuum.Zones.Teleporting
         public bool IsValid()
         {
             //turned on?
-            if (!listable) 
+            if (!listable)
+            {
                 return false;
+            }
 
             //is source defined?
-            if (SourceTeleport == null) 
+            if (SourceTeleport == null)
+            {
                 return false;
+            }
 
             //-- columns -- full position has to be defined
 
             //is source position defined?
-            if (SourceZone == null || sourceRange == null) 
+            if (SourceZone == null || sourceRange == null)
+            {
                 return false;
+            }
 
             //is target position defined?
-            if (TargetTeleport != null &&  TargetZone == null) 
+            if (TargetTeleport != null &&  TargetZone == null)
+            {
                 return false;
+            }
 
-            if (TargetZone == null) 
+            if (TargetZone == null)
+            {
                 return false;
-           
+            }
+
             return true;
         }
     

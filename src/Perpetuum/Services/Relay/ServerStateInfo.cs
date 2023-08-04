@@ -64,7 +64,9 @@ namespace Perpetuum.Services.Relay
         {
             var record = Db.Query().CommandText("saServerInfoGet").ExecuteSingleRow();
             if (record == null)
+            {
                 return null;
+            }
 
             var serverInfo = new ServerInfo
             {

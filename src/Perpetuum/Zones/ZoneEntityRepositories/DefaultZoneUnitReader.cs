@@ -25,7 +25,9 @@ namespace Perpetuum.Zones.ZoneEntityRepositories
             {
                 var unit = CreateUnit(record);
                 if ( unit == null )
+                {
                     continue;
+                }
 
                 var x = record.GetValue<double>("x");
                 var y = record.GetValue<double>("y");

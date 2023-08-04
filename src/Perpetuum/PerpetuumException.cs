@@ -21,7 +21,9 @@ namespace Perpetuum
         public PerpetuumException SetData(IDictionary<string,object> dictionary)
         {
             if (dictionary == null)
+            {
                 return this;
+            }
 
             foreach (var kvp in dictionary)
             {

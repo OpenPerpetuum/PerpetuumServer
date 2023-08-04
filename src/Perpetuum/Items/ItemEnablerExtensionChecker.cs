@@ -50,7 +50,9 @@ namespace Perpetuum.Items
         public static Extension[] Check(Item item, Character character)
         {
             if (character == Character.None)
+            {
                 return new Extension[0];
+            }
 
             var checker = new ItemEnablerExtensionChecker(character);
             item.AcceptVisitor(checker);

@@ -23,7 +23,9 @@ namespace Perpetuum.Items
             OnPropertyChanging(ref value);
 
             if (Math.Abs(Value - value) < double.Epsilon)
+            {
                 return;
+            }
 
             Value = value;
 
@@ -33,7 +35,9 @@ namespace Perpetuum.Items
         public void UpdateIfRelated(AggregateField field)
         {
             if (IsRelated(field))
+            {
                 Update();
+            }
         }
 
         public void Update()
@@ -78,7 +82,9 @@ namespace Perpetuum.Items
         public void AddToDictionary(IDictionary<string, object> dictionary)
         {
             if (dictionary == null || !HasValue)
+            {
                 return;
+            }
 
             dictionary["a" + (int)Field] = ToDictionary();
         }

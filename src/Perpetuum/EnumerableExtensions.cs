@@ -13,7 +13,9 @@ namespace Perpetuum
         public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
         {
             if (enumerable == null)
+            {
                 return;
+            }
 
             foreach (var item in enumerable)
             {
@@ -70,7 +72,9 @@ namespace Perpetuum
             foreach (var item in collection)
             {
                 if (finder(item))
+                {
                     return index;
+                }
 
                 index++;
             }
@@ -87,7 +91,9 @@ namespace Perpetuum
         public static bool IsNullOrEmpty(this IEnumerable enumerable)
         {
             if (enumerable == null)
+            {
                 return true;
+            }
 
             var e = enumerable.GetEnumerator();
             return !e.MoveNext();
@@ -102,7 +108,9 @@ namespace Perpetuum
             IEnumerable<T> result;
             var array = enumerable as T[] ?? enumerable.ToArray();
             while ((result = array.Skip(step++ * maxItemCount).Take(maxItemCount)).Any())
+            {
                 yield return result;
+            }
         }
 
         public static T RandomElement<T>(this IEnumerable<T> enumerable)
@@ -110,7 +118,9 @@ namespace Perpetuum
             var e = enumerable as IList<T> ?? enumerable.ToList();
             var count = e.Count;
             if (count == 0)
+            {
                 return default(T);
+            }
 
             var index = FastRandom.NextInt(0, count - 1);
             return e[index];
@@ -135,7 +145,9 @@ namespace Perpetuum
                 var weight = weightSelector(item);
                 var r = FastRandom.NextDouble(0, totalWeight + weight);
                 if (r >= totalWeight)
+                {
                     result = item;
+                }
 
                 totalWeight += weight;
             }

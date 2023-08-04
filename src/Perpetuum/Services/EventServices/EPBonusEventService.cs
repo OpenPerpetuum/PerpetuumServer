@@ -39,7 +39,9 @@ namespace Perpetuum.Services.EventServices
         public int GetBonus()
         {
 			using (_lock.Read(THREAD_TIMEOUT))
-				return _bonus;
+            {
+                return _bonus;
+            }
         }
 
         public void SetEvent(int bonus, TimeSpan duration)
@@ -72,18 +74,25 @@ namespace Perpetuum.Services.EventServices
 			{
 
 				if (!_eventStarted)
-					return;
+                {
+                    return;
+                }
 
-				if (_endingEvent)
-					return;
-			}
+                if (_endingEvent)
+                {
+                    return;
+                }
+            }
 			
 			using (_lock.Write(THREAD_TIMEOUT))
 			{
 				_elapsed += time;
 				if (_elapsed < _duration)
-					return;
-				_endingEvent = true;
+                {
+                    return;
+                }
+
+                _endingEvent = true;
 			}
 
             Task.Run(() => EndEvent());

@@ -21,7 +21,9 @@ namespace Perpetuum.Services.Relay
             set
             {
                 if ( _state == value )
+                {
                     return;
+                }
 
                 _state = value;
 

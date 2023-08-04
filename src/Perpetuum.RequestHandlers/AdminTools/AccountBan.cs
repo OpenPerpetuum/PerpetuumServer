@@ -24,7 +24,9 @@ namespace Perpetuum.RequestHandlers.AdminTools
 
             var account = _accountRepository.Get(id);
             if (account == null)
+            {
                 throw new PerpetuumException(ErrorCodes.AccountNotFound);
+            }
 
             account.BanLength = TimeSpan.FromSeconds(banLength);
             account.BanTime = DateTime.Now;

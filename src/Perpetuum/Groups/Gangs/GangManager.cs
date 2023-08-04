@@ -27,7 +27,9 @@ namespace Perpetuum.Groups.Gangs
         {
             var gang = _gangs.GetOrAdd(gangID, _ => _gangRepository.Get(gangID));
             if (gang != null)
+            {
                 return gang;
+            }
 
             _gangs.Remove(gangID);
             return null;
@@ -37,11 +39,15 @@ namespace Perpetuum.Groups.Gangs
         {
             var gang = _gangs.Values.FirstOrDefault(g => g.IsMember(member));
             if (gang != null)
+            {
                 return gang;
+            }
 
             var gangID = _gangRepository.GetGangIDByMember(member);
             if (gangID == Guid.Empty)
+            {
                 return null;
+            }
 
             gang = GetGang(gangID);
             return gang;
@@ -50,7 +56,9 @@ namespace Perpetuum.Groups.Gangs
         public Gang CreateGang(string gangName,Character leader)
         {
             if (string.IsNullOrEmpty(gangName))
+            {
                 throw new PerpetuumException(ErrorCodes.GangNameTooShort);
+            }
 
             var gang = _gangFactory();
             gang.Id = Guid.NewGuid();
@@ -63,9 +71,13 @@ namespace Perpetuum.Groups.Gangs
             void Finish() => _channelManager.CreateAndJoinChannel(ChannelType.Gang, gang.ChannelName, gang.Leader);
 
             if (Transaction.Current != null)
+            {
                 Transaction.Current.OnCommited(Finish);
+            }
             else
+            {
                 Finish();
+            }
 
             return gang;
         }
@@ -83,9 +95,13 @@ namespace Perpetuum.Groups.Gangs
             }
 
             if (Transaction.Current != null)
+            {
                 Transaction.Current.OnCommited(Finish);
+            }
             else
+            {
                 Finish();
+            }
         }
 
         public event Action<Gang> GangDisbanded;
@@ -93,10 +109,14 @@ namespace Perpetuum.Groups.Gangs
         public void RemoveMember(Gang gang, Character member,bool isKick)
         {
             if (gang == null)
+            {
                 return;
+            }
 
             if ( !gang.IsMember(member) )
+            {
                 throw new PerpetuumException(ErrorCodes.CharacterNotInTheCurrentGang);
+            }
 
             _gangRepository.DeleteMember(gang,member);
 
@@ -119,9 +139,13 @@ namespace Perpetuum.Groups.Gangs
             }
 
             if (Transaction.Current != null)
+            {
                 Transaction.Current.OnCommited(Finish);
+            }
             else
+            {
                 Finish();
+            }
         }
 
         protected virtual void OnGangMemberRemoved(Gang gang, Character member)
@@ -137,7 +161,9 @@ namespace Perpetuum.Groups.Gangs
                 }
 
                 if (gang.Leader != member)
+                {
                     return;
+                }
 
                 // nincs leader
                 var newLeader = members.FirstOrDefault(mm => gang.HasRole(mm, GangRole.Assistant)) ?? Character.None;
@@ -159,7 +185,9 @@ namespace Perpetuum.Groups.Gangs
         public void ChangeLeader(Gang gang, Character newLeader)
         {
             if ( !gang.IsMember(newLeader))
+            {
                 throw new PerpetuumException(ErrorCodes.CharacterNotInTheCurrentGang);
+            }
 
             _gangRepository.UpdateLeader(gang,newLeader);
 
@@ -175,9 +203,13 @@ namespace Perpetuum.Groups.Gangs
             }
 
             if (Transaction.Current != null)
+            {
                 Transaction.Current.OnCommited(Finish);
+            }
             else
+            {
                 Finish();
+            }
         }
 
         public event Action<Gang> GangLeaderChanged;
@@ -207,9 +239,13 @@ namespace Perpetuum.Groups.Gangs
             }
 
             if (Transaction.Current != null)
+            {
                 Transaction.Current.OnCommited(Finish);
+            }
             else
+            {
                 Finish();
+            }
         }
 
         public event Action<Gang,Character> GangMemberJoined;
@@ -218,10 +254,14 @@ namespace Perpetuum.Groups.Gangs
         public void SetRole(Gang gang, Character member, GangRole newRole)
         {
             if (gang.Leader == member)
+            {
                 return;
+            }
 
             if (!gang.IsMember(member))
+            {
                 throw new PerpetuumException(ErrorCodes.CharacterNotInTheCurrentGang);
+            }
 
             _gangRepository.UpdateMemberRole(gang,member,newRole);
 
@@ -239,9 +279,13 @@ namespace Perpetuum.Groups.Gangs
             }
 
             if (Transaction.Current == null)
+            {
                 Transaction.Current.OnCommited(Finish);
+            }
             else
+            {
                 Finish();
+            }
         }
 
     }

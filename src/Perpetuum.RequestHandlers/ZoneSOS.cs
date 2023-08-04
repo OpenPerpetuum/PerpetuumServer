@@ -19,7 +19,9 @@ namespace Perpetuum.RequestHandlers
 
             var player = _zoneManager.GetPlayer(character);
             if (player == null)
+            {
                 return;
+            }
 
             var dockingBase = character.GetCurrentDockingBase();
             dockingBase.DockIn(character, Player.NormalUndockDelay, ZoneExitType.Docked);

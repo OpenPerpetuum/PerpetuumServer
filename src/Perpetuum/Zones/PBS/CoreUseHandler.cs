@@ -70,7 +70,9 @@ namespace Perpetuum.Zones.PBS
         public double GetKickStartCoreRatio()
         {
             if (_sourceUnit.ED.Config.coreKickStartThreshold != null)
+            {
                 return (double) _sourceUnit.ED.Config.coreKickStartThreshold;
+            }
 
             //Logger.Error("no coreKickStartThreshold defined for " + _sourceUnit.EntityDefault.Name);
             return 0.7;
@@ -83,7 +85,9 @@ namespace Perpetuum.Zones.PBS
             //ez a cucc valahogy osszegyujti, hogy mennyi core kell neki, o nem fixet fogyaszt
             double coreDemand;
             if (_sourceUnit.TryCollectCoreConsumption(out coreDemand))
+            {
                 return coreDemand;
+            }
 
             //de tud fallbackelni is a config ertekre
             return _sourceUnit.GetCoreConsumption();
@@ -106,7 +110,9 @@ namespace Perpetuum.Zones.PBS
         private TimeSpan GetCycleTimeMs()
         {
             if (_sourceUnit.ED.Config.cycle_time != null)
+            {
                 return TimeSpan.FromMilliseconds((double) _sourceUnit.ED.Config.cycle_time);
+            }
 
             Logger.Error("consistency error. no cycle_time was defined for definition: " + _sourceUnit.Definition + " " + _sourceUnit.ED.Name);
             return TimeSpan.FromSeconds(30);
@@ -213,7 +219,11 @@ namespace Perpetuum.Zones.PBS
         private void ActiveCycleWork(TimeSpan time)
         {
             _timer.Update(time);
-            if (!_timer.Passed) return;
+            if (!_timer.Passed)
+            {
+                return;
+            }
+
             _timer.Reset();
 
             if (Owner.Core < Owner.CoreUseHandler.CoreMinimum)
@@ -258,7 +268,11 @@ namespace Perpetuum.Zones.PBS
         private void WarmUpCycleWork(TimeSpan time)
         {
             _timer.Update(time);
-            if (!_timer.Passed) return;
+            if (!_timer.Passed)
+            {
+                return;
+            }
+
             _timer.Reset();
 
             Owner.CoreUseHandler.EnergyState = PBSEnergyState.warmup;
@@ -333,7 +347,11 @@ namespace Perpetuum.Zones.PBS
         protected override void OnUpdate(TimeSpan time)
         {
             _timer.Update(time);
-            if (!_timer.Passed) return;
+            if (!_timer.Passed)
+            {
+                return;
+            }
+
             _timer.Reset();
 
             Logger.DebugInfo($" ---------- KEZDUNK ---------- [{Owner.InfoString}]");

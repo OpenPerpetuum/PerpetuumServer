@@ -20,7 +20,9 @@ namespace Perpetuum.RequestHandlers
 
             var dockingBase = _dockingBaseHelper.GetDockingBase(inBaseEid == 0 ? character.CurrentDockingBaseEid : inBaseEid);
             if (dockingBase == null)
+            {
                 throw new PerpetuumException(ErrorCodes.DockingBaseNotFound);
+            }
 
             var shop = dockingBase.GetItemShop();
             var result = shop.EntriesToDictionary();

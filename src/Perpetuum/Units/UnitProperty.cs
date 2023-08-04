@@ -17,7 +17,9 @@ namespace Perpetuum.Units
             _modifierField = modifierField;
 
             if (effectModifiers == null)
+            {
                 return;
+            }
 
             _effectModifiers = new List<AggregateField>();
 
@@ -40,7 +42,9 @@ namespace Perpetuum.Units
             }
 
             if (_modifierField == AggregateField.undefined)
+            {
                 return m.Value;
+            }
 
             var mod = owner.GetPropertyModifier(_modifierField);
             mod.Modify(ref m);
@@ -51,7 +55,9 @@ namespace Perpetuum.Units
         protected override bool IsRelated(AggregateField field)
         {
             if (_modifierField == field)
+            {
                 return true;
+            }
 
             if (_effectModifiers != null)
             {

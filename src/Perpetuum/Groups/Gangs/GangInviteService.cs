@@ -50,7 +50,9 @@ namespace Perpetuum.Groups.Gangs
                 gangInvite.Update(time);
 
                 if (!gangInvite.IsExpired)
+                {
                     continue;
+                }
 
                 expired.Add(gangInvite);
 

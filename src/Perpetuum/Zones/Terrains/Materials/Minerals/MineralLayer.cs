@@ -70,7 +70,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
         {
             var generator = _nodeGeneratorFactory.Create();
             if (generator == null)
+            {
                 return;
+            }
 
             generator.Radius = (int) Math.Sqrt(_configuration.MaxTilesPerNode / Math.PI) * 2;
             generator.MaxTiles = _configuration.MaxTilesPerNode;
@@ -94,7 +96,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
             foreach (var node in _nodes)
             {
                 if ( node.Area.IntersectsWith(area) )
+                {
                     nodes.Add(node);
+                }
             }
 
             return nodes;
@@ -109,7 +113,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
             {
                 var distSqr = node.Area.SqrDistance(p);
                 if (distSqr >= nearestDistSq)
+                {
                     continue;
+                }
 
                 nearestNode = node;
                 nearestDistSq = distSqr;
@@ -154,7 +160,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
                 foreach (var n in nodes)
                 {
                     if ( n == node )
+                    {
                         continue;
+                    }
 
                     result.Add(n);
                 }
@@ -203,7 +211,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
         {
             MineralNode node;
             if (!TryGetNode(p, out node))
+            {
                 return null;
+            }
 
             return node;
         }
@@ -218,7 +228,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
             foreach (var n in _nodes)
             {
                 if (!n.Area.Contains(x, y))
+                {
                     continue;
+                }
 
                 node = n;
                 return true;
@@ -247,7 +259,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
         {
             var node = GetNode(location);
             if (node == null)
+            {
                 return false;
+            }
 
             return node.HasValue(location);
         }

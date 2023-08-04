@@ -47,7 +47,9 @@ namespace Perpetuum
             finally
             {
                 if ( lockTaken )
+                {
                     _spinLock.Exit();
+                }
             }
         }
 
@@ -94,7 +96,9 @@ namespace Perpetuum
         public static int NextInt(int minValue, int maxValue)
         {
             if (minValue == maxValue)
+            {
                 return minValue;
+            }
 
             return minValue + (int)(NextDouble() * ((maxValue + 1) - minValue));
         }

@@ -66,10 +66,14 @@ namespace Perpetuum.RequestHandlers.Extensions
                     foreach (var learntExtension in learntExtensions)
                     {
                         if (learntExtension.id != requiresExtension.id)
+                        {
                             continue;
+                        }
 
                         if (requiresExtension.level < currentExtensionLevel)
+                        {
                             continue;
+                        }
 
                         //extension cant be downgraded because
                         Logger.DebugWarning($"extension:{_extensionReader.GetExtensionName(requiresExtension.id)} requires:{_extensionReader.GetExtensionName(extensionId)} on level:{requiresExtension.level} current level:{currentExtensionLevel}  requests:{requiresExtension.id}->this:{extensionId}");

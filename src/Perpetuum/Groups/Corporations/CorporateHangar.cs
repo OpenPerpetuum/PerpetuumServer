@@ -26,7 +26,9 @@ namespace Perpetuum.Groups.Corporations
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override void ReloadItems(long? ownerEid)
@@ -47,12 +49,16 @@ namespace Perpetuum.Groups.Corporations
         public bool HasAccess(CorporationRole memberRole, ContainerAccess access)
         {
             //not defined for this container
-            if (HangarAccess == CorporationRole.NotDefined) 
+            if (HangarAccess == CorporationRole.NotDefined)
+            {
                 return true;
+            }
 
             //corp lord?
             if (memberRole.IsAnyRole(CorporationRole.CEO, CorporationRole.DeputyCEO))
+            {
                 return true;
+            }
 
             //return a single bit: the highest
             var hangarAccess = HangarAccess.GetHighestContainerAccess();
@@ -60,10 +66,14 @@ namespace Perpetuum.Groups.Corporations
             // let's check the action
             var expectedAccess = (int) memberRole.CleanUpHangarAccess() & (int) hangarAccess;
             if (expectedAccess == 0)
+            {
                 return false;
+            }
 
             if (access != ContainerAccess.Delete && access != ContainerAccess.Remove && access != ContainerAccess.List)
+            {
                 return true;
+            }
 
             return memberRole.IsAnyRole(hangarAccess.GetRelatedRemoveAccess());
         }
@@ -184,7 +194,9 @@ namespace Perpetuum.Groups.Corporations
         {
             Container container;
             if (!TryFindContainerRoot(item, out container))
+            {
                 return false;
+            }
 
             return container.ED.CategoryFlags.IsCategory(CategoryFlags.cf_corporate_hangar);
         }
@@ -293,7 +305,9 @@ namespace Perpetuum.Groups.Corporations
                         // rent expired?
 
                         if (hangar.IsLeaseExpired)
+                        {
                             continue;
+                        }
 
                         if (DateTime.Now > hangar.LeaseEnd)
                         {

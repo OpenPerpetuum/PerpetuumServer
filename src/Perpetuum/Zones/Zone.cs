@@ -132,13 +132,17 @@ namespace Perpetuum.Zones
         private void OnGangMemberJoined(Gang gang, Character character)
         {
             if (this.TryGetPlayer(character, out Player player))
+            {
                 player.Gang = gang;
+            }
         }
 
         private void OnGangMemberRemoved(Gang gang, Character character)
         {
             if (this.TryGetPlayer(character, out Player player))
+            {
                 player.Gang = null;
+            }
         }
 
         private void OnGangDisbanded(Gang gang)
@@ -146,7 +150,9 @@ namespace Perpetuum.Zones
             foreach (var player in Players)
             {
                 if (player.Gang == gang)
+                {
                     player.Gang = null;
+                }
             }
         }
 
@@ -174,7 +180,9 @@ namespace Perpetuum.Zones
         public ZoneSession GetSessionByCharacter(Character character)
         {
             if (character == Character.None)
+            {
                 return null;
+            }
 
             return _sessions.FirstOrDefault(s => s.Character == character);
         }
@@ -190,7 +198,9 @@ namespace Perpetuum.Zones
         private void OnSessionStopped(IZoneSession session)
         {
             if ( session.Id == 0 )
+            {
                 return;
+            }
 
             ImmutableInterlocked.Update(ref _sessions, s => s.Remove((ZoneSession) session));
         }
@@ -203,7 +213,9 @@ namespace Perpetuum.Zones
         public void AddUnit(Unit unit)
         {
             if (!ImmutableInterlocked.TryAdd(ref _units, unit.Eid, unit))
+            {
                 return;
+            }
 
             if (unit is Player player)
             {
@@ -223,7 +235,9 @@ namespace Perpetuum.Zones
             // alapesetben ez a player kapja
             var killerPlayer = killer as Player;
             if (killerPlayer == null)
+            {
                 return;
+            }
 
             var taggable = victim as ITaggable;
             // ha taggelve volt akkor az kapja
@@ -239,7 +253,9 @@ namespace Perpetuum.Zones
         public void RemoveUnit(Unit unit)
         {
             if (!ImmutableInterlocked.TryRemove(ref _units, unit.Eid, out Unit u))
+            {
                 return;
+            }
 
             if (u is Player player)
             {
@@ -258,7 +274,9 @@ namespace Perpetuum.Zones
             ImmutableHashSet<Unit> updatedUnits;
 
             if ((updatedUnits = Interlocked.CompareExchange(ref _updatedUnits, ImmutableHashSet<Unit>.Empty, _updatedUnits)) == ImmutableHashSet<Unit>.Empty)
+            {
                 return;
+            }
 
             foreach (var kvp in _units)
             {
@@ -267,13 +285,17 @@ namespace Perpetuum.Zones
                 foreach (var sourceUnit in updatedUnits)
                 {
                     if ( sourceUnit == targetUnit )
+                    {
                         continue;
+                    }
 
                     sourceUnit.UpdateVisibilityOf(targetUnit);
                     targetUnit.UpdateVisibilityOf(sourceUnit);
 
                     if (Configuration.Protected)
+                    {
                         continue;
+                    }
 
                     var bSource = sourceUnit as IBlobableUnit;
                     bSource?.BlobHandler.UpdateBlob(targetUnit);
@@ -288,7 +310,9 @@ namespace Perpetuum.Zones
         {
             var visibilityUpdated = (e.UpdateTypes & UnitUpdateTypes.Visibility) > 0;
             if (!visibilityUpdated)
+            {
                 return;
+            }
 
             ImmutableInterlocked.Update(ref _updatedUnits, h => h.Add(unit));
         }

@@ -49,7 +49,9 @@ namespace Perpetuum.RequestHandlers.FittingPreset
                     {
                         var module = container.GetItems().OfType<Module>().FirstOrDefault(m => m.ED == moduleInfo.Module);
                         if (module == null)
+                        {
                             continue;
+                        }
 
                         module = (Module)module.Unstack(1);
 
@@ -57,7 +59,9 @@ namespace Perpetuum.RequestHandlers.FittingPreset
                         {
                             var ammo = (Ammo)container.GetAndRemoveItemByDefinition(moduleInfo.Ammo.Definition, activeModule.AmmoCapacity);
                             if (ammo != null)
+                            {
                                 activeModule.SetAmmo(ammo);
+                            }
                         }
 
                         component.EquipModuleOrThrow(module, moduleInfo.Slot);

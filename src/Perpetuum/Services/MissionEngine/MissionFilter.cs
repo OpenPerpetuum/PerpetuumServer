@@ -78,7 +78,10 @@ namespace Perpetuum.Services.MissionEngine
             if (!ignoreTriggerCheck)
             {
                 //the mission is member of a chain mission
-                if (mission.isTriggered) return false;
+                if (mission.isTriggered)
+                {
+                    return false;
+                }
             }
 
             if (mission.MissionLevel > 0)
@@ -228,7 +231,10 @@ mission_tutorial_asi_stage_01
             if (!ignoreTriggerCheck)
             {
                 //the mission is member of a chain mission
-                if (mission.isTriggered) return false;
+                if (mission.isTriggered)
+                {
+                    return false;
+                }
             }
 
            

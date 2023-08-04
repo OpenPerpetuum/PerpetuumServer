@@ -79,8 +79,10 @@ namespace Perpetuum.Zones.PBS
 
         private void ProcessStuff()
         {
-            if (_areaQueue.Count == 0) 
+            if (_areaQueue.Count == 0)
+            {
                 return;
+            }
 
             var liveSegments = GetLiveHighwaySegments();
             ProcessEnquedAreas(liveSegments);

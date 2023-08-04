@@ -21,7 +21,9 @@ namespace Perpetuum.RequestHandlers.Zone
 
             var rule = request.Zone.Configuration.PlantRules.FirstOrDefault(r => r.Type == (PlantType)plantIndex);
             if (rule == null)
+            {
                 throw new PerpetuumException(ErrorCodes.PlantNotFertileOnThisZone);
+            }
 
             using (new TerrainUpdateMonitor(request.Zone))
             {

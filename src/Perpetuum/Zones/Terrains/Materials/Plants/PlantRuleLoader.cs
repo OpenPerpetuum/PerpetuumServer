@@ -59,7 +59,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Plants
             var settingsFromFile = _settings.LoadSettingsFromFile(pathToFile);
 
             if (!settingsFromFile.ContainsKey(k.source))
+            {
                 return settingsFromFile;
+            }
 
             //is there override defined?
             var sourceRuleName = (string)settingsFromFile[k.source];

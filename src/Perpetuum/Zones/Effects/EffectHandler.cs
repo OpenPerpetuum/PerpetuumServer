@@ -93,11 +93,15 @@ namespace Perpetuum.Zones.Effects
                 if (effect != null)
                 {
                     if (effect.IsAura)
+                    {
                         continue;
+                    }
 
                     var effectTimer = effect.Timer;
                     if (effectTimer == null)
+                    {
                         continue;
+                    }
 
                     effectTimer.Reset();
                     yield return effect;
@@ -107,7 +111,9 @@ namespace Perpetuum.Zones.Effects
                     effect = effectBuilder.Build();
 
                     if (!CanApplyEffect(effects, effect))
+                    {
                         continue;
+                    }
 
                     effect.Removed += Remove;
                     effects.Add(effect);
@@ -130,7 +136,9 @@ namespace Perpetuum.Zones.Effects
                     {
                         var currentLevel = effects.Count(e => e.Category.HasFlag(category));
                         if (currentLevel >= maxLevel)
+                        {
                             return false;
+                        }
                     }
                 }
 
@@ -145,7 +153,9 @@ namespace Perpetuum.Zones.Effects
             while (_expiredEffects.TryDequeue(out Effect expiredEffect))
             {
                 if (!effects.Remove(expiredEffect))
+                {
                     continue;
+                }
 
                 yield return expiredEffect;
             }
@@ -173,7 +183,9 @@ namespace Perpetuum.Zones.Effects
         {
             var effect = GetEffectByToken(token);
             if ( effect == null )
+            {
                 return;
+            }
 
             Remove(effect);
         }
@@ -229,7 +241,9 @@ namespace Perpetuum.Zones.Effects
             public void Update(Unit unit)
             {
                 if ( _relatedFields.Count == 0 )
+                {
                     return;
+                }
 
                 foreach (var modifier in _relatedFields)
                 {

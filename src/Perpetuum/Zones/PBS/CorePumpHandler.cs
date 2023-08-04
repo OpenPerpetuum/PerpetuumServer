@@ -31,8 +31,11 @@ namespace Perpetuum.Zones.PBS
         public void AddToDictionary(IDictionary<string, object> info)
         {
             var u = _sourceUnit as Unit;
-            if (u == null) return;
-            
+            if (u == null)
+            {
+                return;
+            }
+
             info[k.currentCore] = u.Core;
             info[k.lastUsedCore] = LastUsedCore;
 
@@ -43,8 +46,10 @@ namespace Perpetuum.Zones.PBS
         public void TransferToConnections()
         {
             var zone = _sourceUnit.Zone;
-            if (zone == null) return;
-
+            if (zone == null)
+            {
+                return;
+            }
 
             var sumCoreUsed = 0.0;
             if (_sourceUnit.Core < MINIMUM_CORE_LEVEL)
@@ -85,7 +90,10 @@ namespace Perpetuum.Zones.PBS
                 if (consumer != null)
                 {
                     //tele van nem kell vele most torodni
-                    if (consumer.IsCoreFull()) continue;
+                    if (consumer.IsCoreFull())
+                    {
+                        continue;
+                    }
 
 
                     //nincs emergency, toltunk bele

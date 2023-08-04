@@ -44,7 +44,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         private void ParseAdminCommand(Character sender, string text, IRequest request, Channel channel, IChannelManager channelManager)
         {
             if (!IsAdminCommand(sender, text))
+            {
                 return;
+            }
 
             string[] command = text.Split(new char[] { ',' });
 

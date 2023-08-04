@@ -42,7 +42,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         private static void ZoneSetTilesControl(AdminCommandData data, TerrainControlFlags flag)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             bool.TryParse(data.Command.Args[0], out bool adddelete);
             bool.TryParse(data.Command.Args[1], out bool keeplock);
@@ -73,7 +75,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         private static void LockOrUnlockZoneLayers(AdminCommandData data, bool toLock)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             bool err = false;
             var zoneId = -1;
@@ -212,7 +216,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             catch (Exception ex)
             {
                 if (ex is FormatException || ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -247,7 +254,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             catch (Exception ex)
             {
                 if (ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -467,7 +477,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             catch (Exception ex)
             {
                 if (ex is FormatException || ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -504,7 +517,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             catch (Exception ex)
             {
                 if (ex is FormatException || ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -533,7 +549,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             catch (Exception ex)
             {
                 if (ex is FormatException || ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -611,12 +630,17 @@ namespace Perpetuum.Services.Channels.ChatCommands
                 weatherInt = int.Parse(data.Command.Args[0]);
                 seconds = int.Parse(data.Command.Args[1]);
                 if (data.Command.Args.Length > 2)
+                {
                     zoneId = int.Parse(data.Command.Args[2]);
+                }
             }
             catch (Exception ex)
             {
                 if (ex is FormatException || ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -651,7 +675,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneCleanObstacleBlocking(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             string cmd = string.Format("zoneCleanObstacleBlocking:zone_{0}:null", data.Sender.ZoneId);
             HandleLocalRequest(data, cmd);
@@ -660,7 +686,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneDrawBlockingByEid(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             bool err = false;
             err = !Int64.TryParse(data.Command.Args[0], out Int64 eid);
@@ -682,7 +710,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneRemoveObjectByEid(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             bool err = false;
             err = !Int64.TryParse(data.Command.Args[0], out Int64 eid);
@@ -699,7 +729,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneCreateIsland(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             int zoneId = data.Sender.ZoneId ?? -1;
             int lvl;
@@ -707,12 +739,17 @@ namespace Perpetuum.Services.Channels.ChatCommands
             {
                 lvl = int.Parse(data.Command.Args[0]);
                 if (data.Command.Args.Length > 1)
+                {
                     zoneId = int.Parse(data.Command.Args[1]);
+                }
             }
             catch (Exception ex)
             {
                 if (ex is FormatException || ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
             CheckZoneId(data, zoneId);
@@ -728,7 +765,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneCreateTerraformLimit(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             int zoneId = data.Sender.ZoneId ?? -1;
             int radius = 0;
@@ -737,13 +776,19 @@ namespace Perpetuum.Services.Channels.ChatCommands
             {
                 mode = data.Command.Args[0];
                 if (mode != "clear")
+                {
                     radius = int.Parse(data.Command.Args[1]);
+                }
+
                 zoneId = int.Parse(data.Command.Args[2]);
             }
             catch (Exception ex)
             {
                 if (ex is FormatException || ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
             CheckZoneId(data, zoneId);
@@ -763,7 +808,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneSetLayerWithBitMap(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             int zoneId = data.Sender.ZoneId ?? -1;
             string fileName;
@@ -778,7 +825,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             catch (Exception ex)
             {
                 if (ex is FormatException || ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
             CheckZoneId(data, zoneId);
@@ -798,7 +848,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZonePlaceWall(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             string cmd = string.Format("zonePlaceWall:zone_{0}:null", data.Sender.ZoneId);
             HandleLocalRequest(data, cmd);
@@ -807,7 +859,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneClearWalls(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             string cmd = string.Format("zoneClearWalls:zone_{0}:null", data.Sender.ZoneId);
             HandleLocalRequest(data, cmd);
@@ -816,7 +870,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneAddDecor(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             int? zoneId = data.Sender.ZoneId;
             int definition;
@@ -833,7 +889,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             try
             {
                 if (zoneId == null)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 definition = int.Parse(data.Command.Args[0]);
                 x = int.Parse(data.Command.Args[1]);
                 y = int.Parse(data.Command.Args[2]);
@@ -848,7 +907,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             catch (Exception ex)
             {
                 if (ex is FormatException || ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -877,7 +939,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneAddDecorToLockedTile(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             var character = data.Request.Session.Character;
             var zone = data.Request.Session.ZoneMgr.GetZone((int)character.ZoneId);
@@ -904,7 +968,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             catch (Exception ex)
             {
                 if (ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -929,7 +996,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneDeleteDecor(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             bool err = false;
             err = !int.TryParse(data.Command.Args[0], out int idno);
@@ -946,7 +1015,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneClearLayer(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             string layerName;
             int zoneId = data.Sender.ZoneId ?? -1;
@@ -954,13 +1025,18 @@ namespace Perpetuum.Services.Channels.ChatCommands
             {
                 layerName = data.Command.Args[0];
                 if (data.Command.Args.Length > 1)
+                {
                     zoneId = int.Parse(data.Command.Args[1]);
+                }
             }
             catch (Exception ex)
             {
                 SendMessageToAll(data, "Bad args");
                 if (ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -975,7 +1051,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneSetPlantSpeed(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             bool err = false;
             err = !int.TryParse(data.Command.Args[0], out int speed);
@@ -992,7 +1070,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneSetPlantMode(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             Dictionary<string, object> dictionary = new Dictionary<string, object>()
                 {
@@ -1006,7 +1086,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneRestoreOriginalGamma(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             var dictionary = new Dictionary<string, object>()
                 {
@@ -1020,7 +1102,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneDrawBlockingByDefinition(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             int zoneId = data.Sender.ZoneId ?? -1;
             int[] defs;
@@ -1034,7 +1118,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             {
                 SendMessageToAll(data, "Bad args");
                 if (ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
             CheckZoneId(data, zoneId);
@@ -1051,7 +1138,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneAddBlockingToLockedTiles(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             var character = data.Request.Session.Character;
             var zone = data.Request.Session.ZoneMgr.GetZone((int)character.ZoneId);
@@ -1075,7 +1164,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneRemoveBlockingToLockedTiles(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             var character = data.Request.Session.Character;
             var zone = data.Request.Session.ZoneMgr.GetZone((int)character.ZoneId);
@@ -1099,7 +1190,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneLockDecor(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             int id;
             int locked;
@@ -1112,7 +1205,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             catch (Exception ex)
             {
                 if (ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -1184,7 +1280,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void SaveLayers(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             bool err = false;
             var dictionary = new Dictionary<string, object>();
@@ -1207,7 +1305,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneIslandBlock(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             bool err = false;
             var dictionary = new Dictionary<string, object>();
@@ -1233,7 +1333,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneCreateGarden(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             int x;
             int y;
@@ -1254,7 +1356,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             {
                 SendMessageToAll(data, "Bad args");
                 if (ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -1269,7 +1374,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneClearGroundType(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             bool err = false;
 
@@ -1294,7 +1401,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneCopyGroundType(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             CheckRequiredArgLength(data, 2);
             int sourceZone;
@@ -1308,7 +1417,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             {
                 SendMessageToAll(data, "Bad args");
                 if (ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
             if (sourceZone == targetZone)
@@ -1328,7 +1440,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneRandomFillGroundType(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             int radius = 200;
             int iterations = 10;
@@ -1369,20 +1483,27 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void ZoneUpdateSlope(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             int zoneId = data.Sender.ZoneId ?? -1;
 
             try
             {
                 if (data.Command.Args.Length > 0)
+                {
                     zoneId = int.Parse(data.Command.Args[0]);
+                }
             }
             catch (Exception ex)
             {
                 SendMessageToAll(data, "Bad args");
                 if (ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 
@@ -1406,7 +1527,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void TestMissions(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             int.TryParse(data.Command.Args[0], out int charID);
             int.TryParse(data.Command.Args[1], out int zoneID);
@@ -1432,7 +1555,9 @@ namespace Perpetuum.Services.Channels.ChatCommands
         public static void SpawnRelic(AdminCommandData data)
         {
             if (!IsDevModeEnabled(data))
+            {
                 return;
+            }
 
             var character = data.Request.Session.Character;
             var zone = data.Request.Session.ZoneMgr.GetZone((int)character.ZoneId);
@@ -1456,7 +1581,10 @@ namespace Perpetuum.Services.Channels.ChatCommands
             {
                 SendMessageToAll(data, "Bad args");
                 if (ex is ArgumentNullException)
+                {
                     throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+                }
+
                 throw;
             }
 

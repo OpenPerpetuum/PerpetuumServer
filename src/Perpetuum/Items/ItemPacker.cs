@@ -58,7 +58,9 @@ namespace Perpetuum.Items
         public void Visit(RobotComponent component)
         {
             if (component.Modules.Any())
+            {
                 throw new PerpetuumException(ErrorCodes.RobotHasModulesEquipped);
+            }
         }
 
         public void Visit(Container container)

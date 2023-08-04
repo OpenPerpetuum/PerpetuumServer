@@ -42,7 +42,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Plants
             {
                 var rule = rules.FirstOrDefault(r => r.Type == kvp.Key);
                 if (rule == null || rule.PlayerSeeded || rule.Spreading <= 0)
+                {
                     continue;
+                }
 
                 for (var i = 0; i < kvp.Value * rule.Spreading; i++)
                 {

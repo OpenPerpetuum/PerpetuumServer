@@ -43,7 +43,9 @@ namespace Perpetuum.RequestHandlers
                 module.IsAmmoable.ThrowIfFalse(ErrorCodes.AmmoNotRequired);
                 var ammo = module.UnequipAmmoToContainer(container);
                 if (ammo != null)
+                {
                     ammo.Owner = character.Eid;
+                }
 
                 robot.Initialize(character);
                 robot.Save();

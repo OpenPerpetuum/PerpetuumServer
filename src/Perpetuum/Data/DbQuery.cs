@@ -30,7 +30,9 @@ namespace Perpetuum.Data
         public DbQuery SetParameters(IEnumerable<KeyValuePair<string,object>> parameters)
         {
             if (parameters == null)
+            {
                 return this;
+            }
 
             foreach (var kvp in parameters)
             {
@@ -43,7 +45,9 @@ namespace Perpetuum.Data
         public DbQuery SetParameter(string name,object value)
         {
             if (_parameters == null)
+            {
                 _parameters = new Dictionary<string, object>();
+            }
 
             _parameters[name] = value;
             return this;
@@ -110,7 +114,9 @@ namespace Perpetuum.Data
             {
                 var value = cmd.ExecuteScalar();
                 if (value == DBNull.Value)
+                {
                     return default(T);
+                }
 
                 return value ?? default(T);
             });

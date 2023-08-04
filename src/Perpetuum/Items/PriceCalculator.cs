@@ -76,7 +76,9 @@ namespace Perpetuum.Items
             foreach (var component in _productionDataAccess.ProductionComponents[entityDefault.Definition])
             {
                 if (component.IsRobotShard)
+                {
                     continue;
+                }
 
                 // COMMODITY es MATERIAL
                 if (component.IsMaterial)
@@ -141,7 +143,9 @@ namespace Perpetuum.Items
                 }
 
                 if (!component.IsRobot)
+                {
                     continue;
+                }
 
                 Logger.Info("  component is robot: " + component.EntityDefault.Name + " recursion starts");
 

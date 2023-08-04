@@ -16,7 +16,9 @@ namespace Perpetuum.Groups.Gangs
             foreach (var invite in inviteService.GetInvites())
             {
                 if (invite.gangGuid == gang.Id)
+                {
                     invite.ForceRemove();
+                }
             }
         }
     }

@@ -62,7 +62,10 @@ namespace Perpetuum.Zones.NpcSystem.Presences.InterzonePresences
             presence.LoadFlocks();
             ImmutableInterlocked.Update(ref _presences, p => p.Add(presence));
             if (presence is INotifyPresenceExpired notifier)
+            {
                 notifier.PresenceExpired += OnPresenceExpired;
+            }
+
             _spawning = false;
             Logger.DebugInfo("IZ group spawned presence: " + presence.ToString());
         }
@@ -72,7 +75,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.InterzonePresences
             Logger.DebugInfo("IZ group presence expired/dead: " + presence.ToString());
             ImmutableInterlocked.Update(ref _presences, p => p.Remove(presence));
             if (presence is INotifyPresenceExpired notifier)
+            {
                 notifier.PresenceExpired -= OnPresenceExpired;
+            }
         }
 
         private bool IsSpawned()

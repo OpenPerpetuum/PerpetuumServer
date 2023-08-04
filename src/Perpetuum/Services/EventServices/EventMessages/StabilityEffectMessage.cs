@@ -46,7 +46,10 @@ namespace Perpetuum.Services.EventServices.EventMessages
         public Corporation GetWinnerCorporation()
         {
             if (IsSystemGenerated())
+            {
                 return Corporation.GetByName("syndicate_police_central");
+            }
+
             return Winner;
         }
 

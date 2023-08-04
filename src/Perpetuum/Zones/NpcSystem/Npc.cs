@@ -75,7 +75,9 @@ namespace Perpetuum.Zones.NpcSystem
         protected virtual void ToAggressorAI()
         {
             if (npc.Behavior.Type == NpcBehaviorType.Passive)
+            {
                 return;
+            }
 
             npc.AI.Push(new AggressorAI(npc));
         }
@@ -144,7 +146,9 @@ namespace Perpetuum.Zones.NpcSystem
         protected override void ToAggressorAI()
         {
             if (npc.Behavior.Type == NpcBehaviorType.Passive)
+            {
                 return;
+            }
 
             npc.AI.Push(new StationaryCombatAI(npc));
         }
@@ -260,7 +264,9 @@ namespace Perpetuum.Zones.NpcSystem
         {
             var validLocks = GetValidLocks();
             if (validLocks.Length < 1)
+            {
                 return false;
+            }
 
             return _stratSelector?.TryUseStrategy(npc, validLocks) ?? false;
         }
@@ -268,17 +274,23 @@ namespace Perpetuum.Zones.NpcSystem
         private bool IsLockValidTarget(UnitLock unitLock)
         {
             if (unitLock == null || unitLock.State != LockState.Locked)
+            {
                 return false;
+            }
 
             var visibility = npc.GetVisibility(unitLock.Target);
             if (visibility == null)
+            {
                 return false;
+            }
 
             var r = visibility.GetLineOfSight(_npcHasMissiles);
             if (r != null)
             {
                 if (r.hit && (r.blockingFlags & BlockingFlags.Plant) == 0)
+                {
                     return false;
+                }
             }
             return unitLock.Target.GetDistance(npc) < npc.MaxCombatRange;
         }
@@ -311,29 +323,43 @@ namespace Perpetuum.Zones.NpcSystem
         protected bool IsAttackable(Hostile hostile)
         {
             if (!hostile.unit.InZone)
+            {
                 return false;
+            }
 
             if (hostile.unit.States.Dead)
+            {
                 return false;
+            }
 
             if (!hostile.unit.IsLockable)
+            {
                 return false;
+            }
 
             if (hostile.unit.IsAttackable != ErrorCodes.NoError)
+            {
                 return false;
+            }
 
             if (hostile.unit.IsInvulnerable)
+            {
                 return false;
+            }
 
             if (npc.Behavior.Type == NpcBehaviorType.Neutral)
             {
                 if (hostile.IsExpired)
+                {
                     return false;
+                }
             }
 
             var isVisible = npc.IsVisible(hostile.unit);
             if (!isVisible)
+            {
                 return false;
+            }
 
             return true;
         }
@@ -346,12 +372,16 @@ namespace Perpetuum.Zones.NpcSystem
             if (l == null)
             {
                 if (TryMakeFreeLockSlotFor(hostile))
+                {
                     npc.AddLock(hostile.unit, mostHated);
+                }
             }
             else
             {
                 if (mostHated && !l.Primary)
+                {
                     npc.SetPrimaryLock(l.Id);
+                }
             }
         }
 
@@ -369,7 +399,9 @@ namespace Perpetuum.Zones.NpcSystem
                 }
 
                 if (!npc.IsInLockingRange(hostile.unit))
+                {
                     continue;
+                }
 
                 SetLockForHostile(hostile);
             }
@@ -378,11 +410,15 @@ namespace Perpetuum.Zones.NpcSystem
         protected bool TryMakeFreeLockSlotFor(Hostile hostile)
         {
             if (npc.HasFreeLockSlot)
+            {
                 return true;
+            }
 
             var weakestLock = npc.ThreatManager.Hostiles.SkipWhile(h => h != hostile).Skip(1).Select(h => npc.GetLockByUnit(h.unit)).LastOrDefault();
             if (weakestLock == null)
+            {
                 return false;
+            }
 
             weakestLock.Cancel();
             return true;
@@ -392,7 +428,10 @@ namespace Perpetuum.Zones.NpcSystem
         {
             var primaryHostile = npc.ThreatManager.Hostiles.Where(h => h.unit == (npc.GetPrimaryLock() as UnitLock)?.Target).FirstOrDefault();
             if (primaryHostile != null)
+            {
                 return primaryHostile;
+            }
+
             return npc.ThreatManager.GetMostHatedHostile();
         }
     }
@@ -507,7 +546,9 @@ namespace Perpetuum.Zones.NpcSystem
         {
             var mostHated = GetPrimaryOrMostHatedHostile();
             if (mostHated == null)
+            {
                 return;
+            }
 
             if (!mostHated.unit.CurrentPosition.IsEqual2D(_lastTargetPosition))
             {
@@ -526,7 +567,9 @@ namespace Perpetuum.Zones.NpcSystem
                     {
                         var r = visibility.GetLineOfSight(_npcHasMissiles);
                         if (r.hit)
+                        {
                             findNewTargetPosition = true;
+                        }
                     }
                 }
 
@@ -535,7 +578,9 @@ namespace Perpetuum.Zones.NpcSystem
                     FindNewAttackPositionAsync(mostHated.unit).ContinueWith(t =>
                     {
                         if (t.IsCanceled)
+                        {
                             return;
+                        }
 
                         var path = t.Result;
                         if (path == null)
@@ -591,23 +636,33 @@ namespace Perpetuum.Zones.NpcSystem
             while (pq.TryDequeue(out current))
             {
                 if (cancellationToken.IsCancellationRequested)
+                {
                     return null;
+                }
 
                 if (IsValidAttackPosition(hostile, current.position))
+                {
                     return BuildPath(current);
+                }
 
                 foreach (var n in current.position.GetNeighbours())
                 {
                     if (closed.Contains(n))
+                    {
                         continue;
+                    }
 
                     closed.Add(n);
 
                     if (!npc.IsWalkable(n.X, n.Y))
+                    {
                         continue;
+                    }
 
                     if (!n.IsInRange(npc.HomePosition, npc.HomeRange))
+                    {
                         continue;
+                    }
 
                     var newG = current.g + (n.X - current.position.X == 0 || n.Y - current.position.Y == 0 ? 100 : SQRT2);
                     var newH = Heuristic.Manhattan.Calculate(n.X, n.Y, end.X, end.Y) * WEIGHT;
@@ -631,7 +686,9 @@ namespace Perpetuum.Zones.NpcSystem
             var position3 = npc.Zone.FixZ(position.ToPosition()).AddToZ(npc.Height);
 
             if (!hostile.CurrentPosition.IsInRangeOf3D(position3, npc.BestCombatRange))
+            {
                 return false;
+            }
 
             var r = npc.Zone.IsInLineOfSight(position3, hostile, false);
             return !r.hit;
@@ -813,18 +870,25 @@ namespace Perpetuum.Zones.NpcSystem
             RemovePseudoThreat(hostile);
 
             if (!spreadToGroup)
+            {
                 return;
+            }
 
             var group = _group;
             if (@group == null)
+            {
                 return;
+            }
 
             var t = Threat.Multiply(threat, 0.5);
 
             foreach (var member in @group.Members)
             {
                 if (member == this)
+                {
                     continue;
+                }
+
                 member.AddThreat(hostile,t,false);
             }
         }
@@ -853,7 +917,9 @@ namespace Perpetuum.Zones.NpcSystem
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         protected override void OnPropertyChanged(ItemProperty property)
@@ -896,7 +962,9 @@ namespace Perpetuum.Zones.NpcSystem
 
             var currentAI = AI.Current;
             if (currentAI != null)
+            {
                 info.Add("fsm", currentAI.GetType().Name);
+            }
 
             info.Add("threat", _threatManager.ToDebugString());
 
@@ -913,7 +981,9 @@ namespace Perpetuum.Zones.NpcSystem
 
             var player = Zone.ToPlayerOrGetOwnerPlayer(source);
             if (player == null)
+            {
                 return;
+            }
 
             BossInfo?.OnDamageTaken(this, player);
             AddThreat(player, new Threat(ThreatType.Damage, e.TotalDamage * 0.9), true);
@@ -976,7 +1046,9 @@ namespace Perpetuum.Zones.NpcSystem
                     Logger.DebugInfo("   >>>> independent NPC.");
 
                     if (killerPlayer != null)
+                    {
                         EnqueueKill(killerPlayer, killer);
+                    }
                 }
 
                 if (EP > 0)
@@ -1106,7 +1178,9 @@ namespace Perpetuum.Zones.NpcSystem
             var ep = NpcEp.GetEpForNpc(this);
 
             if (zone.Configuration.IsBeta)
+            {
                 ep *= 2;
+            }
 
             EP = ep;
             Logger.DebugInfo($"Ep4Npc:{ep} def:{Definition} {ED.Name}");
@@ -1125,7 +1199,9 @@ namespace Perpetuum.Zones.NpcSystem
                 }
 
                 if (_group != null)
+                {
                     s += " g:" + _group.Name;
+                }
 
                 return s;
             }
@@ -1142,17 +1218,25 @@ namespace Perpetuum.Zones.NpcSystem
         protected override void OnUnitLockStateChanged(Lock @lock)
         {
             if (!_debounceLockChange.Expired)
+            {
                 return;
+            }
 
             var unitLock = @lock as UnitLock;
             if (unitLock == null)
+            {
                 return;
+            }
 
             if (unitLock.Target != this)
+            {
                 return;
+            }
 
             if (unitLock.State != LockState.Locked)
+            {
                 return;
+            }
 
             var threatValue = unitLock.Primary ? Threat.LOCK_PRIMARY : Threat.LOCK_SECONDARY;
             AddThreat(unitLock.Owner, new Threat(ThreatType.Lock, threatValue), true);
@@ -1163,7 +1247,9 @@ namespace Perpetuum.Zones.NpcSystem
         protected override void OnUnitTileChanged(Unit target)
         {
             if (!_debounceBodyPull.Expired)
+            {
                 return;
+            }
 
             AddBodyPullThreat(target);
             _debounceBodyPull.Reset();
@@ -1190,10 +1276,14 @@ namespace Perpetuum.Zones.NpcSystem
         public bool CanAddThreatTo(Unit target, Threat threat)
         {
             if (_threatManager.Contains(target))
+            {
                 return true;
+            }
 
             if (Behavior.Type == NpcBehaviorType.Passive)
+            {
                 return false;
+            }
 
             return threat.type != ThreatType.Undefined;
         }
@@ -1201,7 +1291,9 @@ namespace Perpetuum.Zones.NpcSystem
         private void AddBodyPullThreat(Unit enemy)
         {
             if ( !IsHostile(enemy))
+            {
                 return;
+            }
 
             var helper = new BodyPullThreatHelper(this);
             enemy.AcceptVisitor(helper);
@@ -1212,14 +1304,20 @@ namespace Perpetuum.Zones.NpcSystem
         private void CallingForHelp()
         {
             if (!CallForHelp)
+            {
                 return;
+            }
 
             if (!GlobalTimer.IsPassed(ref _lastHelpCalled, TimeSpan.FromSeconds(5)))
+            {
                 return;
+            }
 
             var group = _group;
             if (group == null)
+            {
                 return;
+            }
 
             foreach (var member in group.Members.Where(flockMember => flockMember != this))
             {
@@ -1230,8 +1328,10 @@ namespace Perpetuum.Zones.NpcSystem
         private void HelpingFor(Npc caller)
         {
             if (Armor.Ratio(ArmorMax) < CALL_FOR_HELP_ARMOR_THRESHOLD)
+            {
                 return;
-            
+            }
+
             _threatManager.Clear();
             foreach (var hostile in caller.ThreatManager.Hostiles)
             {
@@ -1242,10 +1342,14 @@ namespace Perpetuum.Zones.NpcSystem
         public void AddAssistThreat(Unit assistant, Unit target, Threat threat)
         {
             if ( !_threatManager.Contains(target) )
+            {
                 return;
+            }
 
             if ( !CanAddThreatTo(assistant,threat))
+            {
                 return;
+            }
 
             AddThreat(assistant,threat,true);
         }
@@ -1286,16 +1390,24 @@ namespace Perpetuum.Zones.NpcSystem
             public void Visit(Player player)
             {
                 if (_npc.Behavior.Type != NpcBehaviorType.Aggressive)
+                {
                     return;
+                }
 
                 if (player.HasTeleportSicknessEffect)
+                {
                     return;
+                }
 
                 if (_npc.ThreatManager.Hostiles.Any(h => h.unit.Eid == player.Eid))
+                {
                     return;
+                }
 
                 if (!_npc.IsInAggroRange(player))
+                {
                     return;
+                }
 
                 var threat = Threat.BODY_PULL + FastRandom.NextDouble(0, 5);
                 _npc.AddThreat(player, new Threat(ThreatType.Bodypull, threat));
@@ -1304,24 +1416,32 @@ namespace Perpetuum.Zones.NpcSystem
             public void Visit(AreaBomb bomb)
             {
                 if (!_npc.IsInAggroRange(bomb))
+                {
                     return;
+                }
 
                 // csak akkor ha van is mivel tamadni
                 if (!_npc.ActiveModules.Any(m => m is WeaponModule))
+                {
                     return;
+                }
 
                 // ha valaki mar foglalkozik a bombaval akkor ne csinaljon semmit
 
                 var g = _npc._group;
                 if (g != null && g.Members.Any(m => m.ThreatManager.Contains(bomb)))
+                {
                     return;
+                }
 
                 var threat = Threat.BODY_PULL;
                 if (_npc.ThreatManager.IsThreatened)
                 {
                     var h = _npc.ThreatManager.GetMostHatedHostile();
                     if (h != null)
+                    {
                         threat = h.Threat*100;
+                    }
                 }
 
                 _npc.AddThreat(bomb, new Threat(ThreatType.Bodypull, threat + FastRandom.NextDouble(0, 5)));

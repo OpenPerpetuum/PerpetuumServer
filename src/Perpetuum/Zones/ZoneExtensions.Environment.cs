@@ -15,17 +15,23 @@ namespace Perpetuum.Zones
             //enviroment load
             var description = EntityEnvironment.LoadEnvironmentSql(unit.Definition);
             //draw extra environment
-            if (description.Equals(default(EntityEnvironmentDescription))) 
+            if (description.Equals(default(EntityEnvironmentDescription)))
+            {
                 return;
+            }
 
             if (description.blocksTiles == null || description.blocksTiles.Count <= 0)
+            {
                 return;
+            }
 
             foreach (var tile in description.blocksTiles)
             {
                 var offsetPosition = unit.CurrentPosition + tile.ToPosition();
                 if (!offsetPosition.IsValid(zone.Size))
+                {
                     continue;
+                }
 
                 zone.Terrain.Blocks.UpdateValue(offsetPosition, bi =>
                 {
@@ -94,10 +100,14 @@ namespace Perpetuum.Zones
         private static void DrawEnvironmentWithMirrorAndTurns(this IZone zone, Position position, EntityEnvironmentDescription description, int rotationTurns, bool flipX, bool flipY, BlockingFlags blockingFlag)
         {
             if (description.Equals(default(EntityEnvironmentDescription)))
+            {
                 return;
+            }
 
             if (description.blocksTiles == null || description.blocksTiles.Count <= 0)
+            {
                 return;
+            }
 
             var terrain = zone.Terrain;
             var originAltitude = terrain.Altitude.GetAltitudeAsDouble(position);
@@ -110,10 +120,14 @@ namespace Perpetuum.Zones
                     var ty = tile.y;
 
                     if (flipX)
+                    {
                         tx *= -1;
+                    }
 
                     if (flipY)
+                    {
                         ty *= -1;
+                    }
 
                     var tilePos = new Position(tx, ty);
                     var rotatedPos = Position.RotateCWWithTurns(tilePos, rotationTurns);
@@ -121,7 +135,9 @@ namespace Perpetuum.Zones
                     var offsetPosition = new Position(position.intX + rotatedPos.intX, position.intY + rotatedPos.intY);
 
                     if (!offsetPosition.IsValid(zone.Size))
+                    {
                         continue;
+                    }
 
                     zone.Terrain.Blocks.UpdateValue(offsetPosition,bi =>
                     {
@@ -137,16 +153,22 @@ namespace Perpetuum.Zones
         private static void CleanEnvironmentFromLayers(this IZone zone, Position position, EntityEnvironmentDescription description)
         {
             if (description.Equals(default(EntityEnvironmentDescription)))
+            {
                 return;
+            }
 
             if (description.blocksTiles == null || description.blocksTiles.Count <= 0)
+            {
                 return;
+            }
 
             foreach (var tile in description.blocksTiles)
             {
                 var offsetPosition = new Position(position.intX + tile.x, position.intY + tile.y);
                 if (!offsetPosition.IsValid(zone.Size))
+                {
                     continue;
+                }
 
                 zone.Terrain.Blocks.SetValue(offsetPosition,new BlockingInfo());
             }
@@ -155,11 +177,14 @@ namespace Perpetuum.Zones
         private static void CleanEnvironmentWithMirrorAndTurns(this IZone zone, Position position, EntityEnvironmentDescription description, int rotationTurns, bool flipX, bool flipY)
         {
             if (description.Equals(default(EntityEnvironmentDescription)))
+            {
                 return;
-
+            }
 
             if (description.blocksTiles == null || description.blocksTiles.Count <= 0)
+            {
                 return;
+            }
 
             var bi = new BlockingInfo();
             using (new TerrainUpdateMonitor(zone))

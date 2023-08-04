@@ -44,7 +44,9 @@ namespace Perpetuum.Items.Templates
 
             var ammoDefinition = dictionary.GetOrDefault(k.ammoDefinition, 0);
             if (ammoDefinition <= 0)
+            {
                 return Create(definition, slot, null);
+            }
 
             var ammo = ItemTemplate<Ammo>.Create(ammoDefinition, dictionary.GetOrDefault(k.ammoQuantity, 0), false);
             return Create(definition, slot,ammo);
@@ -60,7 +62,9 @@ namespace Perpetuum.Items.Templates
                     if (_ammo != null)
                     {
                         if (!_ammo.Validate())
+                        {
                             return false;
+                        }
                     }
                 }
             }
@@ -72,10 +76,14 @@ namespace Perpetuum.Items.Templates
         {
             var activeModule = module as ActiveModule;
             if (activeModule == null)
+            {
                 return;
+            }
 
             if (!activeModule.IsAmmoable)
+            {
                 return;
+            }
 
             if (_ammo != null)
             {

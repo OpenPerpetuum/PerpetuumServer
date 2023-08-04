@@ -33,7 +33,9 @@ namespace Perpetuum.Zones.PBS
         private int LazyInitCycleTime()
         {
             if (ED.Config.cycle_time != null)
+            {
                 return (int) ED.Config.cycle_time;
+            }
 
             Logger.Error("consistency error. no cycle_time was defined for definition: " + Definition + " " + ED.Name);
             return (int) TimeSpan.FromSeconds(30).TotalMilliseconds;
@@ -48,7 +50,9 @@ namespace Perpetuum.Zones.PBS
             _updateInterval.Update(time);
 
             if (!_updateInterval.Passed)
+            {
                 return;
+            }
 
             _updateInterval.Interval = TimeSpan.FromMilliseconds(CycleTime + FastRandom.NextInt(-2,2));
             _updateInterval.Reset();
@@ -56,15 +60,21 @@ namespace Perpetuum.Zones.PBS
             var onlineStatus = OnlineStatus;
 
             if (!this.IsFullyConstructed() || !onlineStatus)
+            {
                 return;
+            }
 
             var zone = Zone;
             if (zone == null)
+            {
                 return;
+            }
 
             if ( Interlocked.CompareExchange(ref _inProgress,1,0) == 1)
+            {
                 return;
-            
+            }
+
             Task.Run(() => { PBSActiveObjectAction(zone); }).ContinueWith(t => { Interlocked.Exchange(ref _inProgress, 0);}).LogExceptions();
         }
 

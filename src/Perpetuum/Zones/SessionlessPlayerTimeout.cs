@@ -30,7 +30,9 @@ namespace Perpetuum.Zones
         {
             _elapsed += time;
             if (_elapsed < UPDATE_RATE)
+            {
                 return;
+            }
 
             DoUpdate();
             _elapsed = TimeSpan.Zero;
@@ -69,7 +71,9 @@ namespace Perpetuum.Zones
             // The Enumerable ForEach call was deprecated for good reason
             // use a standard foreach loop so that you have compiler help
             foreach (var orphan in toRemove)
+            {
                 orphan.RemoveFromZone();
+            }
 
             orphans.RemoveAll(p => p.Expired);
         }
@@ -98,7 +102,9 @@ namespace Perpetuum.Zones
             public bool Equals(PlayerTimeout other)
             {
                 if (other is null)
+                {
                     return false;
+                }
 
                 return ReferenceEquals(this, other) || Eid == other.Eid;
             }

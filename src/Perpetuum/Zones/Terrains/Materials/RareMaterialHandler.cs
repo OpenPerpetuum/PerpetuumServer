@@ -22,7 +22,9 @@ namespace Perpetuum.Zones.Terrains.Materials
             {
                 var random = FastRandom.NextDouble();
                 if (random < rareMaterialInfo.chance)
+                {
                     result.Add(rareMaterialInfo.itemInfo);
+                }
             }
             return result;
         }

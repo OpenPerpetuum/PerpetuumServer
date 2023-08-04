@@ -17,7 +17,9 @@ namespace Perpetuum.Services.Channels
         public ChannelMember WithRole(ChannelMemberRole newRole)
         {
             if (newRole == role)
+            {
                 return this;
+            }
 
             return new ChannelMember(character,newRole);
         }

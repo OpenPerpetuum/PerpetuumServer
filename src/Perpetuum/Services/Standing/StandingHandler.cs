@@ -27,7 +27,9 @@ namespace Perpetuum.Services.Standing
 
             var holder = _standingsHolders.GetOrDefault(sourceEID);
             if (holder != null)
+            {
                 return holder.Standings.TryGetValue(targetEID, out standing);
+            }
 
             standing = 0.0;
             return false;
@@ -36,7 +38,9 @@ namespace Perpetuum.Services.Standing
         public void ReloadStandingForCharacter(Character character)
         {
             if ( character == Character.None )
+            {
                 return;
+            }
 
             var infos = _standingRepository.GetStandingForCharacter(character);
             foreach (var info in infos)
@@ -51,9 +55,13 @@ namespace Perpetuum.Services.Standing
             var info = new StandingInfo(sourceEID, targetEID, standing);
 
             if (Math.Abs(standing) > double.Epsilon)
+            {
                 _standingRepository.InsertOrUpdate(info);
+            }
             else
+            {
                 _standingRepository.Delete(info);
+            }
 
             GetOrAddStandingHolder(sourceEID).SetStanding(targetEID, standing);
             SendStandingDataChangedToHosts(info);
@@ -123,7 +131,9 @@ namespace Perpetuum.Services.Standing
         private void OnStandingUpdated(StandingsHolder holder, long targetEID, double standing)
         {
             if (Math.Abs(standing) >= double.Epsilon)
+            {
                 return;
+            }
 
             holder.Remove(targetEID);
             if (holder.Standings.Count == 0)

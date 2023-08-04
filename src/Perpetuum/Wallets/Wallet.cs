@@ -11,7 +11,9 @@ namespace Perpetuum.Wallets
         protected Wallet()
         {
             if (Transaction.Current != null)
+            {
                 Transaction.Current.OnCommited(() => OnCommited(_startBalance));
+            }
         }
 
         protected virtual void OnCommited(TCredit startBalance)
@@ -38,7 +40,9 @@ namespace Perpetuum.Wallets
                 var current = GetBalance();
 
                 if ( Equals(current,value) )
+                {
                     return;
+                }
 
                 OnBalanceUpdating(current, value);
 

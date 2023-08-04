@@ -124,7 +124,9 @@ namespace Perpetuum.Accounting.Characters
             _walletHelper = walletHelper;
 
             if (id <= 0)
+            {
                 id = 0;
+            }
 
             Id = id;
         }
@@ -282,7 +284,9 @@ namespace Perpetuum.Accounting.Characters
                 var y = ReadValueFromDb<double?>(FIELD_POSITION_Y);
 
                 if (x == null || y == null)
+                {
                     return null;
+                }
 
                 return new Position((double) x,(double) y);
             }
@@ -409,19 +413,29 @@ namespace Perpetuum.Accounting.Characters
         public bool Equals(Character other)
         {
             if (ReferenceEquals(null, other))
+            {
                 return false;
+            }
+
             if (ReferenceEquals(this, other))
+            {
                 return true;
+            }
+
             return Id == other.Id;
         }
 
         public static bool operator ==(Character left, Character right)
         {
             if (ReferenceEquals(left, right))
+            {
                 return true;
+            }
 
             if ((object)left == null || (object)right == null)
+            {
                 return false;
+            }
 
             return left.Equals(right);
         }
@@ -466,7 +480,9 @@ namespace Perpetuum.Accounting.Characters
         private static T ReadValueFromDb<T>(int id, string name)
         {
             if (id == 0)
+            {
                 return default(T);
+            }
 
             return Db.Query().CommandText("select " + name + " from characters where characterid = @id").SetParameter("@id",id).ExecuteScalar<T>();
         }
@@ -474,7 +490,9 @@ namespace Perpetuum.Accounting.Characters
         private static T ReadValueFromDb<T>(long eid, string name)
         {
             if (eid == 0)
+            {
                 return default(T);
+            }
 
             return Db.Query().CommandText("select " + name + " from characters where rooteid = @eid").SetParameter("@eid",eid).ExecuteScalar<T>();
         }
@@ -482,7 +500,9 @@ namespace Perpetuum.Accounting.Characters
         private static void WriteValueToDb(int id, string name, object value)
         {
             if ( id == 0 )
+            {
                 return;
+            }
 
             Db.Query().CommandText("update characters set " + name + " = @value where characterid = @id")
                 .SetParameter("@id",id)
@@ -494,7 +514,9 @@ namespace Perpetuum.Accounting.Characters
         public static Character GetByEid(long characterEid)
         {
             if (characterEid == 0L)
+            {
                 return None;
+            }
 
             var characterId = GetIdByEid(characterEid);
             return CharacterFactory(characterId);
@@ -509,7 +531,9 @@ namespace Perpetuum.Accounting.Characters
         private static int GetCachedAccountId(int id)
         {
             if (id == 0)
+            {
                 return 0;
+            }
 
             return CharacterCache.Get(GetCacheKey(CACHE_KEY_ID_TO_ACCOUNTID,id), () => ReadValueFromDb<int>(id,FIELD_ACCOUNT_ID));
         }
@@ -517,7 +541,9 @@ namespace Perpetuum.Accounting.Characters
         private static long GetEid(int id)
         {
             if (id == 0)
+            {
                 return 0L;
+            }
 
             return CharacterCache.Get(GetCacheKey(CACHE_KEY_ID_TO_EID, id), () => ReadValueFromDb<long>(id, FIELD_ROOT_EID));
         }
@@ -556,7 +582,9 @@ namespace Perpetuum.Accounting.Characters
             //is nick belongs to an active of inavtive character
             var owner = GetByNick(nick);
             if (owner == Character.None)
+            {
                 return;
+            }
 
             // ok, now we know that the nick is used in the characters table, lets check ownership and timeouts!
 
@@ -656,10 +684,14 @@ namespace Perpetuum.Accounting.Characters
         {
             var accessLevel = AccessLevel;
             if (!accessLevel.IsAnyPrivilegeSet())
+            {
                 return ErrorCodes.NoError;
+            }
 
             if (!accessLevel.IsAdminOrGm())
+            {
                 return ErrorCodes.AccessDenied;
+            }
 
             return ErrorCodes.NoError;
         }
@@ -671,7 +703,9 @@ namespace Perpetuum.Accounting.Characters
                 .ExecuteNonQuery();
 
             if (selectCheck <= 0)
+            {
                 return false;
+            }
 
             Logger.Error($"An evil attempt to select a robot twice happened. characterID:{Id} robotEID:{robotEid}");
             return true;
@@ -683,10 +717,14 @@ namespace Perpetuum.Accounting.Characters
             return GetWallet(useCorporationWallet,transactionType,role =>
             {
                 if (role.IsAnyRole(CorporationRole.CEO,CorporationRole.DeputyCEO,CorporationRole.Accountant))
+                {
                     return true;
+                }
 
                 if (!role.IsAnyRole(CorporationRole.CEO))
+                {
                     thisCharacter._corporationManager.IsInJoinOrLeave(thisCharacter).ThrowIfError();
+                }
 
                 return role.IsAnyRole(roles);
             });
@@ -695,7 +733,9 @@ namespace Perpetuum.Accounting.Characters
         public IWallet<double> GetWallet(bool useCorporationWallet,TransactionType transactionType,Predicate<CorporationRole> accessChecker = null)
         {
             if (!useCorporationWallet)
+            {
                 return GetWallet(transactionType);
+            }
 
             var privateCorporation = GetPrivateCorporationOrThrow();
 
@@ -703,7 +743,9 @@ namespace Perpetuum.Accounting.Characters
             {
                 var role = privateCorporation.GetMemberRole(this);
                 if (!accessChecker(role))
+                {
                     throw new PerpetuumException(ErrorCodes.InsufficientPrivileges);
+                }
             }
 
             return new CorporationWallet(privateCorporation);
@@ -869,7 +911,9 @@ namespace Perpetuum.Accounting.Characters
         public int AddExtensionPointsBoostAndLog(EpForActivityType activityType,   int points)
         {
             if (points <= 0)
+            {
                 return 0;
+            }
 
             var account = GetAccount();
             Debug.Assert(account != null, "account != null");
@@ -912,7 +956,9 @@ namespace Perpetuum.Accounting.Characters
         public bool TechTreeNodeUnlocked(int definition)
         {
             if (_techTreeService.GetUnlockedNodes(Eid).Any(n => n.Definition == definition))
+            {
                 return true;
+            }
 
             var hasRole = Corporation.GetRoleFromSql(this).HasRole(PresetCorporationRoles.CAN_LIST_TECHTREE);
             return hasRole && _techTreeService.GetUnlockedNodes(CorporationEid).Any(n => n.Definition == definition);
@@ -922,7 +968,9 @@ namespace Perpetuum.Accounting.Characters
         {
             var hasRole = Corporation.GetRoleFromSql(this).HasRole(PresetCorporationRoles.CAN_LIST_TECHTREE);
             if (!hasRole)
+            {
                 return false;
+            }
 
             return _techTreeService.GetUnlockedNodes(Eid).Any(n => n.Definition == definition) && (_techTreeService.GetUnlockedNodes(CorporationEid).Any(n => n.Definition == definition));
         }
@@ -940,7 +988,9 @@ namespace Perpetuum.Accounting.Characters
 
             var dockingBase = _dockingBaseHelper.GetDockingBase(resultBaseEid);
             if (dockingBase != null && dockingBase.IsDockingAllowed(this) == ErrorCodes.NoError)
+            {
                 return _dockingBaseHelper.GetDockingBase(resultBaseEid);
+            }
 
             //docking would normally fail
             if (wasHomeBase)
@@ -1151,7 +1201,9 @@ namespace Perpetuum.Accounting.Characters
                 .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return;
+            }
 
             spentId = record.GetValue<int>(0);
             spentPoints = record.GetValue<int>(1);

@@ -9,7 +9,9 @@ namespace Perpetuum.Zones.Teleporting
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public virtual void AcceptVisitor(TeleportVisitor visitor)

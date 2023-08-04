@@ -27,13 +27,21 @@ namespace Perpetuum.Zones.NpcSystem.Presences.ExpiringStaticPresence
         {
             var zone = _presence.Zone;
             if (zone.Configuration.IsGamma && zone.IsUnitWithCategoryInRange(CategoryFlags.cf_pbs_docking_base, position, _baseRadius))
+            {
                 return true;
+            }
             else if (zone.GetStaticUnits().OfType<DockingBase>().WithinRange2D(position, _baseRadius).Any())
+            {
                 return true;
+            }
             else if (zone.GetStaticUnits().OfType<Teleport>().WithinRange2D(position, _teleRadius).Any())
+            {
                 return true;
+            }
             else if (zone.PresenceManager.GetPresences().OfType<IRandomStaticPresence>().Where(p => p.SpawnOrigin.IsInRangeOf2D(position, _baseRadius)).Any())
+            {
                 return true;
+            }
 
             return base.IsInRange(position, range);
         }

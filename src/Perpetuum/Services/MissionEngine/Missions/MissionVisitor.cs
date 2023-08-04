@@ -84,7 +84,10 @@ namespace Perpetuum.Services.MissionEngine.Missions
             _rewardSum = netReward * ZoneFactor;
             _riskCompensation = _rewardSum - netReward;
 
-            if (MissionResolveTester.isTestMode) return;
+            if (MissionResolveTester.isTestMode)
+            {
+                return;
+            }
 
             Logger.Info("mission reward:" + _rewardSum + " byTargets:" + _rewardByTargets + " distanceReward:" + _distanceReward + " difficultyReward:" + _difficultyReward + " for " + _missionInProgress);
         }

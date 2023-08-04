@@ -44,7 +44,9 @@ namespace Perpetuum.RequestHandlers.Zone
                 Transaction.Current.OnCommited(() =>
                 {
                     if (success)
+                    {
                         kiosk.CreateSuccessBeam(player);
+                    }
 
                     Message.Builder.SetCommand(Commands.ListContainer)
                         .WithData(container.ToDictionary())

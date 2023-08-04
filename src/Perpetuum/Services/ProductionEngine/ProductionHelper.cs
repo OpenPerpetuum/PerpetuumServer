@@ -196,9 +196,11 @@ namespace Perpetuum.Services.ProductionEngine
 			foreach (var ed in EntityDefault.All.GetByCategoryFlags(CategoryFlags.cf_research_kits))
 			{
 				if (ed.Options.Level != targetLevel)
-					continue;
+                {
+                    continue;
+                }
 
-				definition = ed.Definition;
+                definition = ed.Definition;
 				return ErrorCodes.NoError;
 			}
 
@@ -289,15 +291,21 @@ namespace Perpetuum.Services.ProductionEngine
 			foreach (var item in foundItems)
 			{
 				if (item.HealthRatio < 1.0)
-					continue;
+                {
+                    continue;
+                }
 
-				//only items that are in container
-				var co = item.GetOrLoadParentEntity() as Container;
+                //only items that are in container
+                var co = item.GetOrLoadParentEntity() as Container;
 				if (co == null)
-					continue;
+                {
+                    continue;
+                }
 
                 if (item is Robot robot && !robot.IsRepackaged)
+                {
                     continue;
+                }
 
                 var plc = new ProductionLiveComponent
 				{
@@ -326,9 +334,11 @@ namespace Perpetuum.Services.ProductionEngine
 				var defName = component.EntityDefault.Name;
 
 				if (component.IsSkipped(productionType))
-					continue;
+                {
+                    continue;
+                }
 
-				var realNeededAmount = component.EffectiveAmount(targetAmount, materialMultiplier);
+                var realNeededAmount = component.EffectiveAmount(targetAmount, materialMultiplier);
 				var componentFound = false;
 				var amountFound = 0;
 
@@ -336,9 +346,11 @@ namespace Perpetuum.Services.ProductionEngine
 				foreach (var foundComponent in foundComponents)
 				{
 					if (foundComponent.definition != component.EntityDefault.Definition)
-						continue;
+                    {
+                        continue;
+                    }
 
-					Logger.Info("checking eid:" + foundComponent.eid + " " + defName + " needed:" + realNeededAmount + " found:" + foundComponent.quantity);
+                    Logger.Info("checking eid:" + foundComponent.eid + " " + defName + " needed:" + realNeededAmount + " found:" + foundComponent.quantity);
 
 					if (foundComponent.quantity <= realNeededAmount - amountFound)
 					{
@@ -364,16 +376,20 @@ namespace Perpetuum.Services.ProductionEngine
 					itemsNeeded.Add(foundComponent);
 
 					if (amountFound != realNeededAmount)
-						continue;
+                    {
+                        continue;
+                    }
 
-					componentFound = true;
+                    componentFound = true;
 					break;
 				}
 
 				if (componentFound)
-					continue;
+                {
+                    continue;
+                }
 
-				wasComponentMissing = true;
+                wasComponentMissing = true;
 
 				var missingInfo = new Dictionary<string, object>
 				{
@@ -413,9 +429,11 @@ namespace Perpetuum.Services.ProductionEngine
 					//put it into the storage
 
 					if (!container.RemoveItemFromTree(component))
-						return ErrorCodes.ItemNotFound;
+                    {
+                        return ErrorCodes.ItemNotFound;
+                    }
 
-					component.Parent = storageEid;
+                    component.Parent = storageEid;
 
 					reservedList.Add(component.Eid); //this is the item we put into the storage
 

@@ -67,12 +67,16 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
                     var neighbor = new Node(_n[i, 0] + currentNode.position.X, _n[i, 1] + currentNode.position.Y);
 
                     if (closed.ContainsKey(neighbor.GetHashCode()))
+                    {
                         continue;
+                    }
 
                     closed[neighbor.GetHashCode()] = true;
 
                     if (!_zone.IsWalkableForNpc(neighbor.position))
+                    {
                         continue;
+                    }
 
                     neighbor.cost = CalculateCost(farPosition, neighbor.position);
                     pq.Enqueue(neighbor);

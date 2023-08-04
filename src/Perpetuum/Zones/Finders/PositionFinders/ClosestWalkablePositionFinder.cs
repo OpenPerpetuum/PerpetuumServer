@@ -57,7 +57,9 @@ namespace Perpetuum.Zones.Finders.PositionFinders
 
                 segmentPassed++;
                 if (segmentPassed < segmentLength)
+                {
                     continue;
+                }
 
                 segmentPassed = 0;
 
@@ -66,7 +68,9 @@ namespace Perpetuum.Zones.Finders.PositionFinders
                 dy = tmp;
 
                 if (dy == 0)
+                {
                     segmentLength++;
+                }
             }
         }
     }

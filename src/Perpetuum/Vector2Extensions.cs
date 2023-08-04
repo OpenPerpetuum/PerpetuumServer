@@ -38,15 +38,21 @@ namespace Perpetuum
         public static double GetAngle(this Vector2 v)
         {
             if (Math.Abs(v.X) < double.Epsilon)
+            {
                 return v.Y > 0 ? 0.5 : 0;
+            }
 
             if (Math.Abs(v.Y) < double.Epsilon)
+            {
                 return v.X > 0 ? 0.25 : 0.75;
+            }
 
             var direction = (Math.Atan(v.Y / v.X) + Math.PI / 2) / Math.PI * 0.5;
 
             if (v.X < 0)
+            {
                 direction += 0.5;
+            }
 
             MathHelper.NormalizeDirection(ref direction);
             return direction;

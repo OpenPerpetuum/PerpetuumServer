@@ -17,7 +17,9 @@ namespace Perpetuum.Zones
             {
                 var gang = player.Gang;
                 if ( gang == null )
+                {
                     continue;
+                }
 
                 if (gang.Id == id)
                 {

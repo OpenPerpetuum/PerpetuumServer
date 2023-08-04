@@ -89,7 +89,10 @@ namespace Perpetuum.Services.MissionEngine
                     var task = Task.Factory.StartNew(() => { tester.TestOne(l, mission1, testCharacter, missionLevel, maxAttemts, writeResult); }, new CancellationToken(), ResolveTestTaskCreationOptions, TaskScheduler.Default);
                     tasks.Add(task);
 
-                    if (tasks.Count(tsk=>!tsk.IsCompleted) < cpus) continue;
+                    if (tasks.Count(tsk=>!tsk.IsCompleted) < cpus)
+                    {
+                        continue;
+                    }
 
                     while (tasks.Count(tsk=>!tsk.IsCompleted) > cpus)
                     {
@@ -191,7 +194,9 @@ zoneID=@zoneId";
                 sb.Append(line);
 
                 if (count != lastIndex)
+                {
                     sb.Append(";");
+                }
 
                 count++;
             }

@@ -46,7 +46,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
         {
             var configuration = _configurationReader.Get(presenceID);
             if (configuration == null)
+            {
                 return null;
+            }
 
             return CreatePresence(configuration);
         }
@@ -61,7 +63,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
             ImmutableInterlocked.Update(ref _presences, p => p.Add(presence));
 
             if (presence is INotifyPresenceExpired notifier)
+            {
                 notifier.PresenceExpired += OnPresenceExpired;
+            }
         }
 
         private void OnPresenceExpired(Presence presence)

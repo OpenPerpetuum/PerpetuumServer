@@ -12,16 +12,25 @@ namespace Perpetuum.Comparers
         public bool Equals(IEntity left, IEntity right)
         {
             // If they're both null, technically they're the same...
-            if (ReferenceEquals(left, right)) return true;
+            if (ReferenceEquals(left, right))
+            {
+                return true;
+            }
 
-            if (left is null || right is null) return false;
+            if (left is null || right is null)
+            {
+                return false;
+            }
 
             return left.Eid == right.Eid;
         }
 
         public int GetHashCode(IEntity obj)
         {
-            if (obj is null) return 0;
+            if (obj is null)
+            {
+                return 0;
+            }
 
             return obj.Eid.GetHashCode();
         }

@@ -26,14 +26,18 @@ namespace Perpetuum.Timers
             _timer.Update(time);
 
             if ( !_timer.Passed )
+            {
                 return;
+            }
 
             _timer.Reset();
 
             if (_async)
             {
                 if (_running)
+                {
                     return;
+                }
 
                 _running = true;
                 Task.Run(() => _action()).ContinueWith(t => _running = false);

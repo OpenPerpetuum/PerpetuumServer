@@ -202,7 +202,9 @@ namespace Perpetuum.Zones.NpcSystem
         private void AnnounceDeath()
         {
             if (!IsAnnounced)
+            {
                 return;
+            }
 
             PublishMessage(new NpcStateMessage(FlockId, NpcState.Dead, DateTime.UtcNow));
         }

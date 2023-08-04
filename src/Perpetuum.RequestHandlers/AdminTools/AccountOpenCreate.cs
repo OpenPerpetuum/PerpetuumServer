@@ -23,7 +23,9 @@ namespace Perpetuum.RequestHandlers.AdminTools
             //is the server open?
             var si = _serverInfoManager.GetServerInfo();
             if (!si.IsOpen)
+            {
                 throw new PerpetuumException(ErrorCodes.InviteOnlyServer);
+            }
 
             // if an account was already created using this session, reject this creation attempt.
             if (request.Session.AccountCreatedInSession)

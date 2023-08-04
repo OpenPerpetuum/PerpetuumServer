@@ -33,7 +33,9 @@ namespace Perpetuum.RequestHandlers.Zone.Containers
                 module.IsAmmoable.ThrowIfFalse(ErrorCodes.AmmoNotRequired);
                 var ammo = module.UnequipAmmoToContainer(container);
                 if (ammo != null)
+                {
                     ammo.Owner = character.Eid;
+                }
 
                 player.Initialize(character);
                 player.Save();

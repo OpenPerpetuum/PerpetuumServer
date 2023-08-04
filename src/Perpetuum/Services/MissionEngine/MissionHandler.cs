@@ -96,7 +96,9 @@ namespace Perpetuum.Services.MissionEngine
                 linkedTarget = _cachedMissionTargets.Values.FirstOrDefault(zt => eventSourceTarget.MyTarget.PrimaryDefinitionLinkId == zt.MyTarget.id && !zt.IsCompleted);
 #if DEBUG
                 if (linkedTarget != null)
+                {
                     Logger.Info("event source was linked to: " + linkedTarget.MyTarget);
+                }
 #endif
 
             }
@@ -109,7 +111,9 @@ namespace Perpetuum.Services.MissionEngine
 
 #if DEBUG
                 if (linkedTarget != null)
+                {
                     Logger.Info("target was linked to event source: " + linkedTarget.MyTarget);
+                }
 #endif
             }
 
@@ -248,7 +252,10 @@ namespace Perpetuum.Services.MissionEngine
 
             foreach (var member in membersOnZone)
             {
-                if (member.Character.Equals(mycharacter)) continue; //except for myself
+                if (member.Character.Equals(mycharacter))
+                {
+                    continue; //except for myself
+                }
 
                 if (member.MissionHandler.AnyTargetForEventInfo(missionEventInfo))
                 {
@@ -265,7 +272,9 @@ namespace Perpetuum.Services.MissionEngine
 #if DEBUG
             // pop_npc and reach position is always submitted to every gang member - don't log it
             if (!(missionEventInfo.MissionTargetType == MissionTargetType.pop_npc || missionEventInfo.MissionTargetType == MissionTargetType.reach_position))
+            {
                 Logger.Warning("   >>>> ALL. " + _player.Character.Id + " " + missionEventInfo.MissionTargetType);
+            }
 #endif
 
             //members including me
@@ -280,7 +289,10 @@ namespace Perpetuum.Services.MissionEngine
         public void EnqueueMissionEventInfoLocally(MissionEventInfo missionEventInfo)
         {
             //has any mission?
-            if (!HasAnyCachedTarget()) return;
+            if (!HasAnyCachedTarget())
+            {
+                return;
+            }
 
             _enqueuedMissionEventInfos.Enqueue(missionEventInfo);
         }
@@ -292,11 +304,17 @@ namespace Perpetuum.Services.MissionEngine
         public void Update(TimeSpan time)
         {
             if (_cachedMissionTargets.Count == 0 || _enqueuedMissionEventInfos.Count == 0)
+            {
                 return;
+            }
 
             _timerUpdateMissions.Update(time);
 
-            if (!_timerUpdateMissions.Passed) return;
+            if (!_timerUpdateMissions.Passed)
+            {
+                return;
+            }
+
             _timerUpdateMissions.Reset();
 
             MissionEventInfo missionEventInfo;
@@ -305,10 +323,15 @@ namespace Perpetuum.Services.MissionEngine
             {
                 foreach (var missionTarget in _cachedMissionTargets.Values)
                 {
-                    if (missionTarget == null) continue;
+                    if (missionTarget == null)
+                    {
+                        continue;
+                    }
 
                     if (!missionTarget.HandleMissionEvent(missionEventInfo))
+                    {
                         continue;
+                    }
 
                     if (missionTarget.IsCompleted)
                     {
@@ -426,7 +449,9 @@ namespace Perpetuum.Services.MissionEngine
             foreach (var targetSubmitItem in submitTargets)
             {
                 if (!targetSubmitItem.IsMyTurn)
+                {
                     continue;
+                }
 
                 if (targetSubmitItem.MyTarget.ValidMissionStructureEidSet)
                 {
@@ -457,8 +482,10 @@ namespace Perpetuum.Services.MissionEngine
             var targets = new List<IZoneMissionTarget>(CurrentTargetsByType(missionTargetType));
 
             var gang = _player.Gang;
-            if (gang == null) 
+            if (gang == null)
+            {
                 return targets;
+            }
 
             var affectedPlayers = _zone.GetGangMembers(gang).Where(p => p != _player).ToList();
 
@@ -482,7 +509,9 @@ namespace Perpetuum.Services.MissionEngine
             foreach (var loadedTarget in targets)
             {
                 if (loadedTarget.MyZoneMissionInProgress.missionGuid != guid)
+                {
                     continue;
+                }
 
                 if (loadedTarget.MyTarget.ValidMissionStructureEidSet && loadedTarget.MyTarget.MissionStructureEid == kiosk.Eid)
                 {
@@ -575,7 +604,9 @@ namespace Perpetuum.Services.MissionEngine
             //not in gang -> nothing to signal
             var gang = _player.Gang;
             if (gang == null)
+            {
                 return;
+            }
 
             SignalParticipationAsync(_player.Character,missionGuid);
         }
@@ -583,9 +614,14 @@ namespace Perpetuum.Services.MissionEngine
         public void SignalParticipationAsync(Character doerCharacter, Guid missionGuid)
         {
             if (missionGuid == Guid.Empty)
+            {
                 return;
+            }
+
             if (doerCharacter == Character.None)
+            {
                 return;
+            }
 
             Task.Run(() =>
             {

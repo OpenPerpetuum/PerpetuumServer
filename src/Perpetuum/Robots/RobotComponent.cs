@@ -59,7 +59,9 @@ namespace Perpetuum.Robots
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public ExtensionBonus[] ExtensionBonuses
@@ -126,7 +128,9 @@ namespace Perpetuum.Robots
             foreach (var module in Modules)
             {
                 if (module.Slot == slot)
+                {
                     return true;
+                }
             }
 
             return false;
@@ -141,14 +145,20 @@ namespace Perpetuum.Robots
         public bool CheckUniqueModule(Module module)
         {
             if (ParentRobot == null)
+            {
                 return true;
+            }
 
             CategoryFlags uniqueCategoryFlag;
             if (!module.ED.CategoryFlags.IsUniqueCategoryFlags(out uniqueCategoryFlag))
+            {
                 return true;
+            }
 
             if (ParentRobot.FindModuleByCategoryFlag(uniqueCategoryFlag) != null)
+            {
                 return false;
+            }
 
             return true;
         }
@@ -156,7 +166,9 @@ namespace Perpetuum.Robots
         public bool IsValidSlotTo(Module module, int slot)
         {
             if (!IsValidModuleSlot(slot))
+            {
                 return false;
+            }
 
             var slotFlagMask = GetSlotFlagMask(slot);
             var moduleFlagMask = module.ModuleFlag;
@@ -166,19 +178,29 @@ namespace Perpetuum.Robots
         public ErrorCodes CanEquipModule(Module module, int slot)
         {
             if (IsUsedSlot(slot))
+            {
                 return ErrorCodes.UsedSlot;
+            }
 
             if (!IsValidSlotTo(module, slot))
+            {
                 return ErrorCodes.InvalidSlot;
+            }
 
             if (module.Quantity <= 0)
+            {
                 return ErrorCodes.WTFErrorMedicalAttentionSuggested;
+            }
 
             if (module.IsDamaged)
+            {
                 return ErrorCodes.ItemHasToBeRepaired;
+            }
 
             if (!CheckUniqueModule(module))
+            {
                 return ErrorCodes.OnlyOnePerCategoryPerRobotAllowed;
+            }
 
             return ErrorCodes.NoError;
         }
@@ -192,7 +214,9 @@ namespace Perpetuum.Robots
         public void EquipModule(Module module, int slot)
         {
             if ( module == null )
+            {
                 return;
+            }
 
             module.Owner = Owner;
             module.IsRepackaged = false;
@@ -205,11 +229,15 @@ namespace Perpetuum.Robots
         {
             var sourceModule = GetModule(sourceSlot);
             if (sourceModule != null && !IsValidSlotTo(sourceModule, targetSlot))
+            {
                 return ErrorCodes.InvalidSlot;
+            }
 
             var targetModule = GetModule(targetSlot);
             if (targetModule != null && !IsValidSlotTo(targetModule,sourceSlot))
+            {
                 return ErrorCodes.InvalidSlot;
+            }
 
             return ErrorCodes.NoError;
         }
@@ -226,10 +254,14 @@ namespace Perpetuum.Robots
             var targetModule = GetModule(targetSlot);
 
             if (sourceModule != null)
+            {
                 sourceModule.Slot = targetSlot;
+            }
 
             if (targetModule != null)
+            {
                 targetModule.Slot = sourceSlot;
+            }
         }
 
         public override Dictionary<string, object> ToDictionary()

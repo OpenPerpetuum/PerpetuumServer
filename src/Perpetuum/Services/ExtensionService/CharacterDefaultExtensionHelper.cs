@@ -23,7 +23,10 @@ namespace Perpetuum.Services.ExtensionService
             foreach (var starterExtension in _extensions)
             {
                 if (extension.id != starterExtension.id)
+                {
                     continue;
+                }
+
                 minimumLevel = starterExtension.level;
                 return true;
             }

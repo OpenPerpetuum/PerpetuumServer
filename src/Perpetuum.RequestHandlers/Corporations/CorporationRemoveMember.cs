@@ -32,7 +32,9 @@ namespace Perpetuum.RequestHandlers.Corporations
                 var member = Character.Get(request.Data.GetOrDefault<int>(k.memberID));
 
                 if (character == member)
+                {
                     return;
+                }
 
                 //a member was kicked, while he was leaving the corp
                 _corporationManager.CleanUpCharacterLeave(member);
@@ -72,7 +74,9 @@ namespace Perpetuum.RequestHandlers.Corporations
                 Transaction.Current.OnCommited(() =>
                 {
                     if (_characterProfiles is CachedCharacterProfileRepository c)
+                    {
                         c.Remove(member.Id);
+                    }
 
                     _channelManager.LeaveChannel(corporation.ChannelName, member);
                     _channelManager.JoinChannel(freelancerCorporation.ChannelName, member, CorporationRole.NotDefined);

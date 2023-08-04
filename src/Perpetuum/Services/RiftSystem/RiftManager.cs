@@ -90,7 +90,9 @@ namespace Perpetuum.Services.RiftSystem
             {
                 t.Update(time);
                 if (!t.Expired)
+                {
                     return false;
+                }
 
                 SpawnRift();
                 return true;

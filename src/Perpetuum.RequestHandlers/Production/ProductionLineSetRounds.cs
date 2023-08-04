@@ -33,7 +33,9 @@ namespace Perpetuum.RequestHandlers.Production
                 var maxRounds = Mill.GetMaxRounds(character);
 
                 if (rounds > maxRounds)
+                {
                     rounds = maxRounds;
+                }
 
                 ProductionLine.SetRounds(rounds, productionLine.Id).ThrowIfError();
 

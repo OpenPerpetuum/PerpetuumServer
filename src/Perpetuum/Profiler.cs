@@ -42,7 +42,9 @@ namespace Perpetuum
                 updates++;
                 timer.Update(e);
                 if (!timer.Passed)
+                {
                     return;
+                }
 
                 try
                 {

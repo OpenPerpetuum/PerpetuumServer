@@ -23,7 +23,9 @@ namespace Perpetuum.Zones.Teleporting
         public override IEnumerable<TeleportDescription> GetTeleportDescriptions()
         {
             if (_usedTeleportDescription != null)
+            {
                 return new[] { _usedTeleportDescription };
+            }
 
             return _strongholdTeleportTargetHelper.GetStrongholdTargets(Zone, Eid, TeleportRange, Definition);
         }
@@ -38,13 +40,17 @@ namespace Perpetuum.Zones.Teleporting
         public void Activate(Player player, TeleportDescription description)
         {
             if (_usedTeleportDescription != null)
+            {
                 return;
+            }
 
             _usedTeleportDescription = description;
 
             var gang = player.Gang;
             if (gang == null)
+            {
                 return;
+            }
 
             var result = ToDictionary();
             Message.Builder.SetCommand(Commands.TeleportTargetSet).WithData(result).ToCharacters(gang.GetMembers()).Send();

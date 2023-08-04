@@ -37,7 +37,9 @@ namespace Perpetuum.Containers
             // itt megnezzuk,h a targetnek nem gyereke-e a source
             var tmpContainer = (Container) targetContainer.GetItem(sourceContainerEid,true);
             if (tmpContainer == null)
+            {
                 return;
+            }
 
             //  ha igen akkor access-t nezunk es a gyerek lesz a source
             sourceContainer = tmpContainer;

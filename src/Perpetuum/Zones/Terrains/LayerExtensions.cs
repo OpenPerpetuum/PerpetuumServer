@@ -40,7 +40,10 @@ namespace Perpetuum.Zones.Terrains
                     var current = layer[x, y];
                     var updated = updater(x, y, current);
                     if (current.Equals(updated))
+                    {
                         continue;
+                    }
+
                     layer[x, y] = updated;
                 }
             }
@@ -54,12 +57,16 @@ namespace Perpetuum.Zones.Terrains
         public static void UpdateValue<T>(this ILayer<T> layer, int x, int y, Func<T, T> updater)
         {
             if ( !layer.IsValidPosition(x,y))
+            {
                 return;
+            }
 
             var current = layer[x, y];
             var updated = updater(current);
             if (current.Equals(updated))
+            {
                 return;
+            }
 
             layer[x,y] = updated;
         }

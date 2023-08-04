@@ -45,7 +45,9 @@ namespace Perpetuum.Robots.Fitting
                 .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return null;
+            }
 
             return CreateRobotFittingPresetFromRecord(record);
         }

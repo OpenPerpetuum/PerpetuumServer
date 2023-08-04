@@ -54,12 +54,16 @@ namespace Perpetuum.Zones.PBS
             ConnectionHandler.SendEventToNetwork(new NodeAttackedEventArgs(attacker));
 
             if (Interlocked.CompareExchange(ref _damageTaken, 1, 0) == 1)
+            {
                 return;
+            }
 
             Logger.DebugInfo($"PBS node attacked ({_pbsUnit.Eid}) attacker: {attacker.InfoString}");
 
             if (_pbsUnit.States.Dead)
+            {
                 return;
+            }
 
             Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(t =>
             {
@@ -248,7 +252,9 @@ namespace Perpetuum.Zones.PBS
         {
             var zone = _pbsUnit.Zone;
             if (zone == null)
+            {
                 return;
+            }
 
             var currentLevel = ConstructionLevelCurrent;
 
@@ -256,8 +262,10 @@ namespace Perpetuum.Zones.PBS
             {
                 //object got deconstructed, remove from zone, add capsule to loot
 
-                if (_contructionLootDropped) 
+                if (_contructionLootDropped)
+                {
                     return;
+                }
 
                 _contructionLootDropped = true;
 
@@ -287,8 +295,10 @@ namespace Perpetuum.Zones.PBS
                 return;
             }
 
-            if (!IsFullyConstructed) 
+            if (!IsFullyConstructed)
+            {
                 return;
+            }
 
             SetToDeconstruct(); //felepult, mostmar lehet lebontani is vagy barmi
 
@@ -317,7 +327,9 @@ namespace Perpetuum.Zones.PBS
         public void SetOnlineStatus(bool state, bool checkNofBase, bool forcedByServer = false)
         {
             if (OnlineStatus == state)
+            {
                 return;
+            }
 
             if (!forcedByServer)
             {
@@ -332,7 +344,9 @@ namespace Perpetuum.Zones.PBS
             }
 
             if (checkNofBase)
+            {
                 _pbsUnit.ConnectionHandler.NetworkNodes.Any(n => n is PBSDockingBase).ThrowIfFalse(ErrorCodes.NoBaseInNetwork);
+            }
 
             OnlineStatus = state;
         }
@@ -354,7 +368,9 @@ namespace Perpetuum.Zones.PBS
             private set
             {
                 if (_onlineStatus == value)
+                {
                     return;
+                }
 
                 _onlineStatus = value;
 
@@ -366,7 +382,9 @@ namespace Perpetuum.Zones.PBS
         {
             var zone = _pbsUnit.Zone;
             if (zone == null)
+            {
                 return;
+            }
 
             if (newOwner != _pbsUnit.Owner)
             {
@@ -395,7 +413,9 @@ namespace Perpetuum.Zones.PBS
 
             var zone = _pbsUnit.Zone;
             if (zone == null)
+            {
                 return;
+            }
 
             PBSHelper.WritePBSLog(orphanState ? PBSLogType.gotOrphaned : PBSLogType.gotConnected, _pbsUnit.Eid, _pbsUnit.Definition, _pbsUnit.Owner, zoneId: zone.Id);
             SendNodeUpdate();
@@ -410,7 +430,9 @@ namespace Perpetuum.Zones.PBS
             set
             {
                 if (_isOrphaned == value)
+                {
                     return;
+                }
 
                 _isOrphaned = value;
                 OnOrphanedStateChanged(value);
@@ -466,7 +488,9 @@ namespace Perpetuum.Zones.PBS
             var sourceDict = _pbsUnit.ToDictionary();
 
             if (data == null)
+            {
                 data = new Dictionary<string,object>();
+            }
 #if DEBUG
             data.Add(k.reason,pbsEventType.ToString()); //ez csak debug !!! hogy olvashato legyen
 #endif

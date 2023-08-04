@@ -16,7 +16,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.InterzonePresences
         public InterzoneRoamingPresence(IZone zone, IPresenceConfiguration configuration) : base(zone, configuration)
         {
             if (Configuration.DynamicLifeTime != null)
+            {
                 LifeTime = TimeSpan.FromSeconds((int)Configuration.DynamicLifeTime);
+            }
 
             StackFSM = new StackFSM();
             StackFSM.Push(new SpawnState(this));
@@ -45,7 +47,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.InterzonePresences
         public InterzonePresence(IZone zone, IPresenceConfiguration configuration) : base(zone, configuration)
         {
             if (Configuration.DynamicLifeTime != null)
+            {
                 LifeTime = TimeSpan.FromSeconds((int)Configuration.DynamicLifeTime);
+            }
         }
 
         protected override void OnFlockAdded(Flock flock)
@@ -77,7 +81,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.InterzonePresences
             sb.Append(Configuration.ID.ToString());
 
             if (Zone != null)
+            {
                 sb.Append(Zone.Id.ToString());
+            }
 
             return sb.ToString();
         }
@@ -85,7 +91,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.InterzonePresences
         private void OnFlockRemoved()
         {
             if (Flocks.IsNullOrEmpty())
+            {
                 OnPresenceExpired();
+            }
         }
     }
 }

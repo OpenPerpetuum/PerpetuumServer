@@ -30,7 +30,9 @@ namespace Perpetuum.RequestHandlers.Zone
                 //optionals
                 var definition = request.Data.GetOrDefault<int>(k.definition);
                 if (definition == 0)
+                {
                     definition = request.Zone.Configuration.TeleportColumn.Definition;
+                }
 
                 var position = request.Zone.FixZ(new Position(x, y).Center);
                 position.IsValid(request.Zone.Size).ThrowIfFalse(ErrorCodes.IllegalPosition);

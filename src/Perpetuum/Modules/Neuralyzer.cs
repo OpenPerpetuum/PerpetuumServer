@@ -19,7 +19,9 @@ namespace Perpetuum.Modules
             foreach (var player in players)
             {
                 if (player.Eid == myPlayer.Eid)
+                {
                     continue;
+                }
 
                 player.ResetLocks();
             }

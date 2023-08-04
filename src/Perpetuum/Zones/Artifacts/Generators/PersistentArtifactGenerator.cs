@@ -27,8 +27,10 @@ namespace Perpetuum.Zones.Artifacts.Generators
 
         public void GenerateArtifacts()
         {
-            if (!HasArtifacts()) 
+            if (!HasArtifacts())
+            {
                 return;
+            }
 
             var artifactsCount = _artifactRepository.GetArtifacts().Count(a => a.Info.isPersistent && a.Character == _player.Character);
 
@@ -50,7 +52,9 @@ namespace Perpetuum.Zones.Artifacts.Generators
         private ArtifactType GetNextArtifactType()
         {
             if (!HasArtifacts())
+            {
                 return ArtifactType.undefined;
+            }
 
             var spawnRates = _artifactSpawnRates[_zone.Id].ToArray();
 

@@ -51,7 +51,9 @@ namespace Perpetuum.Services.Weather
         public override void Update(TimeSpan time)
         {
             if (!_current.Update(time))
+            {
                 return;
+            }
 
             _current = GetNextWeather();
             SendWeatherUpdate(_current);

@@ -59,7 +59,9 @@ namespace Perpetuum.Groups.Corporations
                                  .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return None;
+            }
 
             var description = new CorporationDescription
             {
@@ -81,10 +83,14 @@ namespace Perpetuum.Groups.Corporations
             };
 
             if (!record.IsDBNull(3))
+            {
                 description.publicProfile = new GenxyString(record.GetValue<string>(3)).ToDictionary();
+            }
 
             if (!record.IsDBNull(4))
+            {
                 description.privateProfile = new GenxyString(record.GetValue<string>(4)).ToDictionary();
+            }
 
             return description;
         }

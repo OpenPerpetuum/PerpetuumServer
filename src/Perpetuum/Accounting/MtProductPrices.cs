@@ -27,7 +27,9 @@ namespace Perpetuum.Accounting
                                 .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return MtProduct.None;
+            }
 
             var p = CreateMtProductFromRecord(record);
             return p;

@@ -42,8 +42,10 @@ namespace Perpetuum.Zones
 
         private void WriteMiningLogToSql()
         {
-            if (_miningLogs.Count == 0) 
+            if (_miningLogs.Count == 0)
+            {
                 return;
+            }
 
             Logger.Info("flushing mininglog. " + _miningLogs.Count + " long entries. ");
 
@@ -67,7 +69,9 @@ namespace Perpetuum.Zones
 
             var counter = 0;
             if (finalList.Count <= 0)
+            {
                 return;
+            }
 
             foreach (var me in finalList)
             {

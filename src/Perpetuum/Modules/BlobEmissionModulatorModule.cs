@@ -34,7 +34,9 @@ namespace Perpetuum.Modules
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override void UpdateProperty(AggregateField field)
@@ -60,7 +62,9 @@ namespace Perpetuum.Modules
         {
             var zone = Zone;
             if (zone == null)
+            {
                 return;
+            }
 
             Position? lockPosition = null;
 
@@ -97,7 +101,9 @@ namespace Perpetuum.Modules
             blobEmitter.BlobEmission = _blobEmission.Value;
             blobEmitter.BlobEmissionRadius = _blobEmissionRadius.Value;
             if (ParentRobot is Player player)
+            {
                 blobEmitter.Owner = player.Character.Eid;
+            }
 
             var finder = new ClosestWalkablePositionFinder(zone, targetPosition);
             var position = finder.FindOrThrow();
@@ -125,7 +131,9 @@ namespace Perpetuum.Modules
             {
                 var ammo = _module.GetAmmo();
                 if (ammo == null)
+                {
                     return 0.0;
+                }
 
                 var blobEmission = ammo.GetPropertyModifier(AggregateField.blob_emission);
                 var blobEmissionMod = module.GetPropertyModifier(AggregateField.blob_emission_modifier);
@@ -154,7 +162,9 @@ namespace Perpetuum.Modules
             {
                 var ammo = _module.GetAmmo();
                 if (ammo == null)
+                {
                     return 0.0;
+                }
 
                 var blobEmissionRadius = ammo.GetPropertyModifier(AggregateField.blob_emission_radius);
                 var blobEmissionRadiusMod = module.GetPropertyModifier(AggregateField.blob_emission_radius_modifier);

@@ -93,7 +93,9 @@ namespace Perpetuum.Zones.Intrusion
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override Dictionary<string, object> ToDictionary()
@@ -161,12 +163,16 @@ namespace Perpetuum.Zones.Intrusion
             _decay.OnUpdate(time);
 
             if (!Enabled || IntrusionInProgress)
+            {
                 return;
+            }
 
             _timerCheckIntrusionTime.Update(time);
 
             if (!_timerCheckIntrusionTime.Passed)
+            {
                 return;
+            }
 
             _timerCheckIntrusionTime.Reset();
 
@@ -176,7 +182,9 @@ namespace Perpetuum.Zones.Intrusion
         private void CheckIntrusionStartTimeAsync()
         {
             if (Interlocked.CompareExchange(ref _checkIntrusionTime, 1, 0) == 1)
+            {
                 return;
+            }
 
             Task.Run(() => CheckIntrusionStartTime()).ContinueWith(t => _checkIntrusionTime = 0);
         }
@@ -222,7 +230,9 @@ namespace Perpetuum.Zones.Intrusion
             var startTime = DateTime.Now + waitTime;
 
             if (IntrusionPauseTime.IsBetween(startTime))
+            {
                 startTime += IntrusionPauseTime.Delta;
+            }
 
             return  startTime;
         }
@@ -249,7 +259,9 @@ namespace Perpetuum.Zones.Intrusion
         {
             var sapInfo = SAPInfos.RandomElement();
             if (sapInfo == null)
+            {
                 return;
+            }
 
             var sap = (SAP)_entityServices.Factory.CreateWithRandomEID(sapInfo.EntityDefault);
             sap.Site = this;
@@ -296,7 +308,9 @@ namespace Perpetuum.Zones.Intrusion
 
             var corporationEid = siteInfo.Owner ?? 0L;
             if (corporationEid == 0L)
+            {
                 return;
+            }
 
             EffectHandler.RemoveEffectsByCategory(EffectCategory.effcat_intrusion_effect);
 
@@ -305,7 +319,9 @@ namespace Perpetuum.Zones.Intrusion
                 var threshold = GetEffectBonusStabilityThreshold(siteInfo.ActiveEffect);
 
                 if (siteInfo.Stability < threshold)
+                {
                     return;
+                }
 
                 var builder = NewEffectBuilder().SetType(siteInfo.ActiveEffect).SetOwnerToSource().WithCorporationEid(corporationEid);
                 ApplyEffect(builder);
@@ -328,7 +344,9 @@ namespace Perpetuum.Zones.Intrusion
             {
                 _enabled = value;
                 if (!_enabled)
+                {
                     return;
+                }
 
                 IntrusionInProgress = false;
             }
@@ -396,12 +414,16 @@ namespace Perpetuum.Zones.Intrusion
             // Check for invalid player-SAPS
             var winnerCorporation = sap.GetWinnerCorporation();
             if (winnerCorporation == null && !sap.IsSystemGenerated())
+            {
                 return;
+            }
 
             // Check for unowned outposts to not be affected by system-generated events
             var siteInfo = GetIntrusionSiteInfo();
             if (siteInfo.Owner == null && sap.IsSystemGenerated())
+            {
                 return;
+            }
 
             var oldStability = siteInfo.Stability;
             var newStability = siteInfo.Stability;
@@ -559,9 +581,11 @@ namespace Perpetuum.Zones.Intrusion
         /// </summary>
         private void ReactStabilityChanges(IntrusionSiteInfo siteInfo, int oldStability, int newStability, long? newOwner, long? oldOwner)
         {
-            if (oldStability == newStability) 
+            if (oldStability == newStability)
+            {
                 return;
-            
+            }
+
             if (oldStability > newStability)
             {
                 //stability loss
@@ -611,21 +635,27 @@ namespace Perpetuum.Zones.Intrusion
         private void ProductionStabilityGain(int newStability, int oldStability, long? newOwner)
         {
             if (oldStability > PRODUCTION_BONUS_THRESHOLD)
+            {
                 return; //Do nothing if old stability > 100
+            }
 
             var siteInfo = GetIntrusionSiteInfo();
             var oldProductionPoints = (int) (oldStability/10.0);
             var newProductionPoints = (int) (newStability/10.0);
 
-            if (oldProductionPoints == newProductionPoints) 
+            if (oldProductionPoints == newProductionPoints)
+            {
                 return;
+            }
 
             var pointsToIncrease = newProductionPoints - oldProductionPoints;
 
             Logger.Info($"intrusion production points gain: {pointsToIncrease} site: {Eid}");
 
-            if (newOwner == null) 
+            if (newOwner == null)
+            {
                 return;
+            }
 
             var currentPoints = siteInfo.ProductionPoints;
             var spentPoints = GetFacilityPointsSpent();
@@ -643,14 +673,18 @@ namespace Perpetuum.Zones.Intrusion
         private void ProductionStabilityLoss(int newStability, int oldStability, long? newOwner, long? oldOwner)
         {
             if (newStability > PRODUCTION_BONUS_THRESHOLD)
+            {
                 return; //Do nothing if new stability > 100
+            }
 
             var siteInfo = GetIntrusionSiteInfo();
             var oldProductionPoints = (int)(oldStability / 10.0);
             var newProductionPoints = (int)(newStability / 10.0);
 
-            if (oldProductionPoints == newProductionPoints) 
+            if (oldProductionPoints == newProductionPoints)
+            {
                 return;
+            }
 
             var pointsToDecrease = oldProductionPoints - newProductionPoints;
 
@@ -740,7 +774,9 @@ namespace Perpetuum.Zones.Intrusion
             var thresholdInfo = StabilityBonusThresholds.OrderBy(t => t.threshold).FirstOrDefault(t => t.effectType == effectType);
 
             if ( thresholdInfo == null )
+            {
                 return -1;
+            }
 
             return thresholdInfo.threshold;
         }
@@ -831,7 +867,9 @@ namespace Perpetuum.Zones.Intrusion
             DateTime? dockingControlTime = DateTime.Now.AddMinutes(DOCKINGRIGHTS_CHANGE_COOLDOWN_MINUTES);
 
             if (clearDockingControltime)
+            {
                 dockingControlTime = null;
+            }
 
             Db.Query().CommandText("update intrusionsites set dockingstandinglimit=@dockingStandingLimit, dockingcontroltime=@now where siteeid=@siteEID")
                 .SetParameter("@siteEID",Eid)

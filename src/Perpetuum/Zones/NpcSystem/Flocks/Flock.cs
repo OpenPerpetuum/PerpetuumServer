@@ -205,7 +205,9 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
             foreach (var npc in Members)
             {
                 if (withTeleportExit)
+                {
                     npc.States.Teleport = true;
+                }
 
                 npc.RemoveFromZone();
                 RemoveMember(npc);

@@ -24,7 +24,9 @@ namespace Perpetuum.Timers
         public static bool IsPassed(ref TimeSpan last, TimeSpan interval)
         {
             if ((Elapsed - last) < interval)
+            {
                 return false;
+            }
 
             last = Elapsed;
             return true;

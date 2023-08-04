@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace Perpetuum.Data
 {
@@ -25,7 +26,9 @@ namespace Perpetuum.Data
             {
                 var o = objects[index];
                 if ( o == null )
+                {
                     continue;
+                }
 
                 unchecked
                 {
@@ -50,7 +53,9 @@ namespace Perpetuum.Data
             var result = new Dictionary<string, object>();
 
             if (o == null)
+            {
                 return result;
+            }
 
             foreach (var propertyInfo in o.GetType().GetProperties())
             {
@@ -99,24 +104,32 @@ namespace Perpetuum.Data
             Debug.Assert(columnsDictionary.Any());
             var sqlCmd = _cachedCommands.GetOrAdd(CalculateHashCode(CMD_UPDATE, table, columnsDictionary, whereDictionary), _ =>
             {
-                var commandText = "UPDATE {0} SET ";
+                var sb = new StringBuilder();
 
-                commandText += columnsDictionary.Keys.Select(k => k + " = @" + k).ArrayToString();
+                sb.Append("UPDATE {0} SET ");
+                sb.Append(columnsDictionary.Keys.Select(k => k + " = @" + k).ArrayToString());
 
                 if (whereDictionary.Count > 0)
                 {
-                    commandText += " WHERE ";
+                    sb.Append(" WHERE ");
 
                     var first = true;
                     foreach (var key in whereDictionary.Keys)
                     {
-                        if (first) first = false;
-                        else commandText += " AND ";
-                        commandText += string.Format("{0} = @{0}", key);
+                        if (first)
+                        {
+                            first = false;
+                        }
+                        else
+                        {
+                            sb.Append(" AND ");
+                        }
+
+                        sb.Append(string.Format("{0} = @{0}", key));
                     }
                 }
 
-                return string.Format(commandText, table);
+                return string.Format(sb.ToString(), table);
             });
 
             return Db.Query().CommandText(sqlCmd).SetParameters(columnsDictionary.Concat(whereDictionary)).ExecuteNonQuery();

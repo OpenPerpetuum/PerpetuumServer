@@ -83,7 +83,9 @@ namespace Perpetuum.Groups.Corporations
         public static CorporationRole CleanUpCharacterPBSRoles(this CorporationRole role)
         {
             if (role.HasFlag(CorporationRole.editPBS))
+            {
                 role.SetRole(CorporationRole.viewPBS);
+            }
 
             return role;
         }
@@ -94,17 +96,25 @@ namespace Perpetuum.Groups.Corporations
 
             //has low remove => needs low access
             if (role.IsAnyRole(CorporationRole.HangarRemove_low))
+            {
                 resultRole = (resultRole | (int) CorporationRole.HangarAccess_low);
+            }
 
             //has medium remove => needs medium access
             if (role.IsAnyRole(CorporationRole.HangarRemove_medium))
+            {
                 resultRole = (resultRole | (int) CorporationRole.HangarAccess_medium);
+            }
 
             if (role.IsAnyRole(CorporationRole.HangarRemove_high))
+            {
                 resultRole = (resultRole | (int) CorporationRole.HangarAccess_high);
+            }
 
             if (role.IsAnyRole(CorporationRole.HangarRemove_secure))
+            {
                 resultRole = (resultRole | (int) CorporationRole.HangarAccess_secure);
+            }
 
             return (CorporationRole)resultRole;
         }

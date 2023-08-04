@@ -33,7 +33,9 @@ namespace Perpetuum.RequestHandlers.Extensions
                 var character = Character.Get(request.Data.GetOrDefault<int>(k.characterID));
             
                 if ( character == Character.None )
+                {
                     throw new PerpetuumException(ErrorCodes.CharacterNotFound);
+                }
 
                 //only characters that belong to the issuers account
                 if (character.AccountId != account.Id)

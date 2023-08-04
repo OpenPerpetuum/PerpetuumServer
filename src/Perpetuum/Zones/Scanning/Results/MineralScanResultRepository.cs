@@ -71,7 +71,9 @@ namespace Perpetuum.Zones.Scanning.Results
                 .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return null;
+            }
 
             return CreateFromRecord(record);
         }

@@ -20,7 +20,9 @@ namespace Perpetuum.Zones.Intrusion
 
             var player = Zone.ToPlayerOrGetOwnerPlayer(source);
             if (player == null)
+            {
                 return;
+            }
 
             IncrementPlayerScore(player, (int)e.TotalDamage);
         }

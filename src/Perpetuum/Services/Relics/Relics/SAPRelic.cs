@@ -17,7 +17,10 @@ namespace Perpetuum.Services.Relics
         {
             var relic = (SAPRelic)CreateUnitWithRandomEID(DefinitionNames.RELIC_SAP);
             if (relic == null)
+            {
                 return null;
+            }
+
             relic.Init(info, zone, position, lootItems);
             relic.SetOutpost(outpost);
             relic.AddToZone(zone, position);

@@ -35,7 +35,10 @@ namespace Perpetuum.RequestHandlers.Characters
                     comment = Enum.GetName(typeof(ErrorCodes), gex.error);
                     eCode = (int)gex.error;
                 }
-                else throw;
+                else
+                {
+                    throw;
+                }
             }
 
             var dictionary = new Dictionary<string, object>

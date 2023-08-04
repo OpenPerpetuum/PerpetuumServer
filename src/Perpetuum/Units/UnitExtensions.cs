@@ -27,7 +27,9 @@ namespace Perpetuum.Units
         public static void AddThreat(this Unit unit,Unit hostile,Threat threat)
         {
             if (unit is Npc npc && npc.CanAddThreatTo(hostile, threat))
+            {
                 npc.AddThreat(hostile, threat, true);
+            }
         }
 
         public static bool TryGetConstructionRadius(this Unit unit,out int radius)
@@ -35,7 +37,9 @@ namespace Perpetuum.Units
             radius = 0;
 
             if (unit?.ED.Config.constructionRadius == null)
+            {
                 return false;
+            }
 
             radius = (int) unit.ED.Config.constructionRadius;
             return true;
@@ -49,7 +53,9 @@ namespace Perpetuum.Units
         public static int GetItemWorkRangeOrDefault(this Unit unit)
         {
             if (unit == null || unit.ED.Config.item_work_range == null)
+            {
                 return 0;
+            }
 
             return (int) unit.ED.Config.item_work_range;
         }
@@ -58,7 +64,9 @@ namespace Perpetuum.Units
         public static int GetBlockingRadiusOrDefault(this Unit unit)
         {
             if (unit == null || unit.ED.Config.blockingradius == null)
+            {
                 return 0;
+            }
 
             return (int)unit.ED.Config.blockingradius;
         }
@@ -67,10 +75,14 @@ namespace Perpetuum.Units
         public static int GetCycleTimeMs(this Unit unit)
         {
             if (unit == null)
+            {
                 return 0;
+            }
 
             if (unit.ED.Config.cycle_time != null)
+            {
                 return (int) unit.ED.Config.cycle_time;
+            }
 
             return 30000;
         }
@@ -78,7 +90,10 @@ namespace Perpetuum.Units
 
         public static bool IsCoreFull(this Unit unit)
         {
-            if (unit == null) return true;
+            if (unit == null)
+            {
+                return true;
+            }
 
             var coreFillRate = unit.Core.Ratio(unit.CoreMax);
 
@@ -89,10 +104,14 @@ namespace Perpetuum.Units
         public static int GetConstructionRadius(this Unit unit)
         {
             if (unit == null)
+            {
                 return 0;
+            }
 
             if (unit.ED.Config.constructionRadius != null)
+            {
                 return (int) unit.ED.Config.constructionRadius;
+            }
 
             Logger.Error("consistency error. no construction radius was defined for definition: " + unit.Definition + " " + unit.ED.Name);
             return 10;
@@ -130,10 +149,14 @@ namespace Perpetuum.Units
         public static int GetTransmitRadius(this Unit unit)
         {
             if (unit == null)
+            {
                 return 0;
+            }
 
             if (unit.ED.Config.transmitradius != null)
+            {
                 return (int) unit.ED.Config.transmitradius;
+            }
 
             Logger.Error("consistency error. no transmitRadius was defined for definition: " + unit.Definition + " " + unit.ED.Name);
             return 0;
@@ -142,10 +165,14 @@ namespace Perpetuum.Units
         public static double GetCoreTransferred(this Unit unit)
         {
             if (unit == null)
+            {
                 return 1;
+            }
 
             if (unit.ED.Config.coreTransferred != null)
+            {
                 return (double)unit.ED.Config.coreTransferred;
+            }
 
             Logger.Error("coreTransferred not defined for " + unit);
             return 100;
@@ -156,7 +183,9 @@ namespace Perpetuum.Units
         public static double GetTransferEfficiency(this Unit unit)
         {
             if (unit.ED.Config.transferEfficiency != null)
+            {
                 return ((double) unit.ED.Config.transferEfficiency).Clamp();
+            }
 
             Logger.Error("transferEfficiency not defined for " + unit);
             return 0.8;
@@ -174,7 +203,9 @@ namespace Perpetuum.Units
         public static void SpreadAssistThreatToNpcs(this Unit unit, Unit assistant,Threat threat)
         {
             if ( unit == null || assistant == null)
+            {
                 return;
+            }
 
             foreach (var npc in unit.GetWitnessUnits<Npc>())
             {
@@ -226,7 +257,9 @@ namespace Perpetuum.Units
             {
                 var d = position.SqrDistance3D(unit.CurrentPosition);
                 if (d > nearest)
+                {
                     continue;
+                }
 
                 nearest = d;
                 nearestUnit = unit;

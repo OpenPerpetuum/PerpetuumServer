@@ -20,7 +20,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.RandomExpiringPresence
         public RandomSpawningExpiringPresence(IZone zone, IPresenceConfiguration configuration) : base(zone, configuration)
         {
             if (Configuration.DynamicLifeTime != null)
+            {
                 LifeTime = TimeSpan.FromSeconds((int)Configuration.DynamicLifeTime);
+            }
 
             InitStateMachine();
         }

@@ -20,7 +20,9 @@ namespace Perpetuum.StateMachines
             get
             {
                 if (_states.Count > 0)
+                {
                     return _states.Peek();
+                }
 
                 return null;
             }

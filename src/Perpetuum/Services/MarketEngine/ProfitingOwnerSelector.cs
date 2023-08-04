@@ -24,7 +24,9 @@ namespace Perpetuum.Services.MarketEngine
         public static Corporation GetProfitingOwner(DockingBase dockingBase)
         {
             if (dockingBase == null)
+            {
                 return null;
+            }
 
             var selector = new ProfitingOwnerSelector();
             dockingBase.AcceptVisitor(selector);

@@ -27,17 +27,23 @@ namespace Perpetuum.RequestHandlers.Sparks
                 var dockingBase = character.GetCurrentDockingBase();
                 dockingBase.IsDockingAllowed(character).ThrowIfError();
                 if (dockingBase.Zone is TrainingZone)
+                {
                     throw new PerpetuumException(ErrorCodes.TrainingCharacterInvolved);
+                }
 
                 var sparkTeleports = _sparkTeleportHelper.GetAllSparkTeleports(character).ToArray();
                 if (sparkTeleports.Any(d => d.DockingBase == dockingBase))
+                {
                     throw new PerpetuumException(ErrorCodes.BaseAlreadySparkTeleportDestination);
+                }
 
                 var alreadySpent = _sparkTeleportHelper.GetCostFromDescriptions(sparkTeleports);
                 var maxCount = _sparkTeleportHelper.GetMaxSparkTeleportCount(character);
                 if (alreadySpent + dockingBase.Zone.Configuration.SparkCost > maxCount)
+                {
                     throw new PerpetuumException(ErrorCodes.NotEnoughSparkTeleportSlots);
-            
+                }
+
                 character.SubtractFromWallet(TransactionType.SparkTeleportPlace,SparkTeleport.SPARK_TELEPORT_PLACE_FEE);
 
                 _sparkTeleportHelper.CreateSparkTeleport(dockingBase, character);

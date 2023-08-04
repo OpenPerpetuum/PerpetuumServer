@@ -44,19 +44,25 @@ namespace Perpetuum.RequestHandlers.TechTree
                 var techTreeNodes = _infoService.GetNodes();
                 var node = techTreeNodes.GetOrDefault(definition);
                 if (node == null)
+                {
                     throw PerpetuumException.Create(ErrorCodes.TechTreeNodeNotFound).SetData("definition", definition);
+                }
 
                 var unlockedNodes = _techTreeService.GetUnlockedNodes(ownerEid).ToArray();
 
                 // tudja-e mar
                 var any = unlockedNodes.Any(n => n == node);
                 if (any)
+                {
                     throw PerpetuumException.Create(ErrorCodes.TechTreeAlreadyUnlocked).SetData("definition", definition);
+                }
 
                 // parent megvan-e
                 var allUnlocked = node.Traverse(techTreeNodes).All(unlockedNodes.Contains);
                 if (!allUnlocked)
+                {
                     throw new PerpetuumException(ErrorCodes.TechTreeUnlockParentMissing);
+                }
 
                 var enablerExtension = node.GetEnablerExtension(_infoService.GetGroupInfos());
                 character.CheckLearnedExtension(enablerExtension).ThrowIfFalse(ErrorCodes.TechTreeEnablerExtensionMissing);
@@ -68,7 +74,9 @@ namespace Perpetuum.RequestHandlers.TechTree
                     points.UpdatePoints(price.type, current =>
                     {
                         if (current < amount)
+                        {
                             throw PerpetuumException.Create(ErrorCodes.TechTreeNotEnoughPoints).SetData("pointType", (int)price.type).SetData("points", amount);
+                        }
 
                         logEvent.Points = price;
                         TechTreeLogger.WriteLog(logEvent);
@@ -82,7 +90,9 @@ namespace Perpetuum.RequestHandlers.TechTree
                     .ExecuteNonQuery();
 
                 if (r == 0)
+                {
                     throw new PerpetuumException(ErrorCodes.SQLInsertError);
+                }
 
                 Transaction.Current.OnCommited(() => _techTreeService.NodeUnlocked(ownerEid, node));
 

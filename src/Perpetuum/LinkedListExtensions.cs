@@ -13,7 +13,9 @@ namespace Perpetuum
                 var next = node.Next;
 
                 if (match(node.Value))
+                {
                     list.Remove(node);
+                }
 
                 node = next;
             }

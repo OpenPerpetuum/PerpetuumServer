@@ -30,11 +30,15 @@ namespace Perpetuum.Zones.Scanning.Scanners
                 foreach (var layer in _zone.Terrain.Materials.OfType<MineralLayer>())
                 {
                     if (!layer.TryGetNode(location, out MineralNode node))
+                    {
                         continue;
+                    }
 
                     var amount = node.GetValue(location);
                     if ( amount <= 0 )
+                    {
                         continue;
+                    }
 
                     var m = _materialHelper.GetMaterialInfo(layer.Type);
                     var def = m.EntityDefault.Definition;

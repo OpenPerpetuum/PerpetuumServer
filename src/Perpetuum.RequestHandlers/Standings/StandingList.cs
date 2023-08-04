@@ -27,16 +27,24 @@ namespace Perpetuum.RequestHandlers.Standings
 
             var standings = _standingHandler.GetStandingsList(eid);
             if (standings != null)
+            {
                 result.Add(k.standing, standings);
+            }
 
             if (eid == character.Eid)
+            {
                 result.Add(k.characterEID, eid);
+            }
 
             if (eid == allianceEID)
+            {
                 result.Add(k.allianceEID, eid);
+            }
 
             if (eid == corporationEID)
+            {
                 result.Add(k.corporationEID, eid);
+            }
 
             Message.Builder.FromRequest(request).WithData(result).WrapToResult().Send();
         }

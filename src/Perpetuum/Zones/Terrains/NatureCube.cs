@@ -45,10 +45,14 @@ namespace Perpetuum.Zones.Terrains
         public bool Equals(NatureCube other)
         {
             if (ReferenceEquals(this, other))
+            {
                 return true;
+            }
 
             if (!_area.Equals(other._area))
+            {
                 return false;
+            }
 
             return _plantInfos.SequenceEqual(other._plantInfos) && _blockInfos.SequenceEqual(other._blockInfos);
         }
@@ -180,7 +184,9 @@ namespace Perpetuum.Zones.Terrains
             if (cleanUpDeadPlants)
             {
                 if (plantInfo.type != 0 || plantInfo.state == 0)
+                {
                     return;
+                }
 
                 //clean full
                 CleanPlantOnTile(x, y);
@@ -208,7 +214,9 @@ namespace Perpetuum.Zones.Terrains
             }
 
             if (plantInfo.type == 0)
+            {
                 return;
+            }
 
             var plantRule = _zone.Configuration.PlantRules.GetPlantRule(plantInfo.type);
 
@@ -364,7 +372,9 @@ namespace Perpetuum.Zones.Terrains
         {
             var plantRule = _zone.Configuration.PlantRules.GetPlantRule(plantInfo.type);
             if (plantRule == null)
+            {
                 return;
+            }
 
             if (plantInfo.time < plantRule.GrowRate)
             {
@@ -391,7 +401,9 @@ namespace Perpetuum.Zones.Terrains
                     blockInfo.Plant = false;
 
                     if (!plantRule.PlacesConcrete)
+                    {
                         return;
+                    }
 
                     var gx = x + _area.X1;
                     var gy = y + _area.Y1;
@@ -457,7 +469,9 @@ namespace Perpetuum.Zones.Terrains
 
                 var rule = _zone.Configuration.PlantRules.GetPlantRule(currentPlantType);
                 if (rule == null)
+                {
                     continue;
+                }
 
                 if (rule.HasBlockingState)
                 {
@@ -495,11 +509,15 @@ namespace Perpetuum.Zones.Terrains
                 var plantType = plantInfo.type;
 
                 if (plantType != 0 || blockInfo.Flags != BlockingFlags.Undefined)
+                {
                     continue;
+                }
 
                 //per tile random chance
                 if (FastRandom.NextByte() >= plantInfo.spawn)
+                {
                     continue;
+                }
 
                 var newPlantRule = GetNewPlantRule(globalX, globalY);
 
@@ -520,7 +538,9 @@ namespace Perpetuum.Zones.Terrains
                     //have we planted enough?
                     var amount = plantAmount.GetOrDefault(newPlantRule.Type);
                     if (amount > newPlantRule.MaxAmount)
+                    {
                         continue;
+                    }
                 }
 
                 if (!CheckKillDistance(newPlantRule, x, y, this))
@@ -542,7 +562,9 @@ namespace Perpetuum.Zones.Terrains
                 blockInfo.Height = newPlantRule.GetBlockingHeight(plantInfo.state);
 
                 if (blockInfo.Height > 0)
+                {
                     blockInfo.Plant = true;
+                }
 
                 SetPlantInfo(x, y, plantInfo);
                 SetBlockInfo(x, y, blockInfo);
@@ -560,8 +582,10 @@ namespace Perpetuum.Zones.Terrains
 
         private void DamageWall()
         {
-            if (_zone.Configuration.IsAlpha) 
+            if (_zone.Configuration.IsAlpha)
+            {
                 return; //nothing to do on alpha
+            }
 
             //on gamma we have to collect pbs data
             if (_zone.Configuration.IsGamma)
@@ -587,20 +611,28 @@ namespace Perpetuum.Zones.Terrains
 
         private void DamageWallOnTile(ref PlantInfo plantInfo, ref BlockingInfo blockInfo,int x,int y )
         {
-            if (plantInfo.type == PlantType.NotDefined) 
+            if (plantInfo.type == PlantType.NotDefined)
+            {
                 return;
+            }
 
             var plantRule = _zone.Configuration.PlantRules.GetPlantRule(plantInfo.type);
             if (plantRule == null)
+            {
                 return;
+            }
 
             //is it wall?
             if (!plantRule.AllowedOnNonNatural)
+            {
                 return;
+            }
 
             //only degrades in the last few phases
             if (!plantInfo.IsWallInLastFewStates(plantRule))
+            {
                 return;
+            }
 
             var globalX = x + _area.X1;
             var globalY = y + _area.Y1;
@@ -640,7 +672,9 @@ namespace Perpetuum.Zones.Terrains
             plantInfo.UnHealPlant();
 
             if (plantInfo.health > 0)
+            {
                 return;
+            }
 
             blockInfo.Plant = false;
             blockInfo.Height = 0;
@@ -669,21 +703,29 @@ namespace Perpetuum.Zones.Terrains
 
                 var plantRule = _zone.Configuration.PlantRules.GetPlantRule(plantInfo.type);
                 if (plantRule == null)
+                {
                     continue;
+                }
 
                 if (plantRule.KillDistance <= 0)
+                {
                     continue;
+                }
 
                 for (var sy = globalY - plantRule.KillDistance; sy < globalY + plantRule.KillDistance; sy++)
                 {
                     for (var sx = globalX - plantRule.KillDistance; sx < globalX + plantRule.KillDistance; sx++)
                     {
                         if (sx < 0 || sx >= size.Width || sy < 0 || sy >= size.Height)
+                        {
                             continue;
+                        }
 
                         //not itself
                         if (sx - _area.X1 == x && sy - _area.Y1 == y)
+                        {
                             continue;
+                        }
 
                         var searchPlantType = _area.Contains(sx, sy)
                             ? GetPlantInfo(sx - _area.X1, sy - _area.Y1).type //sample from the cube
@@ -691,10 +733,14 @@ namespace Perpetuum.Zones.Terrains
 
                         //is there a plant we are looking for?
                         if (plantInfo.type != searchPlantType)
+                        {
                             continue;
+                        }
 
                         if (!IsCloserThan(globalX, globalY, sx, sy, plantRule.KillDistance))
+                        {
                             continue;
+                        }
 
                         //we found a plant which is too close
                         //kill the original
@@ -724,20 +770,30 @@ namespace Perpetuum.Zones.Terrains
         {
             var plantRule = _zone.Configuration.PlantRules.GetPlantRule(plantInfo.type);
             if (plantRule == null)
+            {
                 return;
+            }
 
             if (plantRule.NotFruiting || !plantRule.IsBlocking(plantInfo.state))
+            {
                 return;
+            }
 
             if (plantRule.FruitingState > plantInfo.state)
+            {
                 return;
+            }
 
             if (plantInfo.material >= plantRule.FruitAmount)
+            {
                 return;
+            }
 
             var chance = FastRandom.NextDouble();
             if (chance >= 0.3)
+            {
                 return;
+            }
 
             var m = (int) plantInfo.material;
             m = (byte) (Math.Min(m + (int) FastRandom.NextDouble(plantRule.FruitAmount*0.05, plantRule.FruitAmount*0.15).Clamp(0, 255), plantRule.FruitAmount));
@@ -771,7 +827,9 @@ namespace Perpetuum.Zones.Terrains
             SetBlockInfo(x, y, blockInfo);
 
             if (oldPlantType != PlantType.Devrinol)
+            {
                 return;
+            }
 
             var gx = x + _area.X1;
             var gy = y + _area.Y1;
@@ -849,7 +907,9 @@ namespace Perpetuum.Zones.Terrains
         private bool CheckKillDistance(PlantRule rule, int x, int y, NatureCube cube)
         {
             if (rule.KillDistance <= 0)
+            {
                 return true;
+            }
 
             var globalX = x + cube._area.X1;
             var globalY = y + cube._area.Y1;
@@ -860,8 +920,10 @@ namespace Perpetuum.Zones.Terrains
                 for (var i = globalX - rule.KillDistance; i < globalX + rule.KillDistance; i++)
                 {
                     //exit if outside of the map
-                    if (i < 0 || i >= size.Width || j < 0 || j >= size.Height) 
+                    if (i < 0 || i >= size.Width || j < 0 || j >= size.Height)
+                    {
                         continue;
+                    }
 
                     PlantType plantType;
                     if (cube._area.Contains(i, j))
@@ -879,7 +941,9 @@ namespace Perpetuum.Zones.Terrains
                     }
 
                     if (plantType == rule.Type && IsCloserThan(globalX, globalY, i, j, rule.KillDistance))
+                    {
                         return false;
+                    }
                 }
             }
 

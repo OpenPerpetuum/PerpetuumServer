@@ -39,12 +39,16 @@ namespace Perpetuum.RequestHandlers
                         try
                         {
                             if (item.Definition != targetItem.Definition || item.Eid == targetItem.Eid)
+                            {
                                 continue;
+                            }
 
                             //get the parent of the current item
                             var currentParent = item.GetOrLoadParentEntity() as Container;
                             if (currentParent == null)
+                            {
                                 continue;
+                            }
 
                             if (!includeRobotCargos)
                             {

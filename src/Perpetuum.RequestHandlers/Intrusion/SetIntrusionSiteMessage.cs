@@ -47,9 +47,13 @@ namespace Perpetuum.RequestHandlers.Intrusion
                 }
 
                 if (clearMessage)
+                {
                     outpost.ClearSiteMessage();
+                }
                 else
+                {
                     outpost.SetSiteMessage(message);
+                }
 
                 outpost.InsertIntrusionSiteMessageLog(character, message, owner, eventType);
 

@@ -22,15 +22,21 @@ namespace Perpetuum.Items.Templates
             foreach (var moduleTemplate in _moduleTemplates)
             {
                 if (!moduleTemplate.Validate())
+                {
                     continue;
+                }
 
                 var module = moduleTemplate.Build();
 
                 if (!component.IsValidSlotTo(module, moduleTemplate.Slot))
+                {
                     return false;
+                }
 
                 if (!component.CheckUniqueModule(module))
+                {
                     return false;
+                }
             }
 
             return base.OnValidate(component);

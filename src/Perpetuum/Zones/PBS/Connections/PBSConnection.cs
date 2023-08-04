@@ -85,7 +85,9 @@ namespace Perpetuum.Zones.PBS.Connections
 
             var unit = TargetPbsObject as Unit;
             if (unit != null)
+            {
                 info.Add(k.eid, unit.Eid);
+            }
 
             return info;
 
@@ -102,7 +104,9 @@ namespace Perpetuum.Zones.PBS.Connections
 
             var unit = TargetPbsObject as Unit;
             if (unit != null)
+            {
                 info.Add("e", unit.ED.Name);
+            }
 
             return info;
 
@@ -234,7 +238,10 @@ namespace Perpetuum.Zones.PBS.Connections
 
         public void InsertToDb()
         {
-            if (!IsOutgoing) return;
+            if (!IsOutgoing)
+            {
+                return;
+            }
 
             Id = Db.Query().CommandText("insert pbsconnections (sourceeid,targeteid,weight) values (@source,@target,@weight);SELECT cast(scope_identity() as int)")
                 .SetParameter("@source", ((Unit) _sourcePbsObject).Eid)

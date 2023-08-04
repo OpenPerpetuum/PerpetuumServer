@@ -22,7 +22,9 @@ namespace Perpetuum.Services.ExtensionService
         public CharacterExtensionCollection Get(Character character)
         {
             if (character == Character.None)
+            {
                 return CharacterExtensionCollection.None;
+            }
 
             return _extensions.Get(character.Id.ToString(CultureInfo.InvariantCulture), () => new CharacterExtensionCollection(_extensionReader,character), TimeSpan.FromHours(1));
         }

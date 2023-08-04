@@ -23,7 +23,10 @@ namespace Perpetuum.Units
 
             var n = property as INotifyOptionalPropertyChanged;
             if ( n == null )
+            {
                 return;
+            }
+
             n.PropertyChanged += OnPropertyChanged;
         }
 

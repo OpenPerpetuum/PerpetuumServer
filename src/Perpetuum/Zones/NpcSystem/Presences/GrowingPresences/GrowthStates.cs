@@ -47,7 +47,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
         protected override bool IsValidSpawnPosition(Position position, int range)
         {
             if (!IsLocalRadiusClearForBase(position))
+            {
                 return false;
+            }
 
             return !IsInRange(position, range);
         }
@@ -55,7 +57,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
         {
             var zone = _presence.Zone;
             if (zone == null)
+            {
                 return false;
+            }
 
             int minX = (center.intX - radius).Clamp(0, zone.Size.Width - 1);
             int maxX = (center.intX + radius).Clamp(0, zone.Size.Width - 1);
@@ -69,7 +73,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
                 {
                     var cPos = new Position(i, j);
                     if (!zone.Size.Contains(cPos.intX, cPos.intY))
+                    {
                         continue;
+                    }
 
                     var controlInfo = zone.Terrain.Controls.GetValue(cPos.intX, cPos.intY);
                     if (controlInfo.IsAnyTerraformProtected || !zone.Terrain.Slope.CheckSlope(cPos.intX, cPos.intY, ZoneExtensions.MIN_SLOPE))
@@ -111,14 +117,20 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
         public override void Update(TimeSpan time)
         {
             if (IsRunningTask)
+            {
                 return;
+            }
 
             var members = GetAllMembers();
             if (IsDeadAndExiting(members))
+            {
                 return;
+            }
 
             if (!NextWaveReady(time))
+            {
                 return;
+            }
 
             RunTask(() => SpawnNextWave(), t => { });
         }
@@ -126,7 +138,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
         private bool NextWaveReady(TimeSpan time)
         {
             if (!CheckTimer(time))
+            {
                 return false;
+            }
 
             _currentLevel++;
             return true;
@@ -136,7 +150,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
         {
             _timer.Update(time);
             if (!_timer.Expired)
+            {
                 return false;
+            }
 
             _timer.Reset();
             return true;

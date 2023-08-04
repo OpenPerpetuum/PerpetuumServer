@@ -53,25 +53,35 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals.Generators
         protected bool IsValid(Point location)
         {
             if (!_zone.Size.Contains(location.X, location.Y))
+            {
                 return false;
+            }
 
             var blockingInfo = _zone.Terrain.Blocks.GetValue(location.X, location.Y);
             if (blockingInfo.Island)
+            {
                 return false;
+            }
 
             var controlInfo = _zone.Terrain.Controls.GetValue(location.X, location.Y);
             if (controlInfo.PBSTerraformProtected)
+            {
                 return false;
+            }
 
             if (_zone.Configuration.Terraformable)
             {
                 if (_zone.Terrain.IsBlocked(location.X, location.Y))
+                {
                     return false;
+                }
             }
             else
             {
                 if (!_zone.IsWalkable(location))
+                {
                     return false;
+                }
             }
 
             return true;
@@ -111,10 +121,15 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals.Generators
         private bool IsInRangeOfBaseOrTeleports(Point location, double dist)
         {
             if (_zone.Units.OfType<DockingBase>().WithinRange2D(location.ToPosition(), dist).Any())
+            {
                 return true;
+            }
 
             if (_zone.Units.OfType<Teleport>().WithinRange2D(location.ToPosition(), dist).Any())
+            {
                 return true;
+            }
+
             return false;
         }
 
@@ -143,7 +158,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals.Generators
             while (true)
             {
                 if (!finder.Find(out Position startPosition))
+                {
                     continue;
+                }
 
                 // Check keepout distances for special ore types
                 if (IsKeepOutMaterial(Material))
@@ -155,11 +172,15 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals.Generators
                 }
 
                 if (!IsValid(startPosition))
+                {
                     continue;
+                }
 
                 var n = layer.GetNearestNode(startPosition);
                 if (n == null)
+                {
                     return startPosition;
+                }
 
                 var d = n.Area.Distance(startPosition);
                 if (d < Radius * 2)

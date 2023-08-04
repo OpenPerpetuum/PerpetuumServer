@@ -45,7 +45,9 @@ namespace Perpetuum.RequestHandlers
                 var quantitySum = (int)l;
 
                 if (!EntityDefault.TryGet(record.definition, out EntityDefault ed))
+                {
                     continue;
+                }
 
                 if (!(ed.CategoryFlags.IsCategory(CategoryFlags.cf_robot_equipment) ||
                       ed.CategoryFlags.IsCategory(CategoryFlags.cf_robots) ||

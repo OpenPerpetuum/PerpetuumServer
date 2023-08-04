@@ -23,7 +23,9 @@ namespace Perpetuum.RequestHandlers
 
             var player = _zoneManager.Zones.GetUnits().OfType<Player>().FirstOrDefault(p => p.Character == character);
             if (player == null)
+            {
                 return;
+            }
 
             player.EnableSelfTeleport(duration);
             Message.Builder.FromRequest(request).WithOk().Send();

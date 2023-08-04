@@ -49,7 +49,9 @@ namespace Perpetuum.Zones.PBS
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
        
         public override ErrorCodes IsAttackable
@@ -60,7 +62,9 @@ namespace Perpetuum.Zones.PBS
                 if (err == ErrorCodes.NoError)
                 {
                     if (_reinforceHandler.CurrentState.IsReinforced)
+                    {
                         err = ErrorCodes.TargetIsNonAttackable_Reinforced;
+                    }
                 }
                 return err;
             }

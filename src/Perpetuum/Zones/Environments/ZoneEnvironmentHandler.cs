@@ -79,7 +79,9 @@ namespace Perpetuum.Zones.Environments
 
             var unit = _zone.GetUnit(eid);
             if (unit == null)
+            {
                 return ErrorCodes.ItemNotFound;
+            }
 
             definition = unit.Definition;
 
@@ -110,8 +112,10 @@ namespace Perpetuum.Zones.Environments
                 {
                     //collect blocks data
                     var blockingInfo = _zone.Terrain.Blocks[i, j];
-                    if (blockingInfo.Height <= 0 || (!blockingInfo.Obstacle && !blockingInfo.Decor)) 
+                    if (blockingInfo.Height <= 0 || (!blockingInfo.Obstacle && !blockingInfo.Decor))
+                    {
                         continue;
+                    }
 
                     var sampledPosition = new Position(i - origin.intX, j - origin.intY);
 

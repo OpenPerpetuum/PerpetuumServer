@@ -113,7 +113,9 @@ namespace Perpetuum.Robots.Fitting
                 var activeModule = module as ActiveModule;
                 var ammo = activeModule?.GetAmmo();
                 if (ammo != null)
+                {
                     ammoEntityDefault = ammo.ED;
+                }
 
                 return new ModuleInfo(module.ParentComponent.Type,module.Slot,module.ED,ammoEntityDefault);
             }

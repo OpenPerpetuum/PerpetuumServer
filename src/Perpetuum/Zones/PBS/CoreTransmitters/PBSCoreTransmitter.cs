@@ -20,7 +20,9 @@ namespace Perpetuum.Zones.PBS.CoreTransmitters
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         protected override void PBSActiveObjectAction(IZone zone)

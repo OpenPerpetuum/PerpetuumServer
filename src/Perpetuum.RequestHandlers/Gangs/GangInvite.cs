@@ -23,11 +23,15 @@ namespace Perpetuum.RequestHandlers.Gangs
 
             var currentGang = _gangManager.GetGangByMember(member);
             if (currentGang != null)
+            {
                 throw new PerpetuumException(ErrorCodes.CharacterAlreadyInGang);
+            }
 
             var gang = _gangManager.GetGangByMember(character);
             if (gang == null)
+            {
                 throw new PerpetuumException(ErrorCodes.CharacterNotInGang);
+            }
 
             gang.CanInvite(character).ThrowIfFalse(ErrorCodes.OnlyGangLeaderOrAssistantCanDoThis);
 

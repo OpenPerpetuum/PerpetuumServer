@@ -24,7 +24,9 @@ namespace Perpetuum.Containers
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public ContainerLogger ContainerLogger
@@ -50,7 +52,9 @@ namespace Perpetuum.Containers
         public long TraverseForStructureRootEid()
         {
             if (Parent == 0)
+            {
                 return 0L;
+            }
 
             var record = Db.Query().CommandText("getStructureRoot")
                                  .SetParameter("@eid", Eid)
@@ -60,7 +64,9 @@ namespace Perpetuum.Containers
             var rootDefinition = record.GetValue<int>(1);
 
             if (rootEid == 0L)
+            {
                 return 0L; //safety
+            }
 
             //root found
             return EntityDefault.Get(rootDefinition).CategoryFlags.IsCategory(CategoryFlags.cf_structures) || EntityDefault.Get(rootDefinition).CategoryFlags.IsCategory(CategoryFlags.cf_pbs_docking_base) ? rootEid : 0L;
@@ -70,7 +76,9 @@ namespace Perpetuum.Containers
         protected void AddLogEntry(Character character, ContainerAccess access,int definition = 0,int quantity = 0)
         {
             if (!IsLogging())
+            {
                 return;
+            }
 
             ContainerLogger.AddLogEntry(character,access,definition,quantity);
         }
@@ -83,7 +91,9 @@ namespace Perpetuum.Containers
         public virtual void SetLogging(bool state, Character character, bool writeLog = false)
         {
             if (IsLogging() == state)
+            {
                 return;
+            }
 
             DynamicProperties.Update(k.log,(state) ? 1 : 0);
 
@@ -96,7 +106,9 @@ namespace Perpetuum.Containers
         public override void OnSaveToDb()
         {
             if (_logger != null)
+            {
                 ContainerLogger.SaveToDb();
+            }
 
             base.OnSaveToDb();
         }
@@ -126,21 +138,27 @@ namespace Perpetuum.Containers
 
         public IEnumerable<Item> GetItems(IEnumerable<long> itemEids)
         {
-            if (itemEids == null) 
+            if (itemEids == null)
+            {
                 yield break;
+            }
 
             foreach (var itemEid in itemEids)
             {
                 var item = GetItem(itemEid);
                 if (item != null)
+                {
                     yield return item;
+                }
             }
         }
 
         public IEnumerable<Item> GetItems(bool allItemsInFullTree = false)
         {
             if ( allItemsInFullTree )
+            {
                 return GetFullTree().OfType<Item>();
+            }
 
             return Children.OfType<Item>();
         }
@@ -198,11 +216,15 @@ namespace Perpetuum.Containers
         public Item RemoveItem(Item item, int quantity)
         {
             if (item.Parent != Eid)
+            {
                 return null;
+            }
 
             var resultItem = item;
             if (item.Quantity > quantity)
+            {
                 resultItem = item.Unstack(quantity);
+            }
 
             RemoveChild(resultItem);
             return resultItem;
@@ -237,7 +259,9 @@ namespace Perpetuum.Containers
                 }
 
                 if (resultedQuantity >= requestedQuantity)
+                {
                     break;
+                }
             }
 
             return resultedQuantity;
@@ -248,7 +272,9 @@ namespace Perpetuum.Containers
         {
             var q = RemoveItemByDefinition(definition, requestedQuantity);
             if (q == 0)
+            {
                 return null;
+            }
 
             var resultItem = Factory.CreateWithRandomEID(definition);
             resultItem.Quantity = q;
@@ -282,8 +308,10 @@ namespace Perpetuum.Containers
             }
 
             //corp hangar and folder hierarchy check, other things if needed.
-            if (IsLogSkipped(targetContainer)) 
+            if (IsLogSkipped(targetContainer))
+            {
                 return;
+            }
 
             targetContainer.AddLogEntry(character,ContainerAccess.Add,item.Definition,item.Quantity);
             AddLogEntry(character,ContainerAccess.Remove,item.Definition,item.Quantity);
@@ -343,7 +371,9 @@ namespace Perpetuum.Containers
             for (var i = 0; i < amount; i++)
             {
                 if (sourceItem.Quantity < size)
+                {
                     continue;
+                }
 
                 var unstackedItem = sourceItem.Unstack(size);
 
@@ -352,11 +382,15 @@ namespace Perpetuum.Containers
                 sumQty += size;
             }
 
-            if (sumQty <= 0 || targetContainer.Equals(this)) 
+            if (sumQty <= 0 || targetContainer.Equals(this))
+            {
                 return;
+            }
 
-            if (IsLogSkipped(targetContainer)) 
+            if (IsLogSkipped(targetContainer))
+            {
                 return;
+            }
 
             targetContainer.AddLogEntry(issuer, ContainerAccess.Add, sourceItem.Definition, sumQty);
             AddLogEntry(issuer, ContainerAccess.Remove, sourceItem.Definition, sumQty);
@@ -461,7 +495,9 @@ namespace Perpetuum.Containers
         public bool RemoveItemFromTree(Item item)
         {
             if (RemoveItem(item) != null)
+            {
                 return true;
+            }
 
             foreach (var i in GetItems())
             {
@@ -470,21 +506,29 @@ namespace Perpetuum.Containers
                 if ( container != null && !container.IsRepackaged)
                 {
                     if (container.RemoveItemFromTree(item))
+                    {
                         return true;
+                    }
                 }
 
                 var robot = i as Robot;
 
-                if (robot == null || robot.IsRepackaged) 
+                if (robot == null || robot.IsRepackaged)
+                {
                     continue;
+                }
 
                 var robotInventory = robot.GetContainer();
 
-                if (robotInventory == null) 
+                if (robotInventory == null)
+                {
                     continue;
+                }
 
                 if (robotInventory.RemoveItemFromTree(item))
+                {
                     return true;
+                }
             }
 
             return false;
@@ -501,10 +545,14 @@ namespace Perpetuum.Containers
             {
                 var item = GetItem(targetEid,true);
                 if ( item == null )
+                {
                     continue;
+                }
 
                 if (item.IsDamaged)
+                {
                     yield return item;
+                }
             }
         }
 

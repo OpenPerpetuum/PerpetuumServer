@@ -35,7 +35,9 @@ namespace Perpetuum.RequestHandlers.Zone.PBS
                     catch (PerpetuumException gex)
                     {
                         if (gex.error != ErrorCodes.DockingBaseExistsInNetwork)
+                        {
                             throw;
+                        }
 
                         foreach (var node in targetNode.ConnectionHandler.NetworkNodes.OfType<Unit>())
                         {

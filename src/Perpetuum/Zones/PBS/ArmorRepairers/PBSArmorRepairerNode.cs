@@ -127,10 +127,16 @@ namespace Perpetuum.Zones.PBS.ArmorRepairers
 
                     if (targetUnit != null)
                     {
-                        if (targetUnit.ArmorMax <= 0) continue;
+                        if (targetUnit.ArmorMax <= 0)
+                        {
+                            continue;
+                        }
 
                         //armor full
-                        if (targetUnit.Armor >= targetUnit.ArmorMax) continue;
+                        if (targetUnit.Armor >= targetUnit.ArmorMax)
+                        {
+                            continue;
+                        }
 
                         unitsToRepair.Add(new KeyValuePair<Unit, double>(targetUnit, targetUnit.Armor / targetUnit.ArmorMax));
                     }
@@ -146,7 +152,10 @@ namespace Perpetuum.Zones.PBS.ArmorRepairers
 
                 foreach (var unit in unitsToRepair.OrderBy(p => p.Value).Select(p => p.Key))
                 {
-                    if (armorToSpread <= 0) return; //no more armor to spread
+                    if (armorToSpread <= 0)
+                    {
+                        return; //no more armor to spread
+                    }
 
                     var armorMissing = unit.ArmorMax - unit.Armor;
 

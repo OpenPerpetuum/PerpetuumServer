@@ -41,7 +41,9 @@ namespace Perpetuum.Services.Mail
             };
 
             if (body != null)
+            {
                 result.Add(k.body, body);
+            }
 
             return result;
         }

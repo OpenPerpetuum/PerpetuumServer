@@ -27,14 +27,18 @@ namespace Perpetuum.Services.Sparks
         private UnlockedSpark CreateUnlockedSparkFromRecord(IDataRecord record)
         {
             if (record == null)
+            {
                 return null;
+            }
 
             var sparkId = record.GetValue<int>("sparkid");
             var active = record.GetValue<bool>("active");
             var activationTime = record.GetValue<DateTime?>("activationtime");
 
             if (activationTime.Equals(default(DateTime)))
+            {
                 activationTime = null;
+            }
 
             return new UnlockedSpark(sparkId, active, activationTime);
         }
@@ -111,7 +115,9 @@ namespace Perpetuum.Services.Sparks
         {
             var spark = _sparkRepository.Get(sparkId);
             if (spark == null)
+            {
                 throw new PerpetuumException(ErrorCodes.ItemNotFound);
+            }
 
             if (spark.defaultSpark)
             {

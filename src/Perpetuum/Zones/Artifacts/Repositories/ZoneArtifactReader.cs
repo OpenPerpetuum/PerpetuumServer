@@ -19,7 +19,10 @@ namespace Perpetuum.Zones.Artifacts.Repositories
         public override IEnumerable<Artifact> GetArtifacts()
         {
             var zone = _player.Zone;
-            if (zone == null) return new Artifact[0];
+            if (zone == null)
+            {
+                return new Artifact[0];
+            }
 
             var artifacts = Db.Query().CommandText("select * from artifacts where characterid = @characterId and zoneid = @zoneId")
                 .SetParameter("@characterId", _player.Character.Id)

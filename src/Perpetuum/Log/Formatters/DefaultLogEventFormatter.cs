@@ -67,7 +67,9 @@ namespace Perpetuum.Log.Formatters
             });
 
             if (e.InnerException == null)
+            {
                 return;
+            }
 
             CreateExceptionString(sb, e.InnerException, "Inner");
         }

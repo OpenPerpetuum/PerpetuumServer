@@ -47,7 +47,9 @@ namespace Perpetuum.Items
         public void AddToDictionary(IDictionary<string, object> dictionary)
         {
             if (dictionary == null || !HasValue)
+            {
                 return;
+            }
 
             dictionary["a" + (int)Field] = ToDictionary();
         }
@@ -83,8 +85,11 @@ namespace Perpetuum.Items
                 {
                     _value = 1 / (_value + 1);
                     if (_value < 0.1)
-                        _value = 0.1;
-                    break;
+                        {
+                            _value = 0.1;
+                        }
+
+                        break;
                 }
             }
         }
@@ -108,7 +113,9 @@ namespace Perpetuum.Items
         public void Multiply(double mul)
         {
             if (mul > 0)
+            {
                 _value *= mul;
+            }
         }
 
         public void Modify(ref ItemPropertyModifier targetModifier)
@@ -129,7 +136,9 @@ namespace Perpetuum.Items
         public static ItemPropertyModifier Modify(ItemPropertyModifier source, ItemPropertyModifier target)
         {
             if (!source.HasValue)
+            {
                 return target;
+            }
 
             var v = target.Value;
             Modify(source, ref v);
@@ -139,7 +148,9 @@ namespace Perpetuum.Items
         public static void Modify(ItemPropertyModifier source, ref double targetValue)
         {
             if (!source.HasValue)
+            {
                 return;
+            }
 
             switch (source._formula)
             {

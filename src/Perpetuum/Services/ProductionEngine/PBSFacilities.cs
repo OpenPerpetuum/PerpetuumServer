@@ -92,13 +92,19 @@ namespace Perpetuum.Services.ProductionEngine
                 var definition = record.GetValue<int>(0);
 
                 if (!EntityDefault.TryGet(definition, out EntityDefault ed))
+                {
                     continue;
+                }
 
                 if (!ed.CategoryFlags.IsCategory(CategoryFlags.cf_pbs_production_nodes))
+                {
                     continue;
+                }
 
                 if (!ProductionHelper.PBSNodeCFTofacilityType.TryGetValue(ed.CategoryFlags, out ProductionFacilityType productionFacilityType))
+                {
                     continue;
+                }
 
                 if (_facility.FacilityType == productionFacilityType)
                 {
@@ -466,7 +472,9 @@ namespace Perpetuum.Services.ProductionEngine
 
             var researchKit = (ResearchKit) publicContainer.GetItem(target,true);
             if (researchKit == null)
+            {
                 return ErrorCodes.ItemNotFound;
+            }
 
             var definition = researchKit.Definition;
             searchDefinition = definition;

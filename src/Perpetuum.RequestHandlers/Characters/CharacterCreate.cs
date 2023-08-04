@@ -57,14 +57,18 @@ namespace Perpetuum.RequestHandlers.Characters
 
                 var account = _accountManager.Repository.Get(request.Session.AccountId);
                 if (account == null)
+                {
                     throw new PerpetuumException(ErrorCodes.AccountNotFound);
+                }
 
                 Character.CheckNickAndThrowIfFailed(nick, request.Session.AccessLevel, account);
 
                 //only 3 characters per account is allowed
                 var activeCharactersCount = _accountManager.GetActiveCharactersCount(account);
                 if (activeCharactersCount >= 3)
+                {
                     throw new PerpetuumException(ErrorCodes.MaximumAmountOfCharactersReached);
+                }
 
                 if (account.FirstCharacterDate == null)
                 {
@@ -85,7 +89,9 @@ namespace Perpetuum.RequestHandlers.Characters
                 if (schoolID > 0)
                 {
                     if (majorID == 0 || raceID == 0 || sparkID == 0)
+                    {
                         throw new PerpetuumException(ErrorCodes.WTFErrorMedicalAttentionSuggested);
+                    }
 
                     corporation = DefaultCorporation.GetBySchool(raceID,schoolID) ?? throw new PerpetuumException(ErrorCodes.CorporationNotExists);
                     dockingBase = corporation.GetDockingBase();

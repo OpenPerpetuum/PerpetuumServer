@@ -21,7 +21,9 @@ namespace Perpetuum
         public void CheckArguments(Dictionary<string, object> data)
         {
             if  (Arguments == null)
+            {
                 return;
+            }
 
             foreach (var argument in Arguments)
             {

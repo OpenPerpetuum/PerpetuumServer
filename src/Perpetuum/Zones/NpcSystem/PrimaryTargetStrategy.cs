@@ -34,7 +34,10 @@ namespace Perpetuum.Zones.NpcSystem
         {
             var strat = GetStrategy(strategyType);
             if (strat == null)
+            {
                 return false;
+            }
+
             return strat(npc, locks);
         }
 
@@ -63,7 +66,11 @@ namespace Perpetuum.Zones.NpcSystem
 
         private static bool TrySetPrimaryLock(Npc npc, Lock l)
         {
-            if (l == null) return false;
+            if (l == null)
+            {
+                return false;
+            }
+
             npc.SetPrimaryLock(l);
             return true;
         }

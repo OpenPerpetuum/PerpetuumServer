@@ -18,7 +18,9 @@ namespace Perpetuum.RequestHandlers.Corporations
 
                 var vote = corporation.GetVote(voteId);
                 if (vote == null)
+                {
                     throw new PerpetuumException(ErrorCodes.ItemNotFound);
+                }
 
                 corporation.CastVote(vote, character, voteChoice);
 

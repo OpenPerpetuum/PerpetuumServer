@@ -29,7 +29,9 @@ namespace Perpetuum.RequestHandlers.Production
                 var rounds = request.Data.GetOrDefault<int>(k.rounds);
 
                 if (rounds < 0)
+                {
                     rounds = 1;
+                }
 
                 _productionManager.PrepareProductionForPublicContainer(facilityEid, character, out Mill mill, out PublicContainer sourceContainer);
 

@@ -126,11 +126,15 @@ namespace Perpetuum.Zones.Terrains.Terraforming.Operations
             {
                 var controlInfo = zone.Terrain.Controls.GetValue(x, y);
                 if (controlInfo.IsAnyTerraformProtected)
+                {
                     return;
+                }
 
                 var blockingInfo = zone.Terrain.Blocks.GetValue(x, y);
                 if (blockingInfo.NonNaturally)
+                {
                     return;
+                }
 
                 var plantInfo = zone.Terrain.Plants.GetValue(x, y);
                 if (plantInfo.type != PlantType.NotDefined)

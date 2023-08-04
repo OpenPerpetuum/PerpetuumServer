@@ -31,7 +31,11 @@ namespace Perpetuum
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
             return obj is IntRange && Equals((IntRange) obj);
         }
 

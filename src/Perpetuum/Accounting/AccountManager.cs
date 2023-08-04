@@ -86,7 +86,9 @@ namespace Perpetuum.Accounting
         private int GetLockedEpByCharacters(Account account,IList<Character> characters)
         {
             if (characters.Count <= 0)
+            {
                 return 0;
+            }
 
             var lockedEp = Db.Query().CommandText($"SELECT COALESCE(SUM(points),0) FROM dbo.accountextensionspent WHERE characterid IN ( {characters.Select(c => c.Id).ArrayToString()} ) AND accountid=@accountID")
                 .SetParameter("@accountID",account.Id)
@@ -99,7 +101,9 @@ namespace Perpetuum.Accounting
         {
             var deletedCharacters = GetDeletedCharacters(account);
             if (deletedCharacters.Length <= 0)
+            {
                 return 0;
+            }
 
             var lockedEp = GetLockedEpByCharacters(account,deletedCharacters);
             return lockedEp;
@@ -149,7 +153,9 @@ namespace Perpetuum.Accounting
         private static double GetExperienceBoostingFactor(int collectedEpSum, double epLevelThreshold)
         {
             if (collectedEpSum < GAURANTEED_BOOST_MAX_THRESH)
+            {
                 return 1.0;
+            }
 
             var linearRatio = collectedEpSum / epLevelThreshold;
             var result = 1.0 - linearRatio;
@@ -244,7 +250,9 @@ namespace Perpetuum.Accounting
             var pointsToDelete = amount;
 
             if (deletedCharacters.Count <= 0)
+            {
                 return;
+            }
 
             var entries = Db.Query().CommandText($"select id,points from accountextensionspent where accountid=@accountID and characterid in ({deletedCharacters.ArrayToString()})")
                 .SetParameter("@accountID",account.Id)
@@ -384,9 +392,11 @@ namespace Perpetuum.Accounting
 				.Execute();
 
 			if (!dataRecord.Any())
-				return 0;
+            {
+                return 0;
+            }
 
-			var record = dataRecord.SingleOrDefault();
+            var record = dataRecord.SingleOrDefault();
 			int ord = record.GetOrdinal("multiplierBonus");
 			
 			return record.GetInt32(ord);
@@ -395,7 +405,9 @@ namespace Perpetuum.Accounting
         public int AddExtensionPointsBoostAndLog(Account account, Character character, EpForActivityType activityType, int points)
         {
             if (points <= 0)
+            {
                 return 0;
+            }
 
             var bonusIncrease = GetEpBonusFromEvent();
 			var itemIncrease = GetEpBonusFromSubscription(account);
@@ -415,7 +427,9 @@ namespace Perpetuum.Accounting
         public void AddExtensionPoints(Account account,int pointsToInject)
         {
             if (pointsToInject <= 0)
+            {
                 return;
+            }
 
             InjectExtensionPoints(account,pointsToInject);
 
@@ -444,7 +458,10 @@ namespace Perpetuum.Accounting
             var dailyPointsSum = GetExtensionPointsCollected(account);
             var realEpGain = AddExtensionPointWithBoosting(points, dailyPointsSum, SERVER_DESIRED_EP_LEVEL, bonusIncrease, itemIncrease);
             if (account.IsDailyEpBoosted)
+            {
                 realEpGain *= 2;
+            }
+
             return realEpGain;
         }
 

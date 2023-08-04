@@ -43,7 +43,9 @@ namespace Perpetuum.Modules
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         [CanBeNull]
@@ -74,7 +76,9 @@ namespace Perpetuum.Modules
         public virtual void Unequip(Container container)
         {
             if (!IsRepackaged)
+            {
                 this.Pack();
+            }
 
             container.AddItem(this, true);
             Slot = 0;

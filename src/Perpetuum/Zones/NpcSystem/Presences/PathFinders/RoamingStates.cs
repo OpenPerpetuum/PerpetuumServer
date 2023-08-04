@@ -101,7 +101,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
         public void Update(TimeSpan time)
         {
             if (IsRunningTask)
+            {
                 return;
+            }
 
             if (_spawned)
             {
@@ -110,7 +112,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
             }
 
             if (CheckElapsed(time))
+            {
                 return;
+            }
 
             RunTask(() => SpawnFlocks(), t => _spawned = true);
         }
@@ -217,14 +221,20 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
         public override void Update(TimeSpan time)
         {
             if (IsRunningTask)
+            {
                 return;
+            }
 
             var members = GetAllMembers();
             if (IsDeadAndExiting(members))
+            {
                 return;
+            }
 
             if (IsAllNotIdle(members))
+            {
                 return;
+            }
 
             RunTask(() => FindNextRoamingPosition(), t => { });
         }

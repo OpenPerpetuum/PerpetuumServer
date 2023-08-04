@@ -47,7 +47,9 @@ namespace Perpetuum.Accounting.Characters
                 .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return null;
+            }
 
             return CreateCharacterProfileFromRecord(record);
         }

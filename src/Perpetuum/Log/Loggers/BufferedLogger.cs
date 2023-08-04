@@ -56,7 +56,9 @@ namespace Perpetuum.Log.Loggers
         private void OnFlushing()
         {
             if ( Interlocked.CompareExchange(ref _flushing,1,0) == 1)
+            {
                 return;
+            }
 
             var logEvents = _logEvents.TakeAll().ToArray();
 

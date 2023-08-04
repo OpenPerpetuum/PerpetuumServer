@@ -19,7 +19,9 @@ namespace Perpetuum.RequestHandlers
                 var targetContainerEid = request.Data.GetOrDefault<long>(k.targetContainer);
 
                 if (sourceContainerEid == targetContainerEid)
+                {
                     return;
+                }
 
                 Container.GetContainersWithItems(character, sourceContainerEid, targetContainerEid, out Container sourceContainer, out Container targetContainer);
 
@@ -45,7 +47,9 @@ namespace Perpetuum.RequestHandlers
                         targetList[k.items] = new Dictionary<string, object>();
                     }
                     else
+                    {
                         throw;
+                    }
                 }
 
                 var result = new Dictionary<string, object>

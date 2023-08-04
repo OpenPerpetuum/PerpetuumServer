@@ -24,13 +24,17 @@ namespace Perpetuum.Log.Loggers
         protected override void Flush(T[] logEvents)
         {
             if ( logEvents.Length == 0 )
+            {
                 return;
+            }
 
             var path = _pathFactory();
             
             var directoryPath = Path.GetDirectoryName(path);
             if (directoryPath == null)
+            {
                 return;
+            }
 
             _fileSystem.CreateDirectory(directoryPath);
 

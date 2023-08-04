@@ -87,7 +87,9 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
                 .ExecuteScalar<int>().ThrowIfEqual(0, ErrorCodes.SQLInsertError);
 
             if (item is FlockConfiguration fc)
+            {
                 fc.ID = id;
+            }
         }
 
         public void Update(IFlockConfiguration item)
@@ -124,7 +126,9 @@ namespace Perpetuum.Zones.NpcSystem.Flocks
                     .SetParameter("@note", item.Note)
                     .ExecuteNonQuery();
             if ( res == 0 )
+            {
                 throw new PerpetuumException(ErrorCodes.SQLUpdateError);
+            }
         }
 
         public void Delete(IFlockConfiguration item)

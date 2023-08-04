@@ -37,13 +37,19 @@ namespace Perpetuum.Zones
             {
                 if (zone.Terrain.Blocks[x, y].Island)
                 {
-                    if (skipIsland) return; //island pixels will be black
+                    if (skipIsland)
+                    {
+                        return; //island pixels will be black
+                    }
+
                     bmp.SetPixel(x,y,islandTileColor); //OR optionally the supported color
                     return;
                 }
                     
                 if (!zone.Terrain.IsPassable(x,y))
+                {
                     return;
+                }
 
                 bmp.SetPixel(x, y, passableTileColor);
             });

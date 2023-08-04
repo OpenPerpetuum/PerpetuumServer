@@ -57,7 +57,10 @@ namespace Perpetuum
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
+            {
                 return false;
+            }
+
             return obj is DateTimeRange && Equals((DateTimeRange) obj);
         }
 

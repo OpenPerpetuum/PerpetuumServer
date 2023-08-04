@@ -20,7 +20,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences.GrowingPresences
         {
             Selector = selector;
             if (Configuration.GrowthSeconds != null)
+            {
                 GrowTime = TimeSpan.FromSeconds((int)Configuration.GrowthSeconds);
+            }
         }
 
         protected override void InitStateMachine()

@@ -22,7 +22,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
         public virtual void Update(TimeSpan time)
         {
             if (_actions.Count <= 0)
+            {
                 return;
+            }
 
             ProcessLayerActions();
         }
@@ -45,7 +47,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals
                 lock (_actions)
                 {
                     if (_actions.Count == 0)
+                    {
                         return;
+                    }
 
                     action = _actions.Dequeue();
                 }

@@ -99,7 +99,9 @@ namespace Perpetuum.Zones.PBS.DockingBases
         protected override void OnUpdate(TimeSpan time)
         {
             if (_firstUpdate)
+            {
                 OnFirst();
+            }
 
             _despawnHelper?.Update(time, this);
 
@@ -131,7 +133,9 @@ namespace Perpetuum.Zones.PBS.DockingBases
         {
             var corp = Corporation.Get(Owner);
             if (corp == null)
+            {
                 return new Character[] { };
+            }
 
             return corp.GetMembersWithAnyRoles(CorporationRole.DeputyCEO,
                 CorporationRole.CEO,

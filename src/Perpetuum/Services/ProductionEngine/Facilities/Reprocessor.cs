@@ -75,10 +75,14 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
             {
                 var targetItem = container.GetItem(targetEid, true);
                 if (targetItem == null)
+                {
                     continue;
+                }
 
                 if ((ec = ProductionHelper.CheckReprocessCondition(targetItem, character)) != ErrorCodes.NoError)
+                {
                     continue;
+                }
 
                 reprocessSession.AddMember(targetItem, materialMultiplier, character);
             }

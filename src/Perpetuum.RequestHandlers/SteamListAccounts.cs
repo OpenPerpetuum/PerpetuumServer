@@ -25,7 +25,9 @@ namespace Perpetuum.RequestHandlers
                 var encryptedTicket = request.Data.GetOrDefault<byte[]>("encData");
                 var steamId = _steamManager.GetSteamId(encryptedTicket);
                 if (string.IsNullOrEmpty(steamId))
+                {
                     throw new PerpetuumException(ErrorCodes.SteamDecodingError);
+                }
 
                 var accounts = _accountRepository.GetBySteamId(steamId).ToList();
                 if (accounts.Count <= 0)

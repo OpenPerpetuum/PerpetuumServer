@@ -142,17 +142,25 @@ namespace Perpetuum.Zones.Decors
 
             DecorDescription decorDescription;
             if (!_decors.TryGetValue(decorId, out decorDescription))
+            {
                 return ErrorCodes.ItemNotFound;
+            }
 
             var turns = decorDescription.FindQuaternionRotation();
             if (turns == -1)
+            {
                 return ErrorCodes.DecorIsNot90DegreeRotated;
+            }
 
             if (decorDescription.scale != 1.0)
+            {
                 return ErrorCodes.DecorScaled;
+            }
 
             if ((ec = _zone.Environment.CollectEnvironmentFromPosition(decorDescription.GetServerPosition(), range, turns, out environmentDescription)) != ErrorCodes.NoError)
+            {
                 return ec;
+            }
 
             if (environmentDescription.blocksTiles == null || environmentDescription.blocksTiles.Count == 0)
             {
@@ -168,12 +176,16 @@ namespace Perpetuum.Zones.Decors
         {
             DecorDescription decorDescription;
             if (!_decors.TryGetValue(decorId, out decorDescription))
+            {
                 return ErrorCodes.ItemNotFound;
+            }
 
             var environmentDescription = EntityEnvironment.LoadEnvironmentSql(decorDescription.definition);
 
             if (environmentDescription.Equals(default(EntityEnvironmentDescription)))
+            {
                 return ErrorCodes.DefinitionHasNoEnvironment;
+            }
 
             ErrorCodes ec;
             var newTurns = -1;

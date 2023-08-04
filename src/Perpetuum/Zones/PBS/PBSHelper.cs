@@ -399,10 +399,14 @@ namespace Perpetuum.Zones.PBS
             if (unit.TryGetConstructionRadius(out constructionRadius))
             {
                 if (drawTerrainProtection)
+                {
                     LayerHelper.SetTerrafomProtectionCircle(zone, position, constructionRadius, true);
+                }
 
                 if (pushPlayers)
+                {
                     PushPlayersFromPosition(zone, position, constructionRadius);
+                }
             }
 
             //node only
@@ -446,7 +450,10 @@ namespace Perpetuum.Zones.PBS
                 {
                     for (var i = position.intX - farRange; i <= position.intX + farRange; i++)
                     {
-                        if (i < 0 || i >= zone.Size.Width || j < 0 || j >= zone.Size.Height) continue;
+                        if (i < 0 || i >= zone.Size.Width || j < 0 || j >= zone.Size.Height)
+                        {
+                            continue;
+                        }
 
                         if (position.IsInRangeOf2D(i, j, blockingRadius))
                         {
@@ -494,7 +501,10 @@ namespace Perpetuum.Zones.PBS
                 {
                     for (var i = position.intX - processRadius; i <= position.intX + processRadius; i++)
                     {
-                        if (i < 0 || i >= zone.Size.Width || j < 0 || j >= zone.Size.Height) continue;
+                        if (i < 0 || i >= zone.Size.Width || j < 0 || j >= zone.Size.Height)
+                        {
+                            continue;
+                        }
 
                         if (position.IsInRangeOf2D(i, j, processRadius))
                         {
@@ -514,17 +524,26 @@ namespace Perpetuum.Zones.PBS
                                 var bias = minDistance.LimitWithFalloff(pbsRangeNear, pbsRangeLenght);
 
 
-                                if (bias <= 0.0) continue;
+                                if (bias <= 0.0)
+                                {
+                                    continue;
+                                }
 
                                 var r = FastRandom.NextDouble();
 
-                                if (r < bias) continue;
+                                if (r < bias)
+                                {
+                                    continue;
+                                }
 
                                 //bias 0 -> eredeti terep       1 ->  terraformalt, pillanatnyi terep
                                 originalAltitude = originalAltitude.Mix(currentAltitude, bias);
                             }
 
-                            if (originalAltitude == currentAltitude) continue;
+                            if (originalAltitude == currentAltitude)
+                            {
+                                continue;
+                            }
 
                             //csak siman kozelitunk az eredeti terep fele
 
@@ -573,7 +592,9 @@ namespace Perpetuum.Zones.PBS
             for (var i = 0; i < pbsPositions.Count; i++)
             {
                 if (pbsPositions[i].IsInRangeOf2D(x, y, range))
+                {
                     return true;
+                }
             }
 
             return false;
@@ -630,7 +651,9 @@ namespace Perpetuum.Zones.PBS
         public static IEnumerable<PBSConnection> LoadConnectionsFromSql(IZone zone, long eid)
         {
             if (zone == null)
+            {
                 yield break;
+            }
 
             var records =
                 Db.Query().CommandText("select sourceeid,targeteid,weight,id from pbsconnections where sourceeid=@eid or targeteid=@eid")
@@ -659,7 +682,9 @@ namespace Perpetuum.Zones.PBS
                 {
                     var pbsTargetNode = targetUnit as IPBSObject;
                     if (pbsTargetNode == null)
+                    {
                         continue;
+                    }
 
                     var sourceUnit = zone.GetUnit(getFromZoneSourceEid);
                     if (sourceUnit != null)
@@ -932,7 +957,9 @@ namespace Perpetuum.Zones.PBS
         {
             Logger.DebugInfo("async hand dead started");
             if (pbsDockingBase == null)
+            {
                 return;
+            }
 
             Logger.DebugInfo("valid async target");
             Db.CreateTransactionAsync(scope =>
@@ -1034,11 +1061,15 @@ namespace Perpetuum.Zones.PBS
             foreach (var entity in thisBase.GetFullTree())
             {
                 if (!entity.ED.Purchasable)
+                {
                     continue;
+                }
 
                 //safety
                 if (entity.Quantity <= 0)
+                {
                     continue;
+                }
 
                 var builder = LootItemBuilder.Create(entity.Definition);
 
@@ -1106,7 +1137,9 @@ namespace Perpetuum.Zones.PBS
             foreach (var entity in thisBase.GetFullTree())
             {
                 if (!entity.ED.Purchasable)
+                {
                     continue;
+                }
 
                 var builder = LootItemBuilder.Create(entity.Definition);
 
@@ -1119,7 +1152,9 @@ namespace Perpetuum.Zones.PBS
                 {
                     var quantity = FastRandom.NextInt(0, entity.Quantity);
                     if (quantity == 0)
+                    {
                         continue;
+                    }
 
                     builder.SetQuantity(quantity);
                 }
@@ -1131,7 +1166,9 @@ namespace Perpetuum.Zones.PBS
                     {
                         //50% hogy nem esik
                         if (FastRandom.NextDouble() < 0.5)
+                        {
                             continue;
+                        }
 
                         //nincs becsomagolva
                         builder.SetQuantity(1);
@@ -1141,7 +1178,9 @@ namespace Perpetuum.Zones.PBS
                         //be van csomagolva
                         var quantity = FastRandom.NextInt(0, entity.Quantity);
                         if (quantity == 0)
+                        {
                             continue;
+                        }
 
                         builder.SetQuantity(quantity);
                     }
@@ -1156,7 +1195,9 @@ namespace Perpetuum.Zones.PBS
 
                         var quantity = FastRandom.NextInt(0, entity.Quantity);
                         if (quantity == 0)
+                        {
                             continue;
+                        }
 
                         builder.SetQuantity(quantity).AsRepackaged();
                     }
@@ -1177,7 +1218,9 @@ namespace Perpetuum.Zones.PBS
                 }
 
                 if (LootHelper.Roll(0.8))
+                {
                     lootList.Add(builder.Build());
+                }
             }
 
             return lootList;
@@ -1195,11 +1238,15 @@ namespace Perpetuum.Zones.PBS
             foreach (var productionComponent in productionComponents)
             {
                 if (!productionComponent.IsMaterial)
+                {
                     continue;
+                }
 
                 var amount = (int) (productionComponent.Amount*FastRandom.NextDouble(0.3, 0.7));
                 if (amount <= 0)
+                {
                     continue;
+                }
 
                 var lootItem = LootItemBuilder.Create(productionComponent.EntityDefault.Definition).SetQuantity(amount).Build();
                 lootItems.Add(lootItem);
@@ -1279,7 +1326,9 @@ namespace Perpetuum.Zones.PBS
             var sourceDict = eventSource.ToDictionary();
 
             if (data == null)
+            {
                 data = new Dictionary<string, object>();
+            }
 #if DEBUG
             data.Add(k.reason, pbsEventType.ToString()); //ez csak debug !!! hogy olvashato legyen
 #endif
@@ -1300,7 +1349,9 @@ namespace Perpetuum.Zones.PBS
             foreach (var pbsConnection in inConnections)
             {
                 if (!(pbsConnection.TargetPbsObject is PBSFacilityUpgradeNode node))
+                {
                     continue;
+                }
                 //igen upgrade node
 
                 if (node.IsContributing())
@@ -1368,12 +1419,18 @@ namespace Perpetuum.Zones.PBS
             {
                 for (var i = area.X1; i <= area.X2; i++)
                 {
-                    if (i < 0 || i >= width || j < 0 || j >= height) continue;
+                    if (i < 0 || i >= width || j < 0 || j >= height)
+                    {
+                        continue;
+                    }
 
                     //keep the circle shape if the radius
                     if (radius > 1)
                     {
-                        if (!origin.IsWithinOrEqualRange(i + 0.5, j + 0.5, radius)) continue;
+                        if (!origin.IsWithinOrEqualRange(i + 0.5, j + 0.5, radius))
+                        {
+                            continue;
+                        }
                     }
 
                     if (!conditionTest(i,j))
@@ -1527,11 +1584,15 @@ killercharacterid
             {
                 var item = container.GetItem(eid);
                 if (item == null)
+                {
                     continue;
+                }
 
                 var coreValue = item.ED.Config.CoreCalories;
                 if (coreValue <= 0.0)
+                {
                     continue;
+                }
 
                 var bufferSpace = pbsObject.CoreMax - pbsObject.Core;
 
@@ -1540,7 +1601,9 @@ killercharacterid
                 var takenQuantity = Math.Min(item.Quantity, quantityLeft);
 
                 if (takenQuantity <= 0)
+                {
                     continue;
+                }
 
                 if (takenQuantity == item.Quantity)
                 {
@@ -1568,7 +1631,9 @@ killercharacterid
             container.Save();
 
             if (finalCore <= 0.0)
+            {
                 return;
+            }
 
             pbsObject.Core += finalCore;
 
@@ -1621,7 +1686,9 @@ killercharacterid
                         else if (u is PBSDockingBase || u is PBSControlTower)
                         {
                             if (u.Owner == corporationEid)
+                            {
                                 return true;
+                            }
                         }
 
                         return false;

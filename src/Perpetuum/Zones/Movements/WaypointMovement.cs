@@ -37,8 +37,10 @@ namespace Perpetuum.Zones.Movements
         public override void Update(Unit unit, TimeSpan elapsed)
         {
             if ( Arrived )
+            {
                 return;
-            
+            }
+
             var d = (float) (unit.Speed * elapsed.TotalSeconds);
             var v = Vector2.Multiply(_velocity,d);
 

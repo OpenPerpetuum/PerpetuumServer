@@ -26,7 +26,9 @@ namespace Perpetuum
         public static ICollection<T> AddMany<T>(this ICollection<T> collection, IEnumerable<T> items)
         {
             if (items == null)
+            {
                 return collection;
+            }
 
             foreach (var item in items)
             {

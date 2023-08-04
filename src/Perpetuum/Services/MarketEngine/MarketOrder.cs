@@ -112,7 +112,9 @@ namespace Perpetuum.Services.MarketEngine
         {
             //skip vendor items - this protects the vendor orders in every call
             if (isVendorItem)
+            {
                 return null;
+            }
 
             Item canceledItem = null;
 
@@ -134,7 +136,9 @@ namespace Perpetuum.Services.MarketEngine
         private Item ReturnMarketItem()
         {
             if (itemEid == null)
+            {
                 return null;
+            }
 
             Logger.Info("returning market item " + this);
 

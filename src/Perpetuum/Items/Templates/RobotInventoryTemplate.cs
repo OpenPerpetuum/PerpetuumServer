@@ -32,7 +32,9 @@ namespace Perpetuum.Items.Templates
         protected override bool OnValidate(RobotInventory robotInventory)
         {
             if (!_itemTemplates.All(i => i.Validate()))
+            {
                 return false;
+            }
 
             return base.OnValidate(robotInventory);
         }

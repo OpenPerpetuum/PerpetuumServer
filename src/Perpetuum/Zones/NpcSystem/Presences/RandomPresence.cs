@@ -43,7 +43,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
             ImmutableInterlocked.Update(ref _nextRandomFlocks, f =>
             {
                 if (f.Count >= Configuration.MaxRandomFlock)
+                {
                     return f;
+                }
 
                 var randomFlockSpawner = new RandomFlockSpawner(this, _randomFlockSelector);
                 return f.Add(randomFlockSpawner);
@@ -85,7 +87,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
                 _spawnTimer.Update(time);
 
                 if (!_spawnTimer.Expired)
+                {
                     return false;
+                }
 
                 _presence.SpawnRandomFlock(_randomFlockConfiguration);
                 return true;

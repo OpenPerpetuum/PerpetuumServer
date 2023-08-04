@@ -41,7 +41,9 @@ namespace Perpetuum.Zones.Effects
                 {
                     // ha van radius akkor megnezzuk,h benne van-e
                     if (Radius <= 0.0)
+                    {
                         return;
+                    }
 
                     var isInRadius = Owner.IsInRangeOf3D(Source, Radius);
                     if (!isInRadius)
@@ -66,15 +68,21 @@ namespace Perpetuum.Zones.Effects
             foreach (var unit in units)
             {
                 if (unit == Owner)
+                {
                     continue;
+                }
 
                 if ( unit.EffectHandler.ContainsToken(Token) )
+                {
                     continue;
+                }
 
                 if (Radius > 0.0)
                 {
                     if ( !unit.IsInRangeOf3D(Source.CurrentPosition,Radius) )
+                    {
                         continue;
+                    }
                 }
 
                 var effectBuilder = unit.NewEffectBuilder();

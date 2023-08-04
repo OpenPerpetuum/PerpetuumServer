@@ -29,12 +29,17 @@ namespace Perpetuum.Modules
 
         protected void OnGathererMaterial(IZone zone, Player player, int materialType)
         {
-            if (zone.Configuration.Type == ZoneType.Training) return;
+            if (zone.Configuration.Type == ZoneType.Training)
+            {
+                return;
+            }
 
             var ep = CalculateEp(materialType);
 
             if (zone.Configuration.IsBeta)
+            {
                 ep *= 2;
+            }
 
             player.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Gathering, ep);
         }
@@ -57,7 +62,9 @@ namespace Perpetuum.Modules
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override void UpdateProperty(AggregateField field)
@@ -81,7 +88,9 @@ namespace Perpetuum.Modules
         {
             var activeGathererModules = ParentRobot.ActiveModules.OfType<HarvesterModule>().Where(m => m.State.Type != ModuleStateType.Idle).ToArray();
             if (activeGathererModules.Length == 0)
+            {
                 return 0;
+            }
 
             var avgCycleTime = activeGathererModules.Select(m => m.CycleTime).Average();
 
@@ -92,7 +101,9 @@ namespace Perpetuum.Modules
 
             var rand = FastRandom.NextDouble();
             if (rand <= chance)
+            {
                 return 1;
+            }
 
             return 0;
         }
@@ -101,7 +112,9 @@ namespace Perpetuum.Modules
         {
             var zone = Zone;
             if (zone == null)
+            {
                 return;
+            }
 
             DoHarvesting(zone);
             ConsumeAmmo();
@@ -165,7 +178,9 @@ namespace Perpetuum.Modules
             protected override double CalculateValue()
             {
                 if (module.ParentRobot == null)
+                {
                     return 1.0;
+                }
 
                 var p = module.ParentRobot.GetPropertyModifier(AggregateField.harvesting_amount_modifier);
                 ApplyEffectModifiers(ref p);

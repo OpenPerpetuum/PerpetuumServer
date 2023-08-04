@@ -58,7 +58,9 @@ namespace Perpetuum
         {
             var dictionary = _data as IDictionary<string, object>;
             if (dictionary == null)
+            {
                 _data = dictionary = new Dictionary<string, object>();
+            }
 
             dictionary[key] = value;
             return this;
@@ -101,7 +103,9 @@ namespace Perpetuum
         public MessageBuilder WithException(Exception ex)
         {
             if (ex is PerpetuumException gex)
+            {
                 return WithError(gex.error).SetData(k.extra,gex.Data.ToDictionary());
+            }
 
             return WithError(ErrorCodes.ServerError);
         }
@@ -134,14 +138,20 @@ namespace Perpetuum
                 var isNullOrEmpty = _data == null || (_data as IEnumerable).IsNullOrEmpty();
 
                 if (isNullOrEmpty)
+                {
                     return _emptyDictionary;
+                }
             }
 
             if (_wrapToResult)
+            {
                 return new Dictionary<string, object> { { k.result, _data } };
+            }
 
             if (_data is Dictionary<string, object> dictionary)
+            {
                 return dictionary;
+            }
 
             if (_data is IEnumerable<KeyValuePair<string, object>> kvp)
             {

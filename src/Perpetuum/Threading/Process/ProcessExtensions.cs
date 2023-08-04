@@ -32,7 +32,9 @@ namespace Perpetuum.Threading.Process
             while (true)
             {
                 if (process is T t)
+                {
                     return t;
+                }
 
                 if (process is ProcessDecorator decorator)
                 {

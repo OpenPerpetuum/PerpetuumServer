@@ -12,7 +12,9 @@ namespace Perpetuum.RequestHandlers.Characters
             {
                 var amount = request.Data.GetOrDefault<long>(k.amount);
                 if (amount <= 0)
+                {
                     return;
+                }
 
                 var source = request.Session.Character;
                 var target = Character.Get(request.Data.GetOrDefault<int>(k.target)).ThrowIfEqual(null, ErrorCodes.CharacterNotFound);

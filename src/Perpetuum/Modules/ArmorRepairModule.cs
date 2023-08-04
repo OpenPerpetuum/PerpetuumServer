@@ -36,8 +36,10 @@ namespace Perpetuum.Modules
 
         protected void OnRepair(Unit target, double amount)
         {
-            if (amount <= 0.0) 
+            if (amount <= 0.0)
+            {
                 return;
+            }
 
             var armor = target.Armor;
             target.Armor += amount;
@@ -59,7 +61,9 @@ namespace Perpetuum.Modules
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         protected override void OnAction()

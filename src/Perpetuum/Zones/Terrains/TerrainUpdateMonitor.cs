@@ -103,7 +103,9 @@ namespace Perpetuum.Zones.Terrains
         {
             var n = layer as INotifyLayerUpdated;
             if (n == null)
+            {
                 return;
+            }
 
             n.Updated += OnLayerUpdated;
             n.AreaUpdated += OnLayerAreaUpdated;
@@ -113,7 +115,9 @@ namespace Perpetuum.Zones.Terrains
         {
             var n = layer as INotifyLayerUpdated;
             if (n == null)
+            {
                 return;
+            }
 
             n.Updated -= OnLayerUpdated;
             n.AreaUpdated -= OnLayerAreaUpdated;
@@ -142,7 +146,9 @@ namespace Perpetuum.Zones.Terrains
         private void Notify()
         {
             if ( _infos.Count == 0 )
+            {
                 return;
+            }
 
             foreach (var player in _zone.Players)
             {
@@ -152,7 +158,9 @@ namespace Perpetuum.Zones.Terrains
             foreach (var info in _infos)
             {
                 if (info.Type != LayerType.Altitude)
+                {
                     continue;
+                }
 
                 switch (info)
                 {

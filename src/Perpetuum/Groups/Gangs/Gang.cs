@@ -59,9 +59,11 @@ namespace Perpetuum.Groups.Gangs
 		public bool CanKick(Character member)
 		{
 			if (member == Leader)
-				return true;
+            {
+                return true;
+            }
 
-			return HasRole(member, GangRole.Assistant);
+            return HasRole(member, GangRole.Assistant);
 		}
 
 		public bool CanInvite(Character member)
@@ -77,10 +79,14 @@ namespace Perpetuum.Groups.Gangs
 	    public bool HasRole(Character member, GangRole role)
 		{
 			if (member == Leader)
-				return true;
+            {
+                return true;
+            }
 
             if (!_members.TryGetValue(member, out GangRole currentRole))
+            {
                 return false;
+            }
 
             return currentRole.HasFlag(role);
 		}
@@ -110,12 +116,16 @@ namespace Perpetuum.Groups.Gangs
 		bool IEquatable<Gang>.Equals(Gang other)
 		{
 			if ( other == null )
-				return false;
+            {
+                return false;
+            }
 
-			if (ReferenceEquals(this, other))
-				return true;
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
 
-			return Id.Equals(other.Id);
+            return Id.Equals(other.Id);
 		}
 
 		public override string ToString()

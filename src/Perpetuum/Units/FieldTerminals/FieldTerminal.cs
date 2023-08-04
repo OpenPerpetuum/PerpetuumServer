@@ -29,7 +29,9 @@ namespace Perpetuum.Units.FieldTerminals
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override Dictionary<string, object> ToDictionary()

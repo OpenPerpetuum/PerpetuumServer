@@ -34,14 +34,18 @@ namespace Perpetuum.Zones.Blobs
         {
             var blobEmitter = unit as IBlobEmitter;
             if (blobEmitter == null)
+            {
                 return;
+            }
 
             var blobbing = false;
 
             if (unit.InZone && !unit.States.Dead)
             {
                 if (_owner.IsInRangeOf3D(unit, blobEmitter.BlobEmissionRadius))
+                {
                     blobbing = true;
+                }
             }
 
             var containsTarget = _units.Contains(unit);
@@ -71,9 +75,13 @@ namespace Perpetuum.Zones.Blobs
         private void UpdateBlobLevel(IBlobEmitter blobEmitter, bool enter)
         {
             if (enter)
+            {
                 _blobLevel += blobEmitter.BlobEmission;
+            }
             else
+            {
                 _blobLevel -= blobEmitter.BlobEmission;
+            }
 
             _blobLevel = Math.Max(0.0, _blobLevel);
 
@@ -86,12 +94,16 @@ namespace Perpetuum.Zones.Blobs
         public void Update(TimeSpan time)
         {
             if (!_isDirty)
+            {
                 return;
+            }
 
             _timer.Update(time);
 
             if (!_timer.Passed)
+            {
                 return;
+            }
 
             _timer.Reset();
             _blobEffect.Update();

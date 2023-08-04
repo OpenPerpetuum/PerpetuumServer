@@ -91,7 +91,9 @@ namespace Perpetuum
             {
                 var distSqr = SqrDistance(point, p);
                 if (distSqr >= nearestDistSq)
+                {
                     continue;
+                }
 
                 nearestPoint = p;
                 nearestDistSq = distSqr;
@@ -129,10 +131,14 @@ namespace Perpetuum
             var dy = to.Y - from.Y;
 
             if (dx == 0)
+            {
                 return dy > 0 ? 0.5 : 0;
+            }
 
             if (dy == 0)
+            {
                 return dx > 0 ? 0.25 : 0.75;
+            }
 
             // - PI/2 ... + PI/2
             var angle = Math.Atan((double)dy / dx);
@@ -177,12 +183,16 @@ namespace Perpetuum
                 foreach (var np in current.GetNeighbours())
                 {
                     if ( closed.Contains(np) )
+                    {
                         continue;
+                    }
 
                     closed.Add(np);
 
                     if (validator != null && !validator(np))
+                    {
                         continue;
+                    }
 
                     q.Enqueue(np);
                 }

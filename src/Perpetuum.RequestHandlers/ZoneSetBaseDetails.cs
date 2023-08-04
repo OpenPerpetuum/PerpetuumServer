@@ -21,7 +21,9 @@ namespace Perpetuum.RequestHandlers
 
                 var dockingBase = _dockingBaseHelper.GetDockingBase(eid);
                 if (dockingBase == null)
+                {
                     throw new PerpetuumException(ErrorCodes.DockingBaseNotFound);
+                }
 
                 if (request.Data.TryGetValue(k.welcome, out string welcome))
                 {

@@ -13,15 +13,21 @@ namespace Perpetuum
             var y = y1 - y0;
 
             if ( Math.Abs(x) < double.Epsilon )
+            {
                 return y > 0 ? 0.5 : 0;
+            }
 
             if ( Math.Abs(y) < double.Epsilon )
+            {
                 return x > 0 ? 0.25 : 0.75;
+            }
 
             var direction = (Math.Atan(y / x) + Math.PI / 2) / Math.PI * 0.5;
 
             if (x < 0)
+            {
                 direction += 0.5;
+            }
 
             return NormalizeDirection(direction);
         }

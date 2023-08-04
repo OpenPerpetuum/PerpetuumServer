@@ -80,11 +80,15 @@ namespace Perpetuum.Services.Standing
 
             //was the standing set for the player's corp?
             if (standingHandler.TryGetStanding(serverEntityEid, playersCorporationEid, out standing))
+            {
                 return standing;
+            }
 
             //was the standing set this player?
             if (standingHandler.TryGetStanding(serverEntityEid, character.Eid, out standing))
+            {
                 return standing;
+            }
 
             return 0;
         }

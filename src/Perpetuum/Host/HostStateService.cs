@@ -16,7 +16,9 @@ namespace Perpetuum.Host
             set
             {
                 if (_state == value)
+                {
                     return;
+                }
 
                 _state = value;
                 OnStateChanged(value);

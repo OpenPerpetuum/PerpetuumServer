@@ -13,14 +13,20 @@ namespace Perpetuum.RequestHandlers.Characters
         {
             var session = request.Session;
             if (!session.IsAuthenticated)
+            {
                 throw new PerpetuumException(ErrorCodes.NotSignedIn);
+            }
 
             var character = Character.Get(request.Data.GetOrDefault<int>(k.characterID));
             if (character.AccountId != request.Session.AccountId)
+            {
                 throw new PerpetuumException(ErrorCodes.AccessDenied);
+            }
 
             if (character.IsOffensiveNick)
+            {
                 throw PerpetuumException.Create(ErrorCodes.OffensiveNick).SetData("characterID", character.Id);
+            }
 
             var isDocked = character.IsDocked;
             var zone = character.GetCurrentZone();

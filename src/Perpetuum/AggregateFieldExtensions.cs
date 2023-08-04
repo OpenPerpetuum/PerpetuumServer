@@ -17,7 +17,9 @@ namespace Perpetuum
         {
             AggregateFormula formula;
             if (!_formulas.TryGetValue(field, out formula))
+            {
                 formula = AggregateFormula.Add;
+            }
 
             return formula;
         }

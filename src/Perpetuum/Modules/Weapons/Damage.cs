@@ -41,7 +41,9 @@ namespace Perpetuum.Modules.Weapons
         public static IDamageBuilder WithDamages(this IDamageBuilder builder, IEnumerable<Damage> damages)
         {
             foreach (var damage in damages)
+            {
                 builder.WithDamage(damage);
+            }
 
             return builder;
         }
@@ -84,7 +86,9 @@ namespace Perpetuum.Modules.Weapons
                 var criticalHitChance = 0.0;
 
                 if (attacker != null)
+                {
                     criticalHitChance = attacker.CriticalHitChance;
+                }
 
                 var random = FastRandom.NextDouble();
                 IsCritical = random <= criticalHitChance;

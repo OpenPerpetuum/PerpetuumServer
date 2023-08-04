@@ -20,7 +20,9 @@ namespace Perpetuum.Services.Insurance
         public void PayOut(InsuranceDescription insurance,int definition)
         {
             if (!insurance.IsInsured)
+            {
                 return;
+            }
 
             var b = TransactionLogEvent.Builder().SetTransactionType(TransactionType.InsurancePayOut)
                 .SetCreditChange(insurance.payOutPrice)

@@ -313,7 +313,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             foreach (var rule in zone.Configuration.PlantRules)
             {
                 if (rule.NotFruiting || rule.PlayerSeeded)
+                {
                     continue;
+                }
 
                 yield return rule.FruitDefinition;
             }
@@ -360,7 +362,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             if (ValidSecondaryLinkSet)
             {
                 if (TryGetResearchableItemFromResearchTarget(missionInProgress, false))
+                {
                     return;
+                }
                 //the item will be used in research
             }
 
@@ -496,7 +500,10 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             var selectedTarget = SearchForPossibleSpots(missionInProgress);
 
             //search failed
-            if (selectedTarget == null) return false;
+            if (selectedTarget == null)
+            {
+                return false;
+            }
 
             CopyZoneInfo(selectedTarget);
 
@@ -784,7 +791,10 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         private bool ProcessQuantityOrSkip(MissionInProgress missionInProgress)
         {
             //links already processed?
-            if (!CheckIfLinksAreScaled(missionInProgress)) return false;
+            if (!CheckIfLinksAreScaled(missionInProgress))
+            {
+                return false;
+            }
 
             //call the type related functions
             ProcessMyQuantity(missionInProgress);
@@ -942,14 +952,18 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             if (usePrimaryLink)
             {
                 if (!ValidPrimaryLinkSet)
+                {
                     return false;
+                }
 
                 linkedTarget = GetSourceTargetForPrimaryAndSolve(missionInProgress);
             }
             else
             {
                 if (!ValidSecondaryLinkSet)
+                {
                     return false;
+                }
 
                 linkedTarget = GetSourceTargetForSecondaryAndSolve(missionInProgress);
             }

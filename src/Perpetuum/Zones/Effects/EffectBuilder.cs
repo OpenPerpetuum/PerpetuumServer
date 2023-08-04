@@ -149,7 +149,9 @@ namespace Perpetuum.Zones.Effects
             var effect = _effectFactory(_type);
 
             if (_info == null)
+            {
                 _info = EffectHelper.GetEffectInfo(_type);
+            }
 
             effect.Display = _info.Display;
             effect.IsAura = _info.isAura;

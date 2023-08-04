@@ -30,10 +30,14 @@ namespace Perpetuum.PathFinders
         public bool HasPath(Point start, Point end)
         {
             if (!_passableHandler(end.X, end.Y))
+            {
                 return false;
+            }
 
             if (start == end)
+            {
                 return true;
+            }
 
             var openList = new PriorityQueue<Node>(MAX_PQ_SIZE);
             var visited = new HashSet<int>();
@@ -45,19 +49,27 @@ namespace Perpetuum.PathFinders
             while (openList.TryDequeue(out Node node))
             {
                 if (node.Location == end)
+                {
                     return true;
+                }
 
                 if (node.depth > MAX_DEPTH)
+                {
                     return false;
+                }
 
                 foreach (var neighbor in GetNeighbors(node))
                 {
                     var neighborHash = neighbor.GetHashCode();
                     if (visited.Contains(neighborHash))
+                    {
                         continue;
+                    }
 
                     if (neighbor.Location == end)
+                    {
                         return true;
+                    }
 
                     var newG = node.g + (int)(Weight * (neighbor.Location.X - node.Location.X == 0 || neighbor.Location.Y - node.Location.Y == 0 ? 1 : SQRT2));
                     var newH = _heuristic.Calculate(neighbor.Location.X, neighbor.Location.Y, end.X, end.Y) * Weight;
@@ -95,10 +107,14 @@ namespace Perpetuum.PathFinders
         public override Point[] FindPath(Point start, Point end,CancellationToken cancellationToken)
         {
             if (!_passableHandler(end.X, end.Y))
+            {
                 return null;
+            }
 
             if (start == end)
+            {
                 return EmptyPath;
+            }
 
             var openList = new PriorityQueue<Node>(500);
             var closedList = new Dictionary<int, bool>();
@@ -111,15 +127,21 @@ namespace Perpetuum.PathFinders
             while (openList.TryDequeue(out node) && !cancellationToken.IsCancellationRequested)
             {
                 if (!OnProcessNode(node))
+                {
                     break;
+                }
 
                 if (node.Location == end)
+                {
                     return Backtrace(node);
+                }
 
                 foreach (var neighbor in GetNeighbors(node))
                 {
                     if (closedList.ContainsKey(neighbor.GetHashCode()))
+                    {
                         continue;
+                    }
 
                     closedList[neighbor.GetHashCode()] = true;
 

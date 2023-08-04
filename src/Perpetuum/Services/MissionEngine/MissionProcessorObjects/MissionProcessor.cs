@@ -42,7 +42,9 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
             _transportAssignmentInterval.Update(time);
 
             if (!_transportAssignmentInterval.Passed)
+            {
                 return;
+            }
 
             _transportAssignmentInterval.Reset();
 
@@ -91,10 +93,14 @@ namespace Perpetuum.Services.MissionEngine.MissionProcessorObjects
 
             var gang = ownerCharacter.GetGang();
             if (gang == null)
+            {
                 return;
+            }
 
             if (!gang.IsMember(doerCharacter))
+            {
                 return;
+            }
 
             if (!FindMissionInProgress(ownerCharacter,guid,out MissionInProgress missionInProgress))
             {

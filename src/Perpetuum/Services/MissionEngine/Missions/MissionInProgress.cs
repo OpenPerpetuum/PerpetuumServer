@@ -224,7 +224,10 @@ namespace Perpetuum.Services.MissionEngine.Missions
         private Dictionary<string, object> GenerateStartItemsDictionary()
         {
             //skip this part at random missions
-            if (myMission.behaviourType == MissionBehaviourType.Random) return new Dictionary<string, object>();
+            if (myMission.behaviourType == MissionBehaviourType.Random)
+            {
+                return new Dictionary<string, object>();
+            }
 
             var count = 0;
             var startItemsDict = new Dictionary<string, object>();
@@ -501,7 +504,9 @@ namespace Perpetuum.Services.MissionEngine.Missions
         private void SpawnTargets()
         {
             if (isTestMode)
+            {
                 return;
+            }
 
             var container = myLocation.GetContainer;
             container.ReloadItems(character);
@@ -510,7 +515,10 @@ namespace Perpetuum.Services.MissionEngine.Missions
             {
                 missionTargetInProgress.ForceComplete();
 
-                if (isTestMode) continue;
+                if (isTestMode)
+                {
+                    continue;
+                }
 
                 var spawnedItem =
                     container.CreateAndAddItem(missionTargetInProgress.myTarget.GetItemInfoFromPrimaryDefinition, false,
@@ -802,7 +810,9 @@ namespace Perpetuum.Services.MissionEngine.Missions
         {
             var zone = _zoneManager.GetZone(zoneConfiguration.Id);
             if (zone == null)
+            {
                 return;
+            }
 
             Logger.Info("sending mission update to zone:" + zoneConfiguration.Id + " isFinished:" + isFinished);
 
@@ -1072,7 +1082,9 @@ namespace Perpetuum.Services.MissionEngine.Missions
             SendZoneAdvanceGroupOrder(config, true);
 
             if (MissionLevel < 0)
+            {
                 return;
+            }
 
             //extension bonus to decrease penalty
             var hitMitigationMultiplier = (1 - myMission.GetHitMitigationBonus(character)).Clamp();
@@ -1118,7 +1130,9 @@ namespace Perpetuum.Services.MissionEngine.Missions
                     var freshOrigin = value;
 
                     if (!MissionResolveTester.isTestMode)
+                    {
                         Logger.Info("new search origin arrived " + Math.Round(freshOrigin.TotalDistance2D(_searchOrigin), 1) + " tiles from current " + freshOrigin);
+                    }
 
                     _searchOrigin = freshOrigin;
                 }
@@ -1306,7 +1320,9 @@ namespace Perpetuum.Services.MissionEngine.Missions
             }
 
             if (infoByCharacters.Count > 0)
+            {
                 allStandingInfo.Add("byCharacters", infoByCharacters);
+            }
 
             successData.Add("standingInfo", allStandingInfo);
         }
@@ -1509,7 +1525,9 @@ namespace Perpetuum.Services.MissionEngine.Missions
 
 
             if (rewardSum <= 0)
+            {
                 return;
+            }
 
             var paymentsPerCharacter = new Dictionary<string, object>(participants.Count);
             var payoutLogEntries = new List<MissionPayOutLogEntry>();
@@ -1527,7 +1545,9 @@ namespace Perpetuum.Services.MissionEngine.Missions
 
                 var realRewardFeePerCharacter = rewardSum*rewardFraction*typeRelatedBonus*bonusMultiplier;
                 if (realRewardFeePerCharacter < 1)
+                {
                     continue;
+                }
 
                 var feeWithExtension = Math.Round(rewardSum*rewardFraction*typeRelatedBonus*extBonus);
                 var yourShare = Math.Round(rewardSum*rewardFraction);
@@ -1572,9 +1592,13 @@ namespace Perpetuum.Services.MissionEngine.Missions
                 double amountToCharacter;
                 //if the complete reward is paid to the corporation
                 if (Math.Abs(taxRatio - 1.0) < double.Epsilon)
+                {
                     amountToCharacter = 0d;
+                }
                 else
+                {
                     amountToCharacter = Math.Round((1 - taxRatio)*realRewardFeePerCharacter);
+                }
 
                 oneCharacterPayOut.Add(k.fee, amountToCharacter);
                 paymentsPerCharacter.Add("p" + count++, oneCharacterPayOut);
@@ -1992,7 +2016,11 @@ namespace Perpetuum.Services.MissionEngine.Missions
                 missionTargetInProgress.WriteSuccessLog();
             }
 
-            if (MissionResolveTester.skipLog) return;
+            if (MissionResolveTester.skipLog)
+            {
+                return;
+            }
+
             Logger.Info("success log written. " + this);
         }
 
@@ -2003,7 +2031,9 @@ namespace Perpetuum.Services.MissionEngine.Missions
             foreach (var missionTargetInProgress in _targetsInProgress.Values.OrderBy(t => t.DisplayOrder))
             {
                 if (!missionTargetInProgress.completed)
+                {
                     missionTargetInProgress.ForceComplete();
+                }
 
                 var mtsig = new MissionTargetSuccessInfoGenerator(this, missionTargetInProgress, terminalsOnZones);
 
@@ -2107,7 +2137,9 @@ namespace Perpetuum.Services.MissionEngine.Missions
 
             // Not an option on beta/gamma
             if (!zone.Configuration.Protected)
+            {
                 return;
+            }
 
             foreach (var currentCharacter in characters)
             {
@@ -2139,8 +2171,11 @@ namespace Perpetuum.Services.MissionEngine.Missions
 
         public void AddParticipant(Character doerCharacter)
         {
-            if (!spreadInGang) return;
-            
+            if (!spreadInGang)
+            {
+                return;
+            }
+
             if (!IsParticipant(doerCharacter))
             {
                 WriteParticipant(missionGuid, doerCharacter);
@@ -2164,7 +2199,10 @@ namespace Perpetuum.Services.MissionEngine.Missions
         public static void WriteParticipant(Guid missionGuid, Character doerCharacter)
         {
 
-            if (missionGuid == Guid.Empty || doerCharacter == Character.None) return;
+            if (missionGuid == Guid.Empty || doerCharacter == Character.None)
+            {
+                return;
+            }
 
 #if DEBUG
             Logger.Info("    >>>> write mission participant: " + doerCharacter.Id);
@@ -2270,9 +2308,15 @@ namespace Perpetuum.Services.MissionEngine.Missions
             foreach (var participant in participants)
             {
                 // the owner is already on the list
-                if (participant == character) continue;
+                if (participant == character)
+                {
+                    continue;
+                }
 
-                if (!ownersGang.IsMember(participant)) continue;
+                if (!ownersGang.IsMember(participant))
+                {
+                    continue;
+                }
 
                 filteredList.Add(participant);
             }
@@ -2314,7 +2358,11 @@ namespace Perpetuum.Services.MissionEngine.Missions
             }
 
             rewardDivider = Math.Max(participants.Count(), _rewardDivider);
-            if (rewardDivider <= 0) rewardDivider = 1;
+            if (rewardDivider <= 0)
+            {
+                rewardDivider = 1;
+            }
+
             rewardFraction = 1.0 / rewardDivider;
 
             Logger.Info("++ rewardDivider:"  + rewardDivider + " rewardFraction:" + rewardFraction + "  " + this );
@@ -2323,9 +2371,17 @@ namespace Perpetuum.Services.MissionEngine.Missions
 
         public int CalculateEp()
         {
-            if (myLocation.ZoneConfig.Type == ZoneType.Training) return 0;
+            if (myLocation.ZoneConfig.Type == ZoneType.Training)
+            {
+                return 0;
+            }
+
             var missionLevel = MissionLevel;
-            if (missionLevel == 0) return 1; //Change: level 0 -> 1ep
+            if (missionLevel == 0)
+            {
+                return 1; //Change: level 0 -> 1ep
+            }
+
             if (missionLevel == -1) { missionLevel = 1; } //10 training missions
 
             var result = myMission.Targets.Count * Math.Pow(missionLevel, 0.5);
@@ -2334,7 +2390,9 @@ namespace Perpetuum.Services.MissionEngine.Missions
             result = Math.Max(result, 1);
 
             if (myLocation.ZoneConfig.IsBeta)
+            {
                 result *= 2;
+            }
 
             return (int) result;
         }

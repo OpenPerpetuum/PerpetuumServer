@@ -403,7 +403,11 @@ namespace Perpetuum.Services.MissionEngine.MissionDataCacheObjects
 
             foreach (var successorMissionId in mission.GetPossibleSuccessorMissionIds())
             {
-                if (successorMissionId == 0) continue;
+                if (successorMissionId == 0)
+                {
+                    continue;
+                }
+
                 processQueue.Enqueue(successorMissionId);
                 lineIds.Add(successorMissionId);
             }
@@ -426,7 +430,10 @@ namespace Perpetuum.Services.MissionEngine.MissionDataCacheObjects
 
                 foreach (var successorMissionId in mission.GetPossibleSuccessorMissionIds())
                 {
-                    if (successorMissionId == 0) continue;
+                    if (successorMissionId == 0)
+                    {
+                        continue;
+                    }
 
                     processQueue.Enqueue(successorMissionId);
                     lineIds.Add(successorMissionId);

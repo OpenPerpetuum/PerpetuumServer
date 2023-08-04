@@ -25,7 +25,9 @@ namespace Perpetuum.Units
             displayOrder = -1;
 
             if (properties == null)
+            {
                 return false;
+            }
 
             var result = false;
             foreach (var property in properties)

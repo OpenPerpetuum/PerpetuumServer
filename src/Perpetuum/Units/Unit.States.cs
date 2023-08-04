@@ -128,7 +128,9 @@ namespace Perpetuum.Units
                 }
 
                 if (_flags == flags)
+                {
                     return;
+                }
 
                 _flags = flags;
                 _unit.UpdateTypes |= UnitUpdateTypes.State;
@@ -153,7 +155,9 @@ namespace Perpetuum.Units
                 }
 
                 if (_flags == flags)
+                {
                     return;
+                }
 
                 _flags = flags;
                 _unit.UpdateTypes |= UnitUpdateTypes.State;

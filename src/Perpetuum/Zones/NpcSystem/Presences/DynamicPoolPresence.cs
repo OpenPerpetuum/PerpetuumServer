@@ -39,7 +39,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
 
             var normalFlocks = infos.Where(i => !i.lastWave).ToArray();
             if (normalFlocks.Length <= 0)
+            {
                 return;
+            }
 
             for (var i = 0; i < totalWaves; i++)
             {
@@ -53,7 +55,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
             return AnonymousState.Create(t =>
             {
                 if (!first)
+                {
                     return;
+                }
 
                 first = false;
 
@@ -69,7 +73,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
             return AnonymousState.Create(t =>
             {
                 if (!first)
+                {
                     return;
+                }
 
                 first = false;
 
@@ -82,12 +88,16 @@ namespace Perpetuum.Zones.NpcSystem.Presences
                         {
                             var membersCount = Flocks.MembersCount();
                             if (membersCount > 0)
+                            {
                                 return;
+                            }
 
                             _fsm.Pop();
 
                             if (!isLastWave)
+                            {
                                 _fsm.Push(CreateDelayState(TimeSpan.FromSeconds(5)));
+                            }
                         };
 
                         Logger.DebugInfo($"Flock spawned: {f}");
@@ -105,7 +115,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
                 timer.Update(t);
 
                 if ( !timer.Expired )
+                {
                     return;
+                }
 
                 _fsm.Pop();
             });

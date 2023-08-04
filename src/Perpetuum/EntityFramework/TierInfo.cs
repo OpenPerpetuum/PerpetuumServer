@@ -20,7 +20,9 @@ namespace Perpetuum.EntityFramework
         public int CompareTo(TierInfo other)
         {
             if ( type == other.type )
+            {
                 return level.CompareTo(other.level);
+            }
 
             return type.CompareTo(other.type);
         }
@@ -67,7 +69,10 @@ namespace Perpetuum.EntityFramework
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
+            {
                 return false;
+            }
+
             return obj is TierInfo && Equals((TierInfo) obj);
         }
 

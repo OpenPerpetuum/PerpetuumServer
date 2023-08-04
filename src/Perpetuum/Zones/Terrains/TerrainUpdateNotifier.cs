@@ -41,13 +41,17 @@ namespace Perpetuum.Zones.Terrains
             public void Update(ITerrain terrain, Player player, Area visibleArea)
             {
                 if (IsEmpty)
+                {
                     return;
+                }
 
                 if (!visibleArea.IntersectsWith(BoundingBox))
                 {
                     // nem lathato cella
                     if (Updates.Count <= 0)
+                    {
                         return;
+                    }
 
                     // ha van benne update akkor csak a tipust tartjuk meg es az osszes update-et toroljuk
                     DirtyLayers.AddMany(Updates.Select(u => u.Type).Distinct());
@@ -75,7 +79,9 @@ namespace Perpetuum.Zones.Terrains
                 Updates.RemoveAll(info =>
                 {
                     if (!info.IntersectsWith(visibleArea))
+                    {
                         return false;
+                    }
 
                     var packet = info.CreateUpdatePacket(terrain);
                     player.Session.SendPacket(packet);
@@ -120,12 +126,16 @@ namespace Perpetuum.Zones.Terrains
         public void Update()
         {
             if ( _updatingGrid )
+            {
                 return;
+            }
 
             DequeueNewUpdates();
 
             if ( Interlocked.CompareExchange(ref _dirty,0,1) == 0)
+            {
                 return;
+            }
 
             _updatingGrid = true;
 
@@ -141,7 +151,9 @@ namespace Perpetuum.Zones.Terrains
         private void DequeueNewUpdates()
         {
             if (_newUpdates.Count == 0)
+            {
                 return;
+            }
 
             try
             {
@@ -153,7 +165,9 @@ namespace Perpetuum.Zones.Terrains
                 });
 
                 if ( infos == null )
+                {
                     return;
+                }
 
                 foreach (var info in infos)
                 {

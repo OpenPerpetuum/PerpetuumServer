@@ -70,7 +70,9 @@ namespace Perpetuum.Services.Looting
         public LootItem Build()
         {
             if ( !_item.IsRepackaged && _damaged )
+            {
                 _item.Health *= FastRandom.NextFloat(HEALTH_MODIFIER_LOW,HEALTH_MODIFIER_HIGH);
+            }
 
             var id = Guid.NewGuid();
             return new LootItem(id,_item);

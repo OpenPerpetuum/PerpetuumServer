@@ -181,7 +181,9 @@ namespace Perpetuum.Zones.Gates
         private void OpenOrClose(IZone zone, bool open)
         {
             if (zone == null)
+            {
                 return;
+            }
 
             States.Open = open;
 
@@ -226,7 +228,9 @@ namespace Perpetuum.Zones.Gates
             Corporation.GetCorporationEidAndRoleFromSql(character, out long corporationEid, out CorporationRole role);
 
             if (corporationEid != Owner)
+            {
                 throw new PerpetuumException(ErrorCodes.AccessDenied);
+            }
 
             role.IsAnyRole(CorporationRole.CEO,CorporationRole.DeputyCEO,CorporationRole.editPBS).ThrowIfFalse(ErrorCodes.InsufficientPrivileges);
 
@@ -240,7 +244,9 @@ namespace Perpetuum.Zones.Gates
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         protected override bool IsHostileFor(Unit unit)

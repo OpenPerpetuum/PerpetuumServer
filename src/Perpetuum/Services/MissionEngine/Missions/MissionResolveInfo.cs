@@ -15,8 +15,11 @@ namespace Perpetuum.Services.MissionEngine.Missions
         {
             get
             {
-                if (_success == 0 || attempts == 0) return false;
-                
+                if (_success == 0 || attempts == 0)
+                {
+                    return false;
+                }
+
                 return _success / (double) attempts > 0.4;
             }
         }

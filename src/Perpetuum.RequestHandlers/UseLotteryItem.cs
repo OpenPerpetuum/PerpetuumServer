@@ -29,13 +29,21 @@ namespace Perpetuum.RequestHandlers
             var itemEid = request.Data.GetOrDefault<long>(k.itemEID);
             var item = _entityServices.Repository.Load(itemEid);
             if (item is LotteryItem)
+            {
                 HandleLottery(request);
-			else if (item is EPBoost)
-				HandleEPBoost(request, itemEid);
+            }
+            else if (item is EPBoost)
+            {
+                HandleEPBoost(request, itemEid);
+            }
             else if (item is Paint) //TODO this is here until we can build a good category flag..
+            {
                 HandlePaint(request, itemEid);
+            }
             else if (item is CalibrationProgramCapsule)
+            {
                 HandleCalibrationTemplateItem(request, itemEid);
+            }
         }
 
 		private void HandleEPBoost(IRequest request, long itemEid)

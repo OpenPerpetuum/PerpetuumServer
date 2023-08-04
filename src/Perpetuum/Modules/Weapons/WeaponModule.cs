@@ -34,7 +34,9 @@ namespace Perpetuum.Modules.Weapons
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         private class ModuleAction : ILockVisitor
@@ -68,7 +70,9 @@ namespace Perpetuum.Modules.Weapons
 
                 var err = victim.IsAttackable;
                 if (err != ErrorCodes.NoError)
+                {
                     throw new PerpetuumException(err);
+                }
 
                 victim.IsInvulnerable.ThrowIfTrue(ErrorCodes.TargetIsInvulnerable);
 
@@ -133,11 +137,15 @@ namespace Perpetuum.Modules.Weapons
                 var damage = _weapon.GetDamageBuilder().Build().CalculatePlantDamages();
 
                 if (damage <= 0.0)
+                {
                     return;
+                }
 
                 var zone = _weapon.Zone;
                 if (zone == null)
+                {
                     return;
+                }
 
                 Task.Delay(flyTime).ContinueWith(t => DealDamageToPosition(zone, location, damage));
             }

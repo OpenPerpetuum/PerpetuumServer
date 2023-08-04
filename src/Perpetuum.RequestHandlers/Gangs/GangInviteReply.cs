@@ -26,7 +26,9 @@ namespace Perpetuum.RequestHandlers.Gangs
 
                 var currentGang = _gangManager.GetGangByMember(character);
                 if (currentGang != null)
+                {
                     throw new PerpetuumException(ErrorCodes.CharacterAlreadyInGang);
+                }
 
                 var gangInvite = _gangInviteService.GetInvite(character).ThrowIfNull(ErrorCodes.NoSuchGangInvite);
                 var gang = _gangManager.GetGang(gangInvite.gangGuid).ThrowIfNull(ErrorCodes.GangNotFound);

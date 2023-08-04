@@ -35,7 +35,9 @@ namespace Perpetuum.Reactive
         public IDisposable Subscribe(IObserver<T> observer)
         {
             if (_observers.Contains(observer))
+            {
                 return Disposable.Empty;
+            }
 
             // ReSharper disable once ImplicitlyCapturedClosure
             ImmutableInterlocked.Update(ref _observers, o => o.Add(observer));

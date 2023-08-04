@@ -33,7 +33,10 @@ namespace Perpetuum.RequestHandlers.Zone
                         var tmpNetwork = pbsObject.ConnectionHandler.NetworkNodes;
                         var orphanStatus = !tmpNetwork.Any(n => n is PBSDockingBase);
                     
-                        if (statusPre == orphanStatus) continue;
+                        if (statusPre == orphanStatus)
+                        {
+                            continue;
+                        }
 
                         Logger.Warning("Orphan status correcting: " + statusPre + "->" + orphanStatus + "  for "  + unit);
                         pbsObject.IsOrphaned = orphanStatus;

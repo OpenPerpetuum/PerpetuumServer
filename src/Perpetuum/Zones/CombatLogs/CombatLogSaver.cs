@@ -50,7 +50,9 @@ namespace Perpetuum.Zones.CombatLogs
         private static void SaveParticipantsToDb(Guid reportId, Character character, bool isVictim, bool isAttacker, bool isKiller = false)
         {
             if (character.Id == 0)
+            {
                 return;
+            }
 
             const string sqlInsertCmd = "insert into characterkillreports (characterid,reportid,victim,attacker,killer) values (@characterId,@reportId,@isVictim,@isAttacker,@isKiller)";
             Db.Query().CommandText(sqlInsertCmd)

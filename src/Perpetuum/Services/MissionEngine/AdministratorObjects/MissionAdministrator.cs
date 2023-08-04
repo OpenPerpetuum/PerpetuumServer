@@ -80,7 +80,10 @@ namespace Perpetuum.Services.MissionEngine.AdministratorObjects
         private bool HasCharacterRunningMissions(Character character)
         {
             if (character == Character.None)
+            {
                 return false;
+            }
+
             return _missionInProgress.Keys.Contains(character.Id);
         }
 
@@ -126,7 +129,10 @@ where ml.finished is NULL and c.active=1";
 
                     var missionInProgress = MissionHelper.ReadMissionInProgressByRecord(record, mission);
 
-                    if (missionInProgress == null) continue;
+                    if (missionInProgress == null)
+                    {
+                        continue;
+                    }
 
                     // add to ram 
                     AddMissionInProgress(missionInProgress);
@@ -155,7 +161,9 @@ where ml.finished is NULL and c.active=1";
             _missionBonusExpireTimer.Update(time);
 
             if (!_missionBonusExpireTimer.Passed)
+            {
                 return;
+            }
 
             _missionBonusExpireTimer.Reset();
 
@@ -214,7 +222,9 @@ where ml.finished is NULL and c.active=1";
             _missionExpireTimer.Update(time);
 
             if (!_missionExpireTimer.Passed)
+            {
                 return;
+            }
 
             _missionExpireTimer.Reset();
 
@@ -232,7 +242,10 @@ where ml.finished is NULL and c.active=1";
 
         private void MissionExpireCycle()
         {
-            if (_missionInProgress.IsNullOrEmpty()) return;
+            if (_missionInProgress.IsNullOrEmpty())
+            {
+                return;
+            }
 
             var expiredOnes = new List<MissionInProgress>();
             var now = DateTime.Now;
@@ -301,8 +314,10 @@ where ml.finished is NULL and c.active=1";
                 var counter = 0;
                 foreach (var missionInProgress in missionsInPrgs)
                 {
-                    if (excludeSoloMissions && !missionInProgress.spreadInGang) 
+                    if (excludeSoloMissions && !missionInProgress.spreadInGang)
+                    {
                         continue;
+                    }
 
                     var oneEntry = missionInProgress.ToDictionary();
 
@@ -513,7 +528,9 @@ where ml.finished is NULL and c.active=1";
         private static void SpawnStartItemsForConfigMissions(Mission mission, MissionInProgress missionInProgress)
         {
             if (!mission.StartItems.Any())
+            {
                 return;
+            }
 
             var container = missionInProgress.myLocation.GetContainer;
            
@@ -555,9 +572,10 @@ where ml.finished is NULL and c.active=1";
             container.Save();
 
             if (startItems.Count <= 0)
+            {
                 return;
+            }
 
-            
             var startItemsDict = startItems.ToDictionary("i", i => i.ToDictionary());
             var result = new Dictionary<string, object>(2)
             {

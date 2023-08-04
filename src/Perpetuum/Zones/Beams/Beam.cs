@@ -31,7 +31,9 @@ namespace Perpetuum.Zones.Beams
             Task.Delay(Duration, _tokenSource.Token).ContinueWith(t =>
                 {
                     if (t.IsCanceled)
+                    {
                         return;
+                    }
 
                     Expired?.Invoke(this);
                 });
@@ -40,7 +42,9 @@ namespace Perpetuum.Zones.Beams
         protected override void Dispose(bool disposing)
         {
             if (!disposing)
+            {
                 return;
+            }
 
             _tokenSource.Cancel();
             Expired = null;

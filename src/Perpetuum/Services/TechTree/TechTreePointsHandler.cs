@@ -37,10 +37,14 @@ namespace Perpetuum.Services.TechTree
             var updatedPoints = pointsUpdater(currentPoints);
 
             if (updatedPoints < 0)
+            {
                 updatedPoints = 0;
+            }
 
             if (updatedPoints == currentPoints)
+            {
                 return;
+            }
 
             if (id > 0)
             {

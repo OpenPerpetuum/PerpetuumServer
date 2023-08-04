@@ -17,7 +17,9 @@ namespace Perpetuum.RequestHandlers
             var baseEid = request.Data.GetOrDefault<long>(k.baseEID);
             var dockingBase = _dockingBaseHelper.GetDockingBase(baseEid);
             if (dockingBase == null)
+            {
                 throw new PerpetuumException(ErrorCodes.DockingBaseNotFound);
+            }
 
             var publicContainer = dockingBase.GetPublicContainerWithItems(request.Session.Character);
             var result = publicContainer.ToDictionary();

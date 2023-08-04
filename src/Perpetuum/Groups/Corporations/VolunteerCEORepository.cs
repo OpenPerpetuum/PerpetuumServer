@@ -36,7 +36,9 @@ namespace Perpetuum.Groups.Corporations
                 .ExecuteNonQuery();
 
             if(res == 0 )
+            {
                 throw new PerpetuumException(ErrorCodes.SQLInsertError);
+            }
         }
 
         public void Update(VolunteerCEO item)
@@ -50,7 +52,9 @@ namespace Perpetuum.Groups.Corporations
                 .SetParameter("@corporationEID",volunteerCEO.corporation.Eid)
                 .ExecuteNonQuery();
             if (res == 0)
+            {
                 throw new PerpetuumException(ErrorCodes.SQLDeleteError);
+            }
         }
 
         private VolunteerCEO CreateVolunteerCEOFromRecord(IDataRecord record)

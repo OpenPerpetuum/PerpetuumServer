@@ -77,10 +77,14 @@ namespace Perpetuum.Zones
                 var size = Marshal.SizeOf(ticket);
 
                 if (ticketData.Length != size)
+                {
                     return false;
+                }
 
                 if ( !decryptedData.Take(_md5HashSize).SequenceEqual(_md5.ComputeHash(ticketData)))
+                {
                     return false;
+                }
 
                 ticket = ticketData.ToStruct<ZoneTicket>();
                 return true;

@@ -80,7 +80,9 @@ namespace Perpetuum.Services.RiftSystem
             RiftConfig = riftConfig;
             // Only set despawner if config is despawning
             if (RiftConfig.IsDespawning)
+            {
                 SetDespawnTime(RiftConfig.Lifespan);
+            }
         }
 
         public void SetTarget(IZone zone, Position position)
@@ -99,7 +101,9 @@ namespace Perpetuum.Services.RiftSystem
         private void IncrementUsage()
         {
             if (!RiftConfig.InfiniteUses)
+            {
                 uses++;
+            }
         }
 
         private bool IsExcluded(Player player)
@@ -123,7 +127,9 @@ namespace Perpetuum.Services.RiftSystem
             IncrementUsage();
 
             if (IsUsageExceeded())
+            {
                 Kill();
+            }
         }
     }
 
@@ -190,13 +196,19 @@ namespace Perpetuum.Services.RiftSystem
         {
             var rift = player.GetUnitsWithinRange<Rift>(5).FirstOrDefault();
             if (rift == null)
+            {
                 throw new PerpetuumException(ErrorCodes.RiftOutOfRange);
+            }
 
             if (ED.Tier.level > rift.MaxTAPLevel)
+            {
                 throw new PerpetuumException(ErrorCodes.RiftLevelMismatch);
+            }
 
             if (zone is StrongHoldZone)
+            {
                 throw new PerpetuumException(ErrorCodes.ItemNotUsable);
+            }
 
             var info = new RiftNpcGroupInfo();
             Debug.Assert(DeployableItemEntityDefault.Config.npcPresenceId != null, "DeployableItemEntityDefault.Config.npcPresenceId != null");
@@ -208,7 +220,9 @@ namespace Perpetuum.Services.RiftSystem
             info.ownerPlayer = player;
 
             if (!rift.TryActivate(info))
+            {
                 throw new PerpetuumException(ErrorCodes.WTFErrorMedicalAttentionSuggested);
+            }
 
             LogTransaction(player, this);
 
@@ -249,13 +263,19 @@ namespace Perpetuum.Services.RiftSystem
         {
             var zone = Zone;
             if (zone == null)
+            {
                 return false;
+            }
 
             if (zone is StrongHoldZone)
+            {
                 return false;
+            }
 
             if (Interlocked.CompareExchange(ref _activated, 1, 0) == 1)
+            {
                 return false;
+            }
 
             zone.CreateBeam(BeamType.npc_egg_beam, builder => builder.WithPosition(CurrentPosition).WithDuration(6000));
 

@@ -44,7 +44,9 @@ namespace Perpetuum.Zones.Scanning.Results
                         {
                             var value = node.GetValue(x, y);
                             if (value <= 0)
+                            {
                                 continue;
+                            }
 
                             foundAny = true;
 

@@ -57,7 +57,9 @@ namespace Perpetuum.Zones.ProximityProbes
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         protected override void OnUpdate(TimeSpan time)
@@ -67,7 +69,9 @@ namespace Perpetuum.Zones.ProximityProbes
             _probingInterval.Update(time);
 
             if (!_probingInterval.Passed)
+            {
                 return;
+            }
 
             _probingInterval.Reset();
 
@@ -148,11 +152,17 @@ namespace Perpetuum.Zones.ProximityProbes
         {
             //itt lehet mindenfele, pl most kuldunk egy kommandot amire a kliens terkepet frissit
 
-            if (unitsFound.Count <= 0) return;
+            if (unitsFound.Count <= 0)
+            {
+                return;
+            }
 
             var registerdCharacters = GetRegisteredCharacters();
 
-            if (registerdCharacters.Length <= 0) return;
+            if (registerdCharacters.Length <= 0)
+            {
+                return;
+            }
 
             var infoDict = CreateInfoDictionaryForProximityProbe(unitsFound);
 

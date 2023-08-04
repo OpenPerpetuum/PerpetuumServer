@@ -72,7 +72,7 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
 
             if (FastRandom.NextDouble() < 0.3)
             {
-                _direction +=  FastRandom.NextDouble(0,0.25) - 0.25;
+                _direction +=  FastRandom.NextDouble(-0.125, 0.125);
                 MathHelper.NormalizeDirection(ref _direction);
             }
 
@@ -94,15 +94,21 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
                 foreach (var np in current.location.GetNeighbours())
                 {
                     if ( closed.Contains(np) )
+                    {
                         continue;
+                    }
 
                     closed.Add(np);
 
                     if (!_zone.IsWalkableForNpc(np,minSlope))
+                    {
                         continue;
+                    }
 
                     if ( np.Distance(startNode.location) >= range.Max )
+                    {
                         continue;
+                    }
 
                     _zone.CreateAlignedDebugBeam(BeamType.orange_20sec,np.ToPosition());
 

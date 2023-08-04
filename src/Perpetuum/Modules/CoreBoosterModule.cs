@@ -15,7 +15,9 @@ namespace Perpetuum.Modules
         {
             var ammo = GetAmmo();
             if (ammo == null)
+            {
                 return;
+            }
 
             var coreAdded = ammo.GetPropertyModifier(AggregateField.core_added);
 

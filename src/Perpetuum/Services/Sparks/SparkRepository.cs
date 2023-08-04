@@ -21,7 +21,9 @@ namespace Perpetuum.Services.Sparks
         {
             var record = Db.Query().CommandText("select * from sparks where id = @id").SetParameter("@id", id).ExecuteSingleRow();
             if (record == null)
+            {
                 return null;
+            }
 
             var spark = CreateSparkFromRecord(record);
             return spark;
@@ -51,7 +53,9 @@ namespace Perpetuum.Services.Sparks
             {
                 var extensionInfo = _extensionReader.GetExtensionByID(sparkExtension.Extension.id);
                 if (extensionInfo == null)
+                {
                     continue;
+                }
 
                 spark.RelatedExtensions.Add(sparkExtension.Extension);
             }

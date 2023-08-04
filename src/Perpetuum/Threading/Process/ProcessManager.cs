@@ -37,7 +37,9 @@ namespace Perpetuum.Threading.Process
         public void Start()
         {
             if (_isRunning)
+            {
                 return;
+            }
 
             _isRunning = true;
 
@@ -121,7 +123,9 @@ namespace Perpetuum.Threading.Process
                     Thread.Sleep(prevSleepTime);
                 }
                 else
+                {
                     prevSleepTime = TimeSpan.Zero;
+                }
             }
         }
     }

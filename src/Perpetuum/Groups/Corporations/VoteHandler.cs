@@ -112,7 +112,9 @@ namespace Perpetuum.Groups.Corporations
                                 .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return null;
+            }
 
             return CreateVoteDescriptionFromRecord(record);
         }
@@ -168,7 +170,9 @@ namespace Perpetuum.Groups.Corporations
             var voteEntries = GetVoteEntries(vote).ToArray();
 
             if (vote.participation < voteEntries.Length)
+            {
                 return;
+            }
 
             //ok, participation reached
             var yesCount = voteEntries.Count(e => e.answer);
@@ -183,7 +187,9 @@ namespace Perpetuum.Groups.Corporations
                 .ExecuteNonQuery();
 
             if ( res == 0 )
+            {
                 throw new PerpetuumException(ErrorCodes.SQLUpdateError);
+            }
         }
 
         public void InsertVote(Vote vote)
@@ -225,7 +231,9 @@ namespace Perpetuum.Groups.Corporations
                              .ExecuteNonQuery();
 
             if ( res == 0 )
+            {
                 throw new PerpetuumException(ErrorCodes.SQLDeleteError);
+            }
         }
         
         public int[] GetMyOpenVotes(Character character, long groupEID)

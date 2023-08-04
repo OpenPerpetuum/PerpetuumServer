@@ -432,10 +432,14 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 {
                     var p = new Position(i, j);
                     if (!_zone.Terrain.IsPassable(p))
+                    {
                         continue;
+                    }
 
                     if (IsAnySpotWithin(p, spotInfos, distanceInfos, staticObjects))
+                    {
                         continue;
+                    }
 
                     freePoints.Add(new Point(i, j));
                 }
@@ -555,7 +559,9 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                 {
                     var p = new Position(i, j);
                     if (!p.IsValid(_zone.Size))
+                    {
                         continue;
+                    }
 
                     // a nagyobb radiussal erdemes kezdeni, hamarabb kilep
 
@@ -563,17 +569,23 @@ namespace Perpetuum.RequestHandlers.Zone.StatsMapDrawing
                     {
                         var bi = _zone.Terrain.Blocks.GetValue(i, j);
                         if (bi.Flags.HasFlag(BlockingFlags.Island))
+                        {
                             return false;
+                        }
                     }
 
                     if (center.IsInRangeOf2D(p, blockRadius))
                     {
                         if (!_zone.Terrain.IsPassable(p))
+                        {
                             return false;
+                        }
 
                         var tf = _zone.Terrain.Controls.GetValue(p);
                         if (tf.IsAnyHighway)
+                        {
                             return false;
+                        }
                     }
                 }
             }

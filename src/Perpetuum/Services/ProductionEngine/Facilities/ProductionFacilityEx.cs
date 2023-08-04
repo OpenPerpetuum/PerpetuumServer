@@ -12,17 +12,21 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
     {
         public static void OnPBSStartFacility(this ProductionFacility facility)
         {
-            if (facility.IsOpen) 
+            if (facility.IsOpen)
+            {
                 return;
-            
+            }
+
             Logger.Info("    production facility received a START. " + facility );
             SetPauseInFacility(facility, false);
         }
 
         public static void OnPBSStopFacility(this ProductionFacility facility)
         {
-            if (!facility.IsOpen) 
+            if (!facility.IsOpen)
+            {
                 return;
+            }
 
             Logger.Info("    production facility received a STOP. " + facility);
             SetPauseInFacility(facility, true);

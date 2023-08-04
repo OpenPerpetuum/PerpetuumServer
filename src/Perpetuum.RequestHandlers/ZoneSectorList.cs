@@ -23,7 +23,9 @@ namespace Perpetuum.RequestHandlers
                 var zoneID = record.GetValue<int>(3);
 
                 if (!zoneManager.ContainsZone(zoneID))
+                {
                     continue;
+                }
 
                 var sector = new ZoneSector
                 {

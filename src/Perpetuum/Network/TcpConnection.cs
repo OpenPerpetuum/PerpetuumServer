@@ -42,7 +42,9 @@ namespace Perpetuum.Network
         protected override void Dispose(bool disposing)
         {
             if (!disposing)
+            {
                 return;
+            }
 
             try
             {
@@ -67,7 +69,9 @@ namespace Perpetuum.Network
         public void Disconnect()
         {
             if (Interlocked.CompareExchange(ref _isDisconnected, 1, 0) == 1)
+            {
                 return;
+            }
 
             Task.Run(() =>
             {
@@ -99,7 +103,9 @@ namespace Perpetuum.Network
         public void Receive()
         {
             if (!IsConnected())
+            {
                 return;
+            }
 
             try
             {
@@ -121,7 +127,9 @@ namespace Perpetuum.Network
         private void ReceiveCallback(IAsyncResult ar)
         {
             if (!IsConnected())
+            {
                 return;
+            }
 
             try
             {
@@ -184,7 +192,9 @@ namespace Perpetuum.Network
 
                     // ha meg nincs meg a packet akkor meg varunk adatot
                     if (_packetStream.Position < _packetStream.Capacity)
+                    {
                         continue;
+                    }
 
                     var packetData = _packetStream.ToArray();
                     // reseteljuk a stream-et mert megint egy packetlength fog jonni
@@ -252,7 +262,9 @@ namespace Perpetuum.Network
         public virtual void Send(byte[] data)
         {
             if (!IsConnected())
+            {
                 return;
+            }
 
             var taken = false;
             try
@@ -270,7 +282,9 @@ namespace Perpetuum.Network
             finally
             {
                 if (taken)
+                {
                     _sendLock.Exit(false);
+                }
             }
         }
 
@@ -279,7 +293,9 @@ namespace Perpetuum.Network
             while (true)
             {
                 if (!IsConnected())
+                {
                     return;
+                }
 
                 try
                 {
@@ -313,7 +329,9 @@ namespace Perpetuum.Network
                 finally
                 {
                     if (taken)
+                    {
                         _sendLock.Exit(false);
+                    }
                 }
             }
         }

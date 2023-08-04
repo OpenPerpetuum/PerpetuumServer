@@ -29,11 +29,15 @@ namespace Perpetuum.Zones.Teleporting.Strategies
         {
             var zone = player.Zone;
             if (zone == null || player.States.LocalTeleport)
+            {
                 return null;
+            }
 
             var finder = new ClosestWalkablePositionFinder(zone, TargetPosition);
             if (!finder.Find(out Position validPosition))
+            {
                 return null;
+            }
 
             player.StopAllModules();
 

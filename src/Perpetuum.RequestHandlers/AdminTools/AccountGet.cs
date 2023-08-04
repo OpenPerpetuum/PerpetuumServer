@@ -16,7 +16,9 @@ namespace Perpetuum.RequestHandlers.AdminTools
             var id = request.Data.GetOrDefault<int>(k.accountID);
             var account = _accountRepository.Get(id);
             if (account == null)
+            {
                 throw new PerpetuumException(ErrorCodes.AccountNotFound);
+            }
 
             Message.Builder.FromRequest(request).SetData(k.account, account.ToDictionary()).Send();
         }

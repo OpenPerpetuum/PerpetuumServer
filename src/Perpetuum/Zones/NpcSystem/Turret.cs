@@ -46,12 +46,16 @@ namespace Perpetuum.Zones.NpcSystem
             _timer.Update(time);
 
             if (!_timer.Passed)
+            {
                 return;
+            }
 
             _timer.Reset();
 
             if (_module.State.Type != ModuleStateType.Idle)
+            {
                 return;
+            }
 
             _module.AcceptVisitor(this);
         }
@@ -59,7 +63,9 @@ namespace Perpetuum.Zones.NpcSystem
         private void TryActiveModule(LOSResult result, UnitLock primaryLock)
         {
             if (result.hit && !result.blockingFlags.HasFlag(BlockingFlags.Plant))
+            {
                 return;
+            }
 
             _module.Lock = primaryLock;
             _module.State.SwitchTo(ModuleStateType.Oneshot);
@@ -69,15 +75,21 @@ namespace Perpetuum.Zones.NpcSystem
         {
             var hasShieldEffect = module.ParentRobot.HasShieldEffect;
             if (hasShieldEffect)
+            {
                 return;
+            }
 
             var primaryLock = module.ParentRobot.GetFinishedPrimaryLock();
             if (primaryLock == null)
+            {
                 return;
+            }
 
             var visibility = module.ParentRobot.GetVisibility(primaryLock.Target);
             if (visibility == null)
+            {
                 return;
+            }
 
             var result = visibility.GetLineOfSight(true);
             TryActiveModule(result, primaryLock);
@@ -87,15 +99,21 @@ namespace Perpetuum.Zones.NpcSystem
         {
             var hasShieldEffect = module.ParentRobot.HasShieldEffect;
             if (hasShieldEffect)
+            {
                 return;
+            }
 
             var primaryLock = module.ParentRobot.GetFinishedPrimaryLock();
             if (primaryLock == null)
+            {
                 return;
+            }
 
             var visibility = module.ParentRobot.GetVisibility(primaryLock.Target);
             if (visibility == null)
+            {
                 return;
+            }
 
             var result = visibility.GetLineOfSight(false);
             TryActiveModule(result,primaryLock);
@@ -107,10 +125,14 @@ namespace Perpetuum.Zones.NpcSystem
         public void Visit(ArmorRepairModule module)
         {
             if (module.ParentRobot.ArmorPercentage >= ARMOR_REPAIR_THRESHOLD)
+            {
                 return;
+            }
 
             if (module.ParentRobot.CorePercentage < ARMOR_REPAIR_CORE_THRESHOLD)
+            {
                 return;
+            }
 
             module.State.SwitchTo(ModuleStateType.Oneshot);
         }
@@ -120,7 +142,9 @@ namespace Perpetuum.Zones.NpcSystem
         public void Visit(ShieldGeneratorModule module)
         {
             if (module.ParentRobot.ArmorPercentage >= SHIELD_ARMOR_THRESHOLD)
+            {
                 return;
+            }
 
             module.State.SwitchTo(ModuleStateType.Oneshot);
         }
@@ -130,11 +154,15 @@ namespace Perpetuum.Zones.NpcSystem
         public void Visit(SensorJammerModule module)
         {
             if ( module.ParentRobot.CorePercentage < SENSOR_JAMMER_CORE_THRESHOLD )
+            {
                 return;
+            }
 
             var lockTarget = ((Creature)module.ParentRobot).SelectOptimalLockTargetFor(module);
             if (lockTarget == null)
+            {
                 return;
+            }
 
             module.Lock = lockTarget;
             module.State.SwitchTo(ModuleStateType.Oneshot);
@@ -145,11 +173,15 @@ namespace Perpetuum.Zones.NpcSystem
         public void Visit(SensorDampenerModule module)
         {
             if (module.ParentRobot.CorePercentage < SENSOR_DAMPENER_CORE_THRESHOLD)
+            {
                 return;
+            }
 
             var lockTarget = ((Creature)module.ParentRobot).SelectOptimalLockTargetFor(module);
             if (lockTarget == null)
+            {
                 return;
+            }
 
             module.Lock = lockTarget;
             module.State.SwitchTo(ModuleStateType.Oneshot);
@@ -160,11 +192,15 @@ namespace Perpetuum.Zones.NpcSystem
         public void Visit(WebberModule module)
         {
             if (module.ParentRobot.CorePercentage < WEBBER_CORE_THRESHOLD)
+            {
                 return;
+            }
 
             var lockTarget = ((Creature)module.ParentRobot).SelectOptimalLockTargetFor(module);
             if (lockTarget == null)
+            {
                 return;
+            }
 
             module.Lock = lockTarget;
             module.State.SwitchTo(ModuleStateType.Oneshot);
@@ -175,11 +211,15 @@ namespace Perpetuum.Zones.NpcSystem
         public void Visit(TargetPainterModule module)
         {
             if (module.ParentRobot.CorePercentage < PAINTER_CORE_THRESHOLD)
+            {
                 return;
+            }
 
             var lockTarget = ((Creature)module.ParentRobot).SelectOptimalLockTargetFor(module);
             if (lockTarget == null)
+            {
                 return;
+            }
 
             module.Lock = lockTarget;
             module.State.SwitchTo(ModuleStateType.Oneshot);
@@ -190,14 +230,20 @@ namespace Perpetuum.Zones.NpcSystem
         public void Visit(BlobEmissionModulatorModule module)
         {
             if (module.ParentRobot.Zone.Configuration.Protected)
+            {
                 return;
+            }
 
             if (module.ParentRobot.CorePercentage < BLOBBER_CORE_THRESHOLD)
+            {
                 return;
+            }
 
             var lockTarget = ((Creature)module.ParentRobot).SelectOptimalLockTargetFor(module);
             if (lockTarget == null)
+            {
                 return;
+            }
 
             module.Lock = lockTarget;
             module.State.SwitchTo(ModuleStateType.Oneshot);
@@ -209,11 +255,15 @@ namespace Perpetuum.Zones.NpcSystem
         public void Visit(TargetBlinderModule module)
         {
             if (module.ParentRobot.CorePercentage < BLINDER_CORE_THRESHOLD)
+            {
                 return;
+            }
 
             var lockTarget = ((Creature)module.ParentRobot).SelectOptimalLockTargetFor(module);
             if (lockTarget == null)
+            {
                 return;
+            }
 
             module.Lock = lockTarget;
             module.State.SwitchTo(ModuleStateType.Oneshot);
@@ -225,21 +275,29 @@ namespace Perpetuum.Zones.NpcSystem
         public void Visit(EnergyNeutralizerModule module)
         {
             if (module.ParentRobot.CorePercentage < ENERGY_NEUTRALIZER_CORE_THRESHOLD)
+            {
                 return;
+            }
 
             var lockTarget = ((Creature)module.ParentRobot).SelectOptimalLockTargetFor(module);
             if ( lockTarget == null )
+            {
                 return;
+            }
 
             var visibility = module.ParentRobot.GetVisibility(lockTarget.Target);
             if (visibility == null)
+            {
                 return;
+            }
 
             var r = visibility.GetLineOfSight(false);
             if (r != null)
             {
                 if (r.hit)
+                {
                     return;
+                }
             }
 
             module.Lock = lockTarget;
@@ -251,21 +309,29 @@ namespace Perpetuum.Zones.NpcSystem
         public void Visit(EnergyVampireModule module)
         {
             if ( module.ParentRobot.CorePercentage < ENERGY_VAMPIRE_CORE_THRESHOLD )
+            {
                 return;
+            }
 
             var lockTarget = ((Creature)module.ParentRobot).SelectOptimalLockTargetFor(module);
             if ( lockTarget == null )
+            {
                 return;
+            }
 
             var visibility = module.ParentRobot.GetVisibility(lockTarget.Target);
             if (visibility == null)
+            {
                 return;
+            }
 
             var r = visibility.GetLineOfSight(false);
             if (r != null)
             {
                 if (r.hit)
+                {
                     return;
+                }
             }
 
             module.Lock = lockTarget;
@@ -293,7 +359,9 @@ namespace Perpetuum.Zones.NpcSystem
         public void Visit(CoreBoosterModule module)
         {
             if (module.ParentRobot.CorePercentage > ENERGY_INJECTOR_THRESHOLD)
+            {
                 return;
+            }
 
             module.State.SwitchTo(ModuleStateType.Oneshot);
         }
@@ -341,7 +409,9 @@ namespace Perpetuum.Zones.NpcSystem
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         protected override void OnUpdate(TimeSpan time)
@@ -353,10 +423,14 @@ namespace Perpetuum.Zones.NpcSystem
         protected void LockHostile(Unit unit,bool force = false)
         {
             if (IsLocked(unit))
+            {
                 return;
+            }
 
             if (!force && !IsHostile(unit))
+            {
                 return;
+            }
 
             AddLock(unit, false);
         }
@@ -483,7 +557,9 @@ namespace Perpetuum.Zones.NpcSystem
             public override void AttackHostile(Unit unit)
             {
                 if (!_turret.IsHostile(unit))
+                {
                     return;
+                }
 
                 _turret.LockHostile(unit);
                 base.AttackHostile(unit);
@@ -494,7 +570,9 @@ namespace Perpetuum.Zones.NpcSystem
             public override void Update(TimeSpan time)
             {
                 if ( !SelectPrimaryTarget(time) )
+                {
                     return;
+                }
 
                 foreach (var activator in _moduleActivators)
                 {
@@ -508,7 +586,9 @@ namespace Perpetuum.Zones.NpcSystem
             {
                 var locks = _turret.GetLocks().Where(l => l.State == LockState.Locked).ToArray();
                 if (locks.Length <= 0)
+                {
                     return false;
+                }
 
                 _primarySelectTimer.Update(time);
 
@@ -523,17 +603,23 @@ namespace Perpetuum.Zones.NpcSystem
                         var unitLock = (UnitLock)l;
 
                         if (unitLock.Primary)
+                        {
                             continue;
+                        }
 
                         var visibility = _turret.GetVisibility(unitLock.Target);
                         if (visibility == null)
+                        {
                             continue;
+                        }
 
                         var r = visibility.GetLineOfSight(false);
                         if (r != null)
                         {
                             if (r.hit && (r.blockingFlags & BlockingFlags.Plant) == 0)
+                            {
                                 continue;
+                            }
                         }
 
                         validLocks.Add(unitLock);

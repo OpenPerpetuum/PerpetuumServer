@@ -16,7 +16,9 @@ namespace Perpetuum.Containers.SystemContainers
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public static SystemContainer GetByName(string name)

@@ -54,7 +54,9 @@ namespace Perpetuum.Services.Relics
             //Minimum tick rate
             _refreshElapsed += time;
             if (_refreshElapsed < _relicRefreshRate)
+            {
                 return;
+            }
 
             //Update Relic lifespans, refresh beams and remove dead relics
             UpdateRelics();
@@ -99,7 +101,9 @@ namespace Perpetuum.Services.Relics
         public List<Dictionary<string, object>> GetRelicListDictionary()
         {
             using (Lock.Read(THREAD_TIMEOUT))
+            {
                 return DoGetRelicListDictionary();
+            }
         }
 
         protected virtual List<Dictionary<string, object>> DoGetRelicListDictionary()
@@ -127,7 +131,9 @@ namespace Perpetuum.Services.Relics
         protected int GetRelicCount()
         {
             using (Lock.Read(THREAD_TIMEOUT))
+            {
                 return _relics.Count;
+            }
         }
 
         private void SpawnRelic()

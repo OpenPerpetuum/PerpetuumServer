@@ -21,7 +21,9 @@ namespace Perpetuum.RequestHandlers.Gangs
 
                 var gang = _gangManager.GetGangByMember(character);
                 if (gang == null)
+                {
                     throw new PerpetuumException(ErrorCodes.CharacterNotInGang);
+                }
 
                 _gangManager.RemoveMember(gang, character, false);
 

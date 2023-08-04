@@ -44,7 +44,9 @@ namespace Perpetuum.Zones.Teleporting
         {
             var zone = Zone;
             if (zone == null)
+            {
                 return new TeleportDescription[0];
+            }
 
             var descriptionId = 0;
             var teleportColumns = zone.GetTeleportColumns().Where(t => t.IsEnabled);

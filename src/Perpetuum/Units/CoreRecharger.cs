@@ -14,12 +14,16 @@ namespace Perpetuum.Units
             _elapsed += elapsedTime;
 
             if (_elapsed < _coreRechargeFrequency)
+            {
                 return;
+            }
 
             _elapsed -= _coreRechargeFrequency;
 
             if (unit.Core >= unit.CoreMax)
+            {
                 return;
+            }
 
             var timeIncrement = unit.CoreRechargeTime.TotalMilliseconds / _coreRechargeFrequency.TotalMilliseconds;
             var fillRate = unit.Core.Ratio(unit.CoreMax);

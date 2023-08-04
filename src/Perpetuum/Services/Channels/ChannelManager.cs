@@ -93,7 +93,9 @@ namespace Perpetuum.Services.Channels
         {
             Channel channel;
             if ( !_channels.TryGetValue(channelName,out channel))
+            {
                 return;
+            }
 
             _channelRepository.Delete(channel);
             _channels.Remove(channelName);
@@ -112,11 +114,15 @@ namespace Perpetuum.Services.Channels
             var channel = UpdateChannel(channelName, c =>
             {
                 if (c.IsOnline(member))
+                {
                     return c;
+                }
 
                 if (_memberRepository.Get(c, member) != null)
+                {
                     return c;
-                 
+                }
+
                 if (member.AccessLevel.IsAdminOrGm())
                 {
                     role |= PresetChannelRoles.ROLE_GOD;
@@ -131,13 +137,17 @@ namespace Perpetuum.Services.Channels
                 _memberRepository.Insert(c, newMember);
 
                 if (_sessionManager.IsOnline(member))
+                {
                     return c.SetMember(newMember);
+                }
 
                 return c;
             });
 
             if (channel == null)
+            {
                 return;
+            }
 
             channel.SendAddMemberToAll(_sessionManager,newMember);
             channel.SendJoinedToMember(_sessionManager,newMember);
@@ -161,7 +171,9 @@ namespace Perpetuum.Services.Channels
         {
             var m = _memberRepository.Get(channel, character);
             if (m == null)
+            {
                 return channel;
+            }
 
             _memberRepository.Delete(channel, m);
 
@@ -199,7 +211,9 @@ namespace Perpetuum.Services.Channels
             });
 
             if ( channel == null )
+            {
                 return;
+            }
 
             var data = new Dictionary<string, object> { { k.issuerID, issuer.Id }, { k.password, password } };
             var n = channel.CreateNotificationMessage(ChannelNotify.ChangePassword, data);
@@ -217,7 +231,9 @@ namespace Perpetuum.Services.Channels
             });
             
             if ( channel == null )
+            {
                 return;
+            }
 
             var data = new Dictionary<string, object> { { k.issuerID, issuer.Id }, { k.topic, topic } };
             var n = channel.CreateNotificationMessage(ChannelNotify.ChangeTopic, data);
@@ -229,7 +245,9 @@ namespace Perpetuum.Services.Channels
         {
             // adminokra / gm-ekre nem lehet
             if (character.AccessLevel.IsAdminOrGm() && role == ChannelMemberRole.Undefined)
+            {
                 return;
+            }
 
             ChannelMember m = null;
             var channel = UpdateChannel(channelName, c =>
@@ -238,7 +256,9 @@ namespace Perpetuum.Services.Channels
 
                 m = c.GetMember(character);
                 if (m == null)
+                {
                     return c;
+                }
 
                 m = m.WithRole(role);
                 _memberRepository.Update(c, m);
@@ -246,7 +266,9 @@ namespace Perpetuum.Services.Channels
             });
             
             if ( channel == null || m == null)
+            {
                 return;
+            }
 
             var data = new Dictionary<string, object> { { k.issuerID, issuer.Id }, { k.member, m.ToDictionary() } };
             var n = channel.CreateNotificationMessage(ChannelNotify.ChangeMemberRole, data);
@@ -257,11 +279,15 @@ namespace Perpetuum.Services.Channels
         {
             Channel channel;
             if ( !_channels.TryGetValue(channelName,out channel))
+            {
                 return;
+            }
 
             var m = channel.GetMember(sender);
             if (m == null)
+            {
                 return;
+            }
 
             channel.Logger.LogMessage(sender, message);
 
@@ -275,7 +301,9 @@ namespace Perpetuum.Services.Channels
         {
             Channel channel;
             if (!_channels.TryGetValue(channelName, out channel))
+            {
                 return;
+            }
 
             channel.Logger.LogMessage(sender, message);
 
@@ -285,7 +313,9 @@ namespace Perpetuum.Services.Channels
         public void KickOrBan(string channelName, Character issuer, Character character, string message, bool ban)
         {
             if (issuer == character)
+            {
                 return;
+            }
 
             // adminokat / gm-eket nem lehet kickelni
             character.AccessLevel.IsAdminOrGm().ThrowIfTrue(ErrorCodes.AccessDenied);
@@ -297,15 +327,19 @@ namespace Perpetuum.Services.Channels
                 c.CheckRoleAndThrowIfFailed(issuer, PresetChannelRoles.ROLE_CAN_KICK_MEMBER);
 
                 if (ban)
+                {
                     _banRepository.Ban(c, character);
+                }
 
                 m = c.GetMember(character);
 
                 return LeaveChannel(c, character, true);
             });
 
-            if (channel == null || m == null ) 
+            if (channel == null || m == null )
+            {
                 return;
+            }
 
             var data = new Dictionary<string, object>
             {
@@ -324,7 +358,9 @@ namespace Perpetuum.Services.Channels
         {
             Channel channel;
             if ( !_channels.TryGetValue(channelName,out channel) )
+            {
                 return;
+            }
 
             channel.CheckRoleAndThrowIfFailed(issuer, PresetChannelRoles.ROLE_CAN_REMOVE_BAN);
             _banRepository.UnBan(channel, character);
@@ -338,14 +374,20 @@ namespace Perpetuum.Services.Channels
             {
                 Channel snapshot;
                 if (!_channels.TryGetValue(name, out snapshot))
+                {
                     return null;
+                }
 
                 var updated = channelUpdater(snapshot);
                 if (updated == snapshot)
+                {
                     return snapshot;
+                }
 
                 if (_channels.TryUpdate(name, updated, snapshot))
+                {
                     return updated;
+                }
 
                 spinWait.SpinOnce();
             }
@@ -355,7 +397,9 @@ namespace Perpetuum.Services.Channels
         {
             Channel channel;
             if (!_channels.TryGetValue(channelName, out channel))
+            {
                 return Enumerable.Empty<Character>();
+            }
 
             channel.CheckRoleAndThrowIfFailed(issuer, PresetChannelRoles.ROLE_CAN_LIST_BANNED_MEMBERS);
             return _banRepository.GetBannedCharacters(channel);

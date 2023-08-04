@@ -38,7 +38,9 @@ namespace Perpetuum.Modules.Weapons
             var result = new List<Damage>();
 
             if (!(GetParentModule() is WeaponModule weapon))
+            {
                 return result;
+            }
 
             if (weapon is FirearmWeaponModule firearm)
             {
@@ -81,8 +83,10 @@ namespace Perpetuum.Modules.Weapons
 
             property = GetPropertyModifier(AggregateField.damage_explosive);
 
-            if (!property.HasValue) 
+            if (!property.HasValue)
+            {
                 return result;
+            }
 
             damageModifier.Modify(ref property);
             result.Add(new Damage(DamageType.Explosive, property.Value));

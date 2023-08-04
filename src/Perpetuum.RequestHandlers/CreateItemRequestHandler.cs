@@ -64,12 +64,16 @@ namespace Perpetuum.RequestHandlers
 
             var robotTemplateId = request.Data.GetOrDefault<int>(k.templateID);
             if (robotTemplateId <= 0)
+            {
                 return null;
+            }
 
             var template = _robotTemplateReader.Get(robotTemplateId);
             var robot = template?.Build();
             if (robot == null)
+            {
                 return null;
+            }
 
             var character = request.Session.Character;
             robot.Initialize(character);

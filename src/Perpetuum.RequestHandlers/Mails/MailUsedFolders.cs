@@ -13,9 +13,13 @@ namespace Perpetuum.RequestHandlers.Mails
 
             var builder = Message.Builder.FromRequest(request);
             if (result.Length == 0)
+            {
                 builder.WithEmpty();
+            }
             else
+            {
                 builder.WithData(result).WrapToResult();
+            }
 
             builder.Send();
         }

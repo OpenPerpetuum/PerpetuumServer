@@ -30,7 +30,9 @@ namespace Perpetuum.Services.Looting
             foreach (var info in _lootInfos)
             {
                 if (FastRandom.NextDouble() >= info.probability)
+                {
                     continue;
+                }
 
                 var lootItem = LootItemBuilder.Create(info.item).SetDamaged(info.damaged).Build();
                 lootItem.Quantity = lootItem.ItemInfo.randomQuantity(); //roll random on generate

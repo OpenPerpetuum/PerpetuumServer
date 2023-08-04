@@ -11,7 +11,9 @@ namespace Perpetuum.RequestHandlers.Zone
             request.Zone.Terrain.Plants.UpdateAll((x, y, pi) =>
             {
                 if (pi.type == PlantType.Wall)
+                {
                     pi.Clear();
+                }
 
                 return pi;
             });

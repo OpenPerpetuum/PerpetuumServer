@@ -46,7 +46,9 @@ namespace Perpetuum.Services.ItemShop
 
             var record = Db.Query().CommandText(qryStr).SetParameter("@eid", Eid).SetParameter("@id", entryID).ExecuteSingleRow();
             if (record == null)
+            {
                 return null;
+            }
 
             var entry = CreateItemShopEntryFromRecord(record);
             return entry;
@@ -99,21 +101,29 @@ namespace Perpetuum.Services.ItemShop
         private void CheckStanding(Character character, ItemShopEntry shopEntry)
         {
             if (shopEntry.Standing == null)
+            {
                 return;
+            }
 
             var standing = _standingHandler.GetStanding(Owner, character.Eid);
             if (standing < shopEntry.Standing)
+            {
                 throw new PerpetuumException(ErrorCodes.StandingTooLow);
+            }
         }
 
         public void Buy(Container container, Character character, int entryID, int quantity = 1)
         {
             if (quantity < 1)
+            {
                 throw new PerpetuumException(ErrorCodes.WTFErrorMedicalAttentionSuggested);
+            }
 
             var entry = GetEntry(entryID);
             if (entry == null)
+            {
                 throw new PerpetuumException(ErrorCodes.ItemNotFound);
+            }
 
             entry.CheckGlobalLimit(quantity);
             CheckStanding(character, entry);
@@ -140,33 +150,40 @@ namespace Perpetuum.Services.ItemShop
             UpdateGlobalPurchaseCount(targetItem.Definition, targetItem.Quantity);
 
             if (entry.TmCoin > 0)
+            {
                 character.LogTransaction(TransactionLogEvent.Builder()
                     .SetTransactionType(TransactionType.ItemShopTake)
                     .SetCharacter(character)
                     .SetContainer(container)
                     .SetItem(EntityDefault.GetByName(DefinitionNames.TM_MISSION_COIN).Definition, entry.TmCoin * quantity));
+            }
 
             if (entry.IcsCoin > 0)
+            {
                 character.LogTransaction(TransactionLogEvent.Builder()
                     .SetTransactionType(TransactionType.ItemShopTake)
                     .SetCharacter(character)
                     .SetContainer(container)
                     .SetItem(EntityDefault.GetByName(DefinitionNames.ICS_MISSION_COIN).Definition, entry.IcsCoin * quantity));
+            }
 
             if (entry.AsiCoin > 0)
+            {
                 character.LogTransaction(TransactionLogEvent.Builder()
                     .SetTransactionType(TransactionType.ItemShopTake)
                     .SetCharacter(character)
                     .SetContainer(container)
                     .SetItem(EntityDefault.GetByName(DefinitionNames.ASI_MISSION_COIN).Definition, entry.AsiCoin * quantity));
+            }
 
             if (entry.UniCoin > 0)
+            {
                 character.LogTransaction(TransactionLogEvent.Builder()
                     .SetTransactionType(TransactionType.ItemShopTake)
                     .SetCharacter(character)
                     .SetContainer(container)
                     .SetItem(EntityDefault.GetByName(DefinitionNames.UNIVERSAL_MISSION_COIN).Definition, entry.UniCoin * quantity));
-
+            }
 
             character.LogTransaction(TransactionLogEvent.Builder()
                 .SetTransactionType(TransactionType.ItemShopBuy)

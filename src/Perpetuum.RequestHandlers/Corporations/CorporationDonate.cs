@@ -26,7 +26,9 @@ namespace Perpetuum.RequestHandlers.Corporations
                 var amount = request.Data.GetOrDefault<long>(k.amount);
 
                 if (amount <= 0)
+                {
                     return;
+                }
 
                 character.IsInTraining().ThrowIfTrue(ErrorCodes.TrainingCharacterInvolved);
 

@@ -37,7 +37,9 @@ namespace Perpetuum.RequestHandlers.Markets
                 var canceledItem = marketOrder.Cancel(_marketOrderRepository);
 
                 if (canceledItem != null)
+                {
                     result.Add(k.item, canceledItem.BaseInfoToDictionary());
+                }
 
                 result.Add(k.marketItemID, marketOrder.id); //return the item id anyways
 

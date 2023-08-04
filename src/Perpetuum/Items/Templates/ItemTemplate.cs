@@ -22,7 +22,9 @@ namespace Perpetuum.Items.Templates
         {
             var item = Build();
             if (item != null)
+            {
                 return OnValidate(item);
+            }
 
             Logger.Error("item definition is not a " + typeof(T).Name + ". definition:" + EntityDefault.Definition);
             return false;
@@ -38,7 +40,9 @@ namespace Perpetuum.Items.Templates
         {
             var item = Entity.Factory.CreateWithRandomEID(EntityDefault) as T;
             if (item == null)
+            {
                 return null;
+            }
 
             item.Quantity = Quantity;
             item.IsRepackaged = _repackaged;

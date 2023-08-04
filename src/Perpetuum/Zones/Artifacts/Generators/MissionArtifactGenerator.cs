@@ -20,8 +20,10 @@ namespace Perpetuum.Zones.Artifacts.Generators
             var artifactType = _target.GetArtifactType();
             var artifactInfo = _repository.GetArtifactInfo(artifactType);
 
-            if (!_repository.GetArtifacts().Where(a => a.MissionGuid == _target.MyZoneMissionInProgress.missionGuid && artifactInfo == a.Info).IsNullOrEmpty()) 
+            if (!_repository.GetArtifacts().Where(a => a.MissionGuid == _target.MyZoneMissionInProgress.missionGuid && artifactInfo == a.Info).IsNullOrEmpty())
+            {
                 return;
+            }
 
             var position = _target.GetPosition();
             var range = _target.GetRange();

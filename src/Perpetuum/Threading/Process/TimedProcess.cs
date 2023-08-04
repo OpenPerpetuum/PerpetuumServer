@@ -46,7 +46,9 @@ namespace Perpetuum.Threading.Process
             _elapsed += time;
 
             if ( _elapsed < _interval )
+            {
                 return;
+            }
 
             _elapsed -= _interval;
 

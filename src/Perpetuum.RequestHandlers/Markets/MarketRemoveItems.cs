@@ -66,7 +66,9 @@ namespace Perpetuum.RequestHandlers.Markets
                             var ed = EntityDefault.Get(definition);
 
                             if (!ed.Name.Contains(nameFilter))
+                            {
                                 continue;
+                            }
 
                             tmpList.Add(ed.Definition);
                         }

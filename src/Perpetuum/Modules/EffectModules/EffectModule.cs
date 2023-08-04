@@ -49,7 +49,9 @@ namespace Perpetuum.Modules.EffectModules
             }
 
             if (!CanApplyEffect(target))
+            {
                 return;
+            }
 
             target.InZone.ThrowIfFalse(ErrorCodes.TargetNotFound);
             target.States.Dead.ThrowIfTrue(ErrorCodes.TargetIsDead);
@@ -70,7 +72,9 @@ namespace Perpetuum.Modules.EffectModules
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         protected virtual void OnApplyingEffect(Unit target) {}

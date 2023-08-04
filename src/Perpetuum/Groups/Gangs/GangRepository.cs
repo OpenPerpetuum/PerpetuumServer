@@ -23,7 +23,9 @@ namespace Perpetuum.Groups.Gangs
                 .ExecuteNonQuery();
 
             if (res == 0)
+            {
                 throw new PerpetuumException(ErrorCodes.SQLInsertError);
+            }
 
             foreach (var member in gang.GetMembers())
             {
@@ -38,7 +40,9 @@ namespace Perpetuum.Groups.Gangs
                 .SetParameter("@memberId", member.Id).ExecuteNonQuery();
 
             if (res == 0)
+            {
                 throw new PerpetuumException(ErrorCodes.SQLInsertError);
+            }
         }
 
         public void DeleteMember(Gang gang, Character member)
@@ -48,7 +52,9 @@ namespace Perpetuum.Groups.Gangs
                 .SetParameter("@memberId", member.Id).ExecuteNonQuery();
 
             if (res == 0)
+            {
                 throw new PerpetuumException(ErrorCodes.SQLDeleteError);
+            }
         }
 
         public Guid GetGangIDByMember(Character member)
@@ -73,7 +79,9 @@ namespace Perpetuum.Groups.Gangs
                 .SetParameter("@leaderId", newLeader.Id).ExecuteNonQuery();
 
             if (res == 0)
+            {
                 throw new PerpetuumException(ErrorCodes.SQLUpdateError);
+            }
         }
 
         public Gang Get(Guid gangID)
@@ -83,7 +91,9 @@ namespace Perpetuum.Groups.Gangs
                 .ExecuteSingleRow();
 
             if (gangRecord == null)
+            {
                 return null;
+            }
 
             var gang = _gangFactory();
             gang.Id = gangID;
@@ -113,7 +123,9 @@ namespace Perpetuum.Groups.Gangs
                 .ExecuteNonQuery();
 
             if (res == 0)
+            {
                 throw new PerpetuumException(ErrorCodes.SQLUpdateError);
+            }
         }
 
         public IEnumerable<Gang> GetAll()

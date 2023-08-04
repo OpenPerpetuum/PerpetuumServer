@@ -47,7 +47,9 @@ namespace Perpetuum.Units
                 TryReApplyDespawnEffect(unit);
 
                 if (HasEffectOrPending(unit))
+                {
                     return;
+                }
 
                 CanApplyDespawnEffect = null;
                 if (DespawnStrategy != null)
@@ -66,11 +68,15 @@ namespace Perpetuum.Units
         {
             var canApplyDespawnEffect = CanApplyDespawnEffect;
             if (canApplyDespawnEffect == null)
+            {
                 return;
+            }
 
             var applyDespawnEffect = canApplyDespawnEffect(unit);
             if (!applyDespawnEffect)
+            {
                 return;
+            }
 
             ApplyDespawnEffect(unit);
         }
@@ -119,7 +125,9 @@ namespace Perpetuum.Units
             _timer.Update(time).IsPassed(() =>
             {
                 if (_canceled || HasEffectOrPending(unit))
+                {
                     return;
+                }
 
                 DespawnStrategy?.Invoke(unit);
             });

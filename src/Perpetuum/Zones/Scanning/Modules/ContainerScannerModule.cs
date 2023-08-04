@@ -41,7 +41,9 @@ namespace Perpetuum.Zones.Scanning.Modules
         {
             var npc = target as Npc;
             if (npc == null)
+            {
                 return;
+            }
 
             player.MissionHandler.EnqueueMissionEventInfo(new ScanContainerEventInfo(player,npc,target.CurrentPosition));
             

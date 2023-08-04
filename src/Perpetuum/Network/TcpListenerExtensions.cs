@@ -18,7 +18,9 @@ namespace Perpetuum.Network
             try
             {
                 if (ar == null)
+                {
                     return;
+                }
 
                 var helper = (ListenerHelper) ar.AsyncState;
                 var socket = helper.listener.EndAcceptSocket(ar);

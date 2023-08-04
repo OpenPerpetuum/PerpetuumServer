@@ -24,7 +24,9 @@ namespace Perpetuum.Containers
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override void AddItem(Item item, long issuerEid, bool doStack)

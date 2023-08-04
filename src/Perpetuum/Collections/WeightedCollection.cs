@@ -26,10 +26,14 @@ namespace Perpetuum.Collections
         public T GetRandom()
         {
             if (_sumWeights == 0)
+            {
                 return default;
+            }
 
             if (_list.Count == 1)
+            {
                 return _list.First().Item;
+            }
 
             var weightTarget = FastRandom.NextInt(_sumWeights - 1);
             var current = 0;
@@ -38,7 +42,9 @@ namespace Perpetuum.Collections
             {
                 current += iterator.Current.Weight;
                 if (current > weightTarget)
+                {
                     break;
+                }
             }
             if (iterator.Current != null)
             {

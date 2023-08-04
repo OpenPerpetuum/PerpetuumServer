@@ -33,7 +33,9 @@ namespace Perpetuum.Zones.PBS.Connections
             //csak dockingbase-re lehet kotni
 
             if (!CheckTargetType<PBSDockingBase>())
+            {
                 return;
+            }
 
             var dockingBaseInComingConnections = _target.ConnectionHandler.InConnections;
 
@@ -41,7 +43,11 @@ namespace Perpetuum.Zones.PBS.Connections
 
             foreach (var connection in dockingBaseInComingConnections)
             {
-                if (node.GetType() != connection.TargetPbsObject.GetType()) continue;
+                if (node.GetType() != connection.TargetPbsObject.GetType())
+                {
+                    continue;
+                }
+
                 Error = ErrorCodes.FacilityTypeAlreadyConnected;
                 return;
             }
@@ -297,15 +303,24 @@ namespace Perpetuum.Zones.PBS.Connections
             {
                 var pbsBase = NetworkNodes.FirstOrDefault(o => o is PBSDockingBase);
                 if (pbsBase == null)
+                {
                     return;
+                }
 
                 _pbsObject.ReinforceHandler.ForceDailyOffset(pbsBase.ReinforceHandler.ReinforceOffsetHours); //this node
 
                 foreach (var node in NetworkNodes)
                 {
-                    if (node.Equals(_pbsObject)) continue;
-                    if (node.Equals(pbsBase)) continue;
-                    
+                    if (node.Equals(_pbsObject))
+                    {
+                        continue;
+                    }
+
+                    if (node.Equals(pbsBase))
+                    {
+                        continue;
+                    }
+
                     //all reinforcable nodes in the network
                     node.ReinforceHandler.ForceDailyOffset(pbsBase.ReinforceHandler.ReinforceOffsetHours);
                 }
@@ -348,8 +363,10 @@ namespace Perpetuum.Zones.PBS.Connections
                 DeleteConnectionFromDb(pbsConnection);
 
                 if (pbsConnection.IsOutgoing)
+                {
                     pbsConnection.TargetPbsObject.ConnectionHandler.RemoveConnectedObject(_pbsObject);
-                
+                }
+
                 deletedConnections.Add(pbsConnection);
             }
 
@@ -364,7 +381,10 @@ namespace Perpetuum.Zones.PBS.Connections
                 //detect orphanship -- after deleting the connection set orphan status on all pbsObject 
                 foreach (var pbsObject in myNetwork)
                 {
-                    if (pbsObject.Equals(_pbsObject)) continue; //not myself
+                    if (pbsObject.Equals(_pbsObject))
+                    {
+                        continue; //not myself
+                    }
 
                     var tmpNetwork = pbsObject.ConnectionHandler.NetworkNodes;
                     var orphanStatus = !tmpNetwork.Any(n => n is PBSDockingBase);
@@ -381,8 +401,11 @@ namespace Perpetuum.Zones.PBS.Connections
 
         private void DeleteConnectionFromDb(PBSConnection connection)
         {
-            if (connection == null) return;
-            
+            if (connection == null)
+            {
+                return;
+            }
+
             _connections = null;
 
             connection.DeleteFromDb();
@@ -431,7 +454,10 @@ namespace Perpetuum.Zones.PBS.Connections
 
             var connection = GetConnectionByObject(pbsObject);
 
-            if (connection == null) return;
+            if (connection == null)
+            {
+                return;
+            }
 
             connection.IsOutgoing.ThrowIfFalse(ErrorCodes.ConnectionMustBeOutgoing);
 
@@ -492,9 +518,11 @@ namespace Perpetuum.Zones.PBS.Connections
             if (_outConnections < 0)
             {
                 if (_pbsObject.ED.Config.outConnections != null)
+                {
                     return (int) _pbsObject.ED.Config.outConnections;
+                }
 
-                    Logger.Error("no outConnections was defined for: " + _pbsObject.Definition + " " + _pbsObject.ED.Name);
+                Logger.Error("no outConnections was defined for: " + _pbsObject.Definition + " " + _pbsObject.ED.Name);
                     _outConnections = 0;
             }
             return _outConnections;
@@ -507,7 +535,9 @@ namespace Perpetuum.Zones.PBS.Connections
             if (_inConnections < 0)
             {
                 if (_pbsObject.ED.Config.inConnections != null)
+                {
                     return (int)_pbsObject.ED.Config.inConnections;
+                }
 
                 Logger.Error("no inConnections was defined for: " + _pbsObject.Definition + " " + _pbsObject.ED.Name);
                 _inConnections = 0;
@@ -586,7 +616,10 @@ namespace Perpetuum.Zones.PBS.Connections
             foreach (var connection in connections)
             {
                 var connectedUnit = connection.GetAsUnit();
-                if (connectedUnit == null) continue;
+                if (connectedUnit == null)
+                {
+                    continue;
+                }
 
                 if (collected.ContainsKey(connectedUnit.Eid))
                 {

@@ -13,7 +13,9 @@ namespace Perpetuum.Accounting.Characters
             {
                 var c = Character.Get(characterId);
                 if (c == Character.None)
+                {
                     continue;
+                }
 
                 result.Add(c);
             }

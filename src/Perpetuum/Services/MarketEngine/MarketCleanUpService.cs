@@ -39,7 +39,9 @@ namespace Perpetuum.Services.MarketEngine
                         };
 
                         if (canceledItem != null)
+                        {
                             tempDict.Add(k.item, canceledItem.BaseInfoToDictionary());
+                        }
 
                         var submitter = Character.GetByEid(marketItem.submitterEID);
 

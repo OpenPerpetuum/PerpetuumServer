@@ -28,13 +28,17 @@ namespace Perpetuum
         public static void ThrowIfTrue([UsedImplicitly] this bool value, Func<Exception> exceptionFactory)
         {
             if (value)
+            {
                 throw exceptionFactory();
+            }
         }
 
         public static void ThrowIfFalse([UsedImplicitly] this bool value, Func<Exception> exceptionFactory)
         {
             if (!value)
+            {
                 throw exceptionFactory();
+            }
         }
 
         public static T ThrowIfNotType<T>(this object value, ErrorCodes error)
@@ -138,7 +142,9 @@ namespace Perpetuum
         public static T ThrowIfNull<T>([CanBeNull] this T source, Func<Exception> exceptionFactory)
         {
             if (Equals(source, null))
+            {
                 throw exceptionFactory();
+            }
 
             return source;
         }

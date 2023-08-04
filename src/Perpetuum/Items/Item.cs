@@ -71,7 +71,9 @@ namespace Perpetuum.Items
         public ItemPropertyModifier GetPropertyModifier(AggregateField field)
         {
             if (TryGetPropertyModifier(field,out ItemPropertyModifier m))
+            {
                 return m;
+            }
 
             return ItemPropertyModifier.Create(field);
         }
@@ -178,10 +180,14 @@ namespace Perpetuum.Items
             get
             {
                 if (ED.AttributeFlags.AlwaysStackable)
+                {
                     return true;
+                }
 
                 if (ED.AttributeFlags.NonStackable)
+                {
                     return false;
+                }
 
                 return !IsDamaged;
             }
@@ -215,13 +221,17 @@ namespace Perpetuum.Items
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public void CheckOwnerCharacterAndCorporationAndThrowIfFailed(Character character)
         {
             if (Owner == 0)
+            {
                 return;
+            }
 
             if (Owner != character.CorporationEid)
             {
@@ -232,7 +242,9 @@ namespace Perpetuum.Items
         public void CheckOwnerOnlyCharacterAndThrowIfFailed(Character character)
         {
             if (Owner == 0)
+            {
                 return;
+            }
 
             Owner.ThrowIfNotEqual(character.Eid, ErrorCodes.OwnerMismatch);
         }
@@ -247,29 +259,41 @@ namespace Perpetuum.Items
         public ErrorCodes CanStackTo(Item target)
         {
             if (target.Eid == Eid)
+            {
                 return ErrorCodes.WTFErrorMedicalAttentionSuggested;
+            }
 
             //they must be the same type
             if (target.ED != ED)
+            {
                 return ErrorCodes.ItemTypeMismatch;
+            }
 
             //non stackable flag check
             if (target.ED.AttributeFlags.NonStackable)
+            {
                 return ErrorCodes.ItemNotStackable;
+            }
 
             if (Math.Abs(target.Health - Health) > double.Epsilon)
+            {
                 return ErrorCodes.ItemHealthMismatch;
+            }
 
             //if stackable is it repackaged?
             if (!target.ED.AttributeFlags.AlwaysStackable)
             {
                 if (!target.IsRepackaged || !IsRepackaged)
+                {
                     return ErrorCodes.ItemHasToBeRepackaged;
+                }
             }
 
             var sumQty = (decimal)target.Quantity + Quantity;
             if (sumQty > int.MaxValue)
+            {
                 return ErrorCodes.MaximumStackSizeExceeded;
+            }
 
             return ErrorCodes.NoError;
         }
@@ -300,7 +324,9 @@ namespace Perpetuum.Items
         public Item Unstack(int amount)
         {
             if (Quantity <= amount)
+            {
                 return this;
+            }
 
             amount.ThrowIfLess(1, ErrorCodes.AccessDenied);
 
@@ -349,7 +375,10 @@ namespace Perpetuum.Items
         {
             var item = LoadItem(itemEid);
             if (item == null)
+            {
                 throw new PerpetuumException(ErrorCodes.ItemNotFound);
+            }
+
             return item;
         }
 

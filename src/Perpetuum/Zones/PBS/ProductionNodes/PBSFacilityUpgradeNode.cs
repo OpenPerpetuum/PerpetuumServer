@@ -20,7 +20,9 @@ namespace Perpetuum.Zones.PBS.ProductionNodes
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public ICoreUseHandler CoreUseHandler { get { return _coreUseHandler; } }
@@ -90,7 +92,10 @@ namespace Perpetuum.Zones.PBS.ProductionNodes
 
         public bool IsContributing()
         {
-            if (!OnlineStatus) return false;
+            if (!OnlineStatus)
+            {
+                return false;
+            }
 
             if (_coreUseHandler.EnergyState == PBSEnergyState.active)
             {

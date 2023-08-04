@@ -32,7 +32,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals.Generators
                     tiles.AddOrUpdate(point,1,c => c + 1);
 
                     if (tiles.Count >= MaxTiles)
+                    {
                         return tiles;
+                    }
                 }
 
                 var r = new List<Point>();
@@ -40,7 +42,9 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals.Generators
                 foreach (var np in current.GetNeighbours())
                 {
                     if (closed.Contains(np))
+                    {
                         continue;
+                    }
 
                     if (!IsValid(np))
                     {
@@ -52,9 +56,13 @@ namespace Perpetuum.Zones.Terrains.Materials.Minerals.Generators
                 }
 
                 if (r.Count == 0)
+                {
                     q.Enqueue(tiles.Keys.RandomElement());
+                }
                 else
+                {
                     q.Enqueue(r.RandomElement());
+                }
             }
 
             return tiles;

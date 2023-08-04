@@ -86,20 +86,28 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
             if (CheckMessage(value, out T msg))
             {
                 if (CheckState(msg))
+                {
                     return;
+                }
 
                 if (_spawning)
+                {
                     return;
+                }
 
                 CheckReinforcements(msg);
 
                 var wave = GetNextWave(msg);
                 if (wave == null)
+                {
                     return; // Presence not found for this message state or already spawned
+                }
 
                 var spawnPos = FindSpawnPosition(msg, MAX_SPAWN_DIST);
                 if (spawnPos == Position.Empty)
+                {
                     return; // Failed to find valid spawn location, try again on next cycle
+                }
 
                 var homePos = GetHomePos(msg, spawnPos);
 

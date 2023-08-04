@@ -26,7 +26,9 @@ namespace Perpetuum.Collections.Spatial
         {
             QuadTreeItem<T> item;
             if (!_root.TryAdd(x, y, value, out item))
+            {
                 return null;
+            }
 
             return item;
         }
@@ -40,17 +42,23 @@ namespace Perpetuum.Collections.Spatial
             while (q.TryDequeue(out node))
             {
                 if ( !area.IntersectsWith(node.Area) )
+                {
                     continue;
+                }
 
                 foreach (var item in node.GetItems())
                 {
                     if ( area.Contains(item.X,item.Y))
+                    {
                         yield return item;
+                    }
                 }
 
                 var nodes = node.GetNodes();
                 if (nodes == null)
+                {
                     continue;
+                }
 
                 for (var i = 0; i < 4; i++)
                 {

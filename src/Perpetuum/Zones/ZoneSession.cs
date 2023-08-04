@@ -102,7 +102,9 @@ namespace Perpetuum.Zones
         public void SendPacket(IBuilder<Packet> packetBuilder)
         {
             if (packetBuilder == null)
+            {
                 return;
+            }
 
             var packet = packetBuilder.Build();
             SendPacket(packet);
@@ -205,7 +207,9 @@ namespace Perpetuum.Zones
             SendPacket(packet);
 
             if (cancelLogout)
+            {
                 CancelLogout(true);
+            }
         }
 
         private void WriteFQLog(string message)
@@ -214,7 +218,9 @@ namespace Perpetuum.Zones
 
             var player = _player;
             if (player != null)
+            {
                 info = player.InfoString;
+            }
 
             var e = new LogEvent
             {
@@ -311,7 +317,9 @@ namespace Perpetuum.Zones
         {
             var player = _player;
             if (player == null)
+            {
                 return;
+            }
 
             player.States.InMoveable.ThrowIfTrue(ErrorCodes.InvalidMovement);
             var position = packet.ReadPosition();
@@ -319,7 +327,9 @@ namespace Perpetuum.Zones
             var direction = (float)packet.ReadByte() / 255;
 
             if (!player.TryMove(position))
+            {
                 throw new PerpetuumException(ErrorCodes.InvalidMovement);
+            }
 
             player.CurrentSpeed = speed;
             player.Direction = direction;
@@ -421,7 +431,9 @@ namespace Perpetuum.Zones
 
                 var itemDeployer = item.ThrowIfNotType<ItemDeployerBase>(ErrorCodes.DefinitionNotSupported);
                 if (itemDeployer is FieldContainerCapsule capsule)
+                {
                     capsule.PinCode = binaryStream.ReadInt();
+                }
 
                 itemDeployer.Deploy(_zone, _player);
 
@@ -450,7 +462,9 @@ namespace Perpetuum.Zones
         {
             var gang = _player.Gang;
             if (gang == null)
+            {
                 return;
+            }
 
             packet.ReadLong();
             var doodleData = packet.ReadBytes(8);
@@ -524,19 +538,25 @@ namespace Perpetuum.Zones
             var module = component.GetModule(slot).ThrowIfNotType<ActiveModule>(ErrorCodes.ModuleNotFound);
 
             if (!module.IsAmmoable)
+            {
                 return;
+            }
 
             var ammo = module.GetAmmo();
 
             if (ammoDefinition == 0)
             {
                 if (ammo != null)
+                {
                     module.State.UnloadAmmo();
+                }
             }
             else
             {
                 if (ammo?.Definition == ammoDefinition && ammo.Quantity == module.AmmoCapacity)
+                {
                     return;
+                }
 
                 module.CheckLoadableAmmo(ammoDefinition).ThrowIfFalse(ErrorCodes.InvalidAmmoDefinition);
 
@@ -629,13 +649,17 @@ namespace Perpetuum.Zones
             foreach (var module in _player.ActiveModules)
             {
                 if (!module.IsCategory(cf))
+                {
                     continue;
+                }
 
                 if (module.IsAmmoable)
                 {
                     var ammo = module.GetAmmo();
                     if (ammo == null || ammo.Quantity == 0)
+                    {
                         continue;
+                    }
                 }
 
                 var lockTarget = module.ED.AttributeFlags.PrimaryLockedTarget ? _player.GetPrimaryLock().ThrowIfNull(ErrorCodes.PrimaryLockTargetNotFound) :
@@ -740,7 +764,9 @@ namespace Perpetuum.Zones
             var component = _player.GetRobotComponent(robotComponent);
             var module = component?.GetModule(slot) as ActiveModule;
             if (module == null)
+            {
                 return;
+            }
 
             using (var scope = Db.CreateTransaction())
             {
@@ -787,24 +813,32 @@ namespace Perpetuum.Zones
         {
             var player = _player;
             if (player == null)
+            {
                 return;
+            }
 
             lock (_logoutSync)
             {
                 if (_logoutTimer != null)
+                {
                     return;
+                }
 
                 _safeLogout = safeLogout;
 
                 if (player.HasPvpEffect)
+                {
                     player.StopAllModules();
+                }
 
                 var logoutTime = player.IsInSafeArea ? _pveLogoutTime : _pvpLogoutTime;
 
                 var pvpEffect = player.EffectHandler.GetEffectsByType(EffectType.effect_pvp).FirstOrDefault();
                 var effectTimer = pvpEffect?.Timer;
                 if (effectTimer != null)
+                {
                     logoutTime = logoutTime.Max(effectTimer.Remaining);
+                }
 
                 _logoutTimer = new IntervalTimer(logoutTime);
 
@@ -834,13 +868,17 @@ namespace Perpetuum.Zones
         private void CancelLogout(bool force, bool sendPacket = true)
         {
             if (_logoutTimer == null || (!force && !_safeLogout))
+            {
                 return;
+            }
 
             _safeLogout = false;
             _logoutTimer = null;
 
             if (!sendPacket)
+            {
                 return;
+            }
             // itt is kuldunk packetet,h megszakadt
             SendCancelLogoutPacket();
         }
@@ -848,7 +886,9 @@ namespace Perpetuum.Zones
         public void ResetLogoutTimer()
         {
             if (_logoutTimer == null)
+            {
                 return;
+            }
 
             _logoutTimer.Reset();
             SendStartLogoutPacket(_logoutTimer);
@@ -867,7 +907,9 @@ namespace Perpetuum.Zones
         public void SendBeam(Beam beam)
         {
             if (beam.Type == BeamType.undefined)
+            {
                 return;
+            }
 
             SendPacket(new BeamPacketBuilder(beam));
         }
@@ -882,17 +924,23 @@ namespace Perpetuum.Zones
         private void UpdateLogout(TimeSpan time)
         {
             if (_logoutTimer == null)
+            {
                 return;
+            }
 
             _logoutTimer.Update(time);
 
             if (!_logoutTimer.Passed)
+            {
                 return;
+            }
 
             _logoutTimer = null;
 
             if (_isInLogout)
+            {
                 return;
+            }
 
             _isInLogout = true;
 
@@ -958,7 +1006,9 @@ namespace Perpetuum.Zones
             {
                 var player = _session._player;
                 if (player == null)
+                {
                     return;
+                }
 
                 while (_beams.TryDequeue(out Beam beam))
                 {
@@ -977,7 +1027,9 @@ namespace Perpetuum.Zones
         {
             var player = _player;
             if (player == null)
+            {
                 return;
+            }
 
             if (player.IsInRangeOf3D(beam.SourcePosition, beam.Visibility) || player.IsInRangeOf3D(beam.TargetPosition, beam.Visibility))
             {

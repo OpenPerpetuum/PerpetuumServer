@@ -30,13 +30,17 @@ namespace Perpetuum
             }
 
             if (d.TryRemove(key, out value))
+            {
                 return true;
+            }
 
             var sw = new SpinWait();
             while (d.ContainsKey(key))
             {
                 if (d.TryRemove(key, out value))
+                {
                     return true;
+                }
 
                 sw.SpinOnce();
             }
@@ -59,7 +63,9 @@ namespace Perpetuum
         public static void AddRange<TK, TV>(this IDictionary<TK, TV> source, IEnumerable<KeyValuePair<TK, TV>> collection)
         {
             if (collection == null)
+            {
                 return;
+            }
 
             foreach (var kvp in collection)
             {
@@ -70,7 +76,9 @@ namespace Perpetuum
         public static void RemoveRange<TK, TV>(this IDictionary<TK, TV> source, IEnumerable<TK> collection)
         {
             if (collection == null)
+            {
                 return;
+            }
 
             using (var e = collection.GetEnumerator())
             {
@@ -89,7 +97,9 @@ namespace Perpetuum
         public static TV GetOrDefault<TK, TV>(this IDictionary<TK, TV> dictionary, TK key, TV defaultValue = default(TV))
         {
             if (dictionary == null)
+            {
                 return defaultValue;
+            }
 
             if (!dictionary.TryGetValue(key, out TV result))
             {
@@ -101,7 +111,9 @@ namespace Perpetuum
         public static T GetOrDefault<T>(this IDictionary<string, object> dictionary, string key, T defaultValue = default(T))
         {
             if (dictionary == null)
+            {
                 return default(T);
+            }
 
             object value;
             if (!dictionary.TryGetValue(key, out value))
@@ -116,13 +128,17 @@ namespace Perpetuum
         public static T GetOrDefault<T>(this IDictionary<string, object> dictionary, string key, Func<T> valueFactory)
         {
             if (dictionary == null)
+            {
                 return default(T);
+            }
 
             object value;
             if (!dictionary.TryGetValue(key, out value))
             {
                 if (valueFactory == null)
+                {
                     return default(T);
+                }
 
                 return valueFactory();
             }
@@ -150,10 +166,14 @@ namespace Perpetuum
         public static bool TryAdd<TK, TV>(this IDictionary<TK, TV> dictionary, TK key, TV value)
         {
             if (dictionary == null)
+            {
                 return false;
+            }
 
             if (dictionary.ContainsKey(key))
+            {
                 return false;
+            }
 
             dictionary.Add(key, value);
             return true;
@@ -184,22 +204,32 @@ namespace Perpetuum
         public static bool Compare<TK, TV>(this IDictionary<TK, TV> left, Dictionary<TK, TV> right)
         {
             if (left == null && right == null)
+            {
                 return true;
+            }
 
             if (left == null || right == null)
+            {
                 return false;
+            }
 
             if (left.Count != right.Count)
+            {
                 return false;
+            }
 
             foreach (var leftKvP in left)
             {
                 TV rightValue;
                 if (!right.TryGetValue(leftKvP.Key, out rightValue))
+                {
                     return false;
+                }
 
                 if (!Equals(leftKvP.Value, rightValue))
+                {
                     return false;
+                }
             }
             return true;
         }
@@ -207,7 +237,9 @@ namespace Perpetuum
         public static void AddOrUpdate<TK, TV>(this IDictionary<TK, TV> dictionary, TK key, TV newValue, Func<TV, TV> updateFunc)
         {
             if (dictionary == null)
+            {
                 return;
+            }
 
             TV currentValue;
             if (!dictionary.TryGetValue(key, out currentValue))
@@ -239,7 +271,10 @@ namespace Perpetuum
 
             foreach (var pair in dictionary)
             {
-                if (exceptKey != null && pair.Key == exceptKey) continue;
+                if (exceptKey != null && pair.Key == exceptKey)
+                {
+                    continue;
+                }
 
                 listKeys.Add(pair.Key);
                 listValues.Add(pair.Value);
@@ -264,7 +299,9 @@ namespace Perpetuum
         public static string ToDebugString<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> dictionary)
         {
             if (dictionary == null)
+            {
                 return string.Empty;
+            }
 
             var builder = new StringBuilder();
 
@@ -274,7 +311,10 @@ namespace Perpetuum
 
             foreach (var kvp in dictionary)
             {
-                if (first) first = false;
+                if (first)
+                {
+                    first = false;
+                }
                 else
                 {
                     builder.Append(',');
@@ -296,7 +336,9 @@ namespace Perpetuum
         public static IDictionary<string, object> ToDictionary(this IDictionary dictionary)
         {
             if (dictionary == null)
+            {
                 return null;
+            }
 
             var result = new Dictionary<string, object>();
 

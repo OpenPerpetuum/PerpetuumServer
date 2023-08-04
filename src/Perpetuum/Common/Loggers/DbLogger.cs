@@ -11,7 +11,9 @@ namespace Perpetuum.Common.Loggers
             BuildCommand(logEvent, query);
             var res = query.ExecuteNonQuery();
             if (res == 0)
+            {
                 throw new PerpetuumException(ErrorCodes.SQLInsertError);
+            }
         }
 
         protected abstract void BuildCommand(T logEvent, DbQuery builder);

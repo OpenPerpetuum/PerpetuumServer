@@ -74,7 +74,9 @@ namespace Perpetuum.Groups.Corporations
         public static DefaultCorporation GetBySchool(int raceID,int schoolId)
         {
             if (schoolId == 0)
+            {
                 return null;
+            }
 
             var corporationName = "";
 

@@ -13,7 +13,9 @@ namespace Perpetuum.RequestHandlers.Zone
             request.Zone.Terrain.Plants.UpdateAll((x, y, pi) =>
             {
                 if (pi.type != PlantType.Wall)
+                {
                     return pi;
+                }
 
                 pi.health = wallRule.Health[pi.state];
                 return pi;

@@ -62,7 +62,9 @@ namespace Perpetuum
         private void Enqueue(MessageInfo messageInfo)
         {
             if (messageInfo.corporationEid == 0 && messageInfo.corporation == null)
+            {
                 return;
+            }
 
             lock (_messageQueue)
             {

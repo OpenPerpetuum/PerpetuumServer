@@ -23,8 +23,10 @@ namespace Perpetuum.RequestHandlers.Zone
             foreach (var presence in request.Zone.PresenceManager.GetPresences())
             {
                 var presenceType = presence.Configuration.PresenceType;
-                if (presenceType != PresenceType.Normal && presenceType != PresenceType.Random) 
+                if (presenceType != PresenceType.Normal && presenceType != PresenceType.Random)
+                {
                     continue;
+                }
 
                 foreach (var npcFlock in presence.Flocks)
                 {

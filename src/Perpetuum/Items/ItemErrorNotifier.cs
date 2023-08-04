@@ -21,7 +21,9 @@ namespace Perpetuum.Items
         public void Dispose()
         {
             if (_errors.Count <= 0)
+            {
                 return;
+            }
 
             var kvp = _errors.RandomElement();
             var item = kvp.Key;
@@ -29,7 +31,9 @@ namespace Perpetuum.Items
             item.SendErrorMessageToOwner(Commands.RelocateItems, exception.error);
 
             if (_rethrow)
+            {
                 throw exception;
+            }
         }
     }
 }

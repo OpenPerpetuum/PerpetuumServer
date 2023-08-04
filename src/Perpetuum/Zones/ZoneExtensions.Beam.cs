@@ -43,7 +43,9 @@ namespace Perpetuum.Zones
         public static void CreateBeam(this IZone zone, BeamType type, Action<BeamBuilder> builderAction)
         {
             if (type == BeamType.undefined || type == default(BeamType))
+            {
                 return;
+            }
 
             var builder = Beam.NewBuilder().WithType(type);
             builderAction(builder);
@@ -53,7 +55,9 @@ namespace Perpetuum.Zones
         public static void CreateBeam(this IZone zone,IBeamBuilder builder)
         {
             if (zone == null || builder == null)
+            {
                 return;
+            }
 
             var beam = builder.Build();
             zone.Beams.Add(beam);
@@ -69,7 +73,9 @@ namespace Perpetuum.Zones
         public static void CreateDebugBeam(this IZone zone, BeamType beamType, Position position)
         {
             if ( zone == null )
+            {
                 return;
+            }
 
             var builder = Beam.NewBuilder().WithType(beamType).WithPosition(position).WithState(BeamState.Hit).WithDuration(15000);
             zone.CreateBeam(builder);

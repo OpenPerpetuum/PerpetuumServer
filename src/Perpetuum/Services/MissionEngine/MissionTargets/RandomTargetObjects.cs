@@ -63,7 +63,10 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             var selectedTarget = SelectRandomMissionStructure(missionInProgress, targetType);
 
             //search failed
-            if (selectedTarget == null) return false;
+            if (selectedTarget == null)
+            {
+                return false;
+            }
 
             missionStructureEid = selectedTarget.MissionStructureEid;
 
@@ -285,7 +288,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         public override void PostLoadedAsConfigTarget()
         {
             if (_levelMultipliers.Length != 10)
+            {
                 Logger.Error("target must have 10 level multipliers " + this);
+            }
 
             base.PostLoadedAsConfigTarget();
         }
@@ -332,7 +337,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             }
 
             if (_levelMultipliers.Length != 10)
+            {
                 Logger.Error("target must have 10 level multipliers " + this);
+            }
         }
 
         private readonly double[] _levelMultipliers = new double[] { 5, 10, 50, 500, 2000, 5000, 10000, 20000, 50000, 100000 };
@@ -376,7 +383,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             }
 
             if (_levelMultipliers.Length != 10)
+            {
                 Logger.Error("target must have 10 level multipliers " + this);
+            }
         }
 
         protected override void ProcessMyQuantity(MissionInProgress missionInProgress)
@@ -550,7 +559,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         public override void PostLoadedAsConfigTarget()
         {
             if (_levelMultipliers.Length != 10)
+            {
                 Logger.Error("target must have 10 level multipliers " + this);
+            }
 
             base.PostLoadedAsConfigTarget();
         }
@@ -703,7 +714,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             }
 
             if (_levelMultipliers.Length != 10)
+            {
                 Logger.Error("target must have 10 level multipliers " + this);
+            }
         }
 
         private readonly double[] _levelMultipliers = new double[] { 5, 10, 25, 50, 80, 125, 200, 300, 450, 650 };
@@ -768,7 +781,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         public override void PostLoadedAsConfigTarget()
         {
             if (_levelMultipliers.Length != 10)
+            {
                 Logger.Error("target must have 10 level multipliers " + this);
+            }
 
             base.PostLoadedAsConfigTarget();
         }
@@ -855,7 +870,10 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
                 }
 
                 //complier shutup
-                if (closestLocation == null) return false;
+                if (closestLocation == null)
+                {
+                    return false;
+                }
 
                 Log("the closest location is " + closestLocation);
 
@@ -904,7 +922,9 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
             }
 
             if (_levelMultipliers.Length != 10)
+            {
                 Logger.Error("target must have 10 level multipliers " + this);
+            }
         }
 
         private readonly double[] _levelMultipliers = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };

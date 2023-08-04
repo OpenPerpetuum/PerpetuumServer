@@ -34,7 +34,9 @@ namespace Perpetuum.Robots
         {
             var robot = LoadRobot(robotEid);
             if (robot == null)
+            {
                 return null;
+            }
 
             if (checkOwner)
             {

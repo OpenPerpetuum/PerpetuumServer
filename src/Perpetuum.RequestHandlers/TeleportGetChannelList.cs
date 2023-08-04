@@ -19,8 +19,10 @@ namespace Perpetuum.RequestHandlers
             var teleportEid = request.Data.GetOrDefault<long>(k.eid);
             var teleport = _zoneManager.GetUnit<Teleport>(teleportEid);
             if (teleport == null)
+            {
                 throw new PerpetuumException(ErrorCodes.TeleportNotFound);
-            
+            }
+
             //Check if mobile -- Throw if character is not owner, or in owner's gang
             if (teleport is MobileTeleport mobile)
             {

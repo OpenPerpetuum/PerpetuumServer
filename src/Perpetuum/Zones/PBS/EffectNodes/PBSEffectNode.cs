@@ -38,10 +38,14 @@ namespace Perpetuum.Zones.PBS.EffectNodes
                 var effectType = (EffectType) value;
 
                 if (effectType == EffectType.undefined)
+                {
                     effectType = AvailableEffects.FirstOrDefault();
+                }
 
                 if (!AvailableEffects.Contains(effectType))
+                {
                     Logger.Error("PBSEffectNode: invalid effect type! type:" + effectType);
+                }
 
                 RemoveCurrentEffect();
                 return (int) effectType;
@@ -82,7 +86,9 @@ namespace Perpetuum.Zones.PBS.EffectNodes
         {
             var player = unit as Player;
             if (player == null)
+            {
                 return false;
+            }
 
             //ha nincs standing allitva akkor csak a sajat corpra tolja
             if (!StandingEnabled)
@@ -147,7 +153,9 @@ namespace Perpetuum.Zones.PBS.EffectNodes
         public void ApplyCurrentEffect()
         {
             if (EffectHandler.ContainsEffect(CurrentEffectType))
+            {
                 return;
+            }
 
             var builder = NewEffectBuilder().SetType(CurrentEffectType)
                 .SetOwnerToSource()
@@ -240,7 +248,9 @@ namespace Perpetuum.Zones.PBS.EffectNodes
         {
 
             if (Interlocked.CompareExchange(ref _workingEffectChange, 1, 0) == 1)
+            {
                 return;
+            }
 
             try
             {

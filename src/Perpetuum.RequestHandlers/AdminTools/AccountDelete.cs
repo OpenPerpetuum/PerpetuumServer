@@ -21,7 +21,9 @@ namespace Perpetuum.RequestHandlers.AdminTools
 
             var account = _accountRepository.Get(id);
             if (account == null)
+            {
                 throw new PerpetuumException(ErrorCodes.AccountNotFound);
+            }
 
             _sessionManager.GetByAccount(account)?.ForceQuit(ErrorCodes.AccountBanned);
 

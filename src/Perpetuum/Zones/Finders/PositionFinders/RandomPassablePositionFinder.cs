@@ -31,7 +31,9 @@ namespace Perpetuum.Zones.Finders.PositionFinders
                 var p = new Position(xo, yo);
 
                 if (!zone.Terrain.Blocks[xo, yo].Island)
+                {
                     return p;
+                }
 
                 counter++;
                 if (counter % 50 == 0)

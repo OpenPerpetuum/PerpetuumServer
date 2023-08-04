@@ -29,7 +29,9 @@ namespace Perpetuum.Services.MissionEngine.MissionStructures
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         protected override void OnPeriodOver(Player player)
@@ -43,13 +45,17 @@ namespace Perpetuum.Services.MissionEngine.MissionStructures
         private void GetSuppliedItem(Player player)
         {
             if (!player.InZone)
+            {
                 return;
+            }
 
             //csak mission felveve
-            
+
             var supplyTargets = player.MissionHandler.GetTargetsForMissionStructure(this);
-            if (supplyTargets.Count == 0) 
+            if (supplyTargets.Count == 0)
+            {
                 return;
+            }
 
             using (var scope = Db.CreateTransaction())
             {

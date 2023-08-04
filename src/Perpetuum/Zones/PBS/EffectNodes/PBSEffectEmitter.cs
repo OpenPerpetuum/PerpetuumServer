@@ -65,7 +65,10 @@ namespace Perpetuum.Zones.PBS.EffectNodes
         {
             var lastCollected = Interlocked.Exchange(ref _lastCollectedPlayers, 0);
 
-            if (lastCollected <= 0) return 0.0;
+            if (lastCollected <= 0)
+            {
+                return 0.0;
+            }
 
             var coreDemand = (this.GetCoreConsumption() * lastCollected) / tickDivider;
             

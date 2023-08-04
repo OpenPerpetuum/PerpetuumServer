@@ -22,14 +22,18 @@ namespace Perpetuum.Zones.Artifacts.Generators.Loot
             var artifactType = artifact.Info.type;
             var info = _artifactRepository.GetArtifactInfo(artifactType);
             if (info == null)
+            {
                 return null;
+            }
 
             var result = new List<LootItem>();
 
             var loots = _artifactRepository.GetArtifactLoots(artifactType).ToArray();
 
             if (loots.Length <= 0)
+            {
                 return null;
+            }
 
             do
             {
@@ -38,7 +42,9 @@ namespace Perpetuum.Zones.Artifacts.Generators.Loot
                     var chance = _random.NextDouble();
 
                     if (chance > loot.Chance)
+                    {
                         continue;
+                    }
 
                     var builder = loot.GetLootItemBuilder();
                     var lootItem = builder.Build();

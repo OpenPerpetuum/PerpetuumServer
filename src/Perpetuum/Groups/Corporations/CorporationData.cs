@@ -115,8 +115,10 @@ namespace Perpetuum.Groups.Corporations
         public static CorporationData LoadCorporateInfo(long corporationEiD)
         {
             if (corporationEiD == 0L)
+            {
                 return null;
-            
+            }
+
             const string sb = @"select eid,name,defaultcorp,publicprofile,nick,active,creation,founder,m.memberid as ceo,am.allianceEID as allianceeid,(select count(*) from corporationmembers where corporationEID=c.eid) as membercount, taxrate, color
                                         from corporations c
                                         left join corporationmembers m on m.corporationeid=c.eid and (m.role & @ceorole) > 0
@@ -129,7 +131,9 @@ namespace Perpetuum.Groups.Corporations
                                  .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return null;
+            }
 
             return new CorporationData(record);
         }

@@ -30,7 +30,9 @@ namespace Perpetuum.Zones.Movements
         {
             var zone = unit.Zone;
             if (zone == null)
+            {
                 return;
+            }
 
             var distanceTaken = Math.Min(unit.Speed * elapsed.TotalSeconds, 1.0);
 

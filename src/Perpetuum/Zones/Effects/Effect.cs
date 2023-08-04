@@ -76,7 +76,9 @@ namespace Perpetuum.Zones.Effects
         public void ApplyTo(ref ItemPropertyModifier propertyModifier,AggregateField modifierField)
         {
             if (!EnableModifiers)
+            {
                 return;
+            }
 
             foreach (var modifier in PropertyModifiers.Where(pp => pp.Field == modifierField))
             {

@@ -19,7 +19,9 @@ namespace Perpetuum.Threading
                         var value = updater(original);
 
                         if (Interlocked.CompareExchange(ref *(int*)p, (int)value, (int)original) == original)
+                        {
                             return;
+                        }
 
                         spinWait.SpinOnce();
                     }

@@ -26,7 +26,9 @@ namespace Perpetuum.RequestHandlers
         {
             var account = LoadAccount(request);
             if (account == null)
+            {
                 throw new PerpetuumException(ErrorCodes.NoSuchUser);
+            }
 
             if (_relayStateService.State.Equals(RelayState.OpenForAdminsOnly) && !account.AccessLevel.IsAdminOrGm())
             {

@@ -29,7 +29,9 @@ namespace Perpetuum.Services.RiftSystem.StrongholdRifts
         public void Update(TimeSpan time)
         {
             if (_spawnedAll || _spawning)
+            {
                 return;
+            }
 
             SpawnAll();
         }

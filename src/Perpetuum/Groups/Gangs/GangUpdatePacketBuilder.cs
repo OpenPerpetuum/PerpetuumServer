@@ -35,8 +35,10 @@ namespace Perpetuum.Groups.Gangs
 
                 byte v = 0;
                 if (_visibility == Visibility.Visible)
+                {
                     v = 1;
-                
+                }
+
                 packet.AppendByte(v);
 
                 var pos = member.CurrentPosition;

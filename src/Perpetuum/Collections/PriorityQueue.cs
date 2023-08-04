@@ -37,7 +37,9 @@ namespace Perpetuum.Collections
                 var currentItem = _items[m];
 
                 if (_comparer.Compare(currentItem, parentItem) >= 0)
+                {
                     break;
+                }
 
                 _items[parentIndex] = currentItem;
                 _items[m] = parentItem;
@@ -59,7 +61,9 @@ namespace Perpetuum.Collections
             _count--;
 
             if (_count == 0)
+            {
                 return true;
+            }
 
             var v = 1;
 
@@ -88,7 +92,9 @@ namespace Perpetuum.Collections
                 }
 
                 if (u == v)
+                {
                     break;
+                }
 
                 var tmp = _items[u];
                 _items[u] = _items[v];

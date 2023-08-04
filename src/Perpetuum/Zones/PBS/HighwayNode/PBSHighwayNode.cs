@@ -22,7 +22,9 @@ namespace Perpetuum.Zones.PBS.HighwayNode
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
 
@@ -148,7 +150,9 @@ namespace Perpetuum.Zones.PBS.HighwayNode
             foreach (var connectedHighwayNode in GetConnectedHighwayTargets())
             {
                 if (!connectedHighwayNode.IsGoodHighwayTarget())
+                {
                     continue;
+                }
 
                 var i = new HighwaySegmentInfo()
                 {
@@ -169,7 +173,9 @@ namespace Perpetuum.Zones.PBS.HighwayNode
             get
             {
                 if (ED.Config.item_work_range != null)
+                {
                     return (int) ED.Config.item_work_range;
+                }
 
                 Logger.Error("no item_work_range is defined for " + ED.Name + " " + ED.Definition);
                 return 10;

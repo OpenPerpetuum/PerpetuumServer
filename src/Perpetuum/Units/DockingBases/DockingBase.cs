@@ -71,7 +71,9 @@ namespace Perpetuum.Units.DockingBases
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override ErrorCodes IsAttackable => ErrorCodes.TargetIsNonAttackable;
@@ -229,7 +231,9 @@ namespace Perpetuum.Units.DockingBases
             var template = _robotTemplateRelations.GetStarterMaster(CanCreateEquippedStartRobot);
 
             if (container.GetItems(true).Any(i => i.Definition == template.EntityDefault.Definition))
+            {
                 return null;
+            }
 
             // ha nincs akkor legyartunk egyet
             var robot = template.Build();

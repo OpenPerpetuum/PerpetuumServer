@@ -37,7 +37,9 @@ namespace Perpetuum.Zones.Intrusion
             _updateScoreTimer.Update(time);
 
             if (!_updateScoreTimer.Passed)
+            {
                 return;
+            }
 
             _updateScoreTimer.Reset();
 
@@ -76,7 +78,9 @@ namespace Perpetuum.Zones.Intrusion
             foreach (var playerInfo in playerInfos)
             {
                 if ( playersInRange.Any(p => p.Character == playerInfo.character))
+                {
                     continue;
+                }
 
                 RemovePlayerInfo(playerInfo.character);
             }

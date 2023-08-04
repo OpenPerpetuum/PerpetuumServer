@@ -18,7 +18,9 @@ namespace Perpetuum.Items.Templates
         {
             var record = Db.Query().CommandText("select * from robottemplates where id = @templateID").SetParameter("@templateID", templateID).ExecuteSingleRow();
             if (record == null)
+            {
                 return null;
+            }
 
             return CreateRobotTemplateFromRecord(record);
         }

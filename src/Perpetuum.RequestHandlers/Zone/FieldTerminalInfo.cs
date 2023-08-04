@@ -11,7 +11,9 @@ namespace Perpetuum.RequestHandlers.Zone
             var unit = request.Zone.GetUnit(eid).ThrowIfNull(ErrorCodes.ItemNotFound);
 
             if (!(unit is FieldTerminal fieldTerminal))
+            {
                 throw new PerpetuumException(ErrorCodes.DefinitionNotSupported);
+            }
 
             var character = request.Session.Character;
             fieldTerminal.SendInfoToCharacter(character);

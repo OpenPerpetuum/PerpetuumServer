@@ -25,7 +25,9 @@ namespace Perpetuum.Modules.Weapons
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override void UpdateProperty(AggregateField field)
@@ -78,8 +80,10 @@ namespace Perpetuum.Modules.Weapons
             protected override double CalculateValue()
             {
                 var ammo = (WeaponAmmo)_module.GetAmmo();
-                if (ammo == null) 
+                if (ammo == null)
+                {
                     return 0.0;
+                }
 
                 var property = ammo.GetExplosionRadius();
                 _module.ApplyRobotPropertyModifiers(ref property);

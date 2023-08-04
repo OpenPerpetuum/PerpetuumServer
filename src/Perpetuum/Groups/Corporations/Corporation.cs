@@ -331,8 +331,10 @@ namespace Perpetuum.Groups.Corporations
 
         public void WriteRoleHistory(Character issuer,Character member, CorporationRole newrole, CorporationRole oldrole)
         {
-            if (newrole == oldrole) 
+            if (newrole == oldrole)
+            {
                 return;
+            }
 
             Db.Query().CommandText("insert corporationrolehistory (corporationEID,issuerID,memberID,oldrole,newrole) values (@corporationEID,@issuerID,@memberID,@oldrole,@newrole)")
                     .SetParameter("@corporationEID", Eid)
@@ -473,7 +475,10 @@ namespace Perpetuum.Groups.Corporations
                 .SetParameter("@characterID", character.Id)
                 .ExecuteSingleRow();
 
-            if (record == null) return ErrorCodes.CharacterNotFound;
+            if (record == null)
+            {
+                return ErrorCodes.CharacterNotFound;
+            }
 
             corporationEid = record.GetValue<long>(0);
             role = (CorporationRole) record.GetValue<int>(1);

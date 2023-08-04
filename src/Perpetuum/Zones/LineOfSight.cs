@@ -32,7 +32,9 @@ namespace Perpetuum.Zones
         private static void OnDebugLOS(IZone zone,BeamType beamType, Position position,bool aligned)
         {
             if (!Debug)
+            {
                 return;
+            }
 
             if (aligned)
             {
@@ -147,7 +149,9 @@ namespace Perpetuum.Zones
                     OnDebugLOS(zone,BeamType.red_20sec,(Position)p,false);
 
                     if (blockingHeight < p.Z)
+                    {
                         continue;
+                    }
 
                     OnDebugLOS(zone,BeamType.blue_20sec,(Position)p,false);
 
@@ -172,7 +176,9 @@ namespace Perpetuum.Zones
             try
             {
                 if (altitude < lastAltitude)
+                {
                     return altitude + (altitude - lastAltitude) * 0.6;
+                }
 
                 return altitude + (lastAltitude - altitude) * 0.1;
             }

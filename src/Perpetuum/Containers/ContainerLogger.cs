@@ -26,7 +26,9 @@ namespace Perpetuum.Containers
         public void AddLogEntry(Character character, ContainerAccess access, int definition = 0, int quantity = 0)
         {
             if ( character == Character.None)
+            {
                 return;
+            }
 
             var logEntry = new ContainerLogEntry
                                {
@@ -42,7 +44,9 @@ namespace Perpetuum.Containers
         public void SaveToDb()
         {
             if (_logs.Count == 0)
+            {
                 return;
+            }
 
             var logs = _logs.ToArray();
 
@@ -137,8 +141,15 @@ namespace Perpetuum.Containers
                                            {k.operation, record.GetValue<int>(1)}
                                    };
 
-                if (!record.IsDBNull(2)) oneEntry.Add(k.quantity, record.GetValue<int>(2));
-                if (!record.IsDBNull(3)) oneEntry.Add(k.definition, record.GetValue<int>(3));
+                if (!record.IsDBNull(2))
+                {
+                    oneEntry.Add(k.quantity, record.GetValue<int>(2));
+                }
+
+                if (!record.IsDBNull(3))
+                {
+                    oneEntry.Add(k.definition, record.GetValue<int>(3));
+                }
 
                 oneEntry.Add(k.date, record.GetValue<DateTime>(4));
 

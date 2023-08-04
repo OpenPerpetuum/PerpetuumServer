@@ -60,7 +60,9 @@ namespace Perpetuum.Deployers
 
             var error = CanDeploy(zone, deployableItem, spawnPosition, player);
             if (error != ErrorCodes.NoError)
+            {
                 throw new PerpetuumException(error);
+            }
 
             deployableItem.Save();
 

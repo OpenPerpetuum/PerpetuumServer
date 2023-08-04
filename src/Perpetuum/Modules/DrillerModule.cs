@@ -36,7 +36,9 @@ namespace Perpetuum.Modules
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         private class MiningAmountModifierProperty : ModuleProperty
@@ -52,7 +54,9 @@ namespace Perpetuum.Modules
             protected override double CalculateValue()
             {
                 if (module.ParentRobot == null)
+                {
                     return 1.0;
+                }
 
                 var m = module.ParentRobot.GetPropertyModifier(AggregateField.mining_amount_modifier);
 
@@ -83,7 +87,9 @@ namespace Perpetuum.Modules
         {
             var zone = Zone;
             if ( zone != null )
+            {
                 DoExtractMinerals(zone);
+            }
 
             ConsumeAmmo();
         }
@@ -91,7 +97,9 @@ namespace Perpetuum.Modules
         public List<ItemInfo> Extract(MineralLayer layer, Point location, uint amount)
         {
             if (!layer.HasMineral(location))
+            {
                 return new List<ItemInfo>();
+            }
 
             var extractor = new MineralExtractor(location, amount,_materialHelper);
             layer.AcceptVisitor(extractor);
@@ -104,7 +112,9 @@ namespace Perpetuum.Modules
 
             var ammo = GetAmmo() as MiningAmmo;
             if (ammo == null)
+            {
                 return;
+            }
 
             var materialInfo = _materialHelper.GetMaterialInfo(ammo.MaterialType);
 
@@ -157,10 +167,14 @@ namespace Perpetuum.Modules
         private void CheckEnablerEffect(MaterialInfo materialInfo)
         {
             if ( !Zone.Configuration.Terraformable )
+            {
                 return;
+            }
 
-            if (!materialInfo.EnablerExtensionRequired) 
+            if (!materialInfo.EnablerExtensionRequired)
+            {
                 return;
+            }
 
             var containsEnablerEffect = ParentRobot.EffectHandler.ContainsEffect(EffectCategory.effcat_pbs_mining_tower_effect);
             containsEnablerEffect.ThrowIfFalse(ErrorCodes.MiningEnablerEffectRequired);
@@ -174,7 +188,9 @@ namespace Perpetuum.Modules
         {
             var activeGathererModules = ParentRobot.ActiveModules.OfType<DrillerModule>().Where(m => m.State.Type != ModuleStateType.Idle).ToArray();
             if (activeGathererModules.Length == 0)
+            {
                 return 0;
+            }
 
             var avgCycleTime = activeGathererModules.Select(m => m.CycleTime).Average();
 
@@ -184,11 +200,15 @@ namespace Perpetuum.Modules
             chance /= activeGathererModules.Length;
 
             if (LIQUIDS.Contains(materialType))
+            {
                 chance /= 2.0;
+            }
 
             var rand = FastRandom.NextDouble();
             if (rand <= chance)
+            {
                 return 1;
+            }
 
             return 0;
         }

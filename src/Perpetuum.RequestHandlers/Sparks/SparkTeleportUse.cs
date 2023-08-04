@@ -41,7 +41,9 @@ namespace Perpetuum.RequestHandlers.Sparks
                 character.SubtractFromWallet(TransactionType.SparkTeleportUse, SparkTeleport.SPARK_TELEPORT_USE_FEE);
 
                 if ( sparkTeleport.DockingBase == currentDockingBase)
+                {
                     throw new PerpetuumException(ErrorCodes.YouAreHereAlready);
+                }
 
                 sparkTeleport.DockingBase.IsDockingAllowed(character).ThrowIfError();
                 sparkTeleport.DockingBase.DockIn(character,Player.NormalUndockDelay);
@@ -72,13 +74,17 @@ namespace Perpetuum.RequestHandlers.Sparks
             var alreadySpent = _sparkTeleportHelper.GetCostFromDescriptions(liveSparkTeleports);
             var maxCount = _sparkTeleportHelper.GetMaxSparkTeleportCount(character);
             if (alreadySpent <= maxCount)
+            {
                 return; //
+            }
 
             var gex = PerpetuumException.Create(ErrorCodes.SparkTeleportExtensionLevelTooLow);
 
             var extension = _extensionReader.GetExtensionByName(ExtensionNames.SPARK_TELEPORT_COUNT_BASIC);
             if (extension != null)
+            {
                 gex.SetData(k.extensionID, extension.id);
+            }
 
             throw gex;
         }

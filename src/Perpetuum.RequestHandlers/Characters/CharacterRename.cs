@@ -31,8 +31,10 @@ namespace Perpetuum.RequestHandlers.Characters
                 var targetCharacter = Character.Get( request.Data.GetOrDefault<int>(k.characterID));
 
                 if( targetCharacter == Character.None )
-                    throw new PerpetuumException(ErrorCodes.CharacterNotFound); 
-            
+                {
+                    throw new PerpetuumException(ErrorCodes.CharacterNotFound);
+                }
+
                 //only characters that belong to the issuers account
                 if (targetCharacter.AccountId != account.Id)
                 {
@@ -79,7 +81,9 @@ namespace Perpetuum.RequestHandlers.Characters
                     var character = request.Session.Character;
 
                     if (_characterProfiles is CachedReadOnlyRepository<int,CharacterProfile> cached)
+                    {
                         cached.Remove(character.Id);
+                    }
 
                     var profile = character.GetFullProfile();
                     Message.Builder

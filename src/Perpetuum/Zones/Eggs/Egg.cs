@@ -33,7 +33,9 @@ namespace Perpetuum.Zones.Eggs
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         protected TimeSpan DespawnTime
@@ -56,7 +58,9 @@ namespace Perpetuum.Zones.Eggs
             {
                 var zone = Zone;
                 if (zone != null)
+                {
                     OnSummonSuccess(zone, SummonerPlayers);
+                }
             }
             finally
             {
@@ -69,7 +73,9 @@ namespace Perpetuum.Zones.Eggs
             ImmutableInterlocked.Update(ref _summoners, current =>
             {
                 if (current.Any(s => s.SummonerPlayer == summoner.SummonerPlayer))
+                {
                     return current;
+                }
 
                 var updated = current.ToList();
                 updated.Add(summoner);
@@ -97,7 +103,9 @@ namespace Perpetuum.Zones.Eggs
             get
             {
                 if (ED.Config.activationTime != null)
+                {
                     return TimeSpan.FromMilliseconds((int) ED.Config.activationTime);
+                }
 
                 Logger.Error("activationTime is not defined for " + Definition + " " + ED.Name);
                 return TimeSpan.FromSeconds(30);
@@ -154,7 +162,9 @@ namespace Perpetuum.Zones.Eggs
             {
                 _timer.Update(time);
                 if (!_timer.Passed)
+                {
                     return;
+                }
 
                 _timer.Reset();
 
@@ -201,7 +211,9 @@ namespace Perpetuum.Zones.Eggs
 
                 _timerSummon.Update(time);
                 if (!_timerSummon.Expired)
+                {
                     return;
+                }
 
                 _egg._fsm.Clear();
                 _egg.OnSummonSuccess();
@@ -247,13 +259,19 @@ namespace Perpetuum.Zones.Eggs
             public ErrorCodes Validate()
             {
                 if (SummonerPlayer.States.Dead || !SummonerPlayer.InZone)
+                {
                     return ErrorCodes.PlayerNotFound;
+                }
 
                 if (!_egg.IsInRangeOf3D(SummonerPlayer, 10))
+                {
                     return ErrorCodes.ItemOutOfRange;
+                }
 
                 if (!_summonerPosition.Equals(SummonerPlayer.CurrentPosition))
+                {
                     return ErrorCodes.WTFErrorMedicalAttentionSuggested;
+                }
 
                 return ErrorCodes.NoError;
             }

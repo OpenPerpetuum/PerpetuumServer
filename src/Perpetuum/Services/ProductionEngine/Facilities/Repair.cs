@@ -35,7 +35,9 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
         {
             var standing = GetStandingOfOwnerToCharacter(character);
             if (standing < 0.0)
+            {
                 standing = 0.0;
+            }
 
             var standingComponent = standing * 20;
             var extensionComponent = GetMaterialExtensionBonus(character);

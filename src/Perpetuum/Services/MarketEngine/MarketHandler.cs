@@ -161,7 +161,9 @@ namespace Perpetuum.Services.MarketEngine
                 select mape).ToArray();
 
             if (meaningfulWorldAveragesPerMarket.Length <= 0)
+            {
                 return -1;
+            }
 
             var sumQuantity = meaningfulWorldAveragesPerMarket.Sum(mape => mape.SumQuantity);
             var weightedPrice = meaningfulWorldAveragesPerMarket.Sum(mape => mape.SumQuantity * mape.AveragePrice);

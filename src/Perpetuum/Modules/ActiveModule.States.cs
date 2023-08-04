@@ -123,9 +123,11 @@ namespace Perpetuum.Modules
                     case ModuleStateType.AutoRepeat:
                     {
                         if (Module.ED.AttributeFlags.ForceOneCycle)
-                            type = ModuleStateType.Oneshot;
+                            {
+                                type = ModuleStateType.Oneshot;
+                            }
 
-                        Module._states.Push(new ActiveState(Module, type));
+                            Module._states.Push(new ActiveState(Module, type));
                         break;
                     }
                 }
@@ -239,7 +241,9 @@ namespace Perpetuum.Modules
                 _timer.Update(time);
 
                 if (!_timer.Passed)
+                {
                     return;
+                }
 
                 ResetTimer();
 
@@ -259,7 +263,9 @@ namespace Perpetuum.Modules
                 }
 
                 if (Type == ModuleStateType.Oneshot)
+                {
                     SwitchTo(ModuleStateType.Idle);
+                }
             }
 
             private void DecreaseCore()
@@ -271,7 +277,9 @@ namespace Perpetuum.Modules
             private bool CheckAmmo()
             {
                 if (!Module.IsAmmoable)
+                {
                     return true;
+                }
 
                 var ammo = Module.GetAmmo();
                 return ammo?.Quantity > 0;
@@ -280,7 +288,9 @@ namespace Perpetuum.Modules
             private bool CheckCore()
             {
                 if (Module.CoreUsage <= 0.0)
+                {
                     return true;
+                }
 
                 Debug.Assert(Module.ParentRobot != null, "Module.ParentRobot != null");
                 return Module.ParentRobot.Core >= Module.CoreUsage;
@@ -325,7 +335,9 @@ namespace Perpetuum.Modules
                 if (_task != null)
                 {
                     if (!_task.IsCompleted)
+                    {
                         return;
+                    }
 
                     Finish();
                     return;
@@ -334,7 +346,9 @@ namespace Perpetuum.Modules
                 _timer.Update(time);
 
                 if (!_timer.Passed)
+                {
                     return;
+                }
 
                 _lastError = ErrorCodes.NoError;
                 _task = Task.Run(() => OnAction());
@@ -351,10 +365,14 @@ namespace Perpetuum.Modules
 
                 // lekezeljuk az exceptiont
                 if (_task.Exception != null)
+                {
                     HandleException(_task.Exception.InnerException);
+                }
 
                 if (_lastError != ErrorCodes.NoError)
+                {
                     Module.OnError(_lastError);
+                }
 
                 // le is kapcsoljuk a modult
                 Module.ForceIdleState();
@@ -420,7 +438,9 @@ namespace Perpetuum.Modules
             {
                 var ammo = module.GetAmmo();
                 if (ammo == null || ammo.Definition == 0)
+                {
                     return null;
+                }
 
                 return new AmmoLoadState(module,ammo.Definition);
             }
@@ -429,7 +449,9 @@ namespace Perpetuum.Modules
             {
                 var currentAmmo = Module.GetAmmo();
                 if (currentAmmo != null && currentAmmo.Definition != _ammoDefinition)
+                {
                     Module.UnequipAmmoToContainer(container);
+                }
 
                 if (_ammoDefinition == 0)
                 {
@@ -442,7 +464,9 @@ namespace Perpetuum.Modules
                 {
                     var n = (Module.AmmoCapacity - currentAmmo.Quantity).Clamp(0,Module.AmmoCapacity);
                     if (n == 0)
+                    {
                         return;
+                    }
 
                     var q = container.RemoveItemByDefinition(currentAmmo.Definition, n);
                     if (q == 0)

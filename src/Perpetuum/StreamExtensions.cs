@@ -21,7 +21,9 @@ namespace Perpetuum
             }
 
             if (count <= 0)
+            {
                 return;
+            }
 
             if ((count & 8) != 0)
             {

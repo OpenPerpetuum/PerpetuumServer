@@ -60,7 +60,9 @@ namespace Perpetuum.Services.MarketEngine
         public override void Activate(Account account, Character character)
         {
             if ( _sparkHelper.IsSparkUnlocked(character,ED.Options.SparkID))
+            {
                 throw new PerpetuumException(ErrorCodes.SparkAlreadyUnlocked);
+            }
 
             _sparkHelper.UnlockSpark(character,ED.Options.SparkID);
 

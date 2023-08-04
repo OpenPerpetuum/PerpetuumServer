@@ -44,8 +44,13 @@ namespace Perpetuum.GenXY
 
                 if (c < 32 || c == '\\' || c == ':' || c == '#' || c == ',' || 
                     c == (int) GenxyToken.StartProp || c == (int) GenxyToken.EndProp || c == (int) GenxyToken.Prop)
+                {
                     _writer.Write(_hexTable[c]);
-                else _writer.Write(c);
+                }
+                else
+                {
+                    _writer.Write(c);
+                }
             }
         }
 
@@ -57,7 +62,9 @@ namespace Perpetuum.GenXY
         public void WriteHexInteger(int value)
         {
             if ( value < 0 )
+            {
                 _writer.Write('-');
+            }
 
             _writer.Write("{0:x}",Math.Abs(value));
         }
@@ -65,7 +72,9 @@ namespace Perpetuum.GenXY
         public void WriteLong(long value)
         {
             if ( value < 0 )
+            {
                 _writer.Write('-');
+            }
 
             _writer.Write("{0:x}",Math.Abs(value));
         }
@@ -105,7 +114,9 @@ namespace Perpetuum.GenXY
                 writeAction(array[i]);
 
                 if (i < array.Length - 1)
+                {
                     _writer.Write(',');
+                }
             }
         }
 

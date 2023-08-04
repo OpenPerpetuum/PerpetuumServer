@@ -139,8 +139,9 @@ namespace Perpetuum.Zones.PBS.Turrets
                 if (err == ErrorCodes.NoError)
                 {
                     if (_reinforceHandler.CurrentState.IsReinforced)
+                    {
                         err = ErrorCodes.TargetIsNonAttackable_Reinforced;
-
+                    }
                 }
                 return err;
             } 
@@ -183,7 +184,9 @@ namespace Perpetuum.Zones.PBS.Turrets
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public double BlobEmission
@@ -209,10 +212,14 @@ namespace Perpetuum.Zones.PBS.Turrets
         private bool IsHostileCorporation(long corporationEid)
         {
             if (corporationEid == Owner)
+            {
                 return false;
+            }
 
             if (DefaultCorporationDataCache.IsCorporationDefault(corporationEid))
+            {
                 return true;
+            }
 
             var standing = _standingHandler.GetStanding(Owner, corporationEid);
             return StandingLimit > standing;
@@ -302,11 +309,15 @@ namespace Perpetuum.Zones.PBS.Turrets
         public void HandlePBSEvent(IPBSObject sender, PBSEventArgs e)
         {
             if (!OnlineStatus || !this.IsFullyConstructed())
+            {
                 return;
+            }
 
             var attacked = e as NodeAttackedEventArgs;
             if (attacked == null)
+            {
                 return;
+            }
 
             var attacker = Zone.ToPlayerOrGetOwnerPlayer(attacked.Attacker) ?? attacked.Attacker;
 

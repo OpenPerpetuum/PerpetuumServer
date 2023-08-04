@@ -11,14 +11,20 @@ namespace Perpetuum.RequestHandlers
             var character = request.Session.Character;
 
             if (!request.Session.AccessLevel.IsAdminOrGm())
+            {
                 CheckUndockConditionsAndThrowIfFailed(character);
+            }
 
             var dockingBase = character.GetCurrentDockingBase();
             if (dockingBase == null)
+            {
                 throw new PerpetuumException(ErrorCodes.DockingBaseNotFound);
+            }
 
             if (dockingBase.Zone == null)
+            {
                 throw new PerpetuumException(ErrorCodes.ItemNotFound);
+            }
 
             dockingBase.Zone.Enter(character,Commands.Undock);
         }

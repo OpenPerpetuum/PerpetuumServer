@@ -22,11 +22,16 @@ namespace Perpetuum.Zones.PBS
         public void Update(T pbsObject,TimeSpan time)
         {
             if (_running)
+            {
                 return;
+            }
 
             _timer.Update(time);
             if ( !_timer.Passed )
+            {
                 return;
+            }
+
             _timer.Reset();
 
             _running = true;

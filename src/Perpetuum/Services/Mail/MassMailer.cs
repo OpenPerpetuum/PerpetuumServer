@@ -40,8 +40,10 @@ namespace Perpetuum.Services.Mail
                             .SetParameter("@characterID", character.Id)
                             .ExecuteSingleRow();
 
-            if (m == null) 
+            if (m == null)
+            {
                 return null;
+            }
 
             return new MassMail
             {
@@ -88,8 +90,11 @@ namespace Perpetuum.Services.Mail
 
         public static ErrorCodes DeleteMail(Character character, long[] mailIDs)
         {
-            if (mailIDs.Length == 0) return ErrorCodes.NoError;
-            
+            if (mailIDs.Length == 0)
+            {
+                return ErrorCodes.NoError;
+            }
+
             foreach (var id in mailIDs)
             {
                 var res = Db.Query().CommandText("delete charactermessages where mailid=@mailID and owner=@characterID")
@@ -99,7 +104,9 @@ namespace Perpetuum.Services.Mail
                                   .ExecuteNonQuery();
 
                 if (res != 1)
+                {
                     return ErrorCodes.SQLDeleteError;
+                }
             }
 
             return ErrorCodes.NoError;

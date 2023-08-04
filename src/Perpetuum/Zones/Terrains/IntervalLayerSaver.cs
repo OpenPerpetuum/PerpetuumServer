@@ -21,7 +21,9 @@ namespace Perpetuum.Zones.Terrains
 
             var n = layer as INotifyLayerUpdated;
             if (n == null)
+            {
                 return;
+            }
 
             n.Updated += (l, x, y) => _dirty = 1;
             n.AreaUpdated += (l, area) => _dirty = 1;
@@ -36,7 +38,9 @@ namespace Perpetuum.Zones.Terrains
         public override void Update(TimeSpan time)
         {
             if ( Interlocked.CompareExchange(ref _dirty,0,1) == 0)
+            {
                 return;
+            }
 
             SaveLayer();
         }

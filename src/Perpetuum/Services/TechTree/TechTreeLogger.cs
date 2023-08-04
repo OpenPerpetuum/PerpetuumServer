@@ -31,7 +31,9 @@ namespace Perpetuum.Services.TechTree
         public IEnumerable<LogEvent> GetAll(DateTime from, DateTime to)
         {
             if ( to < from )
+            {
                 ObjectHelper.Swap(ref from,ref to);
+            }
 
             var events = GetLogEventRecords(from, to).Select(CreateLogEventFromRecord);
             return events;

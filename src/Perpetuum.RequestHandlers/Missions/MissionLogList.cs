@@ -41,8 +41,15 @@ namespace Perpetuum.RequestHandlers.Missions
                            {k.success, record.GetValue<bool>(4)},
                        };
 
-            if (!record.IsDBNull(3)) oneRecord.Add(k.endTime, record.GetValue<DateTime>(3));
-            if (!record.IsDBNull(5)) oneRecord.Add(k.expire, record.GetValue<DateTime>(5));
+            if (!record.IsDBNull(3))
+            {
+                oneRecord.Add(k.endTime, record.GetValue<DateTime>(3));
+            }
+
+            if (!record.IsDBNull(5))
+            {
+                oneRecord.Add(k.expire, record.GetValue<DateTime>(5));
+            }
 
             return oneRecord;
         }

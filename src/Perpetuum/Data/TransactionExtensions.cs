@@ -12,7 +12,9 @@ namespace Perpetuum.Data
             OnCompleted(transaction, commited =>
             {
                 if (commited)
+                {
                     action();
+                }
             });
         }
 

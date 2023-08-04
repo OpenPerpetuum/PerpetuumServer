@@ -51,7 +51,9 @@ namespace Perpetuum.Zones.Movements
             _movement.Update(unit,elapsed);
 
             if (_movement.Arrived)
+            {
                 _movement = null;
+            }
         }
     }
 } 

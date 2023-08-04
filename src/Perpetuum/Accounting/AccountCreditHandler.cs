@@ -34,7 +34,9 @@ namespace Perpetuum.Accounting
         private void ProcessCreditPayments()
         {
             if ( Interlocked.CompareExchange(ref _workInProgress,1,0) == 1)
+            {
                 return;
+            }
 
             try
             {
@@ -75,7 +77,9 @@ namespace Perpetuum.Accounting
 
                         var account = _accountRepository.Get(accountId);
                         if (account == null)
+                        {
                             continue;
+                        }
 
                         var credit = record.GetValue<int>("credit");
                         var id = record.GetValue<int>("id");

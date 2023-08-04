@@ -28,7 +28,9 @@ namespace Perpetuum.Accounting
         {
             // handles negative credit as well.
             if (desiredCredit - currentCredit < 0 && desiredCredit < 0)
+            {
                 throw new PerpetuumException(ErrorCodes.AccountNotEnoughMoney);
+            }
         }
 
         protected override void OnCommited(int startBalance)

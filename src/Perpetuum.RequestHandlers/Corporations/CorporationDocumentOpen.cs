@@ -18,7 +18,9 @@ namespace Perpetuum.RequestHandlers.Corporations
             foreach (var documentId in documentIds)
             {
                 if (CorporationDocumentHelper.CheckRegisteredAccess(documentId, character, out var corporationDocument) != ErrorCodes.NoError)
+                {
                     continue;
+                }
 
                 corporationDocument.ReadBody();
                 documents.Add(corporationDocument);

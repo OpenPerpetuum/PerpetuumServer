@@ -19,7 +19,9 @@ namespace Perpetuum.Zones.Locking.Locks
         public override bool Equals(Lock other)
         {
             if (base.Equals(other))
+            {
                 return true;
+            }
 
             var unitLockTarget = other as UnitLock;
             return unitLockTarget != null && Equals(Target.Eid, unitLockTarget.Target.Eid);

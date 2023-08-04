@@ -61,7 +61,9 @@ namespace Perpetuum.GenXY
                 }
 
                 if (_currentChar == '=')
+                {
                     break;
+                }
 
                 if (!char.IsWhiteSpace(_currentChar))
                 {
@@ -219,7 +221,9 @@ namespace Perpetuum.GenXY
 
             var b = new byte[4];
             for (var i = 0; i < 4; i++)
+            {
                 b[i] = Convert.ToByte(v.Substring(i * 2, 2), 16);
+            }
 
             return BitConverter.ToSingle(b, 0);
         }
@@ -230,7 +234,9 @@ namespace Perpetuum.GenXY
 
             var b = new byte[8];
             for (var i = 0; i < 8; i++)
+            {
                 b[i] = Convert.ToByte(v.Substring(i * 2, 2), 16);
+            }
 
             return BitConverter.ToDouble(b, 0);
         }
@@ -371,7 +377,9 @@ namespace Perpetuum.GenXY
         private static T[] ParseValueAsArray<T>(string value, Func<string, T> valueAction, char separator)
         {
             if ( string.IsNullOrEmpty(value) )
+            {
                 return new T[0];
+            }
 
             var stringArray = value.Split(separator);
             var result = new T[stringArray.Length];
@@ -390,7 +398,9 @@ namespace Perpetuum.GenXY
                 if (_currentChar == '#' ||
                     _currentChar == '|' ||
                     _currentChar == ']')
+                {
                     break;
+                }
 
                 sb.Append(_currentChar);
                 _charPos++;

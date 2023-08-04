@@ -52,7 +52,9 @@ namespace Perpetuum.Groups.Corporations
                 try
                 {
                     if (corporation.Eid != volunteerCEO.corporation.Eid)
+                    {
                         return;
+                    }
 
                     var volunteerCharacter = volunteerCEO.character;
 
@@ -61,12 +63,16 @@ namespace Perpetuum.Groups.Corporations
 
                     var currentCEO = corporation.CEO;
                     if (currentCEO == volunteerCEO.character || !role.HasFlag(CorporationRole.DeputyCEO) || role.HasFlag(CorporationRole.CEO))
+                    {
                         return;
+                    }
 
                     //check member count again, possible downgrade could've happened
                     var desiredCEOMaxMembers = corporation.GetMaxmemberByCharacter(volunteerCharacter);
                     if (corporation.Members.Length > desiredCEOMaxMembers)
+                    {
                         return;
+                    }
 
                     role = role.SetRole(CorporationRole.CEO);
                     role = role.ClearRole(CorporationRole.DeputyCEO);

@@ -31,13 +31,17 @@ namespace Perpetuum.Services.MarketEngine
             {
                 var robotTemplate = _robotTemplateRelations.GetRelatedTemplate(ed);
                 if (robotTemplate == null)
+                {
                     continue;
+                }
 
                 var robot = robotTemplate.Build();
 
                 var avg = PriceCalculator.GetAveragePrice(robot);
                 if (avg <= 0)
+                {
                     continue;
+                }
 
                 var res = Db.Query().CommandText("insert marketaveragesbycomponent (definition,price) values (@definition,@price)")
                     .SetParameter("@definition", ed.Definition)

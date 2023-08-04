@@ -46,7 +46,9 @@ namespace Perpetuum.Players
         private void Start()
         {
             if (_task.Status == TaskStatus.Created)
+            {
                 _task.Start();
+            }
         }
 
         public void StopAndDispose()
@@ -69,10 +71,14 @@ namespace Perpetuum.Players
         private bool Stop()
         {
             if (!IsCanceled)
+            {
                 _tokenSrc.Cancel();
+            }
 
             if (!IsCompleted)
+            {
                 _movesToReview.CompleteAdding();
+            }
 
             _movesToReview.Clear();
             return _task.Wait(MAX_TIMEOUT);
@@ -83,7 +89,9 @@ namespace Perpetuum.Players
             try
             {
                 if (IsCompleted)
+                {
                     return;
+                }
 
                 _movesToReview.Add(target, _ct);
             }
@@ -129,7 +137,9 @@ namespace Perpetuum.Players
         protected override void Dispose(bool disposing)
         {
             if (!disposing)
+            {
                 return;
+            }
 
             try
             {

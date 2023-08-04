@@ -18,7 +18,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
         public ExpiringPresence(IZone zone, IPresenceConfiguration configuration) : base(zone, configuration)
         {
             if (Configuration.DynamicLifeTime != null)
+            {
                 LifeTime = TimeSpan.FromSeconds((int)Configuration.DynamicLifeTime);
+            }
         }
 
         public void ResetDynamicDespawnTimer()
@@ -30,7 +32,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
         {
             var x = Flocks.GetMembers().Any(m => m.ThreatManager.IsThreatened);
             if (x)
+            {
                 ResetDynamicDespawnTimer();
+            }
 
             _lifeTimeTracker.Update(time);
 
@@ -52,7 +56,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
         public DynamicPresence(IZone zone, IPresenceConfiguration configuration) : base(zone, configuration)
         {
             if (Configuration.DynamicLifeTime != null)
+            {
                 LifeTime = TimeSpan.FromMilliseconds((int)Configuration.DynamicLifeTime);
+            }
         }
 
         public override Area Area
@@ -79,7 +85,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
         public DynamicPresenceExtended(IZone zone, IPresenceConfiguration configuration) : base(zone, configuration)
         {
             if (Configuration.DynamicLifeTime != null)
+            {
                 LifeTime = TimeSpan.FromSeconds((int)Configuration.DynamicLifeTime);
+            }
         }
 
         protected override void OnFlockAdded(Flock flock)
@@ -107,7 +115,9 @@ namespace Perpetuum.Zones.NpcSystem.Presences
         private void OnFlockRemoved()
         {
             if (Flocks.IsNullOrEmpty())
+            {
                 OnPresenceExpired();
+            }
         }
     }
 }

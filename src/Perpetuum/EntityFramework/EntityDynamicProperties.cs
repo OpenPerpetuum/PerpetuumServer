@@ -25,7 +25,9 @@ namespace Perpetuum.EntityFramework
         {
             object value;
             if (ImmutableInterlocked.TryRemove(ref _items, key, out value))
+            {
                 OnUpdated();
+            }
         }
 
         public void Clear()
@@ -35,14 +37,18 @@ namespace Perpetuum.EntityFramework
             {
                 updated = false;
                 if (i.Count <= 0)
+                {
                     return i;
+                }
 
                 updated = true;
                 return i.Clear();
             });
 
             if (updated)
+            {
                 OnUpdated();
+            }
         }
 
         public T GetOrDefault<T>(string key)
@@ -76,7 +82,9 @@ namespace Perpetuum.EntityFramework
             finally
             {
                 if (updated)
+                {
                     OnUpdated();
+                }
             }
         }
 
@@ -96,14 +104,18 @@ namespace Perpetuum.EntityFramework
             {
                 updated = false;
                 if (Equals(value, v))
+                {
                     return v;
+                }
 
                 updated = true;
                 return value;
             });
 
             if (updated)
+            {
                 OnUpdated();
+            }
         }
 
         private void OnUpdated()

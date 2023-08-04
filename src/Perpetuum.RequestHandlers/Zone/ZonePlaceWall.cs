@@ -16,7 +16,9 @@ namespace Perpetuum.RequestHandlers.Zone
 
             var terrainLock = player.GetPrimaryLock() as TerrainLock;
             if ( terrainLock == null )
+            {
                 return;
+            }
 
             var direction = terrainLock.Location - player.CurrentPosition;
 

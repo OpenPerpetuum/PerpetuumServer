@@ -25,7 +25,9 @@ namespace Perpetuum.Zones.Scanning.Scanners
                 var np = node.GetNearestMineralPosition(_player.CurrentPosition);
                 var distance = np.SqrDistance(_player.CurrentPosition);
                 if (distance >= nearestDist)
+                {
                     continue;
+                }
 
                 nearestDist = distance;
                 nearestMineralPosition = np;
@@ -39,7 +41,9 @@ namespace Perpetuum.Zones.Scanning.Scanners
             _player.Session.SendPacket(packet);
 
             if (!isInRange)
+            {
                 return;
+            }
 
             OnMineralScanned(MaterialProbeType.Directional, ammo.MaterialType);
         }

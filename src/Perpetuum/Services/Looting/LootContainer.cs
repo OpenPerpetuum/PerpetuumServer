@@ -61,7 +61,9 @@ namespace Perpetuum.Services.Looting
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public int PinCode
@@ -96,7 +98,9 @@ namespace Perpetuum.Services.Looting
         protected void AddLoot(LootItem item)
         {
             if ( item.Quantity == 0 )
+            {
                 return;
+            }
 
             _itemRepository.AddWithStack(this,item);
         }
@@ -123,12 +127,16 @@ namespace Perpetuum.Services.Looting
                  owner == looter.Character || // ugyanaz akar-e lootolni aki a gazdi
                  Gang.CompareGang(looter.Character, owner) // ugyanabban a gangben vannak-e
                 )
+            {
                 return;
+            }
 
             if (!IsFieldContainer() && !looter.IsInDefaultCorporation())
             {
                 if (looter.CorporationEid == owner.CorporationEid)
+                {
                     return;
+                }
             }
 
             CheckPinCode(looter.Character,pinCode);
@@ -198,7 +206,9 @@ namespace Perpetuum.Services.Looting
 
                             var lootItem = _itemRepository.Get(this, lootId);
                             if (lootItem == null)
+                            {
                                 continue;
+                            }
 
                             if (lootItem.Quantity < reqQty)
                             {
@@ -211,7 +221,9 @@ namespace Perpetuum.Services.Looting
                             item.IsRepackaged = lootItem.ItemInfo.IsRepackaged;
 
                             if (!container.IsEnoughCapacity(item))
+                            {
                                 continue;
+                            }
 
                             //ha serult akkor legyen serult
                             item.Health = lootItem.ItemInfo.Health;
@@ -224,9 +236,13 @@ namespace Perpetuum.Services.Looting
                             lootItem.Quantity -= reqQty;
 
                             if (lootItem.Quantity <= 0)
+                            {
                                 _itemRepository.Delete(this,lootItem);
+                            }
                             else
+                            {
                                 _itemRepository.Update(this,lootItem);
+                            }
 
                             lootedItems.Add(item);
                         }
@@ -275,7 +291,9 @@ namespace Perpetuum.Services.Looting
                 player.Character.LogTransaction(b);
 
                 if (this is FieldContainer)
+                {
                     continue;
+                }
 
 #if DEBUG
                 Logger.Info(">>>>> ENQUEUE LOOTING >>>>> " + player.Character.Id + " " + item.ED.Name + " qty:" + item.Quantity);
@@ -299,18 +317,24 @@ namespace Perpetuum.Services.Looting
             _despawnHelper.Update(time, this);
 
             if (IsFieldContainer())
+            {
                 return;
+            }
 
             _timerResetOwner.Update(time);
 
             if (_timerResetOwner.Passed)
+            {
                 ResetOwner();
+            }
         }
 
         private void ResetOwner()
         {
             if ( Owner == 0L )
+            {
                 return;
+            }
 
             Db.CreateTransactionAsync(scope =>
             {
@@ -437,7 +461,9 @@ namespace Perpetuum.Services.Looting
                     var isInLootRange = _lootContainer.IsInLootRange(player);
 
                     if (isInZone && isInLootRange)
+                    {
                         continue;
+                    }
 
                     _looters.Remove(kvp.Key);
                 }
@@ -529,11 +555,15 @@ namespace Perpetuum.Services.Looting
             public LootContainer BuildAndAddToZone(IZone zone, Position position)
             {
                 if (_lootItems.Count == 0)
+                {
                     return null;
+                }
 
                 var container = Build(zone, position);
                 if (container == null)
+                {
                     return null;
+                }
 
                 Transaction.Current.OnCommited(() =>
                 {
@@ -554,12 +584,16 @@ namespace Perpetuum.Services.Looting
                 var definitionName = _containerTypeToName.GetOrDefault(_containerType);
                 var container = (LootContainer)CreateUnitWithRandomEID(definitionName);
                 if (container == null)
+                {
                     return null;
+                }
 
                 container.PinCode = _pinCode;
 
                 if (_ownerPlayer != null)
+                {
                     container.Owner = _ownerPlayer.Owner;
+                }
 
                 container.Initialize();
 

@@ -26,7 +26,9 @@ namespace Perpetuum.RequestHandlers.Corporations
 
                 var dockingBase = character.GetCurrentDockingBase();
                 if (dockingBase.Eid != baseEID)
+                {
                     throw new PerpetuumException(ErrorCodes.FacilityOutOfReach);
+                }
 
                 var corporation = character.GetPrivateCorporationOrThrow();
 

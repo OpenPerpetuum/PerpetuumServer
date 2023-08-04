@@ -37,7 +37,9 @@ namespace Perpetuum.GenXY
         public Dictionary<string, object> ToDictionary()
         {
             if ( _value == null )
+            {
                 return new Dictionary<string, object>();
+            }
 
             return GenxyConverter.Deserialize(_value);
         }
@@ -45,7 +47,9 @@ namespace Perpetuum.GenXY
         public override string ToString()
         {
             if (string.IsNullOrEmpty(_value))
+            {
                 return string.Empty;
+            }
 
             return _value;
         }
@@ -58,7 +62,9 @@ namespace Perpetuum.GenXY
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
+            {
                 return false;
+            }
 
             return obj is GenxyString && Equals((GenxyString) obj);
         }
@@ -81,7 +87,9 @@ namespace Perpetuum.GenXY
         public static GenxyString FromDictionary(IDictionary<string, object> dictionary)
         {
             if (dictionary.IsNullOrEmpty())
+            {
                 return Empty;
+            }
 
             var str = GenxyConverter.Serialize(dictionary);
             return new GenxyString(str);

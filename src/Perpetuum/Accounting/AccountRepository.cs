@@ -69,7 +69,9 @@ namespace Perpetuum.Accounting
         private Account CreateAccountFromRecord(IDataRecord record)
         {
             if (record == null)
+            {
                 return null;
+            }
 
             var account = new Account
             {
@@ -151,7 +153,9 @@ namespace Perpetuum.Accounting
         {
             var result = Db.Query("saAccountDelete").SetParameter("accountid", item.Id).ExecuteScalar<int>();
             if (result != item.Id)
+            {
                 throw new PerpetuumException(ErrorCodes.AccountNotFound);
+            }
         }
     }
 }

@@ -41,8 +41,10 @@ namespace Perpetuum.Zones
             lock (_queue)
             {
                 if ( _queue.Count == 0 )
+                {
                     return;
-                
+                }
+
                 items = _queue.ToArray();
             }
 
@@ -62,7 +64,9 @@ namespace Perpetuum.Zones
         private void ProcessQueueAsync()
         {
             if ( _processing || _queue.Count == 0 )
+            {
                 return;
+            }
 
             Logger.Info("[Zone EQ] start processing queue. zone:" + _zone.Id + " count:" + _queue.Count);
 
@@ -78,13 +82,17 @@ namespace Perpetuum.Zones
                 while (true)
                 {
                     if ( !HasFreeSlot )
+                    {
                         return;
+                    }
 
                     QueueItem item;
                     lock (_queue)
                     {
                         if (_queue.Count == 0)
+                        {
                             return;
+                        }
 
                         item = _queue.Dequeue();
                     }
@@ -156,7 +164,9 @@ namespace Perpetuum.Zones
                 lock (_queue)
                 {
                     if ( _queue.Count == 0 )
+                    {
                         return;
+                    }
 
                     var newQ = new Queue<QueueItem>();
 
@@ -178,7 +188,9 @@ namespace Perpetuum.Zones
             finally
             {
                 if ( changed )
+                {
                     OnQueueChanged();
+                }
             }
         }
 

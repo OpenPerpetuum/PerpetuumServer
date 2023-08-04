@@ -206,7 +206,9 @@ namespace Perpetuum.Services.MissionEngine
                 var ms = new MissionSpot(MissionSpotType.randompoint, missionTarget.targetPosition, zoneConfig.Id);
 
                 if (collectFindRadius)
+                {
                     ms.SetFindRadius(missionTarget.FindRadius);
+                }
 
                 result.Add(ms);
             }

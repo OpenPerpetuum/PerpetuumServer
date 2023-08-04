@@ -84,7 +84,9 @@ namespace Perpetuum.Services.Channels
                 .ExecuteSingleRow();
 
             if (record == null)
+            {
                 return null;
+            }
 
             var role = (ChannelMemberRole)record.GetValue<int>(0);
             return new ChannelMember(character,role);

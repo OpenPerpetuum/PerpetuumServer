@@ -636,7 +636,11 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
 
                         ed = EntityDefault.Get((int) definition);
 
-                        if (ed == null) return false;
+                        if (ed == null)
+                        {
+                            return false;
+                        }
+
                         if (ed.CategoryFlags.IsCategory(CategoryFlags.cf_organic))
                         {
                             Logger.Error("consistency error non organic definition is set in missiontarget:" + id);
@@ -718,7 +722,11 @@ namespace Perpetuum.Services.MissionEngine.MissionTargets
         [Conditional("DEBUG")]
         public void Log(string message)
         {
-            if (MissionResolveTester.skipLog) return;
+            if (MissionResolveTester.skipLog)
+            {
+                return;
+            }
+
             Logger.Info(Type + " *-> " + message);
         }
 

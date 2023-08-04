@@ -22,7 +22,9 @@ namespace Perpetuum.RequestHandlers.Production
 
                 var facility = _productionProcessor.GetFacility(facilityEID);
                 if (facility != null)
+                {
                     _productionProcessor.RemoveFacility(facility);
+                }
 
                 var replyDict = new Dictionary<string, object>(1) { { k.result, facilityEID } };
                 Message.Builder.FromRequest(request).WithData(replyDict).Send();

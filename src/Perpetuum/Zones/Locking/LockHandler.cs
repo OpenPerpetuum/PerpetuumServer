@@ -58,8 +58,10 @@ namespace Perpetuum.Zones.Locking
 
         private void OnOwnerPropertyChanged(Item unit, ItemProperty property)
         {
-            if (property.Field != AggregateField.blob_effect) 
+            if (property.Field != AggregateField.blob_effect)
+            {
                 return;
+            }
 
             _lockingTime.Update();
             _maxTargetingRange.Update();
@@ -69,7 +71,9 @@ namespace Perpetuum.Zones.Locking
         {
             var targetUnit = _owner.Zone?.GetUnit(targetEid);
             if (targetUnit == null)
+            {
                 return;
+            }
 
             AddLock(targetUnit,isPrimary);
         }
@@ -140,7 +144,9 @@ namespace Perpetuum.Zones.Locking
                 @lock.Update(time);
 
                 if (!ValidateLock(@lock))
+                {
                     @lock.Cancel();
+                }
             }
         }
 
@@ -150,7 +156,9 @@ namespace Perpetuum.Zones.Locking
             while (_newLocks.TryDequeue(out newLock))
             {
                 if (locks.Any(l => l.Equals(newLock)))
+                {
                     continue;
+                }
                 // if you are a tooladmin then lock up anything you want.
                 // this is easier than making special bots to work with terrain.
                 if (locks.Count >= MaxLockedTargets && _owner.GetCharacter().AccessLevel != AccessLevel.toolAdmin)
@@ -160,13 +168,17 @@ namespace Perpetuum.Zones.Locking
                 }
 
                 if (!ValidateLock(newLock))
+                {
                     continue;
+                }
 
                 if (newLock.Primary)
                 {
                     var currentPrimaryLock = locks.FirstOrDefault(l => l.Primary);
                     if (currentPrimaryLock != null)
+                    {
                         currentPrimaryLock.Primary = false;
+                    }
                 }
 
 
@@ -179,7 +191,9 @@ namespace Perpetuum.Zones.Locking
 
                 var terrainLock = newLock as TerrainLock;
                 if (terrainLock == null)
+                {
                     lockingTime = TimeSpan.FromMilliseconds(_lockingTime.Value);
+                }
 
                 newLock.Start(lockingTime);
             }
@@ -191,7 +205,9 @@ namespace Perpetuum.Zones.Locking
             newLock.AcceptVisitor(validator);
 
             if (validator.Error == ErrorCodes.NoError)
+            {
                 return true;
+            }
 
             OnLockError(newLock, validator.Error);
             return false;
@@ -203,13 +219,17 @@ namespace Perpetuum.Zones.Locking
             if (currentPrimaryLock != null)
             {
                 if (currentPrimaryLock == primaryLock)
+                {
                     return;
+                }
 
                 currentPrimaryLock.Primary = false;
             }
 
             if (primaryLock != null)
+            {
                 primaryLock.Primary = true;
+            }
         }
 
         public void SetPrimaryLock(long lockId)
@@ -222,7 +242,9 @@ namespace Perpetuum.Zones.Locking
         public Lock GetLock(long lockId)
         {
             if (lockId == 0)
+            {
                 return null;
+            }
 
             return _locks.FirstOrDefault(l => l.Id == lockId);
         }
@@ -306,7 +328,9 @@ namespace Perpetuum.Zones.Locking
                 var v = base.CalculateValue();
 
                 if (owner.GetCharacter() == Character.None)
+                {
                     return v;
+                }
 
                 var lockedTargetsMaxBonus = owner.GetPropertyModifier(AggregateField.locked_targets_max_bonus);
                 v = Math.Min(lockedTargetsMaxBonus.Value + 1, v);
