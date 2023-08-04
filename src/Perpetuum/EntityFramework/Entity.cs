@@ -176,12 +176,13 @@ namespace Perpetuum.EntityFramework
 
         protected static bool TryAcceptVisitor<T>(T entity,IEntityVisitor visitor) where T:Entity
         {
-            var v = visitor as IEntityVisitor<T>;
-            if (v == null)
-                return false;
+            if (visitor is IEntityVisitor<T> v)
+            {
+                v.Visit(entity);
+                return true;
+            }
 
-            v.Visit(entity);
-            return true;
+            return false;
         }
 
         public virtual void AcceptVisitor(IEntityVisitor visitor)

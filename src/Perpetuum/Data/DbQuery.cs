@@ -55,9 +55,6 @@ namespace Perpetuum.Data
             {
                 connection.Open();
 
-                if (Transaction.Current != null && connection is DbConnection dbConnection)
-                    dbConnection.EnlistTransaction(Transaction.Current);
-
                 var command = connection.CreateCommand();
                 command.CommandText = _commandText;
                 command.CommandType = _commandText.Contains(" ") ? CommandType.Text : CommandType.StoredProcedure;

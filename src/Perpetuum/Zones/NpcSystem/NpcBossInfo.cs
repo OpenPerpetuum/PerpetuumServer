@@ -81,7 +81,7 @@ namespace Perpetuum.Zones.NpcSystem
     /// <summary>
     /// Specifies the behavior of a Boss-type NPC with various settings
     /// </summary>
-    public class NpcBossInfo
+    public sealed class NpcBossInfo : IEquatable<NpcBossInfo>
     {
         private readonly EventListenerService _eventChannel;
         private readonly int _id;
@@ -148,7 +148,7 @@ namespace Perpetuum.Zones.NpcSystem
         /// Handle events to dispatch when the npc boss takes damage
         /// </summary>
         /// <param name="npc">The npc Boss killed</param>
-        /// <param name="killer">Player damager</param>
+        /// <param name="aggressor">Player damager</param>
         public void OnDamageTaken(Npc npc, Player aggressor)
         {
             if (_onDamageDebounce.Expired)
@@ -168,7 +168,7 @@ namespace Perpetuum.Zones.NpcSystem
         {
             CommunicateDeath(killer);
             HandleBossOutpostDeath(npc, killer);
-            SpawnPortal(npc, killer);
+            SpawnPortal(npc);
             IsDead = true;
             PublishMessage(new NpcReinforcementsMessage(npc, npc.Zone.Id));
             AnnounceDeath();
@@ -187,11 +187,13 @@ namespace Perpetuum.Zones.NpcSystem
         private void AnnouceRespawn()
         {
             if (!IsAnnounced)
+            {
                 return;
+            }
 
             var randomDelay = FastRandom.NextTimeSpan(RespawnTime.Divide(5), RespawnTime.Divide(2));
             var timeStamp = DateTime.UtcNow;
-            Task.Delay(randomDelay).ContinueWith((t) =>
+            Task.Delay(randomDelay).ContinueWith((_) =>
             {
                 PublishMessage(new NpcStateMessage(FlockId, NpcState.Alive, timeStamp));
             });
@@ -245,7 +247,9 @@ namespace Perpetuum.Zones.NpcSystem
         private void HandleBossOutpostDeath(Npc npc, Unit killer)
         {
             if (!IsOutpostBoss)
+            {
                 return;
+            }
 
             var zone = npc.Zone;
             IEnumerable<Unit> outposts = zone.Units.OfType<Outpost>();
@@ -265,10 +269,12 @@ namespace Perpetuum.Zones.NpcSystem
             }
         }
 
-        private void SpawnPortal(Npc npc, Unit killer)
+        private void SpawnPortal(Npc npc)
         {
             if (!HasRiftToSpawn)
+            {
                 return;
+            }
 
             PublishMessage(new SpawnPortalMessage(npc.Zone.Id, npc.CurrentPosition, _riftConfig));
         }
@@ -293,7 +299,12 @@ namespace Perpetuum.Zones.NpcSystem
 
         public bool Equals(NpcBossInfo other)
         {
-            return other != null && ReferenceEquals(this, other) || other._id == _id && other.FlockId == FlockId;
+            if (other == null)
+            {
+                return false;
+            }    
+
+            return ReferenceEquals(this, other) || (other._id == _id && other.FlockId == FlockId);
         }
 
         public override int GetHashCode()

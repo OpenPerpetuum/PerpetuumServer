@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
+using Force.DeepCloner;
 
 namespace Perpetuum
 {
@@ -56,15 +55,9 @@ namespace Perpetuum
                 return default(T);
             }
 
-            Debug.Assert(typeof(T).IsSerializable, "EZ NEM SERIALIZALHATO: " + typeof(T));
+            var obj = (object)source;
 
-            using (var ms = new MemoryStream())
-            {
-                var bf = new BinaryFormatter();
-                bf.Serialize(ms, source);
-                ms.Seek(0, SeekOrigin.Begin);
-                return (T)(bf.Deserialize(ms));
-            }
+            return (T)obj.DeepClone();
         }
     }
 }

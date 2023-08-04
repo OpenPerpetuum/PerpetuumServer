@@ -20,6 +20,7 @@ namespace Perpetuum.Log
             Info(message);
         }
 
+        [Conditional("TRACE")]
         public static void Info(string message)
         {
             var e = new LogEvent
@@ -37,6 +38,7 @@ namespace Perpetuum.Log
             Warning(message);
         }
 
+        [Conditional("TRACE")]
         public static void Warning(string message)
         {
             var e = new LogEvent

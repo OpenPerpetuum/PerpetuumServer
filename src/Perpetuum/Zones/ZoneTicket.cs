@@ -16,7 +16,7 @@ namespace Perpetuum.Zones
         private static readonly Rijndael _rijndael = Rijndael.Create();
 
         private readonly int _characterId;
-        private readonly DateTime _created;
+        private readonly long _created;
 
         public int CharacterId
         {
@@ -32,12 +32,12 @@ namespace Perpetuum.Zones
         private ZoneTicket(int characterId) : this()
         {
             _characterId = characterId;
-            _created = DateTime.Now;
+            _created = DateTime.Now.ToBinary();
         }
 
         public bool IsExpired
         {
-            get { return DateTime.Now.Subtract(_created) > _ticketLifetime; }
+            get { return DateTime.Now.Subtract(DateTime.FromBinary(_created)) > _ticketLifetime; }
         }
 
         private static byte[] Encrypt(ZoneTicket ticket)

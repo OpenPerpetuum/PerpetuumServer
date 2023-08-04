@@ -34,35 +34,40 @@ namespace Perpetuum.Network
             _socket.NoDelay = true;
             _socket.ReceiveBufferSize = RECEIVE_BUFFER_SIZE;
             _socket.SendBufferSize = SEND_BUFFER_SIZE;
-            _socket.SetKeepAlive(true, 1000 * 60 * 60 * 24, 5000);
 
             RemoteEndPoint = (IPEndPoint)_socket.RemoteEndPoint;
         }
 
+        #region DISPOSAL
         protected override void Dispose(bool disposing)
         {
             if (!disposing)
                 return;
 
-            if (_packetStream != null)
+            try
             {
-                _packetStream.Close();
-                _packetStream = null;
+                _socket?.Shutdown(SocketShutdown.Both);
+            }
+            catch (Exception e)
+            {
+                Logger.Exception(e);
+            }
+            finally
+            {
+                _socket?.Close();
+                _socket = null;
             }
 
-            if (_socket == null || !_socket.Connected)
-                return;
-
-            _socket.Close(5000);
-            _socket = null;
+            _packetStream?.Close();
+            _packetStream = null;
         }
+        #endregion
+
 
         public void Disconnect()
         {
             if (Interlocked.CompareExchange(ref _isDisconnected, 1, 0) == 1)
                 return;
-
-            Console.Beep(100, 200);
 
             Task.Run(() =>
             {
@@ -193,8 +198,7 @@ namespace Perpetuum.Network
             }
             catch (Exception ex)
             {
-                var soex = ex as SocketException;
-                if (soex != null)
+                if (ex is SocketException soex)
                 {
                     OnHandleSocketException(soex);
                 }
@@ -284,8 +288,7 @@ namespace Perpetuum.Network
                 }
                 catch (Exception ex)
                 {
-                    var soex = ex as SocketException;
-                    if (soex != null)
+                    if (ex is SocketException soex)
                     {
                         OnHandleSocketException(soex);
                     }

@@ -25,7 +25,6 @@ namespace Perpetuum.Log.Loggers
                     {
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
-                            Console.Beep(4000, 30);
                             break;
                         }
                     }

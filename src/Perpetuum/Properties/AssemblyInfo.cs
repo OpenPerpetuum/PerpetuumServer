@@ -2,18 +2,18 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("Perpetuum.RequestHandlers")]
+[assembly: AssemblyTitle("Perpetuum")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Perpetuum.RequestHandlers")]
+[assembly: AssemblyProduct("Perpetuum")]
 [assembly: AssemblyCopyright("Copyright ©  2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 [assembly: ComVisible(false)]
 
-[assembly: Guid("d7677da8-ff3f-4399-a7cb-b3502ad2537f")]
+[assembly: Guid("2b87f22d-c858-43fc-9faf-f01830a17a05")]
 
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]

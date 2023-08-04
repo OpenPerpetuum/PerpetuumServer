@@ -37,7 +37,7 @@ namespace Perpetuum.Containers
 
         private ErrorCodes CheckDockedState(Container container)
         {
-            if (container.GetOrLoadParentEntity() is FieldTerminal fieldTerminal)
+            if (container.GetOrLoadParentEntity() is FieldTerminal _)
             {
                 //NOS, ez itt hack, csak hogy egyelore lehessen tovabblepni
                 //no docked state check
@@ -130,7 +130,7 @@ namespace Perpetuum.Containers
         {
             switch (_access)
             {
-                case ContainerAccess.List:
+                default:
                 {
                     if (_character != container.PrincipalCharacter)
                     {

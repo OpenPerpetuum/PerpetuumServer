@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perpetuum.Server", "src\Perpetuum.Server\Perpetuum.Server.csproj", "{0A54D3E1-13D2-48DF-BE97-46F5D8B54887}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perpetuum.ExportedTypes", "src\Perpetuum.ExportedTypes\Perpetuum.ExportedTypes.csproj", "{BF7F0EB4-AC64-4726-837D-D4EE361E5ED0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perpetuum", "src\Perpetuum\Perpetuum.csproj", "{2B87F22D-C858-43FC-9FAF-F01830A17A05}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perpetuum.RequestHandlers", "src\Perpetuum.RequestHandlers\Perpetuum.RequestHandlers.csproj", "{D7677DA8-FF3F-4399-A7CB-B3502AD2537F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perpetuum.Bootstrapper", "src\Perpetuum.Bootstrapper\Perpetuum.Bootstrapper.csproj", "{CEDEA8AB-109C-49DA-9DEB-E710BD0EBC55}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A54D3E1-13D2-48DF-BE97-46F5D8B54887}.Debug|x64.ActiveCfg = Debug|x64
+		{0A54D3E1-13D2-48DF-BE97-46F5D8B54887}.Debug|x64.Build.0 = Debug|x64
+		{0A54D3E1-13D2-48DF-BE97-46F5D8B54887}.Release|x64.ActiveCfg = Release|x64
+		{0A54D3E1-13D2-48DF-BE97-46F5D8B54887}.Release|x64.Build.0 = Release|x64
+		{BF7F0EB4-AC64-4726-837D-D4EE361E5ED0}.Debug|x64.ActiveCfg = Debug|x64
+		{BF7F0EB4-AC64-4726-837D-D4EE361E5ED0}.Debug|x64.Build.0 = Debug|x64
+		{BF7F0EB4-AC64-4726-837D-D4EE361E5ED0}.Release|x64.ActiveCfg = Release|x64
+		{BF7F0EB4-AC64-4726-837D-D4EE361E5ED0}.Release|x64.Build.0 = Release|x64
+		{2B87F22D-C858-43FC-9FAF-F01830A17A05}.Debug|x64.ActiveCfg = Debug|x64
+		{2B87F22D-C858-43FC-9FAF-F01830A17A05}.Debug|x64.Build.0 = Debug|x64
+		{2B87F22D-C858-43FC-9FAF-F01830A17A05}.Release|x64.ActiveCfg = Release|x64
+		{2B87F22D-C858-43FC-9FAF-F01830A17A05}.Release|x64.Build.0 = Release|x64
+		{D7677DA8-FF3F-4399-A7CB-B3502AD2537F}.Debug|x64.ActiveCfg = Debug|x64
+		{D7677DA8-FF3F-4399-A7CB-B3502AD2537F}.Debug|x64.Build.0 = Debug|x64
+		{D7677DA8-FF3F-4399-A7CB-B3502AD2537F}.Release|x64.ActiveCfg = Release|x64
+		{D7677DA8-FF3F-4399-A7CB-B3502AD2537F}.Release|x64.Build.0 = Release|x64
+		{CEDEA8AB-109C-49DA-9DEB-E710BD0EBC55}.Debug|x64.ActiveCfg = Debug|x64
+		{CEDEA8AB-109C-49DA-9DEB-E710BD0EBC55}.Debug|x64.Build.0 = Debug|x64
+		{CEDEA8AB-109C-49DA-9DEB-E710BD0EBC55}.Release|x64.ActiveCfg = Release|x64
+		{CEDEA8AB-109C-49DA-9DEB-E710BD0EBC55}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {00E5132E-2888-4C46-AADC-4CF021BD95A2}
+	EndGlobalSection
+EndGlobal

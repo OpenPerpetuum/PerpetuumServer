@@ -60,9 +60,7 @@ namespace Perpetuum.Server
                 {
                     Console.CancelKeyPress += (sender,eventArgs) =>
                     {
-                        Console.WriteLine("");
                         Console.WriteLine("STOPPING HOST IN 4 SECONDS");
-                        Console.WriteLine("");
 
                         eventArgs.Cancel = true;
                         bootstrapper.Stop(TimeSpan.FromSeconds(4));
