@@ -34,9 +34,14 @@ namespace Perpetuum.Zones.DamageProcessors
             });
         }
 
+        public bool CannotTakeDamage()
+        {
+            return !_unit.InZone || _unit.IsAttackable != ErrorCodes.NoError || _unit.States.Dead || _unit.IsInvulnerable;
+        }
+
         public void TakeDamage(DamageInfo damageInfo)
         {
-            if (!_unit.InZone || _unit.IsAttackable != ErrorCodes.NoError || _unit.States.Dead || _unit.IsInvulnerable)
+            if (CannotTakeDamage())
             {
                 return;
             }

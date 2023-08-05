@@ -503,6 +503,8 @@ namespace Perpetuum.Units
             Updated?.Invoke(this, e);
         }
 
+        public bool CannotTakeDamage() => _damageProcessor.CannotTakeDamage();
+
         protected virtual void DoExplosion()
         {
             var zone = Zone;
