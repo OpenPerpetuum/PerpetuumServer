@@ -241,13 +241,8 @@ namespace Perpetuum.Zones.NpcSystem.Presences.PathFinders
 
         private void FindNextRoamingPosition()
         {
-#if DEBUG
-            _presence.Log("finding new roaming position. current: " + _presence.CurrentRoamingPosition);
-#endif
             var nextRoamingPosition = _presence.PathFinder.FindNextRoamingPosition(_presence);
-#if DEBUG
-            _presence.Log("next roaming position: " + nextRoamingPosition + " dist:" + _presence.CurrentRoamingPosition.Distance(nextRoamingPosition));
-#endif
+
             _presence.CurrentRoamingPosition = nextRoamingPosition;
 
             foreach (var npc in _presence.Flocks.GetMembers())

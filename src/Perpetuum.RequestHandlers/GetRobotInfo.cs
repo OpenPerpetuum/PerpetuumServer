@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Transactions;
 using Perpetuum.Containers.SystemContainers;
 using Perpetuum.Data;
 using Perpetuum.Groups.Corporations;
 using Perpetuum.Host.Requests;
+using Perpetuum.Log;
 using Perpetuum.Robots;
 using Perpetuum.Zones;
 
@@ -27,58 +29,60 @@ namespace Perpetuum.RequestHandlers
             // make sure the transaction scope is disposed of properly.
             using (TransactionScope scope = Db.CreateTransaction())
             {
-                try
+                if (TryGetRobotFromZone(request, out Robot robot))
                 {
-                    if (TryGetRobotFromZone(request, out Robot robot))
-                    {
-                        robot.EnlistTransaction();
-                    }
-                    else
-                    {
-                        var robotEid = request.Data.GetOrDefault<long>(k.robotEID);
-                        robot = _robotHelper.LoadRobotForCharacter(robotEid, request.Session.Character);
-                    }
+                    robot.EnlistTransaction();
+                }
+                else
+                {
+                    var robotEid = request.Data.GetOrDefault<long>(k.robotEID);
+                    robot = _robotHelper.LoadRobotForCharacter(robotEid, request.Session.Character);
+                }
 
-                    if (robot == null)
-                    {
-                        throw new PerpetuumException(ErrorCodes.RobotNotFound);
-                    }
+                if (robot == null)
+                {
+                    throw new PerpetuumException(ErrorCodes.RobotNotFound);
+                }
 
-                    if (!robot.IsSingleAndUnpacked)
-                    {
-                        throw new PerpetuumException(ErrorCodes.RobotMustbeSingleAndNonRepacked);
-                    }
+                if (!robot.IsSingleAndUnpacked)
+                {
+                    throw new PerpetuumException(ErrorCodes.RobotMustbeSingleAndNonRepacked);
+                }
 
-                    if (ForFitting)
-                    {
-                        robot.CheckOwnerOnlyCharacterAndThrowIfFailed(request.Session.Character);
-                    }
-                    else
-                    {
-                        robot.CheckOwnerCharacterAndCorporationAndThrowIfFailed(request.Session.Character);
-                    }
+                if (ForFitting)
+                {
+                    robot.CheckOwnerOnlyCharacterAndThrowIfFailed(request.Session.Character);
+                }
+                else
+                {
+                    robot.CheckOwnerCharacterAndCorporationAndThrowIfFailed(request.Session.Character);
+                }
 
-                    switch (robot.GetOrLoadParentEntity())
-                    {
-                        case DefaultSystemContainer _:
-                        case RobotInventory _ when ForFitting:
-                        case CorporateHangar _ when ForFitting:
-                            {
-                                throw new PerpetuumException(ErrorCodes.AccessDenied);
-                            }
-                    }
+                switch (robot.GetOrLoadParentEntity())
+                {
+                    case DefaultSystemContainer _:
+                    case RobotInventory _ when ForFitting:
+                    case CorporateHangar _ when ForFitting:
+                        {
+                            throw new PerpetuumException(ErrorCodes.AccessDenied);
+                        }
+                    default:
+                        {
+                            break;
+                        }
+                }
 
+                Transaction.Current.OnCommited(() =>
+                {
                     var result = new Dictionary<string, object>
-                {
-                    { k.robot,robot.ToDictionary() }
-                };
+                    {
+                        { k.robot, robot.ToDictionary() }
+                    };
 
                     Message.Builder.FromRequest(request).WithData(result).WrapToResult().WithEmpty().Send();
-                }
-                finally
-                {
-                    scope?.Complete();
-                }
+                });
+
+                scope.Complete();
             }
         }
 

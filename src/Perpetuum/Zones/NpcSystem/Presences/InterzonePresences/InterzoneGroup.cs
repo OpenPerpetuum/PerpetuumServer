@@ -93,10 +93,12 @@ namespace Perpetuum.Zones.NpcSystem.Presences.InterzonePresences
             }
         }
 
+        private readonly IntervalTimer _loggerInfoTimer = new IntervalTimer(TimeSpan.FromMinutes(1));
+
         private bool _spawning = false;
         public void Update(TimeSpan elapsed)
         {
-            Logger.DebugInfo(this.ToString());
+            _loggerInfoTimer.Update(elapsed).IsPassed(() => Logger.Info(this.ToString()));
             if (IsSpawned())
             {
                 UpdatePresence(elapsed);
