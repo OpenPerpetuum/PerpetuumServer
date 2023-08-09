@@ -6,7 +6,7 @@ namespace Perpetuum.Collections.Spatial
 
     public class Grid
     {
-        public static int TilesPerGrid = 64;
+        public readonly static int TilesPerGrid = 64;
 
         protected static readonly Dictionary<GridDistricts, CellCoord> Neighbours = new Dictionary<GridDistricts, CellCoord>
         {

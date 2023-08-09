@@ -20,7 +20,7 @@ namespace Perpetuum.Services.ExtensionService
             isEffectEnhancer = false;
         }
 
-        public ExtensionBonus(ExtensionInfo extensionInfo) : this(extensionInfo.id,extensionInfo.bonus,extensionInfo.aggregateField)
+        public ExtensionBonus(ExtensionInfo extensionInfo) : this(extensionInfo.Id,extensionInfo.Bonus,extensionInfo.AggregateField)
         {
         }
 

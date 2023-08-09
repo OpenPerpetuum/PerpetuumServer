@@ -89,12 +89,12 @@ namespace Perpetuum.Accounting.Characters
         private const string CACHE_KEY_ID_TO_ACCOUNTID = "id_to_accountid_";
 
         public static ObjectCache CharacterCache { get; set; }
-      
+
         public static CharacterFactory CharacterFactory { get; set; }
 
         public Character()
         {
-            
+
         }
 
         public Character(int id,IAccountManager accountManager,
@@ -403,7 +403,7 @@ namespace Perpetuum.Accounting.Characters
         {
             return Id.CompareTo(other?.Id);
         }
-        
+
         public override bool Equals(object obj)
         {
             var other = obj as Character;
@@ -570,7 +570,7 @@ namespace Perpetuum.Accounting.Characters
                 nick.IsNickAllowedForPlayers().ThrowIfFalse(ErrorCodes.NickReservedForDevelopersAndGameMasters);
             }
 
-            //check history 
+            //check history
             var inHistory =
             Db.Query().CommandText("select count(*) from characternickhistory where nick=@nick and accountid != @accountID")
                     .SetParameter("@accountID", issuerAccount.Id)
@@ -641,7 +641,7 @@ namespace Perpetuum.Accounting.Characters
                                            otherCharacter,
                                            quantity,
                                            definition
-                                    FROM charactertransactions 
+                                    FROM charactertransactions
                                     WHERE characterid = @characterId AND transactiondate between @earlier AND @later and amount != 0";
 
             var result = Db.Query().CommandText(sqlCmd)
@@ -823,7 +823,7 @@ namespace Perpetuum.Accounting.Characters
 
         public void SetAllExtensionLevel(int level)
         {
-            var extensions = _extensionReader.GetExtensions().Values.Where(e => !e.hidden).Select(e => new Extension(e.id, level));
+            var extensions = _extensionReader.GetExtensions().Values.Where(e => !e.Hidden).Select(e => new Extension(e.Id, level));
             SetExtensions(extensions);
         }
 
@@ -868,7 +868,7 @@ namespace Perpetuum.Accounting.Characters
         public double GetExtensionsBonusSummary(IEnumerable<int> extensionIDs)
         {
             var thisC = this;
-            return GetExtensions().SelectById(extensionIDs).Sum(e => e.level * thisC._extensionReader.GetExtensionByID(e.id).bonus);
+            return GetExtensions().SelectById(extensionIDs).Sum(e => e.level * thisC._extensionReader.GetExtensionByID(e.id).Bonus);
         }
 
         public double GetExtensionBonusByName(string extensionName)
@@ -878,7 +878,7 @@ namespace Perpetuum.Accounting.Characters
 
         public double GetExtensionBonus(int extensionId)
         {
-            return GetExtensions().GetLevel(extensionId) * _extensionReader.GetExtensionByID(extensionId).bonus;
+            return GetExtensions().GetLevel(extensionId) * _extensionReader.GetExtensionByID(extensionId).Bonus;
         }
 
         public int GetExtensionLevelSummaryByName(params string[] extensionNames)

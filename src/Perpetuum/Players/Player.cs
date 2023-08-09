@@ -261,7 +261,7 @@ namespace Perpetuum.Players
             _check = PlayerMoveCheckQueue.Create(this, CurrentPosition);
 
             zone.SendPacketToGang(Gang, new GangUpdatePacketBuilder(Visibility.Visible, this));
-            
+
             MissionHandler = _missionHandlerFactory(zone, this);
             MissionHandler.InitMissions();
 
@@ -776,8 +776,8 @@ namespace Perpetuum.Players
             var extensions = _extensionReader.GetExtensions();
 
             var extensionBonus = characterExtensions.Select(e => extensions[e.id])
-                .Where(e => e.aggregateField == field)
-                .Sum(e => characterExtensions.GetLevel(e.id) * e.bonus);
+                .Where(e => e.AggregateField == field)
+                .Sum(e => characterExtensions.GetLevel(e.Id) * e.Bonus);
 
             extensionBonus += ExtensionBonuses.Where(e => e.aggregateField == field).Sum(e => characterExtensions.GetLevel(e.extensionId) * e.bonus);
 

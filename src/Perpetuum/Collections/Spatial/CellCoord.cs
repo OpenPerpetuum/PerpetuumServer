@@ -5,8 +5,8 @@ namespace Perpetuum.Collections.Spatial
 {
     public struct CellCoord : IEquatable<CellCoord>
     {
-        public int x;
-        public int y;
+        public readonly int x;
+        public readonly int y;
 
         public CellCoord(int x, int y)
         {
@@ -115,7 +115,9 @@ namespace Perpetuum.Collections.Spatial
             {GridDistricts.RightLower,new CellCoord(1, 1)}
         };
 
-        public IEnumerable<CellCoord> GetNeighbours(GridDistricts gridDistricts = GridDistricts.All)
+        public IEnumerable<CellCoord> GetNeighbours() => GetNeighbours(GridDistricts.All);
+
+        public IEnumerable<CellCoord> GetNeighbours(GridDistricts gridDistricts)
         {
             var mask = 0x80;
             do
@@ -127,12 +129,8 @@ namespace Perpetuum.Collections.Spatial
                     continue;
                 }
 
-                var n = _neighbours[district];
-
-                n.x += x;
-                n.y += y;
-
-                yield return n;
+                yield return new CellCoord(x + _neighbours[district].x,
+                                           y + _neighbours[district].y);
 
             } while ((mask >>= 1) > 0);
         }

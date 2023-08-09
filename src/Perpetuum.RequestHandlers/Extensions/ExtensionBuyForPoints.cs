@@ -44,17 +44,17 @@ namespace Perpetuum.RequestHandlers.Extensions
                 var extensionLevel = character.GetExtensionLevel(extensionId) + 1;
                 extensionLevel.ThrowIfGreater(10, ErrorCodes.ExtensionFullyLearnt);
 
-                var extensionRank = extensionInfo.rank;
+                var extensionRank = extensionInfo.Rank;
                 var extensionPointCost = _extensionPoints.GetNominalExtensionPoints(extensionLevel, extensionRank);
 
                 //extension price
                 if (extensionLevel == 1)
                 {
                     // ha lvl 1 akkor leszedjuk penzzel a komat
-                    character.SubtractFromWallet(TransactionType.extensionLearn, extensionInfo.price);
+                    character.SubtractFromWallet(TransactionType.extensionLearn, extensionInfo.Price);
                 }
 
-                //training character -> no EP pool usage 
+                //training character -> no EP pool usage
                 //                   -> free extension start
                 if (!character.IsInTraining())
                 {
@@ -77,7 +77,7 @@ namespace Perpetuum.RequestHandlers.Extensions
                 result.Add(k.extensionLevel, extensionLevel);
 
                 Message.Builder.FromRequest(request).WithData(result).Send();
-                
+
                 scope.Complete();
             }
         }

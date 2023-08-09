@@ -15,7 +15,7 @@ namespace Perpetuum.Services.ExtensionService
                     if (requiredExtension.id == extensionId)
                     {
                         //yes, this extension requires the incoming extension on level
-                        yield return new Extension(info.id, requiredExtension.level);
+                        yield return new Extension(info.Id, requiredExtension.level);
                     }
                 }
             }
@@ -29,7 +29,7 @@ namespace Perpetuum.Services.ExtensionService
                 yield break;
             }
 
-            yield return info.id;
+            yield return info.Id;
 
             foreach (var extension in info.RequiredExtensions)
             {
@@ -67,28 +67,28 @@ namespace Perpetuum.Services.ExtensionService
 
             foreach (var info in extensions.Values)
             {
-                if (enumerable.Contains(info.name))
+                if (enumerable.Contains(info.Name))
                 {
-                    yield return info.id;
+                    yield return info.Id;
                 }
             }
         }
 
         public static int GetExtensionIDByName(this IExtensionReader reader, string extensionName)
         {
-            var x = reader.GetExtensions().Select(kvp => kvp.Value).FirstOrDefault(e => e.name == extensionName);
+            var x = reader.GetExtensions().Select(kvp => kvp.Value).FirstOrDefault(e => e.Name == extensionName);
             if (x == null)
             {
                 return 0;
             }
 
-            return x.id;
+            return x.Id;
         }
 
         [CanBeNull]
         public static ExtensionInfo GetExtensionByName(this IExtensionReader reader, string extensionName)
         {
-            return reader.GetExtensions().Select(kvp => kvp.Value).FirstOrDefault(e => e.name == extensionName);
+            return reader.GetExtensions().Select(kvp => kvp.Value).FirstOrDefault(e => e.Name == extensionName);
         }
 
         public static string GetExtensionName(this IExtensionReader reader, int extensionID)
@@ -100,7 +100,7 @@ namespace Perpetuum.Services.ExtensionService
                 return string.Empty;
             }
 
-            return info.name;
+            return info.Name;
         }
 
         [CanBeNull]
@@ -111,7 +111,7 @@ namespace Perpetuum.Services.ExtensionService
 
         public static ExtensionInfo[] GetExtensionsByAggregateField(this IExtensionReader extensionReader,AggregateField field)
         {
-            return extensionReader.GetExtensions().Values.Where(e => e.aggregateField == field).ToArray();
+            return extensionReader.GetExtensions().Values.Where(e => e.AggregateField == field).ToArray();
         }
     }
 }

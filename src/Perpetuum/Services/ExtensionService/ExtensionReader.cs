@@ -52,7 +52,7 @@ namespace Perpetuum.Services.ExtensionService
             {
                 var extensions = Db.Query().CommandText("select * from extensions where active = 1")
                                 .Execute()
-                                .Select(r => new ExtensionInfo(r)).ToDictionary(e => e.id);
+                                .Select(r => new ExtensionInfo(r)).ToDictionary(e => e.Id);
 
                 var requiredExtensions = Db.Query().CommandText("select * from extensionprerequire")
                                                 .Execute()
@@ -71,7 +71,7 @@ namespace Perpetuum.Services.ExtensionService
 
                 foreach (var info in extensions.Values)
                 {
-                    info.RequiredExtensions = requiredExtensions.GetOrEmpty(info.id);
+                    info.RequiredExtensions = requiredExtensions.GetOrEmpty(info.Id);
                 }
 
                 _extensions = extensions.ToImmutableDictionary();

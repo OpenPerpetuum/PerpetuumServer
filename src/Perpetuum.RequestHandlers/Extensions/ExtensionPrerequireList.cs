@@ -15,7 +15,7 @@ namespace Perpetuum.RequestHandlers.Extensions
             {
                 return new Dictionary<string, object>
                 {
-                    {k.extensionID, info.id},
+                    {k.extensionID, info.Id},
                     {k.requiredExtension, reqExtension.id},
                     {k.requiredLevel, reqExtension.level}
                 };

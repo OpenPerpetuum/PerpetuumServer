@@ -63,11 +63,11 @@ namespace Perpetuum.RequestHandlers.Sparks
                         .WithData(sparkTeleport.ToDictionary())
                         .Send();
                 });
-                
+
                 scope.Complete();
             }
         }
-        
+
         private void CheckExtensionLevelAndThrowIfFailed(Character character)
         {
             var liveSparkTeleports = _sparkTeleportHelper.GetAllSparkTeleports(character);
@@ -83,7 +83,7 @@ namespace Perpetuum.RequestHandlers.Sparks
             var extension = _extensionReader.GetExtensionByName(ExtensionNames.SPARK_TELEPORT_COUNT_BASIC);
             if (extension != null)
             {
-                gex.SetData(k.extensionID, extension.id);
+                gex.SetData(k.extensionID, extension.Id);
             }
 
             throw gex;

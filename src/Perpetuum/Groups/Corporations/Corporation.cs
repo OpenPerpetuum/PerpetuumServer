@@ -32,7 +32,7 @@ namespace Perpetuum.Groups.Corporations
             return corporation;
         }
     }
-    
+
     public abstract partial class Corporation : Entity
     {
         private CorporationMember[] _members;
@@ -141,7 +141,7 @@ namespace Perpetuum.Groups.Corporations
                     .ToCharacters(GetCharacterMembers())
                     .Send();
 
-               
+
                 ZoneManager.Value.Zones.ForEach(z => z.UpdateCorporation(CorporationCommand.ChangeRole,new Dictionary<string,object>
                             {
                                 {k.characterID, member.Id},
@@ -153,7 +153,7 @@ namespace Perpetuum.Groups.Corporations
 
         protected virtual void OnMemberRoleUpdated(Character member, CorporationRole newRole)
         {
-           
+
         }
 
         public IEnumerable<Character> GetMembersByRole(CorporationRole role)
@@ -311,7 +311,7 @@ namespace Perpetuum.Groups.Corporations
 
             base.OnDeleteFromDb();
         }
-       
+
         private void WriteMemberHistory(Character character,Corporation oldCorporation)
         {
             //old corp
@@ -455,12 +455,12 @@ namespace Perpetuum.Groups.Corporations
 
 
         /// <summary>
-        /// this must be the quickest way to get the corpEid and role. 
-        /// 
-        /// often only these two are needed... 
-        /// zoneGetBuildings and other requests use this. 
-        /// 
-        /// 
+        /// this must be the quickest way to get the corpEid and role.
+        ///
+        /// often only these two are needed...
+        /// zoneGetBuildings and other requests use this.
+        ///
+        ///
         /// </summary>
         /// <param name="character"></param>
         /// <param name="corporationEid"></param>
@@ -524,7 +524,7 @@ namespace Perpetuum.Groups.Corporations
 
         private static IEnumerable<CorporationAlias> ListPreviousAliases(long corporationEid)
         {
-            return 
+            return
                 Db.Query().CommandText("select * from corporationnamehistory where corporationeid=@eid")
                 .SetParameter("@eid", corporationEid)
                 .Execute()
@@ -545,7 +545,7 @@ namespace Perpetuum.Groups.Corporations
         {
             var extension = ExtensionReader.GetExtensionByName(ExtensionNames.VISIBILITY_PROBE_USER);
             Debug.Assert(extension != null, "extension != null");
-            return 10 + CEO.GetExtensionLevel(extension.id) * (int)extension.bonus;
+            return 10 + CEO.GetExtensionLevel(extension.Id) * (int)extension.Bonus;
         }
 
         public IDictionary<string, object> GetTransactionHistory(int offsetInDays)
@@ -553,9 +553,9 @@ namespace Perpetuum.Groups.Corporations
             var later = DateTime.Now.AddDays(-1 * offsetInDays);
             var earlier = later.AddDays(-2);
 
-            const string selectCmdText = @"select * from corporationtransactions 
-                                           where corporationeid=@corporationEid and 
-                                           transactiondate > @earlier and 
+            const string selectCmdText = @"select * from corporationtransactions
+                                           where corporationeid=@corporationEid and
+                                           transactiondate > @earlier and
                                            transactiondate < @later";
 
             return Db.Query().CommandText(selectCmdText)
@@ -566,9 +566,9 @@ namespace Perpetuum.Groups.Corporations
                 {
                     var result = new Dictionary<string, object>
                     {
-                        {k.transactionType, r.GetValue<int>("transactiontype")}, 
-                        {k.amount, r.GetValue<double>("amount")}, 
-                        {k.date, r.GetValue<DateTime>("transactiondate")}, 
+                        {k.transactionType, r.GetValue<int>("transactiontype")},
+                        {k.amount, r.GetValue<double>("amount")},
+                        {k.date, r.GetValue<DateTime>("transactiondate")},
                         {k.wallet, (long) r.GetValue<double>("currentwallet")}
                     };
 

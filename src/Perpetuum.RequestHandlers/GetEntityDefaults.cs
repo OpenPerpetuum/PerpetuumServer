@@ -69,7 +69,7 @@ namespace Perpetuum.RequestHandlers
                          .Distinct() // csak egyet
                          .Select(f => _extensionReader.GetExtensionsByAggregateField(f)) // elkerjuk az osszes extensiont ami erre a fieldre hat
                          .SelectMany(infos => infos)
-                         .Select(ex => ex.id)
+                         .Select(ex => ex.Id)
                          .OrderBy(id => id).ToArray();
 
                 if (extensionIds.Length > 0)

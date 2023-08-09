@@ -5,7 +5,7 @@ namespace Perpetuum.Services.ExtensionService
 {
     public class CharacterDefaultExtensionHelper
     {
-        private readonly IEnumerable<Extension> _extensions; 
+        private readonly IEnumerable<Extension> _extensions;
 
         public CharacterDefaultExtensionHelper(Character character)
         {
@@ -14,7 +14,7 @@ namespace Perpetuum.Services.ExtensionService
 
         public bool IsStartingExtension(ExtensionInfo extension, out int minimumLevel)
         {
-            var tmpExtensoin = new Extension(extension.id, 0);
+            var tmpExtensoin = new Extension(extension.Id, 0);
             return IsStartingExtension(tmpExtensoin, out minimumLevel);
         }
 
