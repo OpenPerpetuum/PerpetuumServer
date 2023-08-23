@@ -163,7 +163,6 @@
     <Compile Include="Common\Loggers\Transaction\TransactionLogEventBuilder.cs" />
     <Compile Include="Common\Loggers\Transaction\TransactionType.cs" />
     <Compile Include="Converters\ConverterExtensions.cs" />
-    <Compile Include="Converters\DelegateConverter.cs" />
     <Compile Include="Converters\IConverter.cs" />
     <Compile Include="Converters\IConvertible.cs" />
     <Compile Include="CorporationConfiguration.cs" />
@@ -582,7 +581,6 @@
     <Compile Include="Threading\AnonymousDisposable.cs" />
     <Compile Include="Threading\DefaultDisposable.cs" />
     <Compile Include="Threading\Disposable.cs" />
-    <Compile Include="Threading\LockFree.cs" />
     <Compile Include="Threading\Process\AnonymousProcess.cs" />
     <Compile Include="Threading\Process\AsyncProcess.cs" />
     <Compile Include="Threading\Process\IProcess.cs" />
@@ -622,7 +620,6 @@
     <Compile Include="ValueTypeExtensions.cs" />
     <Compile Include="Vector2Extensions.cs" />
     <Compile Include="Wallets\IWallet.cs" />
-    <Compile Include="Wallets\Wallet.cs" />
     <Compile Include="Zones\Artifacts\Generators\MissionArtifactGenerator.cs" />
     <Compile Include="Zones\Artifacts\Repositories\ArtifactReader.cs" />
     <Compile Include="Zones\Artifacts\Repositories\ArtifactReadMode.cs" />
@@ -695,13 +692,9 @@
     <Compile Include="Services\TechTree\Kernel.cs" />
     <Compile Include="Services\TechTree\LogEvent.cs" />
     <Compile Include="Services\TechTree\LogType.cs" />
-    <Compile Include="Services\TechTree\Points.cs" />
     <Compile Include="Services\TechTree\TechTreeGroupInfo.cs" />
-    <Compile Include="Services\TechTree\TechTreeService.cs" />
     <Compile Include="Services\TechTree\TechTreeInfoService.cs" />
     <Compile Include="Services\TechTree\TechTreeLogger.cs" />
-    <Compile Include="Services\TechTree\TechTreeNode.cs" />
-    <Compile Include="Services\TechTree\TechTreePointsHandler.cs" />
     <Compile Include="Services\Trading\ITradeService.cs" />
     <Compile Include="Services\Trading\Trade.cs" />
     <Compile Include="Services\Trading\TradeItem.cs" />
