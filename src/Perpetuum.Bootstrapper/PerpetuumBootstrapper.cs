@@ -948,7 +948,10 @@ namespace Perpetuum.Bootstrapper
             RegisterModule<Module>();
             RegisterModule<WeaponModule>();
             RegisterModule<FirearmWeaponModule>(); // OPP: new subclass for firearms
+            
             RegisterModule<MissileWeaponModule>();
+            RegisterModule<HellfireWeaponModule>();
+
             RegisterModule<ArmorRepairModule>();
             RegisterModule<RemoteArmorRepairModule>();
             RegisterModule<CoreBoosterModule>();
@@ -1106,6 +1109,7 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<WeaponAmmo>(CategoryFlags.cf_laser_ammo);
                 ByCategoryFlags<WeaponAmmo>(CategoryFlags.cf_projectile_ammo);
                 ByCategoryFlags<WeaponAmmo>(CategoryFlags.cf_missile_ammo);
+                ByCategoryFlags<WeaponAmmo>(CategoryFlags.cf_artillery_ammo_hellfire);
                 ByCategoryFlags<MiningAmmo>(CategoryFlags.cf_mining_ammo);
                 ByCategoryFlags<TileScannerAmmo>(CategoryFlags.cf_mining_probe_ammo_tile);
                 ByCategoryFlags<OneTileScannerAmmo>(CategoryFlags.cf_mining_probe_ammo_one_tile);
@@ -1176,7 +1180,10 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<FirearmWeaponModule>(CategoryFlags.cf_large_single_projectile,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_large_projectile_ammo));
                 ByCategoryFlags<MissileWeaponModule>(CategoryFlags.cf_small_missile_launchers,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_small_missile_ammo));
                 ByCategoryFlags<MissileWeaponModule>(CategoryFlags.cf_medium_missile_launchers,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_medium_missile_ammo));
+
                 ByCategoryFlags<MissileWeaponModule>(CategoryFlags.cf_large_missile_launchers,new NamedParameter("ammoCategoryFlags",CategoryFlags.cf_large_missile_ammo));
+                ByCategoryFlags<HellfireWeaponModule>(CategoryFlags.cf_artillery_launchers_hellfire, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_artillery_ammo_hellfire));
+
                 ByCategoryFlags<ShieldGeneratorModule>(CategoryFlags.cf_shield_generators);
                 ByCategoryFlags<ArmorRepairModule>(CategoryFlags.cf_armor_repair_systems);
                 ByCategoryFlags<RemoteArmorRepairModule>(CategoryFlags.cf_remote_armor_repairers);

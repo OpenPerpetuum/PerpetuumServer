@@ -123,6 +123,16 @@ namespace Perpetuum.Modules
                     module.ApplyRobotPropertyModifiers(ref optimalRange);
                 }
             }
+            else if (module is HellfireWeaponModule h)
+            {
+                if (ammo != null)
+                {
+                    optimalRange = ammo.OptimalRangePropertyModifier;
+                    var missileRangeMod = h.MissileRangeModifier.ToPropertyModifier();
+                    missileRangeMod.Modify(ref optimalRange);
+                    module.ApplyRobotPropertyModifiers(ref optimalRange);
+                }
+            }
             else
             {
                 optimalRange = module.GetPropertyModifier(AggregateField.optimal_range);
@@ -497,13 +507,13 @@ namespace Perpetuum.Modules
         {
             Debug.Assert(ParentRobot != null, "ParentRobot != null");
             var visibility = ParentRobot.GetVisibility(target);
-            return visibility?.GetLineOfSight(IsCategory(CategoryFlags.cf_missiles)) ?? LOSResult.None;
+            return visibility?.GetLineOfSight(IsBallistic()) ?? LOSResult.None;
         }
 
         protected LOSResult GetLineOfSight(Position location)
         {
             Debug.Assert(ParentRobot != null, "ParentRobot != null");
-            var losResult = ParentRobot.Zone.IsInLineOfSight(ParentRobot,location,IsCategory(CategoryFlags.cf_missiles));
+            var losResult = ParentRobot.Zone.IsInLineOfSight(ParentRobot,location, IsBallistic());
             return losResult;
         }
 

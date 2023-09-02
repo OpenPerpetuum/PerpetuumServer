@@ -664,6 +664,12 @@ namespace Perpetuum.ExportedTypes
         cf_world_mobile_teleport_capsule = 0x0000000000020198,
         cf_zone_item_shop = 0x0000000000000796,
         cf_zone_objects = 0x0000000000000092,
-        def_pbs_dogtags = 0x0000000000000691
+        def_pbs_dogtags = 0x0000000000000691,
+        cf_artillery_launchers = 0x00000000000B070F,
+        cf_artillery_launchers_hellfire = 0x00000000010B070F,
+        cf_artillery_launchers_warhammer = 0x00000000020B070F,
+        cf_artillery_ammo = 0x000000000000120A,
+        cf_artillery_ammo_hellfire = 0x000000000001120A,
+        cf_artillery_ammo_warhammer = 0x000000000002120A,
     }
 }

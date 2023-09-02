@@ -253,6 +253,13 @@ namespace Perpetuum.EntityFramework
             return ED.CategoryFlags.IsCategory(targetCategoryFlags);
         }
 
+        public bool IsBallistic()
+        {
+            return ED.CategoryFlags.IsCategory(CategoryFlags.cf_missiles) ||
+                ED.CategoryFlags.IsCategory(CategoryFlags.cf_artillery_ammo_hellfire) ||
+                ED.CategoryFlags.IsCategory(CategoryFlags.cf_artillery_ammo_warhammer);
+        }
+
         public void AddChild(Entity entity)
         {
             if (entity == null)
