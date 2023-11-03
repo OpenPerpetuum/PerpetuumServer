@@ -44,30 +44,55 @@ namespace Perpetuum.Services.Channels
             session.CharacterDeselected += SessionOnCharacterDeselected;
         }
 
+        /// <summary>
+        /// Processing chat channels for an incoming character.
+        /// </summary>
+        /// <param name="session">Session for character.</param>
+        /// <param name="character"></param>
         private void SessionOnCharacterSelected(ISession session, Character character)
         {
+            // Get all chat channels for the character from the database.
             foreach (var kvp in _memberRepository.GetAllByCharacter(character))
             {
                 var channelName = kvp.Key;
                 var member = kvp.Value;
 
+                // Updating channel membership. 
                 var channel = UpdateChannel(channelName, c => c.SetMember(member));
+                // Inform everyone about entering the character online.
                 channel?.SendMemberOnlineStateToAll(_sessionManager, member, true);
             }
         }
 
+        /// <summary>
+        /// Processing chats for the outgoing character.
+        /// </summary>
+        /// <param name="session">Session for character.</param>
+        /// <param name="character"></param>
         private void SessionOnCharacterDeselected(ISession session, Character character)
         {
-            foreach (var name in _channels.Keys)
+            // Process all chat channels.
+            foreach (var kvp in _channels)
             {
-                ChannelMember m = null;
-                var channel = UpdateChannel(name, c =>
+                // If the character is not in a chat channel, then move on to the next channel.
+                var channel = kvp.Value;
+                var member = channel?.GetMember(character);
+                if (member == null)
                 {
-                    m = c.GetMember(character);
-                    return m == null ? c : c.RemoveMember(character);
-                });
+                    continue;
+                }
+                var channelName = kvp.Key;
 
-                channel?.SendMemberOnlineStateToAll(_sessionManager, m, false);
+                // Updating channel membership.
+                channel = UpdateChannel(channelName, c => c.RemoveMember(character));
+                // Inform everyone about entering the character online.
+                channel?.SendMemberOnlineStateToAll(_sessionManager, member, false);
+
+                // If this is a station channel, then we remove it from the channel in the database.
+                if (channel?.Type == ChannelType.Station)
+                {
+                    _memberRepository.Delete(channel, member);
+                }
             }
         }
 

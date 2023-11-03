@@ -37,15 +37,12 @@ namespace Perpetuum.RequestHandlers.Characters
             {
                 character.Nick = character.Nick.Replace("_renamed_", "");
                 character.LastUsed = DateTime.Now;
-                character.IsDocked = isDocked;
                 character.Language = request.Data.GetOrDefault<int>(k.language);
                 character.IsOnline = true;
 
                 if (isDocked)
                 {
-                    character.ZoneId = null;
-                    character.ZonePosition = null;
-                    character.GetCurrentDockingBase()?.JoinChannel(character);
+                    character.GetCurrentDockingBase()?.DockIn(character, TimeSpan.Zero);
                 }
 
                 var corporation = character.GetCorporation();
