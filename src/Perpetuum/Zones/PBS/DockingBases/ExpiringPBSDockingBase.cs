@@ -106,9 +106,10 @@ namespace Perpetuum.Zones.PBS.DockingBases
             base.OnUpdate(time);
         }
 
-        public override void JoinChannel(Character character)
+        protected override void JoinChannel(Character character)
         {
             base.JoinChannel(character);
+            // TODO: Announcement only to joined character
             ChannelManager.Announcement(ChannelName, _announcer, $"Base is going to expire in: {Remaining.ToHumanTimeString()}");
         }
 

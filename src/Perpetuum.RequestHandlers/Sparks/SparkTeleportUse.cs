@@ -44,6 +44,9 @@ namespace Perpetuum.RequestHandlers.Sparks
                     throw new PerpetuumException(ErrorCodes.YouAreHereAlready);
 
                 sparkTeleport.DockingBase.IsDockingAllowed(character).ThrowIfError();
+
+                // Teleport action
+                currentDockingBase.DockOut(character);
                 sparkTeleport.DockingBase.DockIn(character, Player.NormalUndockDelay);
 
                 var robot = sparkTeleport.DockingBase.GetPublicContainerWithItems(character)
@@ -55,8 +58,6 @@ namespace Perpetuum.RequestHandlers.Sparks
 
                 Transaction.Current.OnCommited(() =>
                 {
-                    currentDockingBase.LeaveChannel(character);
-
                     Message.Builder.FromRequest(request)
                         .WithData(sparkTeleport.ToDictionary())
                         .Send();

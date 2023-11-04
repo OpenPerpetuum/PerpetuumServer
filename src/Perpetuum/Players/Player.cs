@@ -1024,12 +1024,12 @@ namespace Perpetuum.Players
                     // ha bazisrol jott
                     zoneEnterType = ZoneEnterType.Undock;
 
-                    dockingBase = character.GetCurrentDockingBase();
-                    spawnPosition = UndockSpawnPositionSelector.SelectSpawnPosition(dockingBase);
+                    // Check undock condition.
+                    dockingBase = character.GetCurrentDockingBase().ThrowIfNull(ErrorCodes.DockingBaseNotFound);
+                    zone.Id.ThrowIfNotEqual(dockingBase.Zone.Id, ErrorCodes.InvalidZoneId);
 
-                    character.ZoneId = zone.Id;
-                    character.ZonePosition = spawnPosition;
-                    character.IsDocked = false;
+                    // Get spawn position and update undocked character.
+                    spawnPosition = dockingBase.DockOut(character, zoneEnterType).ThrowIfNull(ErrorCodes.InvalidPosition).Value;
                 }
                 else
                 {
@@ -1059,8 +1059,6 @@ namespace Perpetuum.Players
                 // csak akkor rakjuk ki ha volt rendes commit
                 Transaction.Current.OnCommited(() =>
                 {
-                    dockingBase?.LeaveChannel(character);
-
                     player.CorporationEid = character.CorporationEid;
                     zone.SetGang(player);
 

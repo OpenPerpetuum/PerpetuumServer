@@ -170,6 +170,40 @@ namespace Perpetuum.Units.DockingBases
             Transaction.Current.OnCommited(() => JoinChannel(character));
         }
 
+        /// <summary>
+        /// Undock from docking base to zone.
+        /// </summary>
+        /// <param name="character">Character to undock</param>
+        /// <returns>Zone position for undocked character.</returns>
+        public Position? DockOut(Character character, ZoneEnterType type)
+        {
+            if (ZoneEnterType.Undock != type)
+            {
+                // Not enter to zone
+                return null;
+            }
+
+            DockOut(character);
+
+            // Update character status and position.
+            character.ZoneId = Zone.Id;
+            var position = UndockSpawnPositionSelector.SelectSpawnPosition(this);
+            character.ZonePosition = position;
+            character.IsDocked = false;
+            
+            return position; 
+        }
+
+        /// <summary>
+        /// Undock from docking base.
+        /// </summary>
+        /// <param name="character">Character to undock</param>
+        public void DockOut(Character character)
+        {
+            // Leave docking base channel on successful undocking.
+            Transaction.Current.OnCommited(() => LeaveChannel(character));
+        }
+
         protected IEnumerable<Character> GetCharacters()
         {
             return Db.Query().CommandText("select characterid from characters where baseeid=@eid and active=1")
@@ -250,12 +284,12 @@ namespace Perpetuum.Units.DockingBases
 
         protected virtual bool CanCreateEquippedStartRobot => Zone?.Configuration.Protected ?? false;
 
-        public virtual void JoinChannel(Character character)
+        protected virtual void JoinChannel(Character character)
         {
             ChannelManager.JoinChannel(ChannelName,character,ChannelMemberRole.Undefined,null);
         }
 
-        public void LeaveChannel(Character character)
+        protected void LeaveChannel(Character character)
         {
             ChannelManager.LeaveChannel(ChannelName,character);
         }
