@@ -1,3 +1,5 @@
+<span style="display:block;text-align:center">![opp-server](opp-server.jpeg)
+
 # The Open Perpetuum Server
 This is a fork of the Official Perpetuum Server as released by Avatar Creations [here](https://github.com/PerpetuumOnline/PerpetuumServer).  
 This server is developed under the direction of the [Open Perpetuum Project](https://openperpetuum.com) game design and development team; a 100% volunteer opensource player development and persistent Perpetuum Server hosting project.
