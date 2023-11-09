@@ -20,6 +20,7 @@ using Perpetuum.Services.ProductionEngine.Facilities;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Intrusion;
 using Perpetuum.Zones.Training;
+using System.Collections.Immutable;
 
 namespace Perpetuum.Units.DockingBases
 {
@@ -167,6 +168,8 @@ namespace Perpetuum.Units.DockingBases
             character.ZoneId = null;
             character.ZonePosition = null;
 
+            ImmutableInterlocked.Update(ref characters, (c) => c.Add(character));
+
             Transaction.Current.OnCommited(() => JoinChannel(character));
         }
 
@@ -200,6 +203,8 @@ namespace Perpetuum.Units.DockingBases
         /// <param name="character">Character to undock</param>
         public void DockOut(Character character)
         {
+            ImmutableInterlocked.Update(ref characters, (c) => c.Remove(character));
+
             // Leave docking base channel on successful undocking.
             Transaction.Current.OnCommited(() => LeaveChannel(character));
         }
@@ -332,5 +337,11 @@ namespace Perpetuum.Units.DockingBases
 
             _centralBank.AddAmount(centralBankShare, transactionType);
         }
+
+        /// <summary>
+        /// All docked characters.
+        /// </summary>
+        private ImmutableHashSet<Character> characters = ImmutableHashSet<Character>.Empty;
+
     }
 }

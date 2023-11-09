@@ -182,6 +182,12 @@ namespace Perpetuum.Services.Sessions
                 Character = Character.None;
                 _accessLevel = AccessLevel.normal;
             });
+
+            // After disconnect from channels in OnCharacterDeselected() call DockOut()
+            if (selectedCharacter.IsDocked)
+            {
+                selectedCharacter.GetCurrentDockingBase()?.DockOut(selectedCharacter);
+            }
         }
 
         public void Disconnect(bool safeLogout)
