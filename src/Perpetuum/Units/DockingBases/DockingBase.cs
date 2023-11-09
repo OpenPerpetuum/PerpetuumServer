@@ -170,6 +170,11 @@ namespace Perpetuum.Units.DockingBases
 
             ImmutableInterlocked.Update(ref characters, (c) => c.Add(character));
 
+            if (ErrorCodes.NoError != IsDockingAllowed(character))
+            {
+                return;
+            }
+
             Transaction.Current.OnCommited(() => JoinChannel(character));
         }
 
