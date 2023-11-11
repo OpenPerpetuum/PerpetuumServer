@@ -3,6 +3,7 @@ using System.Linq;
 using Perpetuum.Containers;
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
+using Perpetuum.Groups.Corporations;
 using Perpetuum.Items.Helpers;
 using Perpetuum.Log;
 using Perpetuum.Services.ItemShop;
@@ -100,6 +101,22 @@ namespace Perpetuum.Units.DockingBases
 	    {
 	        return _zoneManager.Zones.GetUnits<DockingBase>()
 	            .Where(b => b.IsCategory(CategoryFlags.cf_public_docking_base));
+        }
+
+        /// <summary>
+        /// Get all corporation DockingBase
+        /// </summary>
+        /// <param name="corporation">Site owner</param>
+        /// <returns>All DockingBase for corporation</returns>
+        public IEnumerable<DockingBase> GetBySiteOwner(Corporation corporation)
+        {
+            if (corporation == null)
+            {
+                return new List<DockingBase>();
+            }
+
+            return _zoneManager.Zones.GetUnits<DockingBase>()
+                .Where(b => b.GetSiteOwner()?.Eid == corporation.Eid);
         }
 
         public Entity GetStationService(Entity serviceBase, EntityDefault serviceEntityDefault)

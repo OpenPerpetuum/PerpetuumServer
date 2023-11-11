@@ -19,7 +19,7 @@ namespace Perpetuum.Groups.Corporations
         [CanBeNull]
         public static Corporation Get(long eid)
         {
-            return (Corporation)Repository.Load(eid);
+            return Repository.Load(eid) as Corporation;
         }
 
         protected static Corporation Create(EntityDefault entityDefault, SystemContainer container, CorporationDescription corporationDescription, EntityIDGenerator generator)
