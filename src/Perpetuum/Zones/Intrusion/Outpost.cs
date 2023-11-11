@@ -1192,7 +1192,7 @@ namespace Perpetuum.Zones.Intrusion
         }
 
         [CanBeNull]
-        public Corporation GetSiteOwner()
+        public override Corporation GetSiteOwner()
         {
             var info = GetIntrusionSiteInfo();
             return Corporation.Get(info.Owner ?? 0L);

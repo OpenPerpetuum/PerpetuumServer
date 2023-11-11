@@ -21,6 +21,7 @@ using Perpetuum.Zones;
 using Perpetuum.Zones.Intrusion;
 using Perpetuum.Zones.Training;
 using System.Collections.Immutable;
+using Perpetuum.Groups.Corporations;
 
 namespace Perpetuum.Units.DockingBases
 {
@@ -347,6 +348,16 @@ namespace Perpetuum.Units.DockingBases
         /// All docked characters.
         /// </summary>
         private ImmutableHashSet<Character> characters = ImmutableHashSet<Character>.Empty;
+
+        /// <summary>
+        /// Site owner
+        /// </summary>
+        /// <returns>Site owner as corporation</returns>
+        [CanBeNull]
+        public virtual Corporation GetSiteOwner()
+        {
+            return default;
+        }
 
     }
 }

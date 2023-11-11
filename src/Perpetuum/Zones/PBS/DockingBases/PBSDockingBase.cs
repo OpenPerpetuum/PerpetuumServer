@@ -618,6 +618,12 @@ namespace Perpetuum.Zones.PBS.DockingBases
 
             return ec;
         }
+
+        [CanBeNull]
+        public override Corporation GetSiteOwner()
+        {
+            return Corporation.Get(Owner);
+        }
     }
 
 }
