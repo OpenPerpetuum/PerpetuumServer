@@ -70,6 +70,7 @@ namespace Perpetuum.RequestHandlers
 
                 outpost.SetDockingControlDetails(standingLimit, !lockBase);
                 outpost.InsertDockingRightsLog(character, standingLimit, corporationEid, eventType);
+                outpost.CheckDockedCharacters();
 
                 Transaction.Current.OnCommited(() => outpost.SendSiteInfoToOnlineCharacters());
 

@@ -4,6 +4,7 @@ using Perpetuum.Groups.Corporations;
 using Perpetuum.Host.Requests;
 using Perpetuum.Zones;
 using Perpetuum.Zones.PBS;
+using Perpetuum.Zones.PBS.DockingBases;
 
 namespace Perpetuum.RequestHandlers.Zone.PBS
 {
@@ -43,6 +44,7 @@ namespace Perpetuum.RequestHandlers.Zone.PBS
                 }
 
                 ((IHaveStandingLimit)sourceUnit).StandingLimit = standingLimit ?? 0.0;
+                (sourceUnit as PBSDockingBase)?.CheckDockedCharacters();
 
                 sourceUnit.Save();
 

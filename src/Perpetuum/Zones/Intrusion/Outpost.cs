@@ -575,6 +575,8 @@ namespace Perpetuum.Zones.Intrusion
                         //clear docking rights
                         SetDockingControlDetails(null, true);
                         InsertDockingRightsLog(null, null, siteInfo.Owner, IntrusionEvents.dockingRightsClearedByServer);
+                        //process docked characters
+                        CheckDockedCharacters();
                     }
                 }
 
