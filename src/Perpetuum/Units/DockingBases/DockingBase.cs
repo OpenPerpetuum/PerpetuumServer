@@ -350,6 +350,66 @@ namespace Perpetuum.Units.DockingBases
         private ImmutableHashSet<Character> characters = ImmutableHashSet<Character>.Empty;
 
         /// <summary>
+        /// Performing check for docked characters.
+        /// </summary>
+        public void CheckDockedCharacters()
+        {
+            if (!characters.Any())
+            {
+                return;
+            }
+
+            // Statistic
+            int chTotal = 0;
+            int chNormalLeave = 0;
+            int chNormalJoin = 0;
+            int chInvalid = 0;
+
+            var channel = ChannelManager.GetChannelByName(ChannelName);
+            var transaction = Transaction.Current;
+
+            foreach (Character c in characters)
+            {
+                chTotal++;
+
+                var isOnline = c.IsOnline;
+                var isDocked = c.IsDocked;
+
+                if (!isOnline || !isDocked)
+                {
+                    chInvalid++;
+                    transaction.OnCommited(() => LeaveChannel(c));
+
+                    Logger.Warning($"[DockingBase]{this} Character:{c} isOnline:{c.IsOnline} isDocked:{c.IsDocked} IsDockingAllowed:{IsDockingAllowed(c)}");
+                    continue;
+                }
+
+                var isMember = channel.GetMember(c) != null;
+                var isAllowed = IsDockingAllowed(c) == ErrorCodes.NoError;
+
+                if (isMember == isAllowed)
+                {
+                    // Status match => all OK
+                    continue;
+                }
+
+                if (isAllowed)
+                {
+                    // ReJoin
+                    chNormalJoin++;
+                    transaction.OnCommited(() => JoinChannel(c));
+                    continue;
+                }
+
+                // Remove from channel
+                chNormalLeave++;
+                transaction.OnCommited(() => LeaveChannel(c));
+            }
+            
+            Logger.Info($"[DockingBase]{this} total:{chTotal} leave:{chNormalLeave} join:{chNormalJoin} invalid:{chInvalid}");
+        }
+
+        /// <summary>
         /// Site owner
         /// </summary>
         /// <returns>Site owner as corporation</returns>
