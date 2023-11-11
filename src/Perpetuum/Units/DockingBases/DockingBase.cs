@@ -173,6 +173,7 @@ namespace Perpetuum.Units.DockingBases
 
             if (ErrorCodes.NoError != IsDockingAllowed(character))
             {
+                Transaction.Current.OnCommited(() => LeaveChannel(character));
                 return;
             }
 
