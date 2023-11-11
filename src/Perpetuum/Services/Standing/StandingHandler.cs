@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Perpetuum.Accounting.Characters;
+using Perpetuum.Groups.Corporations;
 using Perpetuum.Log;
 
 namespace Perpetuum.Services.Standing
@@ -57,6 +58,8 @@ namespace Perpetuum.Services.Standing
 
             GetOrAddStandingHolder(sourceEID).SetStanding(targetEID, standing);
             SendStandingDataChangedToHosts(info);
+
+            (Corporation.Get(sourceEID) as PrivateCorporation)?.OnStandingChange(targetEID);
         }
 
         public IDictionary<string, object> GetStandingsList(long sourceEID)

@@ -14,6 +14,7 @@ using Perpetuum.Services.Channels;
 using Perpetuum.Services.Insurance;
 using Perpetuum.Services.MarketEngine;
 using Perpetuum.Services.TechTree;
+using Perpetuum.Units.DockingBases;
 using Perpetuum.Zones;
 
 namespace Perpetuum.Groups.Corporations
@@ -26,8 +27,15 @@ namespace Perpetuum.Groups.Corporations
         private readonly IVoteHandler _voteHandler;
         private readonly CharacterWalletFactory _characterWalletFactory;
         private readonly IMarketOrderRepository _marketOrderRepository;
+        private readonly DockingBaseHelper _dockingBaseHelper;
 
-        public PrivateCorporation(ITechTreeService techTreeService,IChannelManager channelManager,IReadOnlyRepository<int,CharacterProfile> characterProfiles,IVoteHandler voteHandler,CharacterWalletFactory characterWalletFactory,IMarketOrderRepository marketOrderRepository)
+        public PrivateCorporation(ITechTreeService techTreeService,
+            IChannelManager channelManager,
+            IReadOnlyRepository<int,CharacterProfile> characterProfiles,
+            IVoteHandler voteHandler,
+            CharacterWalletFactory characterWalletFactory,
+            IMarketOrderRepository marketOrderRepository,
+            DockingBaseHelper dockingBaseHelper)
         {
             _techTreeService = techTreeService;
             _channelManager = channelManager;
@@ -35,6 +43,7 @@ namespace Perpetuum.Groups.Corporations
             _voteHandler = voteHandler;
             _characterWalletFactory = characterWalletFactory;
             _marketOrderRepository = marketOrderRepository;
+            _dockingBaseHelper = dockingBaseHelper;
         }
 
         public override IDictionary<string, object> GetInfoDictionaryForMember(Character member)
@@ -444,6 +453,18 @@ namespace Perpetuum.Groups.Corporations
         public new static PrivateCorporation Get(long eid)
         {
             return Corporation.GetOrThrow(eid) as PrivateCorporation;
+        }
+
+        /// <summary>
+        /// Corporation standing change
+        /// </summary>
+        /// <param name="targetEid">Target for standing</param>
+        public void OnStandingChange(long targetEid)
+        {
+            foreach(var b in _dockingBaseHelper.GetBySiteOwner(this))
+            {
+                b.CheckDockedCharacters();
+            }
         }
     }
 }
