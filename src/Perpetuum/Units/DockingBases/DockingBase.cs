@@ -169,7 +169,7 @@ namespace Perpetuum.Units.DockingBases
             character.ZoneId = null;
             character.ZonePosition = null;
 
-            ImmutableInterlocked.Update(ref characters, (c) => c.Add(character));
+            ImmutableInterlocked.Update(ref docked, (c) => c.Add(character));
 
             if (ErrorCodes.NoError != IsDockingAllowed(character))
             {
@@ -210,7 +210,7 @@ namespace Perpetuum.Units.DockingBases
         /// <param name="character">Character to undock</param>
         public void DockOut(Character character)
         {
-            ImmutableInterlocked.Update(ref characters, (c) => c.Remove(character));
+            ImmutableInterlocked.Update(ref docked, (c) => c.Remove(character));
 
             // Leave docking base channel on successful undocking.
             Transaction.Current.OnCommited(() => LeaveChannel(character));
@@ -348,45 +348,52 @@ namespace Perpetuum.Units.DockingBases
         /// <summary>
         /// All docked characters.
         /// </summary>
-        private ImmutableHashSet<Character> characters = ImmutableHashSet<Character>.Empty;
+        private ImmutableHashSet<Character> docked = ImmutableHashSet<Character>.Empty;
 
         /// <summary>
         /// Performing check for docked characters.
         /// </summary>
         public void CheckDockedCharacters()
         {
-            if (!characters.Any())
+            if (!docked.Any())
             {
                 return;
             }
 
-            // Statistic
-            int chTotal = 0;
-            int chNormalLeave = 0;
-            int chNormalJoin = 0;
-            int chInvalid = 0;
+            // Total number of docked characters
+            int characters_total = 0;
+            // The number of characters removed from the channel upon check
+            int characters_leave = 0;
+            // The number of characters connected to the channel during the check
+            int characters_join = 0;
+            // Number of characters not docked or not online. (Must always be zero!)
+            int characters_invalid = 0;
 
             var channel = ChannelManager.GetChannelByName(ChannelName);
             var transaction = Transaction.Current;
 
-            foreach (Character c in characters)
+            // All characters in the docking base list are processed
+            foreach (Character character in docked)
             {
-                chTotal++;
+                characters_total++;
 
-                var isOnline = c.IsOnline;
-                var isDocked = c.IsDocked;
+                // All characters must be online and docked
+                var isOnline = character.IsOnline;
+                var isDocked = character.IsDocked;
 
                 if (!isOnline || !isDocked)
                 {
-                    chInvalid++;
-                    transaction.OnCommited(() => LeaveChannel(c));
+                    // Removed from the list and from the chat if the character is not docked.
+                    characters_invalid++;
+                    DockOut(character);
 
-                    Logger.Warning($"[DockingBase]{this} Character:{c} isOnline:{c.IsOnline} isDocked:{c.IsDocked} IsDockingAllowed:{IsDockingAllowed(c)}");
+                    Logger.Warning($"[DockingBase]{this} Character:{character} isOnline:{character.IsOnline} isDocked:{character.IsDocked} IsDockingAllowed:{IsDockingAllowed(character)}");
                     continue;
                 }
 
-                var isMember = channel.GetMember(c) != null;
-                var isAllowed = IsDockingAllowed(c) == ErrorCodes.NoError;
+                // These two statuses must be the same
+                var isMember = channel.GetMember(character) != null;
+                var isAllowed = IsDockingAllowed(character) == ErrorCodes.NoError;
 
                 if (isMember == isAllowed)
                 {
@@ -397,17 +404,17 @@ namespace Perpetuum.Units.DockingBases
                 if (isAllowed)
                 {
                     // ReJoin
-                    chNormalJoin++;
-                    transaction.OnCommited(() => JoinChannel(c));
+                    characters_join++;
+                    transaction.OnCommited(() => JoinChannel(character));
                     continue;
                 }
 
                 // Remove from channel
-                chNormalLeave++;
-                transaction.OnCommited(() => LeaveChannel(c));
+                characters_leave++;
+                transaction.OnCommited(() => LeaveChannel(character));
             }
             
-            Logger.Info($"[DockingBase]{this} total:{chTotal} leave:{chNormalLeave} join:{chNormalJoin} invalid:{chInvalid}");
+            Logger.Info($"[DockingBase]{this} total:{characters_total} leave:{characters_leave} join:{characters_join} invalid:{characters_invalid}");
         }
 
         /// <summary>
