@@ -218,9 +218,15 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
             }
         }
 
-        private int GetStandingPoints(Character character)
+        protected int GetStandingPoints(Character character)
         {
-            return (int)( GetStandingOfOwnerToCharacter(character)*20);
+            var standing = GetStandingOfOwnerToCharacter(character);
+            if (standing < 0.0)
+            {
+                standing = 0.0;
+            }
+
+            return (int)(standing * 20);
         }
 
         //Overload method for price/sec

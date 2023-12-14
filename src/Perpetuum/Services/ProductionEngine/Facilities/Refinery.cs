@@ -84,7 +84,7 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
         {
             var extensionPoints = GetMaterialExtensionBonus(character);
             var refinerypoints = GetFacilityPoint();
-            var standingPoints = GetStandingOfOwnerToCharacter(character) * 20;
+            var standingPoints = GetStandingPoints(character);
 
             return (int)( extensionPoints + refinerypoints + standingPoints);
         }

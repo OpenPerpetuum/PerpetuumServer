@@ -423,7 +423,7 @@ namespace Perpetuum.Services.ProductionEngine
 
         private int GetAdditiveComponent(Character character)
         {
-            var standingComponent = GetStandingOfOwnerToCharacter(character) * 20;
+            var standingComponent = GetStandingPoints(character);
             var extensionComponent = GetMaterialExtensionBonus(character);
             var facilityComponent = GetFacilityPoint();
 
@@ -729,7 +729,7 @@ namespace Perpetuum.Services.ProductionEngine
 
         private int GetAdditiveComponentForTime(Character character)
         {
-            var standingComponent = GetStandingOfOwnerToCharacter(character) * 20;
+            var standingComponent = GetStandingPoints(character);
             var extensionComponent = GetMaterialExtensionBonus(character);
             var facilityPoints = GetFacilityPoint();
 
@@ -826,7 +826,7 @@ namespace Perpetuum.Services.ProductionEngine
         private int GetAdditiveComponentForPoints(Character character)
         {
             var extensionComponent = GetPointExtensionBonus(character);
-            var standingComponent = GetStandingOfOwnerToCharacter(character) * 20;
+            var standingComponent = GetStandingPoints(character);
             var facilityPoints = GetFacilityPoint();
 
             return (int) (extensionComponent + standingComponent + facilityPoints);

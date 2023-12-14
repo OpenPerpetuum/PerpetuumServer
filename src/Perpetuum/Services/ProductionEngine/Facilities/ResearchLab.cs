@@ -50,7 +50,7 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
         {
             var basePoints = GetFacilityPoint();
             var extensionPoints = GetMaterialExtensionBonus(character);
-            var standingPoints = GetStandingOfOwnerToCharacter(character) * 20;
+            var standingPoints = GetStandingPoints(character);
 
             return (int) (basePoints + extensionPoints + standingPoints);
         }
@@ -59,7 +59,7 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
         {
             var basePoints = GetFacilityPoint();
             var extensionPoints = GetTimeExtensionBonus(character);
-            var standingPoints = GetStandingOfOwnerToCharacter(character) * 20;
+            var standingPoints = GetStandingPoints(character);
 
             return (int)(basePoints + extensionPoints + standingPoints);
         }
@@ -68,7 +68,7 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
         {
             var basePoints = GetFacilityPoint();
             var extensionPoints = GetTimeExtensionBonus(character);
-            var standingPoints = GetStandingOfOwnerToCharacter(character) * 20;
+            var standingPoints = GetStandingPoints(character);
             var levelDifferencePoints = levelDifference * 5;
 
             return (int)(basePoints + extensionPoints + standingPoints + levelDifferencePoints );

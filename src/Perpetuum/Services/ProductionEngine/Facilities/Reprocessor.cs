@@ -39,7 +39,7 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
         private int GetAdditiveComponent(Character character)
         {
             var extensionBonus = GetMaterialExtensionBonus(character);
-            var standingComponent = GetStandingOfOwnerToCharacter(character) * 20;
+            var standingComponent = GetStandingPoints(character);
             var facilityComponent = GetFacilityPoint();
 
             return (int) (standingComponent + extensionBonus + facilityComponent);
