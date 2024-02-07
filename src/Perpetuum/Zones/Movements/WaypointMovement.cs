@@ -24,9 +24,22 @@ namespace Perpetuum.Zones.Movements
             unit.Direction = unit.CurrentPosition.DirectionTo(_target);
             unit.CurrentSpeed = 1.0;
 
-            _velocity = Vector2.Subtract(_target,unit.CurrentPosition.ToVector2());
-            _distance = Vector2.Abs(_velocity);
-            _velocity = Vector2.Normalize(_velocity);
+            // Vector to destination
+            var path = Vector2.Subtract(_target, unit.CurrentPosition.ToVector2());
+            // The absolute path along each coordinate
+            _distance = Vector2.Abs(path);
+            if (path.Length().IsApproximatelyEqual(0.0f))
+            {
+                // If the path is zero, then is already at the destination
+                Arrived = true;
+                // Velocity vector in the direction of the unit.
+                _velocity = MathHelper.DirectionToVector(unit.Direction);
+            }
+            else
+            {
+                // Velocity vector in the direction of the path.
+                _velocity = Vector2.Normalize(path);
+            }
 
             base.Start(unit);
         }
