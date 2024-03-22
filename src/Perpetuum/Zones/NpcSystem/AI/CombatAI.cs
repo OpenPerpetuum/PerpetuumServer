@@ -24,6 +24,8 @@ namespace Perpetuum.Zones.NpcSystem.AI
         private const int UpdateFrequency = 1650;
         private const int Sqrt2 = 141;
         private const int Weight = 1000;
+        // Timer for periodically checking the main hostile target.
+        private readonly IntervalTimer updateHostileTimer = new IntervalTimer(UpdateFrequency, true);
         private readonly IntervalTimer processHostilesTimer = new IntervalTimer(UpdateFrequency);
         private readonly IntervalTimer primarySelectTimer = new IntervalTimer(UpdateFrequency);
         private List<ModuleActivator> moduleActivators;
@@ -261,7 +263,17 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 return;
             }
 
-            if (!mostHated.Unit.CurrentPosition.IsEqual2D(this.lastTargetPosition))
+            var forceCheckPrimary = false;
+            updateHostileTimer.Update(time);
+            if (updateHostileTimer.Passed)
+            {
+                updateHostileTimer.Reset();
+
+                // Forced check of the main hostile target.
+                forceCheckPrimary = movement?.Arrived ?? true;
+            }
+
+            if (!mostHated.Unit.CurrentPosition.IsEqual2D(this.lastTargetPosition) || forceCheckPrimary)
             {
                 this.lastTargetPosition = mostHated.Unit.CurrentPosition;
 
@@ -393,6 +405,8 @@ namespace Perpetuum.Zones.NpcSystem.AI
             var end = hostile.CurrentPosition.GetRandomPositionInRange2D(0, smartCreature.BestActionRange - 1).ToPoint();
 
             smartCreature.StopMoving();
+            // Nulling movement so that the unit does not resume it at zero speed if the path is not found.
+            movement = null;
 
             var maxNode = Math.Pow(smartCreature.HomeRange, 2) * Math.PI;
             var priorityQueue = new PriorityQueue<Node>((int)maxNode);
