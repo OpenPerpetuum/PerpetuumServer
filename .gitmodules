@@ -1,0 +1,6 @@
+[submodule "db"]
+	path = db
+	url = git@github.com:OpenPerpetuum/OPDB.git
+[submodule "asset"]
+	path = asset
+	url = git@github.com:OpenPerpetuum/OPResource.git

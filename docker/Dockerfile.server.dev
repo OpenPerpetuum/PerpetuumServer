@@ -1,0 +1,33 @@
+# Development dockerfile for PerpetuumServer
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0
+
+WORKDIR /server
+
+# RUN apt-get update && apt-get install -y gnupg
+
+# RUN gpg --homedir /tmp --no-default-keyring \
+#  --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg \
+#   --keyserver hkp://keyserver.ubuntu.com:80 \
+#    --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+
+# RUN apt-get update
+
+# RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates wget mono-complete dotnet-sdk-8.0
+
+# RUN wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -O nuget.exe
+
+# TODO, use different FROM starting next line
+
+COPY . .
+
+# RUN mono nuget.exe restore
+RUN dotnet restore
+
+
+# RUN msbuild -m -v:quiet Perpetuum.sln -p:Configuration=Release
+
+RUN dotnet build Perpetuum.sln -p:Configuration=Release
+
+RUN echo 1 | dotnet ./bin/x64/Release/Perpetuum.Server/Perpetuum.Server.exe /data
+

@@ -1,0 +1,11 @@
+# Development dockerfile for the asset
+
+FROM node:lts
+
+WORKDIR /var/www/OPResource
+
+COPY . .
+
+RUN npm install .
+
+CMD ["node", "index.js"]

@@ -1,0 +1,58 @@
+version: "3.8"
+
+networks:
+  dev_env:
+    driver: bridge
+
+volumes:
+  asset:
+  db:
+  server:
+
+services:
+  asset:
+    build:
+      context: ./asset
+      dockerfile: ../docker/Dockerfile.asset.dev
+    restart: unless-stopped
+    networks:
+      - dev_env
+    volumes:
+      - .:/asset
+    env_file:
+      - .env.local
+    ports:
+      - ${ASSET_PORT}:80
+
+  db:
+    image: postgres:15.2-alpine
+    restart: unless-stopped
+    networks:
+      - dev_env
+    command: postgres -c 'max_connections=1000'
+    volumes:
+      - db:/var/lib/postgresql/data
+    ports:
+      - ${DB_PORT}:5432
+    env_file:
+      - .env.local
+    environment:
+      PGDATA: /var/lib/postgresql/data
+
+  ## TODO: plan for migration service
+  
+  server:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.server.dev
+    restart: unless-stopped
+    volumes:
+      - .:/server
+      - ./data:/data
+    ports:
+      - ${SERVER_PORT}:17700
+    env_file:
+      - .env.local
+    depends_on:
+      - asset
+      - db
