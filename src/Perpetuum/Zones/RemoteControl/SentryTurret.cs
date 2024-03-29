@@ -2,9 +2,8 @@
 using Perpetuum.Players;
 using Perpetuum.Services.Standing;
 using Perpetuum.Units;
-using Perpetuum.Zones.DamageProcessors;
+using Perpetuum.Zones.Locking.Locks;
 using Perpetuum.Zones.NpcSystem;
-using Perpetuum.Zones.NpcSystem.ThreatManaging;
 using System;
 
 namespace Perpetuum.Zones.RemoteControl
@@ -73,21 +72,16 @@ namespace Perpetuum.Zones.RemoteControl
             base.OnUpdate(time);
         }
 
-        protected override void OnDamageTaken(Unit source, DamageTakenEventArgs e)
+        protected override void OnUnitLockStateChanged(Lock @lock)
         {
-            base.OnDamageTaken(source, e);
+            // Do nothing; Sentry Turrets don't care about locks
+        }
 
+        public override bool IsFriendly(Unit source)
+        {
             Player player = Zone.ToPlayerOrGetOwnerPlayer(source);
 
-            if (player == null)
-            {
-                return;
-            }
-
-            if (IsHostilePlayer(player))
-            {
-                AddThreat(player, new Threat(ThreatType.Damage, e.TotalDamage * 0.9), true);
-            }
+            return player != null && IsHostilePlayer(player);
         }
     }
 }

@@ -364,6 +364,11 @@ namespace Perpetuum.Zones.NpcSystem
             }
         }
 
+        public virtual bool IsFriendly(Unit source)
+        {
+            return false;
+        }
+
         protected override void OnTileChanged()
         {
             base.OnTileChanged();
@@ -417,7 +422,11 @@ namespace Perpetuum.Zones.NpcSystem
             }
 
             BossInfo?.OnDamageTaken(this, player);
-            AddThreat(player, new Threat(ThreatType.Damage, e.TotalDamage * 0.9), true);
+
+            if (!IsFriendly(source))
+            {
+                AddThreat(player, new Threat(ThreatType.Damage, e.TotalDamage * 0.9), true);
+            }
         }
 
         protected override void OnUpdate(TimeSpan time)

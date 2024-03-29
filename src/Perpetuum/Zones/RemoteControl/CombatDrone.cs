@@ -106,7 +106,7 @@ namespace Perpetuum.Zones.RemoteControl
 
         protected override void OnUnitLockStateChanged(Lock @lock)
         {
-            // Do nothing
+            // Do nothing; Combat Drones don't care about locks
         }
 
         protected override void UpdateUnitVisibility(Unit target)
