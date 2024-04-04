@@ -1014,7 +1014,7 @@ namespace Perpetuum.Units
 
         public double DetectionStrength => _detectionStrength.Value;
 
-        public double StealthStrength => _stealthStrength.Value;
+        public virtual double StealthStrength => _stealthStrength.Value;
 
         public double Massiveness => _massiveness.Value;
 

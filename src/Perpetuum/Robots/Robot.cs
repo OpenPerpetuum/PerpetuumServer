@@ -373,5 +373,11 @@ namespace Perpetuum.Robots
             _modules = new Lazy<IEnumerable<Module>>(() => RobotComponents.SelectMany(c => c.Modules).ToArray());
             _activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().ToArray());
         }
+
+        protected override void OnEnterZone(IZone zone, ZoneEnterType enterType)
+        {
+            base.OnEnterZone(zone, enterType);
+            CamouflageUpdate();
+        }
     }
 }

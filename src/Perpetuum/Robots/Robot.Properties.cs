@@ -22,10 +22,15 @@ namespace Perpetuum.Robots
         private ItemProperty missileHitChance;
         private ItemProperty decayChance;
         private ItemProperty mineDetectionRange;
+        private ItemProperty camouflage;
 
         private void InitProperties()
         {
             decay = new UnitOptionalProperty<int>(this, UnitDataType.Decay, k.decay, () => 255);
+            decay.PropertyChanged += _ =>
+            {
+                camouflage.SetValue(CamouflageBonus());
+            };
             OptionalProperties.Add(decay);
 
             tint = new UnitOptionalProperty<Color>(this,UnitDataType.Tint,k.tint,() => ED.Config.Tint);
@@ -58,6 +63,11 @@ namespace Perpetuum.Robots
                 AggregateField.undefined,
                 AggregateField.effect_mine_detection_range_modifier);
             AddProperty(mineDetectionRange);
+
+            camouflage = new UnitProperty(this, AggregateField.stealth_strength_modifier);
+            camouflage.PropertyChanged += _ =>
+            { UpdateTypes |= UnitUpdateTypes.Stealth; };
+            AddProperty(camouflage);
         }
 
         private double PowerGridMax
@@ -106,6 +116,8 @@ namespace Perpetuum.Robots
         {
             get { return mineDetectionRange.Value; }
         }
+
+        public override double StealthStrength => base.StealthStrength + camouflage.Value;
 
         public override void UpdateRelatedProperties(AggregateField field)
         {
@@ -222,6 +234,43 @@ namespace Perpetuum.Robots
             {
                 return _owner.CpuMax - _owner.TotalCpuUsage;
             }
+        }
+
+        protected virtual double CamouflageBonus()
+        {
+            // Average value of color components.
+            double average = (Tint.R + Tint.G + Tint.B) / 3.0;
+            // Faction island color.
+            double oneColor;
+
+            // Bonus depending on the faction of the island.
+            switch (Zone.Configuration.RaceId)
+            {
+                // Pelistal
+                case 1:
+                    oneColor = Tint.G;
+                    break;
+                // Nuimqol
+                case 2:
+                    oneColor = Tint.B;
+                    break;
+                // Thelodica
+                case 3:
+                    oneColor = Tint.R;
+                    break;
+                // Default for 0.00rF .
+                default:
+                    oneColor = average;
+                    break;
+            }
+
+            // Main camouflage formula.
+            return 25.974 * (oneColor - average) / Math.Pow(average + 12, 2) * (Decay / 255.0);
+        }
+
+        private void CamouflageUpdate()
+        {
+            camouflage.SetValue(CamouflageBonus());
         }
     }
 }
