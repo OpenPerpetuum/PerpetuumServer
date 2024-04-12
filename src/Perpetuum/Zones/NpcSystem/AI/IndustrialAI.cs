@@ -9,6 +9,8 @@ using System.Linq;
 using Perpetuum.Zones.NpcSystem.IndustrialTargetsManagement;
 using Perpetuum.Zones.NpcSystem.AI.Behaviors;
 using Perpetuum.Zones.RemoteControl;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Perpetuum.Zones.NpcSystem.AI
 {
@@ -58,6 +60,8 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 .Build();
         }
 
+        private int processIndustrialTargets;
+
         protected void UpdateIndustrialTargets(TimeSpan time)
         {
             processIndustrialTargetsTimer.Update(time);
@@ -65,8 +69,16 @@ namespace Perpetuum.Zones.NpcSystem.AI
             if (processIndustrialTargetsTimer.Passed)
             {
                 processIndustrialTargetsTimer.Reset();
-                // TODO: Use Task.Run for this.
-                ProcessIndustrialTargets();
+                
+                if (Interlocked.CompareExchange(ref processIndustrialTargets, 1, 0) == 1)
+                {
+                    return;
+                }
+                Task.Run(ProcessIndustrialTargets)
+                    .ContinueWith((_) =>
+                    {
+                        Interlocked.Exchange(ref processIndustrialTargets, 0);
+                    });
             }
         }
 

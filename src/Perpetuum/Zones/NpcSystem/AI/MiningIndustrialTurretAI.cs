@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Perpetuum.Zones.NpcSystem.AI
 {
@@ -13,6 +15,8 @@ namespace Perpetuum.Zones.NpcSystem.AI
             base.Update(time);
         }
 
+        private int lookingForMiningTargets;
+
         public void FindIndustrialTargets(TimeSpan time)
         {
             UpdateFrequency.Update(time);
@@ -20,8 +24,15 @@ namespace Perpetuum.Zones.NpcSystem.AI
             if (UpdateFrequency.Passed)
             {
                 UpdateFrequency.Reset();
-                // TODO: Use Task.Run for this.
-                smartCreature.LookingForMiningTargets();
+                if (Interlocked.CompareExchange(ref lookingForMiningTargets, 1, 0) == 1)
+                {
+                    return;
+                }
+                Task.Run(smartCreature.LookingForMiningTargets)
+                    .ContinueWith((_) =>
+                    {
+                        Interlocked.Exchange(ref lookingForMiningTargets, 0);
+                    });
             }
         }
     }
