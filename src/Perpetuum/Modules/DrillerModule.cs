@@ -120,27 +120,63 @@ namespace Perpetuum.Modules
             return rand <= chance ? 1 : 0;
         }
 
+        /// <summary>
+        /// Extracting materials.
+        /// </summary>
+        /// <param name="zone">The island on which the extraction takes place.</param>
         public void DoExtractMinerals(IZone zone)
         {
             TerrainLock terrainLock = GetLock().ThrowIfNotType<TerrainLock>(ErrorCodes.InvalidLockType);
 
-            MaterialType materialType;
-
+            // Material to be extracted
+            MaterialInfo materialInfo = default;
+            
             if (ParentRobot is RemoteControlledCreature)
             {
-                materialType = zone.Terrain.GetMaterialTypeAtPosition(terrainLock.Location);
+                // For remote modules we are looking for material with the maximum amount
+                uint maxAmount = 0;
+
+                // For all possible minerals on the island...
+                foreach (var layer in zone.Terrain.Materials.OfType<MineralLayer>())
+                {
+                    // Trying to get a deposit at the targeting point
+                    if (!layer.TryGetNode(terrainLock.Location, out MineralNode node))
+                        continue;
+
+                    // If the mineral is no more than what has already been found, then we skip it
+                    var amount = node.GetValue(terrainLock.Location);
+                    if (amount <= 0 || amount <= maxAmount)
+                    {
+                        continue;
+                    }
+
+                    // Remember the mineral for later extraction
+                    maxAmount = amount;
+                    materialInfo = _materialHelper.GetMaterialInfo(layer.Type);
+                }
+
+                // Nothing found ? Let's go out.
+                if (maxAmount <= 0)
+                {
+                    return;
+                }
             }
             else
             {
+                // The material is determined by the type of charge
                 if (!(GetAmmo() is MiningAmmo ammo))
                 {
                     return;
                 }
 
-                materialType = ammo.MaterialType;
+                materialInfo = _materialHelper.GetMaterialInfo(ammo.MaterialType);
             }
 
-            MaterialInfo materialInfo = _materialHelper.GetMaterialInfo(materialType);
+            if (materialInfo == default)
+            {
+                // There is nothing to extract.
+                return;
+            }
 
             CheckEnablerEffect(materialInfo);
 
