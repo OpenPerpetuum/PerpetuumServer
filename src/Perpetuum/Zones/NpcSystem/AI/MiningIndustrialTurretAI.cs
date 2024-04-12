@@ -1,27 +1,11 @@
-﻿using System;
-
-namespace Perpetuum.Zones.NpcSystem.AI
+﻿namespace Perpetuum.Zones.NpcSystem.AI
 {
-    public class MiningIndustrialTurretAI : StationaryIndustrialAI
+    public class MiningIndustrialTurretAI : IndustrialAI
     {
-        public MiningIndustrialTurretAI(SmartCreature smartCreature) : base(smartCreature) { }
-
-        public override void Update(TimeSpan time)
+        public MiningIndustrialTurretAI(SmartCreature smartCreature)
+            : base(smartCreature)
         {
-            FindIndustrialTargets(time);
-
-            base.Update(time);
-        }
-
-        public void FindIndustrialTargets(TimeSpan time)
-        {
-            UpdateFrequency.Update(time);
-
-            if (UpdateFrequency.Passed)
-            {
-                UpdateFrequency.Reset();
-                smartCreature.LookingForMiningTargets();
-            }
+            smartCreature.LookingForMiningTargets();
         }
     }
 }

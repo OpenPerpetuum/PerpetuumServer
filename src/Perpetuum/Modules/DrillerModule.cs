@@ -148,6 +148,11 @@ namespace Perpetuum.Modules
             double materialAmount = materialInfo.Amount * _miningAmountModifier.Value;
             List<ItemInfo> extractedMaterials = Extract(mineralLayer, terrainLock.Location, (uint)materialAmount);
 
+            if (ParentRobot is RemoteControlledCreature creature)
+            {
+                uint materialLeft = mineralLayer.GetNode(terrainLock.Location).GetValue(terrainLock.Location);
+                creature.ProcessIndustrialTarget(terrainLock.Location.Center, materialLeft);
+            }
             _ = extractedMaterials.Count.ThrowIfEqual(0, ErrorCodes.NoMineralOnTile);
             extractedMaterials.AddRange(_rareMaterialHandler.GenerateRareMaterials(materialInfo.EntityDefault.Definition));
 

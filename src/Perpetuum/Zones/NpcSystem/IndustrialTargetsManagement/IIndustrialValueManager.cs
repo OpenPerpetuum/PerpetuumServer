@@ -10,7 +10,7 @@ namespace Perpetuum.Zones.NpcSystem.IndustrialTargetsManagement
 
         bool Contains(Position tile);
 
-        void Remove(IndustrialTarget industrialTarget);
+        void Remove(Position tile);
 
         void Clear();
     }

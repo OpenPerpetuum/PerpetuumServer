@@ -8,26 +8,22 @@ namespace Perpetuum.Zones.NpcSystem.IndustrialTargetsManagement
     {
         private ImmutableDictionary<string, IndustrialTarget> _industrialTargets = ImmutableDictionary<string, IndustrialTarget>.Empty;
 
-        public ImmutableSortedSet<IndustrialTarget> IndustrialTargets
+        public ImmutableSortedSet<IndustrialTarget> IndustrialTargets => _industrialTargets.Values.ToImmutableSortedSet();
+
+        public bool IsValuable => !_industrialTargets.IsEmpty;
+
+        public void AddOrUpdateIndustrialTargetWithValue(Position tile, double value)
         {
-            get { return _industrialTargets.Values.ToImmutableSortedSet(); }
-        }
-
-        public bool IsValuable
-        {
-            get { return !_industrialTargets.IsEmpty; }
-        }
-
-        public IndustrialTarget GetOrAddIndustrialTargetWithValue(Position tile, IndustrialValueType valueType, double value)
-        {
-            return ImmutableInterlocked.GetOrAdd(ref _industrialTargets, tile.ToString(), eid =>
-            {
-                var industrialTarget = new IndustrialTarget(tile);
-
-                industrialTarget.AddIndustrialValue(new IndustrialValue(valueType, value));
-
-                return industrialTarget;
-            });
+            IndustrialTarget newTarget = new IndustrialTarget(tile.Center);
+            newTarget.AddIndustrialValue(new IndustrialValue(value));
+            _ = ImmutableInterlocked.AddOrUpdate(
+                ref _industrialTargets,
+                tile.Center.ToString(),
+                newTarget,
+                (_, oldTarget) =>
+                {
+                    return newTarget;
+                });
         }
 
         public bool Contains(Position tile)
@@ -40,9 +36,9 @@ namespace Perpetuum.Zones.NpcSystem.IndustrialTargetsManagement
             _industrialTargets = _industrialTargets.Clear();
         }
 
-        public void Remove(IndustrialTarget industrialTarget)
+        public void Remove(Position tile)
         {
-            ImmutableInterlocked.TryRemove(ref _industrialTargets, industrialTarget.Position.ToString(), out _);
+            _ = ImmutableInterlocked.TryRemove(ref _industrialTargets, tile.Center.ToString(), out _);
         }
 
         public string ToDebugString()
@@ -52,20 +48,20 @@ namespace Perpetuum.Zones.NpcSystem.IndustrialTargetsManagement
                 return string.Empty;
             }
 
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine();
-            sb.AppendLine("========== THREAT ==========");
-            sb.AppendLine();
+            _ = sb.AppendLine();
+            _ = sb.AppendLine("========== THREAT ==========");
+            _ = sb.AppendLine();
 
-            foreach (var industrialTarget in _industrialTargets.Values.OrderByDescending(h => h.IndustrialValue))
+            foreach (IndustrialTarget industrialTarget in _industrialTargets.Values.OrderByDescending(h => h.IndustrialValue))
             {
-                sb.AppendFormat("  {0} ({1}) => {2}", "Industrial Target", industrialTarget.Position.ToString(), industrialTarget.IndustrialValue);
-                sb.AppendLine();
+                _ = sb.AppendFormat("  {0} ({1}) => {2}", "Industrial Target", industrialTarget.Position.ToString(), industrialTarget.IndustrialValue);
+                _ = sb.AppendLine();
             }
 
-            sb.AppendLine();
-            sb.AppendLine("============================");
+            _ = sb.AppendLine();
+            _ = sb.AppendLine("============================");
 
             return sb.ToString();
         }

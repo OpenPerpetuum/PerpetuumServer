@@ -1,5 +1,6 @@
 ﻿using Perpetuum.Zones.Locking.Locks;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Perpetuum.Zones.NpcSystem.TargettingStrategies
@@ -12,6 +13,8 @@ namespace Perpetuum.Zones.NpcSystem.TargettingStrategies
             new Dictionary<IndustrialPrimaryLockSelectionStrategy, IndustrialTargetSelectionStrategy>()
         {
             { IndustrialPrimaryLockSelectionStrategy.RichestTile, TargetRichestTile },
+            { IndustrialPrimaryLockSelectionStrategy.PoorestTile, TargetPoorestTile },
+            { IndustrialPrimaryLockSelectionStrategy.RandomTile, TargetRandomTile },
         };
 
         public static IndustrialTargetSelectionStrategy GetStrategy(IndustrialPrimaryLockSelectionStrategy strategyType)
@@ -21,31 +24,57 @@ namespace Perpetuum.Zones.NpcSystem.TargettingStrategies
 
         public static bool TryInvokeStrategy(IndustrialPrimaryLockSelectionStrategy strategyType, SmartCreature smartCreature, TerrainLock[] locks)
         {
-            var industrialLockSelectionStrategy = GetStrategy(strategyType);
+            IndustrialTargetSelectionStrategy industrialLockSelectionStrategy = GetStrategy(strategyType);
 
-            if (industrialLockSelectionStrategy == null)
-            {
-                return false;
-            }
-
-            return industrialLockSelectionStrategy(smartCreature, locks);
+            return industrialLockSelectionStrategy != null && industrialLockSelectionStrategy(smartCreature, locks);
         }
 
         private static bool TargetRichestTile(SmartCreature smartCreature, TerrainLock[] locks)
         {
-            var industrialTargets = smartCreature.IndustrialValueManager.IndustrialTargets;
+            ImmutableSortedSet<IndustrialTargetsManagement.IndustrialTarget> industrialTargets = smartCreature.IndustrialValueManager.IndustrialTargets;
 
             if (!industrialTargets.Any())
             {
                 return false;
             }
 
-            var industrialTargetLocks = locks.Where(u => industrialTargets.Any(h => h.Position.ToString() == u.Location.ToString()));
-            var mostHostileLock = industrialTargetLocks
+            IEnumerable<TerrainLock> industrialTargetLocks = locks.Where(u => industrialTargets.Any(h => h.Position.ToString() == u.Location.ToString()));
+            TerrainLock mostHostileLock = industrialTargetLocks
                 .OrderByDescending(u => industrialTargets.FirstOrDefault(h => h.Position.ToString() == u.Location.ToString())?.IndustrialValue ?? 0)
                 .FirstOrDefault();
 
             return TrySetPrimaryLock(smartCreature, mostHostileLock);
+        }
+
+        private static bool TargetPoorestTile(SmartCreature smartCreature, TerrainLock[] locks)
+        {
+            ImmutableSortedSet<IndustrialTargetsManagement.IndustrialTarget> industrialTargets = smartCreature.IndustrialValueManager.IndustrialTargets;
+
+            if (!industrialTargets.Any())
+            {
+                return false;
+            }
+
+            IEnumerable<TerrainLock> industrialTargetLocks = locks.Where(u => industrialTargets.Any(h => h.Position.ToString() == u.Location.ToString()));
+            TerrainLock mostHostileLock = industrialTargetLocks
+                .OrderBy(u => industrialTargets.FirstOrDefault(h => h.Position.ToString() == u.Location.ToString())?.IndustrialValue ?? 0)
+                .FirstOrDefault();
+
+            return TrySetPrimaryLock(smartCreature, mostHostileLock);
+        }
+
+        private static bool TargetRandomTile(SmartCreature smartCreature, TerrainLock[] locks)
+        {
+            ImmutableSortedSet<IndustrialTargetsManagement.IndustrialTarget> industrialTargets = smartCreature.IndustrialValueManager.IndustrialTargets;
+
+            if (!industrialTargets.Any())
+            {
+                return false;
+            }
+
+            IEnumerable<TerrainLock> industrialTargetLocks = locks.Where(u => industrialTargets.Any(h => h.Position.ToString() == u.Location.ToString()));
+
+            return TrySetPrimaryLock(smartCreature, industrialTargetLocks.RandomElement());
         }
 
         private static bool TrySetPrimaryLock(SmartCreature smartCreature, Lock targetLock)

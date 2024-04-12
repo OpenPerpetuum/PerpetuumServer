@@ -684,7 +684,6 @@
     <Compile Include="Zones\NpcSystem\AI\CombatDrones\EscortCombatDroneAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\CombatDrones\GuardCombatDroneAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\HarvestingIndustrialTurretAI.cs" />
-    <Compile Include="Zones\NpcSystem\AI\HarvestingTurretIndustrialAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\HomingAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\IdleAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\InactiveAI.cs" />
@@ -700,13 +699,11 @@
     <Compile Include="Zones\NpcSystem\AI\SentryTurretIdleAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\StationaryCombatAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\StationaryIdleAI.cs" />
-    <Compile Include="Zones\NpcSystem\AI\StationaryIndustrialAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\TurretAI.cs" />
     <Compile Include="Zones\NpcSystem\Flocks\ISmartCreatureGroup.cs" />
     <Compile Include="Zones\NpcSystem\IndustrialTargetsManagement\IIndustrialValueManager.cs" />
     <Compile Include="Zones\NpcSystem\IndustrialTargetsManagement\IndustrialTarget.cs" />
     <Compile Include="Zones\NpcSystem\IndustrialTargetsManagement\IndustrialValue.cs" />
-    <Compile Include="Zones\NpcSystem\IndustrialTargetsManagement\IndustrialValueExtensions.cs" />
     <Compile Include="Zones\NpcSystem\IndustrialTargetsManagement\IndustrialValueManager.cs" />
     <Compile Include="Zones\NpcSystem\IndustrialTargetsManagement\IndustrialValueType.cs" />
     <Compile Include="Zones\NpcSystem\NpcBossInfoBuilder.cs" />

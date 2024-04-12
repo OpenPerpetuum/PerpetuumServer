@@ -10,8 +10,10 @@ using Perpetuum.Zones.Beams;
 using Perpetuum.Zones.Locking.Locks;
 using Perpetuum.Zones.RemoteControl;
 using Perpetuum.Zones.Terrains;
+using Perpetuum.Zones.Terrains.Materials.Plants;
 using Perpetuum.Zones.Terrains.Materials.Plants.Harvesters;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Transactions;
@@ -102,12 +104,17 @@ namespace Perpetuum.Modules
             {
                 using (new TerrainUpdateMonitor(zone))
                 {
-                    Zones.Terrains.Materials.Plants.PlantInfo plantInfo = zone.Terrain.Plants.GetValue(terrainLock.Location);
+                    PlantInfo plantInfo = zone.Terrain.Plants.GetValue(terrainLock.Location);
                     double amountModifier = _harverstingAmountModifier.GetValueByPlantType(plantInfo.type);
 
                     IPlantHarvester plantHarvester = _plantHarvesterFactory(zone, amountModifier);
 
-                    System.Collections.Generic.IEnumerable<ItemInfo> harvestedPlants = plantHarvester.HarvestPlant(terrainLock.Location);
+                    if (ParentRobot is RemoteControlledCreature creature)
+                    {
+                        creature.ProcessIndustrialTarget(terrainLock.Location.Center, plantInfo.material);
+                    }
+
+                    IEnumerable<ItemInfo> harvestedPlants = plantHarvester.HarvestPlant(terrainLock.Location);
 
                     Debug.Assert(ParentRobot != null, "ParentRobot != null");
 

@@ -21,6 +21,7 @@ using Perpetuum.Zones.Terrains.Materials;
 using Perpetuum.Zones.Terrains.Materials.Minerals;
 using Perpetuum.Zones.Terrains.Materials.Plants;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Perpetuum.Zones.NpcSystem
@@ -110,7 +111,7 @@ namespace Perpetuum.Zones.NpcSystem
                 {
                     if (result.FoundAny)
                     {
-                        System.Collections.Generic.IEnumerable<Position> valuablePositions = result.Area
+                        IEnumerable<Position> valuablePositions = result.Area
                             .GetPositions()
                             .Where(x => mineralLayer.HasMineral(x))
                             .Select(x => Zone.FixZ(x))
@@ -119,12 +120,27 @@ namespace Perpetuum.Zones.NpcSystem
                         foreach (Position valuablePosition in valuablePositions)
                         {
                             MineralNode mineralNode = mineralLayer.GetNode(valuablePosition);
-
-                            _ = IndustrialValueManager.GetOrAddIndustrialTargetWithValue(valuablePosition.Center, IndustrialValueType.Mineral, mineralNode.GetValue(valuablePosition));
+                            IndustrialValueManager
+                                .AddOrUpdateIndustrialTargetWithValue(
+                                    valuablePosition.Center,
+                                    mineralNode.GetValue(valuablePosition));
                         }
                     }
                 }
             }
+        }
+
+        public void ProcessIndustrialTarget(
+            Position position,
+            double value)
+        {
+            if (value <= 0)
+            {
+                IndustrialValueManager.Remove(position);
+                GetLockByPosition(position)?.Cancel();
+            }
+
+            IndustrialValueManager.AddOrUpdateIndustrialTargetWithValue(position, value);
         }
 
         public void LookingForHarvestingTargets()
@@ -137,11 +153,11 @@ namespace Perpetuum.Zones.NpcSystem
 
             foreach (PlantType plantType in availablePlantTypes)
             {
-                System.Collections.Generic.List<Position> plants = Zone.GetPlantPositionsInArea(plantType, area);
+                List<Position> plants = Zone.GetPlantPositionsInArea(plantType, area);
 
                 if (plants.Any())
                 {
-                    System.Collections.Generic.IEnumerable<Position> valuablePositions = plants
+                    IEnumerable<Position> valuablePositions = plants
                         .Select(x => Zone.FixZ(x))
                         .Where(x => x.IsInRangeOf2D(CurrentPosition, BestActionRange));
 
@@ -151,7 +167,10 @@ namespace Perpetuum.Zones.NpcSystem
 
                         if (plant.material > 0)
                         {
-                            _ = IndustrialValueManager.GetOrAddIndustrialTargetWithValue(valuablePosition.Center, IndustrialValueType.Plant, plant.material);
+                            IndustrialValueManager
+                                .AddOrUpdateIndustrialTargetWithValue(
+                                    valuablePosition.Center,
+                                    plant.material);
                         }
                     }
                 }
