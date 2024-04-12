@@ -65,6 +65,7 @@ namespace Perpetuum.Zones.NpcSystem.AI
             if (processIndustrialTargetsTimer.Passed)
             {
                 processIndustrialTargetsTimer.Reset();
+                // TODO: Use Task.Run for this.
                 ProcessIndustrialTargets();
             }
         }
@@ -185,12 +186,12 @@ namespace Perpetuum.Zones.NpcSystem.AI
             {
                 var industrialTarget = industrialTargetsEnumerator.Current;
 
-                if (!this.smartCreature.IsInLockingRange(industrialTarget.Position))
+                if (this.smartCreature.IsInLockingRange(industrialTarget.Position))
                 {
-                    continue;
+                    // Use the first suitable target.
+                    SetLockForIndustrialTarget(industrialTarget);
+                    break;
                 }
-
-                SetLockForIndustrialTarget(industrialTarget);
             }
         }
 

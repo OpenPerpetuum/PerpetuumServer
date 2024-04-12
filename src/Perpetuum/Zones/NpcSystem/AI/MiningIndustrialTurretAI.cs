@@ -20,6 +20,7 @@ namespace Perpetuum.Zones.NpcSystem.AI
             if (UpdateFrequency.Passed)
             {
                 UpdateFrequency.Reset();
+                // TODO: Use Task.Run for this.
                 smartCreature.LookingForMiningTargets();
             }
         }
