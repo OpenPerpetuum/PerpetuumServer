@@ -16,7 +16,7 @@ namespace Perpetuum.Zones.NpcSystem.AI
 {
     public class IndustrialAI : BaseAI
     {
-        private const int UpdateFrequency = 1650;
+        private const int UpdateFrequency = 5500;
         private const int EjectFrequency = 300000;
         private const double VolumeToEject = 10.0;
         private readonly IntervalTimer processIndustrialTargetsTimer = new IntervalTimer(UpdateFrequency);
