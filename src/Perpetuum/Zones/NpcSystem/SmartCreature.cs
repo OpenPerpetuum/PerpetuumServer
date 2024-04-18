@@ -81,6 +81,8 @@ namespace Perpetuum.Zones.NpcSystem
             IndustrialValueManager = new IndustrialValueManager();
         }
 
+        protected override bool isSafe => !ThreatManager.IsThreatened;
+
         public virtual void LookingForHostiles()
         {
             foreach (IUnitVisibility visibility in GetVisibleUnits())

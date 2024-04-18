@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Common.Loggers;
 using Perpetuum.EntityFramework;
@@ -252,37 +253,73 @@ namespace Perpetuum.Zones
             Logger.Info($"Unit exited from zone. zone:{Id} eid = {u.InfoString} ({u.CurrentPosition})");
         }
 
-        private ImmutableHashSet<Unit> _updatedUnits = ImmutableHashSet<Unit>.Empty;
+        /// <summary>
+        /// Mutex for synchronizing access to updated units.
+        /// </summary>
+        private Mutex _updatedUnitsMutex = new Mutex();
 
+        /// <summary>
+        /// A set of updated units.
+        /// </summary>
+        private HashSet<Unit> _updatedUnits = new HashSet<Unit>();
+
+        /// <summary>
+        /// Flag of the task of updating the visibility of units.
+        /// </summary>
+        private int processUpdatedUnits;
+
+        /// <summary>
+        /// We update the mutual visibility of units.
+        /// </summary>
         private void ProcessUpdatedUnits()
         {
-            ImmutableHashSet<Unit> updatedUnits;
-
-            if ((updatedUnits = Interlocked.CompareExchange(ref _updatedUnits, ImmutableHashSet<Unit>.Empty, _updatedUnits)) == ImmutableHashSet<Unit>.Empty)
-                return;
-
-            foreach (var kvp in _units)
+            // Only one update task.
+            if (Interlocked.CompareExchange(ref processUpdatedUnits, 1, 0) == 1)
             {
-                var targetUnit = kvp.Value;
-
-                foreach (var sourceUnit in updatedUnits)
-                {
-                    if ( sourceUnit == targetUnit )
-                        continue;
-
-                    sourceUnit.UpdateVisibilityOf(targetUnit);
-                    targetUnit.UpdateVisibilityOf(sourceUnit);
-
-                    if (Configuration.Protected)
-                        continue;
-
-                    var bSource = sourceUnit as IBlobableUnit;
-                    bSource?.BlobHandler.UpdateBlob(targetUnit);
-
-                    var bTarget = targetUnit as IBlobableUnit;
-                    bTarget?.BlobHandler.UpdateBlob(sourceUnit);
-                }
+                return;
             }
+
+            // This is a rare event. We launch it as a task.
+            Task.Run(() =>
+            {
+                // We get a new list of units to update and prepare an empty new one.
+                _updatedUnitsMutex.WaitOne();
+                HashSet<Unit> updatedUnits = _updatedUnits;
+                _updatedUnits = new HashSet<Unit>();
+                _updatedUnitsMutex.ReleaseMutex();
+
+                // If the list is empty, then there is nothing to update.
+                if (updatedUnits.IsNullOrEmpty())
+                    return;
+
+                // For all units on the island.
+                foreach (var kvp in _units)
+                {
+                    var targetUnit = kvp.Value;
+
+                    // For all units from the list.
+                    foreach (var sourceUnit in updatedUnits)
+                    {
+                        // He doesn't bully himself.
+                        if (sourceUnit == targetUnit)
+                            continue;
+
+                        // Mutual visibility.
+                        sourceUnit.UpdateVisibilityOf(targetUnit);
+                        targetUnit.UpdateVisibilityOf(sourceUnit);
+
+                        if (Configuration.Protected)
+                            continue;
+
+                        // For areas without protection, we take into account interference.
+                        var bSource = sourceUnit as IBlobableUnit;
+                        bSource?.BlobHandler.UpdateBlob(targetUnit);
+
+                        var bTarget = targetUnit as IBlobableUnit;
+                        bTarget?.BlobHandler.UpdateBlob(sourceUnit);
+                    }
+                }
+            }).ContinueWith(_ => { Interlocked.Exchange(ref processUpdatedUnits, 0); });
         }
 
         private void OnUnitUpdated(Unit unit, UnitUpdatedEventArgs e)
@@ -291,7 +328,9 @@ namespace Perpetuum.Zones
             if (!visibilityUpdated)
                 return;
 
-            ImmutableInterlocked.Update(ref _updatedUnits, h => h.Add(unit));
+            _updatedUnitsMutex.WaitOne();
+            _updatedUnits.Add(unit);
+            _updatedUnitsMutex.ReleaseMutex();
         }
 
         public IEnumerable<Unit> Units => _units.Values;

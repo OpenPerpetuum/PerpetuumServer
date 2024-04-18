@@ -313,6 +313,11 @@ namespace Perpetuum.Robots
             OnBroadcastPacket(builder.ToProxy());
         }
 
+        /// <summary>
+        /// Offensive modules on safe fuse.
+        /// </summary>
+        protected virtual bool isSafe => true;
+
         protected override void OnUpdate(TimeSpan time)
         {
             base.OnUpdate(time);
@@ -321,7 +326,7 @@ namespace Perpetuum.Robots
 
             foreach (RobotComponent robotComponent in RobotComponents)
             {
-                robotComponent.Update(time);
+                robotComponent.Update(time, isSafe);
             }
         }
 
