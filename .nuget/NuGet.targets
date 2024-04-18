@@ -12,8 +12,8 @@
         <!-- Determines if package restore consent is required to restore packages -->
         <RequireRestoreConsent Condition=" '$(RequireRestoreConsent)' != 'false' ">true</RequireRestoreConsent>
         
-        <!-- Download NuGet.exe if it does not already exist -->
-        <DownloadNuGetExe Condition=" '$(DownloadNuGetExe)' == '' ">false</DownloadNuGetExe>
+        <!-- Download nuget.exe if it does not already exist -->
+        <DownloadNuGetExe Condition=" '$(DownloadNuGetExe)' == '' ">true</DownloadNuGetExe>
     </PropertyGroup>
     
     <ItemGroup Condition=" '$(PackageSources)' == '' ">
@@ -117,9 +117,9 @@
                 try {
                     OutputFilename = Path.GetFullPath(OutputFilename);
 
-                    Log.LogMessage("Downloading latest version of NuGet.exe...");
+                    Log.LogMessage("Downloading latest version of nuget.exe...");
                     WebClient webClient = new WebClient();
-                    webClient.DownloadFile("https://nuget.org/nuget.exe", OutputFilename);
+                    webClient.DownloadFile("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe", OutputFilename);
 
                     return true;
                 }
