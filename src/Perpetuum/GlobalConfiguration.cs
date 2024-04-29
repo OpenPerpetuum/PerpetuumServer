@@ -39,7 +39,7 @@ namespace Perpetuum
         [DefaultValue(40000), JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public int StartEP { get; set; }
 
-        // Default camouflage bonus value for zone effect.
+        // Default camouflage bonus value.
         [DefaultValue(5), JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public int CamouflageBonus { get; set; }
     }
