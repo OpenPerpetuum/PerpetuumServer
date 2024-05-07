@@ -1,6 +1,6 @@
 # Development dockerfile for the asset
 
-FROM node:lts
+FROM node:10-alpine
 
 WORKDIR /var/www/OPResource
 
