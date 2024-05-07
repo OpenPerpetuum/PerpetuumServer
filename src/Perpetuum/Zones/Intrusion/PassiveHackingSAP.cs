@@ -16,7 +16,7 @@ namespace Perpetuum.Zones.Intrusion
     {
         private static readonly TimeSpan _updateScoreInterval = TimeSpan.FromSeconds(2);
         private static TimeSpan _takeoverTime = TimeSpan.FromMinutes(8);
-        private static readonly int _maxScore = (int) _takeoverTime.Divide(_updateScoreInterval).Ticks;
+        private static readonly int _maxScore = (int) _takeoverTime.Divide(_updateScoreInterval);
         private const int RANGE = 5;
         private readonly IntervalTimer _updateScoreTimer = new IntervalTimer(_updateScoreInterval);
 

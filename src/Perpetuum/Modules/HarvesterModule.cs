@@ -69,8 +69,8 @@ namespace Perpetuum.Modules
             }
 
             TimeSpan avgCycleTime = activeGathererModules.Select(m => m.CycleTime).Average();
-            TimeSpan t = TimeSpan.FromDays(1).Divide(avgCycleTime);
-            double chance = (double)MAX_EP_PER_DAY / t.Ticks;
+            double t = TimeSpan.FromDays(1).Divide(avgCycleTime);
+            double chance = (double)MAX_EP_PER_DAY / t;
 
             chance /= activeGathererModules.Length;
 

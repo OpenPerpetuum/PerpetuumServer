@@ -259,3 +259,5 @@ paket-files/
 __pycache__/
 *.pyc
 /PerpetuumTests
+/src/Perpetuum.ServerService/Properties/Resources.Designer.cs
+/src/Perpetuum.ServerService/Properties/Settings.Designer.cs

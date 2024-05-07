@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.Json;
 
 namespace Perpetuum
 {
@@ -59,10 +60,7 @@ namespace Perpetuum
                 return default(T);
             }
 
-            using (var ms = new MemoryStream(data))
-            {
-                return (T)(new BinaryFormatter().Deserialize(ms));
-            }
+            return JsonSerializer.Deserialize<T>(new ReadOnlySpan<byte>(data));
         }
     }
 }

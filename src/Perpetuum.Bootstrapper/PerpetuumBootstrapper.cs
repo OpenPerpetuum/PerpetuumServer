@@ -565,7 +565,7 @@ namespace Perpetuum.Bootstrapper
 
             _ = _builder.Register<DbConnectionFactory>(x =>
             {
-                string connectionString = x.Resolve<GlobalConfiguration>().ConnectionString;
+                string connectionString = x.Resolve<GlobalConfiguration>().ConnectionStringNetCore;
                 return () => new SqlConnection(connectionString);
             });
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -58,13 +59,8 @@ namespace Perpetuum
 
             Debug.Assert(typeof(T).IsSerializable, "EZ NEM SERIALIZALHATO: " + typeof(T));
 
-            using (var ms = new MemoryStream())
-            {
-                var bf = new BinaryFormatter();
-                bf.Serialize(ms, source);
-                ms.Seek(0, SeekOrigin.Begin);
-                return (T)(bf.Deserialize(ms));
-            }
+            var serialized = JsonConvert.SerializeObject(source);
+            return JsonConvert.DeserializeObject<T>(serialized);
         }
     }
 }

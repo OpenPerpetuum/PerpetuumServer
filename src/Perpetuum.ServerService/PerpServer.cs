@@ -1,13 +1,11 @@
-﻿using Perpetuum.Bootstrapper;
-using System;
-using System.ComponentModel;
-using System.IO;
-using System.ServiceProcess;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
+using Perpetuum.Bootstrapper;
 using Perpetuum.Host;
-using System.Threading;
 using Perpetuum.Log;
+using System;
+using System.ServiceProcess;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Perpetuum.ServerService
 {
