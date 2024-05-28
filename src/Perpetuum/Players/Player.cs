@@ -62,6 +62,7 @@ namespace Perpetuum.Players
         private readonly BlobHandler<Player> blobHandler;
         private readonly PlayerMovement movement;
         private readonly IntervalTimer combatTimer = new IntervalTimer(TimeSpan.FromSeconds(10));
+        private readonly GlobalConfiguration globalConfiguration;
         private CombatLogger combatLogger;
         private PlayerMoveCheckQueue check;
         private CancellableDespawnHelper despawnHelper;
@@ -121,7 +122,8 @@ namespace Perpetuum.Players
             MissionHandler.Factory missionHandlerFactory,
             ITeleportStrategyFactories teleportStrategyFactories,
             DockingBaseHelper dockingBaseHelper,
-            CombatLogger.Factory combatLoggerFactory)
+            CombatLogger.Factory combatLoggerFactory,
+            GlobalConfiguration globalConfiguration)
         {
             this.extensionReader = extensionReader;
             this.corporationManager = corporationManager;
@@ -129,6 +131,7 @@ namespace Perpetuum.Players
             this.teleportStrategyFactories = teleportStrategyFactories;
             this.dockingBaseHelper = dockingBaseHelper;
             this.combatLoggerFactory = combatLoggerFactory;
+            this.globalConfiguration = globalConfiguration;
             Session = ZoneSession.None;
             movement = new PlayerMovement(this);
 
@@ -1206,6 +1209,11 @@ namespace Perpetuum.Players
                     Logger.Exception(ex);
                 }
             }
+        }
+
+        protected override double CamouflageBonus()
+        {
+            return Math.Round(base.CamouflageBonus() * globalConfiguration.CamouflageBonus, 2);
         }
     }
 }
