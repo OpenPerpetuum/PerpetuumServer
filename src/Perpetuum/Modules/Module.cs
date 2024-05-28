@@ -96,6 +96,11 @@ namespace Perpetuum.Modules
             get { return ED.AttributeFlags.PassiveModule; }
         }
 
+        public bool IsOffensive
+        {
+            get { return ED.AttributeFlags.OffensiveModule; }
+        }
+
         protected virtual void OnUpdateProperty(AggregateField field)
         {
         }

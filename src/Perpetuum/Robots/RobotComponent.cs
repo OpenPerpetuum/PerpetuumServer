@@ -49,11 +49,13 @@ namespace Perpetuum.Robots
         }
 
         private Lazy<IEnumerable<Module>> _modules;
-        private Lazy<IEnumerable<ActiveModule>> _activeModules;
+        private Lazy<IEnumerable<ActiveModule>> _activeModulesRegular;
+        private Lazy<IEnumerable<ActiveModule>> _activeModulesOffensive;
         private void InitModules()
         {
             _modules = new Lazy<IEnumerable<Module>>(() => Children.OfType<Module>().ToArray());
-            _activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().ToArray());
+            _activeModulesRegular = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().Where(m => !m.IsOffensive).ToArray());
+            _activeModulesOffensive = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().Where(m => m.IsOffensive).ToArray());
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
@@ -93,14 +95,30 @@ namespace Perpetuum.Robots
             get { return _modules.Value; }
         }
 
-        public IEnumerable<ActiveModule> ActiveModules
+        private IEnumerable<ActiveModule> ActiveModulesRegular
         {
-            get { return _activeModules.Value; }
+            get { return _activeModulesRegular.Value; }
         }
 
-        public void Update(TimeSpan time)
+        private IEnumerable<ActiveModule> ActiveModulesOffensive
         {
-            foreach (var activeModule in ActiveModules)
+            get { return _activeModulesOffensive.Value; }
+        }
+
+        public void Update(TimeSpan time) => Update(time, false);
+        public void Update(TimeSpan time, bool isSafe)
+        {
+            foreach (var activeModule in ActiveModulesRegular)
+            {
+                activeModule.Update(time);
+            }
+
+            if (isSafe)
+            {
+                return;
+            }
+
+            foreach (var activeModule in ActiveModulesOffensive)
             {
                 activeModule.Update(time);
             }
