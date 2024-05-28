@@ -1133,7 +1133,7 @@ namespace Perpetuum.Players
                         {
                             EntityDefault paint = EntityDefault.Reader.GetAll()
                                 .Where(i => i.CategoryFlags == CategoryFlags.cf_paints)
-                                .Where(i => i.Config.Tint == Tint).First();
+                                .Where(i => i.Config.Tint == Tint).FirstOrDefault();
 
                             if (paint != null)
                             {

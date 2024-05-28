@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Perpetuum.ExportedTypes;
+﻿using Perpetuum.ExportedTypes;
 using Perpetuum.Log;
 using Perpetuum.Modules.Weapons;
 using Perpetuum.Zones.Beams;
 using Perpetuum.Zones.Terrains.Materials;
 using Perpetuum.Zones.Terrains.Materials.Minerals;
 using Perpetuum.Zones.Terrains.Materials.Plants;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Perpetuum.Zones.Terrains
 {
@@ -18,51 +17,60 @@ namespace Perpetuum.Zones.Terrains
     {
         public static bool IsBlocked(this ITerrain terrain, Position position)
         {
-            return terrain.IsBlocked((int) position.X, (int) position.Y);
+            return terrain.IsBlocked((int)position.X, (int)position.Y);
         }
 
-        public static bool IsBlocked(this ITerrain terrain,int x,int y)
+        public static bool IsBlocked(this ITerrain terrain, int x, int y)
         {
             return terrain.Blocks[x, y].Flags > 0;
         }
 
         public static void ClearPlantBlocking(this ITerrain terrain, Position position)
         {
-            terrain.ClearPlantBlocking(position.intX,position.intY);
+            terrain.ClearPlantBlocking(position.intX, position.intY);
         }
 
         private static void ClearPlantBlocking(this ITerrain terrain, int x, int y)
         {
-            terrain.Blocks.UpdateValue(x,y, bi =>
+            terrain.Blocks.UpdateValue(x, y, bi =>
             {
                 bi.Height = 0;
                 bi.Plant = false;
+
                 return bi;
             });
         }
 
-        public static void PutPlant(this ITerrain terrain,int x, int y, byte state, PlantType plantType, PlantRule plantRule)
+        public static void PutPlant(
+            this ITerrain terrain,
+            int x,
+            int y,
+            byte state,
+            PlantType plantType,
+            PlantRule plantRule)
         {
-            terrain.Plants.UpdateValue(x,y,pi =>
+            terrain.Plants.UpdateValue(x, y, pi =>
             {
                 pi.SetPlant(state, plantType);
                 pi.health = plantRule.Health[state];
+
                 return pi;
             });
 
             if (plantRule.IsBlocking(state))
             {
-                terrain.Blocks.UpdateValue(x,y,bi =>
+                terrain.Blocks.UpdateValue(x, y, bi =>
                 {
                     bi.Plant = true;
                     bi.Height = plantRule.GetBlockingHeight(state);
+
                     return bi;
                 });
             }
 
             if (plantRule.PlacesConcrete)
             {
-                terrain.Controls.UpdateValue(x,y,ci =>
+                terrain.Controls.UpdateValue(x, y, ci =>
                 {
                     if (FastRandom.NextDouble() > 0.5)
                     {
@@ -80,39 +88,39 @@ namespace Perpetuum.Zones.Terrains
 
         public static int CountPlantsInArea(this IZone zone, PlantType plantType, Area area)
         {
-            var counter = 0;
+            int counter = 0;
             zone.ForEachAreaInclusive(area, (x, y) =>
             {
-                var pi = zone.Terrain.Plants.GetValue(x, y);
+                PlantInfo pi = zone.Terrain.Plants.GetValue(x, y);
                 if (pi.type == plantType)
                 {
                     counter++;
                 }
             });
+
             return counter;
         }
 
         public static List<Position> GetPlantPositionsInArea(this IZone zone, PlantType plantType, Area area)
         {
-            var result = new List<Position>();
-
+            List<Position> result = new List<Position>();
             zone.ForEachAreaInclusive(area, (x, y) =>
             {
-                var pi = zone.Terrain.Plants.GetValue(x, y);
+                PlantInfo pi = zone.Terrain.Plants.GetValue(x, y);
                 if (pi.type == plantType)
                 {
                     result.Add(new Position(x, y));
                 }
             });
-            
+
             return result;
         }
 
         public static void ForEachAll(this IZone zone, Action<int, int> action)
         {
-            for (var y = 0; y < zone.Size.Height; y++)
+            for (int y = 0; y < zone.Size.Height; y++)
             {
-                for (var x = 0; x < zone.Size.Width; x++)
+                for (int x = 0; x < zone.Size.Width; x++)
                 {
                     action(x, y);
                 }
@@ -123,10 +131,9 @@ namespace Perpetuum.Zones.Terrains
         public static void ForEachAreaInclusive(this IZone zone, Area area, Action<int, int> areaAction)
         {
             area = area.Clamp(zone.Size);
-
-            for (var y = area.Y1; y <= area.Y2; y++)
+            for (int y = area.Y1; y <= area.Y2; y++)
             {
-                for (var x = area.X1; x <= area.X2; x++)
+                for (int x = area.X1; x <= area.X2; x++)
                 {
                     areaAction(x, y);
                 }
@@ -135,19 +142,17 @@ namespace Perpetuum.Zones.Terrains
 
         public static void DamageToPlantOnArea(this IZone zone, DamageInfo damageInfo)
         {
-            var area = Area.FromRadius(damageInfo.sourcePosition, (int)damageInfo.Range);
-            var damage = damageInfo.CalculatePlantDamages();
-            var rangeFar = (int)damageInfo.Range;
-
+            Area area = Area.FromRadius(damageInfo.sourcePosition, (int)damageInfo.Range);
+            double damage = damageInfo.CalculatePlantDamages();
+            int rangeFar = (int)damageInfo.Range;
             double originX = damageInfo.sourcePosition.intX;
             double originY = damageInfo.sourcePosition.intY;
-
-            for (var y = area.Y1; y <= area.Y2; y++)
+            for (int y = area.Y1; y <= area.Y2; y++)
             {
-                for (var x = area.X1; x <= area.X2; x++)
+                for (int x = area.X1; x <= area.X2; x++)
                 {
-                    var mult = MathHelper.DistanceFalloff(0, rangeFar, originX, originY, x, y);
-                    var finalDamage = mult * damage;
+                    double mult = MathHelper.DistanceFalloff(0, rangeFar, originX, originY, x, y);
+                    double finalDamage = mult * damage;
                     if (finalDamage > 0)
                     {
                         zone.DamageToPlant(x, y, finalDamage);
@@ -158,42 +163,42 @@ namespace Perpetuum.Zones.Terrains
 
         public static void DamageToPlantOnArea(this IZone zone, Area area, double damage)
         {
-            var w = area.Width / 2;
-            var h = area.Height / 2;
-
-            var maxd = w * w + h * h;
-
-            var cx = area.Center.X;
-            var cy = area.Center.Y;
-
-            for (var y = area.Y1; y <= area.Y2; y++)
+            int w = area.Width / 2;
+            int h = area.Height / 2;
+            int maxd = (w * w) + (h * h);
+            int cx = area.Center.X;
+            int cy = area.Center.Y;
+            for (int y = area.Y1; y <= area.Y2; y++)
             {
-                for (var x = area.X1; x <= area.X2; x++)
+                for (int x = area.X1; x <= area.X2; x++)
                 {
-                    var dx = cx - x;
-                    var dy = cy - y;
+                    int dx = cx - x;
+                    int dy = cy - y;
 
-                    var d = dx * dx + dy * dy;
-                    var m = 1.0 - ((double)d / maxd);
+                    int d = (dx * dx) + (dy * dy);
+                    double m = 1.0 - ((double)d / maxd);
 
-                    var dmg = damage * m;
+                    double dmg = damage * m;
                     zone.DamageToPlant(x, y, dmg);
                 }
             }
         }
 
-        public static void DamageToPlant(this IZone zone,int x, int y, double damage)
+        public static void DamageToPlant(this IZone zone, int x, int y, double damage)
         {
-            var currPlant = zone.Terrain.Plants[x, y];
+            PlantInfo currPlant = zone.Terrain.Plants[x, y];
             if (currPlant.type == PlantType.NotDefined || currPlant.health <= 0)
+            {
                 return;
+            }
 
-            var plantRule = zone.Configuration.PlantRules.GetPlantRule(currPlant.type);
+            PlantRule plantRule = zone.Configuration.PlantRules.GetPlantRule(currPlant.type);
             if (plantRule == null)
             {
                 Logger.Error("plant rule was not found. plant type: " + currPlant.type + " zone:" + zone.Id);
                 currPlant.Clear();
-                zone.Terrain.Blocks[x,y] = new BlockingInfo();
+                zone.Terrain.Blocks[x, y] = new BlockingInfo();
+
                 return;
             }
 
@@ -202,40 +207,38 @@ namespace Perpetuum.Zones.Terrains
                 damage /= 3.0;
             }
 
-            var damageInt = (int)(damage * plantRule.DamageScale).Clamp(int.MinValue, int.MaxValue);
+            int damageInt = (int)(damage * plantRule.DamageScale).Clamp(int.MinValue, int.MaxValue);
             if (damageInt <= 0)
             {
                 Logger.DebugInfo(plantRule.Type + " low damage");
+
                 return;
             }
 
-            Logger.DebugInfo(plantRule.Type + " damage   " + damageInt); 
-
+            Logger.DebugInfo(plantRule.Type + " damage   " + damageInt);
             int currentHealth = currPlant.health;
             currentHealth -= damageInt;
-
             if (currentHealth <= 0)
             {
                 currPlant.Clear();
-                currPlant.state = 1; //lehet t0bb fajta meghalasa most 1 van hasznalva
-
-                zone.Terrain.Blocks[x,y] = new BlockingInfo();
-
+                currPlant.state = 1;
+                zone.Terrain.Blocks[x, y] = new BlockingInfo();
                 if (plantRule.PlacesConcrete)
                 {
-                    zone.Terrain.Controls.UpdateValue(x,y,ci =>
+                    zone.Terrain.Controls.UpdateValue(x, y, ci =>
                     {
                         ci.ClearAllConcrete();
+
                         return ci;
                     });
                 }
             }
             else
             {
-                currPlant.health = (byte)(currentHealth.Clamp(0, 255));
+                currPlant.health = (byte)currentHealth.Clamp(0, 255);
             }
 
-            zone.Terrain.Plants[x,y] = currPlant;
+            zone.Terrain.Plants[x, y] = currPlant;
         }
 
         public static Position GetRandomPassablePosition(this IZone zone)
@@ -253,14 +256,13 @@ namespace Perpetuum.Zones.Terrains
 
         private static Position GetRandomIslandPosition(this IZone zone)
         {
-            var counter = 0;
+            int counter = 0;
             while (true)
             {
-                var xo = FastRandom.NextInt(0, zone.Size.Width - 1);
-                var yo = FastRandom.NextInt(0, zone.Size.Height - 1);
-                var p = new Position(xo, yo);
-
-                var blockingInfo = zone.Terrain.Blocks.GetValue(xo, yo);
+                int xo = FastRandom.NextInt(0, zone.Size.Width - 1);
+                int yo = FastRandom.NextInt(0, zone.Size.Height - 1);
+                Position p = new Position(xo, yo);
+                BlockingInfo blockingInfo = zone.Terrain.Blocks.GetValue(xo, yo);
                 if (!blockingInfo.Island)
                 {
                     return p;
@@ -276,52 +278,52 @@ namespace Perpetuum.Zones.Terrains
 
         public static void UpdateAreaFromPacket(this ITerrain terrain, Packet packet)
         {
-            var layerType = (LayerType)packet.ReadByte();
-            packet.ReadByte(); // materialType
-            packet.ReadByte(); // sizeOfElement;
-            var x1 = packet.ReadInt();
-            var y1 = packet.ReadInt();
-            var x2 = packet.ReadInt();
-            var y2 = packet.ReadInt();
-            var area = new Area(x1, y1, x2, y2);
-
-            var layer = terrain.GetLayerByType(layerType) as IUpdateableLayer;
+            LayerType layerType = (LayerType)packet.ReadByte();
+            _ = packet.ReadByte(); // materialType
+            _ = packet.ReadByte(); // sizeOfElement;
+            int x1 = packet.ReadInt();
+            int y1 = packet.ReadInt();
+            int x2 = packet.ReadInt();
+            int y2 = packet.ReadInt();
+            Area area = new Area(x1, y1, x2, y2);
+            IUpdateableLayer layer = terrain.GetLayerByType(layerType) as IUpdateableLayer;
             layer?.CopyFromStreamToArea(packet, area);
         }
 
-        public static void UpdateNatureCube(this IZone zone,Area area,Action<NatureCube> updater)
+        public static void UpdateNatureCube(this IZone zone, Area area, Action<NatureCube> updater)
         {
-            var cube = new NatureCube(zone,area);
+            NatureCube cube = new NatureCube(zone, area);
             cube.Check();
-            
-            var snapshot = cube.Clone();
+            NatureCube snapshot = cube.Clone();
             snapshot.Check();
-
             updater(snapshot);
             snapshot.Check();
-
-            if ( cube.Equals(snapshot) )
+            if (cube.Equals(snapshot))
+            {
                 return;
+            }
 
             snapshot.Commit();
-
-            var builder = Beam.NewBuilder().WithType(BeamType.nature_effect).WithDuration(8000);
-
-            Task.Delay(40).ContinueWith(t => zone.CreateBeam(builder.WithPosition(area.GetRandomPosition())));
-            Task.Delay(1500).ContinueWith(t => zone.CreateBeam(builder.WithPosition(area.GetRandomPosition())));
-            Task.Delay(2500).ContinueWith(t => zone.CreateBeams(2,() => builder.WithPosition(area.GetRandomPosition())));
+            BeamBuilder builder = Beam.NewBuilder().WithType(BeamType.nature_effect).WithDuration(8000);
+            _ = Task.Delay(40).ContinueWith(t => zone.CreateBeam(builder.WithPosition(area.GetRandomPosition())));
+            _ = Task.Delay(1500).ContinueWith(t => zone.CreateBeam(builder.WithPosition(area.GetRandomPosition())));
+            _ = Task.Delay(2500).ContinueWith(t => zone.CreateBeams(2, () => builder.WithPosition(area.GetRandomPosition())));
         }
 
-        public static MineralLayer GetMineralLayerOrThrow(this ITerrain terrain, MaterialType type)
+        public static MineralLayer GetMineralLayerOrThrow(
+            this ITerrain terrain,
+            MaterialType type,
+            Action<PerpetuumException> exceptionAction = null)
         {
-            return terrain.GetMaterialLayer(type).ThrowIfNotType<MineralLayer>(ErrorCodes.NoSuchMineralOnZone);
+            return terrain
+                .GetMaterialLayer(type)
+                .ThrowIfNotType<MineralLayer>(ErrorCodes.NoSuchMineralOnZone, exceptionAction);
         }
 
         public static MaterialType GetMaterialTypeAtPosition(this ITerrain terrain, Position position)
         {
             MaterialType[] materials = Enum.GetValues(typeof(MaterialType)) as MaterialType[];
-
-            var layer = materials
+            IMaterialLayer layer = materials
                 .Select(x => terrain.GetMaterialLayer(x))
                 .Where(x => x is MineralLayer)
                 .FirstOrDefault(x => (x as MineralLayer).Nodes.Any(y => y.Area.Contains(position)));
@@ -354,28 +356,25 @@ namespace Perpetuum.Zones.Terrains
         [CanBeNull]
         public static Packet BuildLayerUpdatePacket(this ITerrain terrain, LayerType layerType, Area area)
         {
-            var layer = terrain.GetLayerByType(layerType) as IUpdateableLayer;
-            if (layer == null)
+            if (!(terrain.GetLayerByType(layerType) is IUpdateableLayer layer))
+            {
                 return null;
+            }
 
-            var packet = new Packet(ZoneCommand.LayerUpdate);
-
+            Packet packet = new Packet(ZoneCommand.LayerUpdate);
             packet.AppendByte((byte)layerType);
-
             packet.AppendByte(0); // material
             packet.AppendByte((byte)layer.SizeInBytes);
             packet.AppendInt(area.X1);
             packet.AppendInt(area.Y1);
             packet.AppendInt(area.X2);
             packet.AppendInt(area.Y2);
-
-            var compressed = false;
-            var data = layer.CopyAreaToByteArray(area);
+            bool compressed = false;
+            byte[] data = layer.CopyAreaToByteArray(area);
             if (data.Length > GZIP_THRESHOLD)
             {
-                var compressedData = GZip.Compress(data);
+                byte[] compressedData = GZip.Compress(data);
                 compressed = ((double)data.Length / compressedData.Length) > 1.0;
-
                 if (compressed)
                 {
                     data = compressedData;
@@ -389,25 +388,25 @@ namespace Perpetuum.Zones.Terrains
             return packet;
         }
 
-        public static bool IsPassable(this ITerrain terrain,Position position)
+        public static bool IsPassable(this ITerrain terrain, Position position)
         {
-            return terrain.IsPassable((int) position.X, (int) position.Y);
+            return terrain.IsPassable((int)position.X, (int)position.Y);
         }
 
-        public static bool IsPassable(this ITerrain terrain,int x,int y)
+        public static bool IsPassable(this ITerrain terrain, int x, int y)
         {
             if (terrain.Passable != null)
             {
-                var isPassable = terrain.Passable.GetValue(x,y);
+                bool isPassable = terrain.Passable.GetValue(x, y);
                 if (!isPassable)
+                {
                     return false;
+                }
             }
 
-            var bi = terrain.Blocks.GetValue(x,y);
-            if (bi.Flags > 0)
-                return false;
+            BlockingInfo bi = terrain.Blocks.GetValue(x, y);
 
-            return terrain.Slope.CheckSlope(x,y);
+            return bi.Flags <= 0 && terrain.Slope.CheckSlope(x, y);
         }
     }
 }

@@ -45,7 +45,6 @@ namespace Perpetuum.Modules
         public override void UpdateProperty(AggregateField field)
         {
             base.UpdateProperty(field);
-
             switch (field)
             {
                 case AggregateField.harvesting_amount_modifier:
@@ -62,9 +61,14 @@ namespace Perpetuum.Modules
         {
 
             HarvesterModule[] activeGathererModules = this is RemoteControlledHarvesterModule
-                ? ParentRobot.ActiveModules.OfType<RemoteControlledHarvesterModule>().Where(m => m.State.Type != ModuleStateType.Idle).ToArray()
-                : ParentRobot.ActiveModules.OfType<HarvesterModule>().Where(m => m.State.Type != ModuleStateType.Idle).ToArray();
-
+                ? ParentRobot.ActiveModules
+                    .OfType<RemoteControlledHarvesterModule>()
+                    .Where(m => m.State.Type != ModuleStateType.Idle)
+                    .ToArray()
+                : ParentRobot.ActiveModules
+                    .OfType<HarvesterModule>()
+                    .Where(m => m.State.Type != ModuleStateType.Idle)
+                    .ToArray();
             if (activeGathererModules.Length == 0)
             {
                 return 0;
@@ -73,18 +77,17 @@ namespace Perpetuum.Modules
             TimeSpan avgCycleTime = activeGathererModules.Select(m => m.CycleTime).Average();
             TimeSpan t = TimeSpan.FromDays(1).Divide(avgCycleTime);
             double chance = (double)MAX_EP_PER_DAY / t.Ticks;
-
             chance /= activeGathererModules.Length;
-
             double rand = FastRandom.NextDouble();
 
-            return rand <= chance ? 1 : 0;
+            return rand <= chance
+                ? 1
+                : 0;
         }
 
         protected override void OnAction()
         {
             IZone zone = Zone;
-
             if (zone == null)
             {
                 return;
@@ -97,50 +100,38 @@ namespace Perpetuum.Modules
         public void DoHarvesting(IZone zone)
         {
             TerrainLock terrainLock = GetLock().ThrowIfNotType<TerrainLock>(ErrorCodes.InvalidLockType);
-
             CreateBeam(terrainLock.Location, BeamState.AlignToTerrain);
-
             using (TransactionScope scope = Db.CreateTransaction())
             {
                 using (new TerrainUpdateMonitor(zone))
                 {
                     PlantInfo plantInfo = zone.Terrain.Plants.GetValue(terrainLock.Location);
                     double amountModifier = _harverstingAmountModifier.GetValueByPlantType(plantInfo.type);
-
                     IPlantHarvester plantHarvester = _plantHarvesterFactory(zone, amountModifier);
-
                     if (ParentRobot is RemoteControlledCreature creature)
                     {
                         creature.ProcessIndustrialTarget(terrainLock.Location.Center, plantInfo.material);
                     }
 
                     IEnumerable<ItemInfo> harvestedPlants = plantHarvester.HarvestPlant(terrainLock.Location);
-
                     Debug.Assert(ParentRobot != null, "ParentRobot != null");
-
                     Robots.RobotInventory container = ParentRobot.GetContainer();
-
                     Debug.Assert(container != null, "container != null");
                     container.EnlistTransaction();
-
                     Player player = ParentRobot is RemoteControlledCreature remoteControlledCreature &&
                         remoteControlledCreature.CommandRobot is Player ownerPlayer
                         ? ownerPlayer
                         : ParentRobot as Player;
 
                     Debug.Assert(player != null, "player != null");
-
                     foreach (ItemInfo extractedMaterial in harvestedPlants)
                     {
                         Item item = (Item)Factory.CreateWithRandomEID(extractedMaterial.Definition);
-
                         item.Owner = Owner;
                         item.Quantity = extractedMaterial.Quantity;
                         container.AddItem(item, true);
-
                         int extractedHarvestDefinition = extractedMaterial.Definition;
                         int extractedQuantity = extractedMaterial.Quantity;
-
                         player.MissionHandler.EnqueueMissionEventInfo(new HarvestPlantEventInfo(player, extractedHarvestDefinition, extractedQuantity, terrainLock.Location));
                         player.Zone?.HarvestLogHandler.EnqueueHarvestLog(extractedHarvestDefinition, extractedQuantity);
                     }
