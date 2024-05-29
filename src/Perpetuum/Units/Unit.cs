@@ -1,6 +1,7 @@
 ﻿using Perpetuum.Builders;
 using Perpetuum.Collections.Spatial;
 using Perpetuum.EntityFramework;
+using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
 using Perpetuum.Log;
 using Perpetuum.Modules;
@@ -23,6 +24,15 @@ using Perpetuum.Zones.PBS.DockingBases;
 using Perpetuum.Zones.PBS.Turrets;
 using Perpetuum.Zones.RemoteControl;
 using Perpetuum.Zones.Teleporting;
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Perpetuum.Units
 {
@@ -56,11 +66,17 @@ namespace Perpetuum.Units
 
         protected override bool IsRelated(AggregateField field)
         {
-            return field switch
+            switch (field)
             {
-                AggregateField.speed_max or AggregateField.speed_max_modifier or AggregateField.effect_speed_max_modifier or AggregateField.effect_massivness_speed_max_modifier or AggregateField.effect_speed_highway_modifier => true,
-                _ => false,
-            };
+                case AggregateField.speed_max:
+                case AggregateField.speed_max_modifier:
+                case AggregateField.effect_speed_max_modifier:
+                case AggregateField.effect_massivness_speed_max_modifier:
+                case AggregateField.effect_speed_highway_modifier:
+                    return true;
+            }
+
+            return false;
         }
     }
 
@@ -81,29 +97,29 @@ namespace Perpetuum.Units
         private double _direction;
         private double _orientation;
 
-        private readonly ItemProperty _armorMax;
-        private readonly ItemProperty _armor;
-        private readonly ItemProperty _coreMax;
-        private readonly ItemProperty _core;
-        private readonly ItemProperty _actualMass;
-        private readonly ItemProperty _coreRechargeTime;
-        private readonly ItemProperty _resistChemical;
-        private readonly ItemProperty _resistExplosive;
-        private readonly ItemProperty _resistKinetic;
-        private readonly ItemProperty _resistThermal;
-        private readonly ItemProperty _kersChemical;
-        private readonly ItemProperty _kersExplosive;
-        private readonly ItemProperty _kersKinetic;
-        private readonly ItemProperty _kersThermal;
-        private readonly ItemProperty _speedMax;
-        private readonly ItemProperty _criticalHitChance;
-        private readonly ItemProperty _sensorStrength;
-        private readonly ItemProperty _detectionStrength;
-        private readonly ItemProperty _stealthStrength;
-        private readonly ItemProperty _massiveness;
-        private readonly ItemProperty _reactorRadiation;
-        private readonly ItemProperty _signatureRadius;
-        private readonly ItemProperty _slope;
+        private ItemProperty _armorMax;
+        private ItemProperty _armor;
+        private ItemProperty _coreMax;
+        private ItemProperty _core;
+        private ItemProperty _actualMass;
+        private ItemProperty _coreRechargeTime;
+        private ItemProperty _resistChemical;
+        private ItemProperty _resistExplosive;
+        private ItemProperty _resistKinetic;
+        private ItemProperty _resistThermal;
+        private ItemProperty _kersChemical;
+        private ItemProperty _kersExplosive;
+        private ItemProperty _kersKinetic;
+        private ItemProperty _kersThermal;
+        private ItemProperty _speedMax;
+        private ItemProperty _criticalHitChance;
+        private ItemProperty _sensorStrength;
+        private ItemProperty _detectionStrength;
+        private ItemProperty _stealthStrength;
+        private ItemProperty _massiveness;
+        private ItemProperty _reactorRadiation;
+        private ItemProperty _signatureRadius;
+        private ItemProperty _slope;
 
         private readonly Lazy<double> _height;
 
@@ -111,7 +127,7 @@ namespace Perpetuum.Units
         {
             _damageProcessor = new DamageProcessor(this) { DamageTaken = OnDamageTaken };
 
-            EffectHandler effectHandler = new(this);
+            EffectHandler effectHandler = new EffectHandler(this);
             effectHandler.EffectChanged += OnEffectChanged;
             EffectHandler = effectHandler;
 
@@ -286,7 +302,7 @@ namespace Perpetuum.Units
             OnUpdate(time);
         }
 
-        private readonly IntervalTimer _broadcastTimer = new(200);
+        private readonly IntervalTimer _broadcastTimer = new IntervalTimer(200);
 
         protected virtual void OnUpdate(TimeSpan time)
         {
@@ -308,7 +324,7 @@ namespace Perpetuum.Units
 
                     if ((UpdateTypes & UnitUpdateTypes.Unit) > 0)
                     {
-                        UnitUpdatePacketBuilder packetBuilder = new(this);
+                        UnitUpdatePacketBuilder packetBuilder = new UnitUpdatePacketBuilder(this);
                         OnBroadcastPacket(packetBuilder.ToProxy());
                     }
 
@@ -318,11 +334,14 @@ namespace Perpetuum.Units
                 ImmutableHashSet<ItemProperty> changedProperties = GetChangedProperties();
                 if (changedProperties != ImmutableHashSet<ItemProperty>.Empty)
                 {
-                    e ??= new UnitUpdatedEventArgs();
+                    if (e == null)
+                    {
+                        e = new UnitUpdatedEventArgs();
+                    }
 
                     e.UpdatedProperties = changedProperties;
 
-                    UnitPropertiesUpdatePacketBuilder builder = new(this, changedProperties);
+                    UnitPropertiesUpdatePacketBuilder builder = new UnitPropertiesUpdatePacketBuilder(this, changedProperties);
                     OnBroadcastPacket(builder.ToProxy());
                 }
             }
@@ -350,7 +369,7 @@ namespace Perpetuum.Units
             bool canBroadcast = effect.Display;
             if (canBroadcast)
             {
-                EffectPacketBuilder packetBuilder = new(effect, apply);
+                EffectPacketBuilder packetBuilder = new EffectPacketBuilder(effect, apply);
                 OnBroadcastPacket(packetBuilder.ToProxy());
             }
         }
@@ -421,7 +440,7 @@ namespace Perpetuum.Units
         {
             DamageTaken?.Invoke(this, source, e);
 
-            CombatLogPacket packet = new(CombatLogType.Damage, this, source);
+            CombatLogPacket packet = new CombatLogPacket(CombatLogType.Damage, this, source);
             packet.AppendByte((byte)(e.IsCritical ? 1 : 0));
             packet.AppendDouble(e.TotalDamage);
             packet.AppendDouble(e.TotalKers);
@@ -561,7 +580,7 @@ namespace Perpetuum.Units
 
             try
             {
-                KillDetectorHelper detector = new();
+                KillDetectorHelper detector = new KillDetectorHelper();
 
                 AcceptVisitor(detector);
 
@@ -577,7 +596,7 @@ namespace Perpetuum.Units
 
                 if (killer != null)
                 {
-                    CombatLogPacket killingBlowPacket = new(CombatLogType.KillingBlow, this, killer);
+                    CombatLogPacket killingBlowPacket = new CombatLogPacket(CombatLogType.KillingBlow, this, killer);
                     killingBlowPacket.Send(this, killer);
 
                     OnCombatEvent(killer, new KillingBlowEventArgs());
@@ -777,7 +796,7 @@ namespace Perpetuum.Units
 
             public Packet Build()
             {
-                Packet packet = new(ZoneCommand.EnterUnit);
+                Packet packet = new Packet(ZoneCommand.EnterUnit);
 
                 packet.AppendLong(_unit.Eid);
                 Accounting.Characters.Character character = _unit.GetCharacter();
@@ -797,7 +816,7 @@ namespace Perpetuum.Units
                 packet.AppendDouble(_unit._speedMax.Value);
                 packet.AppendLong(_unit.Owner);
 
-                if (_unit is not Robot robot)
+                if (!(_unit is Robot robot))
                 {
                     packet.AppendByte(0);
                 }
@@ -830,22 +849,26 @@ namespace Perpetuum.Units
 
             private static byte[] GetDescription(Unit unit)
             {
-                using MemoryStream stream = new MemoryStream();
-                using BinaryWriter bw = new BinaryWriter(stream);
-                bw.Write(unit.Definition);
-
-                if (unit is Robot robot)
+                using (MemoryStream stream = new MemoryStream())
                 {
-                    WriteRobotComponent(bw, robot.GetRobotComponent<RobotHead>());
-                    WriteRobotComponent(bw, robot.GetRobotComponent<RobotChassis>());
-                    WriteRobotComponent(bw, robot.GetRobotComponent<RobotLeg>());
-                }
-                else
-                {
-                    bw.Write(new byte[15]);
-                }
+                    using (BinaryWriter bw = new BinaryWriter(stream))
+                    {
+                        bw.Write(unit.Definition);
 
-                return stream.ToArray();
+                        if (unit is Robot robot)
+                        {
+                            WriteRobotComponent(bw, robot.GetRobotComponent<RobotHead>());
+                            WriteRobotComponent(bw, robot.GetRobotComponent<RobotChassis>());
+                            WriteRobotComponent(bw, robot.GetRobotComponent<RobotLeg>());
+                        }
+                        else
+                        {
+                            bw.Write(new byte[15]);
+                        }
+
+                        return stream.ToArray();
+                    }
+                }
             }
 
             private static void WriteRobotComponent(BinaryWriter bw, RobotComponent component)
@@ -895,367 +918,366 @@ namespace Perpetuum.Units
                         : _unit.States.Teleport
                         ? ZoneExitType.Teleport
                         : _unit.States.LocalTeleport ? ZoneExitType.LocalTeleport : ZoneExitType.LeftGrid;
-        }
 
-        public Packet Build()
-        {
-            Packet packet = new(ZoneCommand.ExitUnit);
-            packet.AppendLong(_unit.Eid);
-            packet.AppendByte((byte)ExitType);
-            return packet;
-        }
-    }
-
-    protected virtual bool IsHostileFor(Unit unit) { return false; }
-
-    public bool IsHostile(Unit unit)
-    {
-        return unit.IsHostileFor(this);
-    }
-
-    public virtual bool IsHostile(Player player) { return false; }
-
-    internal virtual bool IsHostile(AreaBomb bomb) { return false; }
-
-    internal virtual bool IsHostile(Gate gate) { return false; }
-
-    internal virtual bool IsHostile(SentryTurret turret) { return false; }
-
-    internal virtual bool IsHostile(IndustrialTurret turret) { return false; }
-
-    internal virtual bool IsHostile(Npc npc) { return false; }
-
-    internal virtual bool IsHostile(CombatDrone drone) { return false; }
-
-    internal virtual bool IsHostile(Rift rift)
-    {
-        return false;
-    }
-
-    internal virtual bool IsHostile(Portal portal)
-    {
-        return false;
-    }
-
-    internal virtual bool IsHostile(MobileTeleport teleport)
-    {
-        return false;
-    }
-
-    public void StopMoving()
-    {
-        CurrentSpeed = 0;
-    }
-
-    public IEnumerable<T> GetUnitsWithinRange<T>(double distance) where T : Unit
-    {
-        IZone zone = Zone;
-        return zone == null ? Enumerable.Empty<T>() : zone.Units.OfType<T>().WithinRange(CurrentPosition, distance);
-    }
-
-    protected override void OnPropertyChanged(ItemProperty property)
-    {
-        base.OnPropertyChanged(property);
-
-        if (property.Field == AggregateField.blob_effect)
-        {
-            _sensorStrength.Update();
-            _detectionStrength.Update();
-        }
-    }
-
-    public double ArmorPercentage => Armor.Ratio(ArmorMax);
-
-    public double ArmorMax => _armorMax.Value;
-
-    public double Armor
-    {
-        get => _armor.Value;
-        set => _armor.SetValue(value);
-    }
-
-    public double ActualMass => _actualMass.Value;
-
-    public double CorePercentage => Core.Ratio(CoreMax);
-
-    public double CoreMax => _coreMax.Value;
-
-    public double Core
-    {
-        get => _core.Value;
-        set => _core.SetValue(value);
-    }
-
-    public double CriticalHitChance => _criticalHitChance.Value;
-
-    public double SignatureRadius => _signatureRadius.Value;
-
-    public double SensorStrength => _sensorStrength.Value;
-
-    public double DetectionStrength => _detectionStrength.Value;
-
-    public double StealthStrength => _stealthStrength.Value;
-
-    public double Massiveness => _massiveness.Value;
-
-    public double ReactorRadiation => _reactorRadiation.Value;
-
-    public double Slope => _slope.Value;
-
-    public double Speed
-    {
-        get
-        {
-            double speedMax = _speedMax.Value;
-            return speedMax * _currentSpeed;
-        }
-    }
-
-    public double MaxSpeed => _speedMax.Value;
-
-    public TimeSpan CoreRechargeTime => TimeSpan.FromSeconds(_coreRechargeTime.Value);
-
-    private void InitUnitProperties()
-    {
-        _armorMax = new UnitProperty(this, AggregateField.armor_max, AggregateField.armor_max_modifier, AggregateField.effect_armor_max_modifier);
-
-        _armorMax.PropertyChanged += property =>
-        {
-            if (Armor > property.Value)
+            public Packet Build()
             {
-                Armor = property.Value;
-            }
-        };
-
-        AddProperty(_armorMax);
-
-        _armor = new ArmorProperty(this);
-
-        AddProperty(_armor);
-
-        _coreMax = new UnitProperty(this, AggregateField.core_max, AggregateField.core_max_modifier);
-        AddProperty(_coreMax);
-
-        _core = new CoreProperty(this);
-        _core.PropertyChanged += property =>
-        {
-            if (property.Value > 1.0)
-            {
-                return;
-            }
-
-            EffectHandler.RemoveEffectsByCategory(EffectCategory.effcat_zero_core_drop);
-        };
-        AddProperty(_core);
-
-        _coreRechargeTime = new UnitProperty(this, AggregateField.core_recharge_time, AggregateField.core_recharge_time_modifier, AggregateField.effect_core_recharge_time_modifier);
-        AddProperty(_coreRechargeTime);
-
-        _actualMass = new ActualMassProperty(this);
-        AddProperty(_actualMass);
-
-        _speedMax = new SpeedMaxProperty(this);
-        AddProperty(_speedMax);
-
-        _resistChemical = new UnitProperty(this, AggregateField.resist_chemical, AggregateField.resist_chemical_modifier, AggregateField.effect_resist_chemical);
-        AddProperty(_resistChemical);
-
-        _resistThermal = new UnitProperty(this, AggregateField.resist_thermal, AggregateField.resist_thermal_modifier, AggregateField.effect_resist_thermal);
-        AddProperty(_resistThermal);
-
-        _resistKinetic = new UnitProperty(this, AggregateField.resist_kinetic, AggregateField.resist_kinetic_modifier, AggregateField.effect_resist_kinetic);
-        AddProperty(_resistKinetic);
-
-        _resistExplosive = new UnitProperty(this, AggregateField.resist_explosive, AggregateField.resist_explosive_modifier, AggregateField.effect_resist_explosive);
-        AddProperty(_resistExplosive);
-
-        _slope = new UnitProperty(this, AggregateField.slope, AggregateField.slope_modifier);
-        AddProperty(_slope);
-
-        _criticalHitChance = new UnitProperty(this, AggregateField.critical_hit_chance, AggregateField.critical_hit_chance_modifier, AggregateField.effect_critical_hit_chance_modifier);
-        AddProperty(_criticalHitChance);
-
-        _massiveness = new UnitProperty(this, AggregateField.massiveness, AggregateField.massiveness_modifier, AggregateField.effect_massiveness);
-        AddProperty(_massiveness);
-
-        _signatureRadius = new UnitProperty(this, AggregateField.signature_radius, AggregateField.signature_radius_modifier, AggregateField.effect_signature_radius_modifier);
-        AddProperty(_signatureRadius);
-
-        _sensorStrength = new SensorStrengthProperty(this);
-        AddProperty(_sensorStrength);
-
-        _stealthStrength = new UnitProperty(this, AggregateField.stealth_strength, AggregateField.stealth_strength_modifier, AggregateField.effect_stealth_strength_modifier);
-        _stealthStrength.PropertyChanged += property =>
-        {
-            UpdateTypes |= UnitUpdateTypes.Stealth;
-        };
-        AddProperty(_stealthStrength);
-
-        _detectionStrength = new DetectionStrengthProperty(this);
-        _detectionStrength.PropertyChanged += property =>
-        {
-            UpdateTypes |= UnitUpdateTypes.Detection;
-        };
-        AddProperty(_detectionStrength);
-
-        _kersChemical = new UnitProperty(this, AggregateField.chemical_damage_to_core_modifier);
-        AddProperty(_kersChemical);
-
-        _kersThermal = new UnitProperty(this, AggregateField.thermal_damage_to_core_modifier);
-        AddProperty(_kersThermal);
-
-        _kersKinetic = new UnitProperty(this, AggregateField.kinetic_damage_to_core_modifier);
-        AddProperty(_kersKinetic);
-
-        _kersExplosive = new UnitProperty(this, AggregateField.explosive_damage_to_core_modifier);
-        AddProperty(_kersExplosive);
-
-        _reactorRadiation = new UnitProperty(this, AggregateField.reactor_radiation, AggregateField.reactor_radiation_modifier);
-        AddProperty(_reactorRadiation);
-    }
-
-    private class ArmorProperty : UnitProperty
-    {
-        public ArmorProperty(Unit owner) : base(owner, AggregateField.armor_current) { }
-
-        protected override double CalculateValue()
-        {
-            double armor = owner.ArmorMax;
-
-            if (owner.DynamicProperties.Contains(k.armor))
-            {
-                double armorPercentage = owner.DynamicProperties.GetOrAdd<double>(k.armor);
-                armor = CalculateArmorByPercentage(armorPercentage);
-            }
-
-            return armor;
-        }
-
-        protected override void OnPropertyChanging(ref double newValue)
-        {
-            base.OnPropertyChanging(ref newValue);
-
-            if (newValue < 0.0)
-            {
-                newValue = 0.0;
-                return;
-            }
-
-            double armorMax = owner.ArmorMax;
-            if (newValue >= armorMax)
-            {
-                newValue = armorMax;
+                Packet packet = new Packet(ZoneCommand.ExitUnit);
+                packet.AppendLong(_unit.Eid);
+                packet.AppendByte((byte)ExitType);
+                return packet;
             }
         }
 
-        private double CalculateArmorByPercentage(double percent)
+        protected virtual bool IsHostileFor(Unit unit) { return false; }
+
+        public bool IsHostile(Unit unit)
         {
-            if (double.IsNaN(percent))
+            return unit.IsHostileFor(this);
+        }
+
+        public virtual bool IsHostile(Player player) { return false; }
+
+        internal virtual bool IsHostile(AreaBomb bomb) { return false; }
+
+        internal virtual bool IsHostile(Gate gate) { return false; }
+
+        internal virtual bool IsHostile(SentryTurret turret) { return false; }
+
+        internal virtual bool IsHostile(IndustrialTurret turret) { return false; }
+
+        internal virtual bool IsHostile(Npc npc) { return false; }
+
+        internal virtual bool IsHostile(CombatDrone drone) { return false; }
+
+        internal virtual bool IsHostile(Rift rift)
+        {
+            return false;
+        }
+
+        internal virtual bool IsHostile(Portal portal)
+        {
+            return false;
+        }
+
+        internal virtual bool IsHostile(MobileTeleport teleport)
+        {
+            return false;
+        }
+
+        public void StopMoving()
+        {
+            CurrentSpeed = 0;
+        }
+
+        public IEnumerable<T> GetUnitsWithinRange<T>(double distance) where T : Unit
+        {
+            IZone zone = Zone;
+            return zone == null ? Enumerable.Empty<T>() : zone.Units.OfType<T>().WithinRange(CurrentPosition, distance);
+        }
+
+        protected override void OnPropertyChanged(ItemProperty property)
+        {
+            base.OnPropertyChanged(property);
+
+            if (property.Field == AggregateField.blob_effect)
             {
-                percent = 0.0;
+                _sensorStrength.Update();
+                _detectionStrength.Update();
+            }
+        }
+
+        public double ArmorPercentage => Armor.Ratio(ArmorMax);
+
+        public double ArmorMax => _armorMax.Value;
+
+        public double Armor
+        {
+            get => _armor.Value;
+            set => _armor.SetValue(value);
+        }
+
+        public double ActualMass => _actualMass.Value;
+
+        public double CorePercentage => Core.Ratio(CoreMax);
+
+        public double CoreMax => _coreMax.Value;
+
+        public double Core
+        {
+            get => _core.Value;
+            set => _core.SetValue(value);
+        }
+
+        public double CriticalHitChance => _criticalHitChance.Value;
+
+        public double SignatureRadius => _signatureRadius.Value;
+
+        public double SensorStrength => _sensorStrength.Value;
+
+        public double DetectionStrength => _detectionStrength.Value;
+
+        public virtual double StealthStrength => _stealthStrength.Value;
+
+        public double Massiveness => _massiveness.Value;
+
+        public double ReactorRadiation => _reactorRadiation.Value;
+
+        public double Slope => _slope.Value;
+
+        public double Speed
+        {
+            get
+            {
+                double speedMax = _speedMax.Value;
+                return speedMax * _currentSpeed;
+            }
+        }
+
+        public double MaxSpeed => _speedMax.Value;
+
+        public TimeSpan CoreRechargeTime => TimeSpan.FromSeconds(_coreRechargeTime.Value);
+
+        private void InitUnitProperties()
+        {
+            _armorMax = new UnitProperty(this, AggregateField.armor_max, AggregateField.armor_max_modifier, AggregateField.effect_armor_max_modifier);
+
+            _armorMax.PropertyChanged += property =>
+            {
+                if (Armor > property.Value)
+                {
+                    Armor = property.Value;
+                }
+            };
+
+            AddProperty(_armorMax);
+
+            _armor = new ArmorProperty(this);
+
+            AddProperty(_armor);
+
+            _coreMax = new UnitProperty(this, AggregateField.core_max, AggregateField.core_max_modifier);
+            AddProperty(_coreMax);
+
+            _core = new CoreProperty(this);
+            _core.PropertyChanged += property =>
+            {
+                if (property.Value > 1.0)
+                {
+                    return;
+                }
+
+                EffectHandler.RemoveEffectsByCategory(EffectCategory.effcat_zero_core_drop);
+            };
+            AddProperty(_core);
+
+            _coreRechargeTime = new UnitProperty(this, AggregateField.core_recharge_time, AggregateField.core_recharge_time_modifier, AggregateField.effect_core_recharge_time_modifier);
+            AddProperty(_coreRechargeTime);
+
+            _actualMass = new ActualMassProperty(this);
+            AddProperty(_actualMass);
+
+            _speedMax = new SpeedMaxProperty(this);
+            AddProperty(_speedMax);
+
+            _resistChemical = new UnitProperty(this, AggregateField.resist_chemical, AggregateField.resist_chemical_modifier, AggregateField.effect_resist_chemical);
+            AddProperty(_resistChemical);
+
+            _resistThermal = new UnitProperty(this, AggregateField.resist_thermal, AggregateField.resist_thermal_modifier, AggregateField.effect_resist_thermal);
+            AddProperty(_resistThermal);
+
+            _resistKinetic = new UnitProperty(this, AggregateField.resist_kinetic, AggregateField.resist_kinetic_modifier, AggregateField.effect_resist_kinetic);
+            AddProperty(_resistKinetic);
+
+            _resistExplosive = new UnitProperty(this, AggregateField.resist_explosive, AggregateField.resist_explosive_modifier, AggregateField.effect_resist_explosive);
+            AddProperty(_resistExplosive);
+
+            _slope = new UnitProperty(this, AggregateField.slope, AggregateField.slope_modifier);
+            AddProperty(_slope);
+
+            _criticalHitChance = new UnitProperty(this, AggregateField.critical_hit_chance, AggregateField.critical_hit_chance_modifier, AggregateField.effect_critical_hit_chance_modifier);
+            AddProperty(_criticalHitChance);
+
+            _massiveness = new UnitProperty(this, AggregateField.massiveness, AggregateField.massiveness_modifier, AggregateField.effect_massiveness);
+            AddProperty(_massiveness);
+
+            _signatureRadius = new UnitProperty(this, AggregateField.signature_radius, AggregateField.signature_radius_modifier, AggregateField.effect_signature_radius_modifier);
+            AddProperty(_signatureRadius);
+
+            _sensorStrength = new SensorStrengthProperty(this);
+            AddProperty(_sensorStrength);
+
+            _stealthStrength = new UnitProperty(this, AggregateField.stealth_strength, AggregateField.stealth_strength_modifier, AggregateField.effect_stealth_strength_modifier);
+            _stealthStrength.PropertyChanged += property =>
+            {
+                UpdateTypes |= UnitUpdateTypes.Stealth;
+            };
+            AddProperty(_stealthStrength);
+
+            _detectionStrength = new DetectionStrengthProperty(this);
+            _detectionStrength.PropertyChanged += property =>
+            {
+                UpdateTypes |= UnitUpdateTypes.Detection;
+            };
+            AddProperty(_detectionStrength);
+
+            _kersChemical = new UnitProperty(this, AggregateField.chemical_damage_to_core_modifier);
+            AddProperty(_kersChemical);
+
+            _kersThermal = new UnitProperty(this, AggregateField.thermal_damage_to_core_modifier);
+            AddProperty(_kersThermal);
+
+            _kersKinetic = new UnitProperty(this, AggregateField.kinetic_damage_to_core_modifier);
+            AddProperty(_kersKinetic);
+
+            _kersExplosive = new UnitProperty(this, AggregateField.explosive_damage_to_core_modifier);
+            AddProperty(_kersExplosive);
+
+            _reactorRadiation = new UnitProperty(this, AggregateField.reactor_radiation, AggregateField.reactor_radiation_modifier);
+            AddProperty(_reactorRadiation);
+        }
+
+        private class ArmorProperty : UnitProperty
+        {
+            public ArmorProperty(Unit owner) : base(owner, AggregateField.armor_current) { }
+
+            protected override double CalculateValue()
+            {
+                double armor = owner.ArmorMax;
+
+                if (owner.DynamicProperties.Contains(k.armor))
+                {
+                    double armorPercentage = owner.DynamicProperties.GetOrAdd<double>(k.armor);
+                    armor = CalculateArmorByPercentage(armorPercentage);
+                }
+
+                return armor;
             }
 
-            // 0.0 - 1.0
-            percent = percent.Clamp();
-
-            double armorMax = owner.ArmorMax;
-
-            if (double.IsNaN(armorMax))
+            protected override void OnPropertyChanging(ref double newValue)
             {
-                armorMax = 0.0;
+                base.OnPropertyChanging(ref newValue);
+
+                if (newValue < 0.0)
+                {
+                    newValue = 0.0;
+                    return;
+                }
+
+                double armorMax = owner.ArmorMax;
+                if (newValue >= armorMax)
+                {
+                    newValue = armorMax;
+                }
             }
 
-            double val = armorMax * percent;
-            return val;
-        }
-
-    }
-
-    private class CoreProperty : UnitProperty
-    {
-        public CoreProperty(Unit owner) : base(owner, AggregateField.core_current) { }
-
-        protected override double CalculateValue()
-        {
-            double currentCore = owner.CoreMax;
-
-            if (owner.DynamicProperties.Contains(k.currentCore))
+            private double CalculateArmorByPercentage(double percent)
             {
-                currentCore = owner.DynamicProperties.GetOrAdd<double>(k.currentCore);
+                if (double.IsNaN(percent))
+                {
+                    percent = 0.0;
+                }
+
+                // 0.0 - 1.0
+                percent = percent.Clamp();
+
+                double armorMax = owner.ArmorMax;
+
+                if (double.IsNaN(armorMax))
+                {
+                    armorMax = 0.0;
+                }
+
+                double val = armorMax * percent;
+                return val;
             }
 
-            return currentCore;
         }
 
-        protected override void OnPropertyChanging(ref double newValue)
+        private class CoreProperty : UnitProperty
         {
-            base.OnPropertyChanging(ref newValue);
+            public CoreProperty(Unit owner) : base(owner, AggregateField.core_current) { }
 
-            newValue = newValue.Clamp(1, owner.CoreMax);
-        }
-    }
-
-    private class ActualMassProperty : UnitProperty
-    {
-        public ActualMassProperty(Unit owner) : base(owner, AggregateField.mass) { }
-
-        protected override double CalculateValue()
-        {
-            double mass = owner.Mass;
-            ItemPropertyModifier massMod = owner.GetPropertyModifier(AggregateField.mass_modifier);
-            massMod.Modify(ref mass);
-
-            if (owner is Robot robot)
+            protected override double CalculateValue()
             {
-                mass += robot.Modules.Sum(m => m.Mass);
+                double currentCore = owner.CoreMax;
+
+                if (owner.DynamicProperties.Contains(k.currentCore))
+                {
+                    currentCore = owner.DynamicProperties.GetOrAdd<double>(k.currentCore);
+                }
+
+                return currentCore;
             }
 
-            return mass;
-        }
-    }
+            protected override void OnPropertyChanging(ref double newValue)
+            {
+                base.OnPropertyChanging(ref newValue);
 
-    private class DetectionStrengthProperty : UnitProperty
-    {
-        public DetectionStrengthProperty(Unit owner)
-            : base(owner, AggregateField.detection_strength, AggregateField.detection_strength_modifier, AggregateField.effect_detection_strength_modifier)
+                newValue = newValue.Clamp(1, owner.CoreMax);
+            }
+        }
+
+        private class ActualMassProperty : UnitProperty
         {
+            public ActualMassProperty(Unit owner) : base(owner, AggregateField.mass) { }
+
+            protected override double CalculateValue()
+            {
+                double mass = owner.Mass;
+                ItemPropertyModifier massMod = owner.GetPropertyModifier(AggregateField.mass_modifier);
+                massMod.Modify(ref mass);
+
+                if (owner is Robot robot)
+                {
+                    mass += robot.Modules.Sum(m => m.Mass);
+                }
+
+                return mass;
+            }
         }
 
-        protected override double CalculateValue()
+        private class DetectionStrengthProperty : UnitProperty
         {
-            double v = base.CalculateValue();
+            public DetectionStrengthProperty(Unit owner)
+                : base(owner, AggregateField.detection_strength, AggregateField.detection_strength_modifier, AggregateField.effect_detection_strength_modifier)
+            {
+            }
 
-            IBlobableUnit blobableUnit = owner as IBlobableUnit;
-            blobableUnit?.BlobHandler.ApplyBlobPenalty(ref v, 0.75);
+            protected override double CalculateValue()
+            {
+                double v = base.CalculateValue();
 
-            return v;
+                IBlobableUnit blobableUnit = owner as IBlobableUnit;
+                blobableUnit?.BlobHandler.ApplyBlobPenalty(ref v, 0.75);
+
+                return v;
+            }
         }
-    }
 
-    private class SensorStrengthProperty : UnitProperty
-    {
-        public SensorStrengthProperty(Unit owner)
-            : base(owner, AggregateField.sensor_strength, AggregateField.sensor_strength_modifier, AggregateField.effect_sensor_strength_modifier)
+        private class SensorStrengthProperty : UnitProperty
         {
+            public SensorStrengthProperty(Unit owner)
+                : base(owner, AggregateField.sensor_strength, AggregateField.sensor_strength_modifier, AggregateField.effect_sensor_strength_modifier)
+            {
+            }
+
+            protected override double CalculateValue()
+            {
+                double v = base.CalculateValue();
+
+                IBlobableUnit blobableUnit = owner as IBlobableUnit;
+                blobableUnit?.BlobHandler.ApplyBlobPenalty(ref v, 0.5);
+
+                return v;
+            }
         }
 
-        protected override double CalculateValue()
+        public static Unit CreateUnitWithRandomEID(string definitionName)
         {
-            double v = base.CalculateValue();
-
-            IBlobableUnit blobableUnit = owner as IBlobableUnit;
-            blobableUnit?.BlobHandler.ApplyBlobPenalty(ref v, 0.5);
-
-            return v;
+            return (Unit)Factory.Create(EntityDefault.GetByName(definitionName), EntityIDGenerator.Random);
         }
-    }
 
-    public static Unit CreateUnitWithRandomEID(string definitionName)
-    {
-        return (Unit)Factory.Create(EntityDefault.GetByName(definitionName), EntityIDGenerator.Random);
+        public int BlockingRadius => ED.Config.blockingradius ?? 1;
+        public double HitSize => ED.Config.HitSize;
     }
-
-    public int BlockingRadius => ED.Config.blockingradius ?? 1;
-    public double HitSize => ED.Config.HitSize;
-}
 }

@@ -447,5 +447,8 @@ namespace Perpetuum.ExportedTypes
         nox_repair_amount_modifier = 687,
         nox_repair_amount_modifier_enhancer = 688,
         nox_teleport_negation = 689,
+        pelistal_plasma_consumption = 690,
+        nuimqol_plasma_consumption = 691,
+        thelodica_plasma_consumption = 692,
     }
 }
