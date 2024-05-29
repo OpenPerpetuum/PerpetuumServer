@@ -36,7 +36,8 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 return;
             }
 
-            if (player.HasTeleportSicknessEffect)
+            if (player.HasTeleportSicknessEffect &&
+                !(smartCreature is RemoteControlledCreature))
             {
                 return;
             }
