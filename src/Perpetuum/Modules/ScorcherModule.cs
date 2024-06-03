@@ -21,7 +21,6 @@ namespace Perpetuum.Modules
     public class ScorcherModule : EnergyDispersionModule
     {
         private const int AffectedTargetsDepth = 5;
-        private List<Unit> afectedTargets;
         private readonly ItemProperty electricDamage;
 
         public ScorcherModule()
@@ -49,11 +48,19 @@ namespace Perpetuum.Modules
                 return;
             }
 
-            afectedTargets = GetAffectedTargetsRecursively(unitLock.Target, AffectedTargetsDepth);
+            List<Unit> affectedTargets = new List<Unit> { unitLock.Target };
+            GetAffectedTargetsRecursively(affectedTargets, unitLock.Target, AffectedTargetsDepth);
             Robot chainedRobot = ParentRobot;
+            double chainedDamageModifier = 1.0;
 
-            foreach (Unit target in afectedTargets)
+            foreach (Unit target in affectedTargets)
             {
+                if (chainedRobot != ParentRobot &&
+                    new UnitVisibility(chainedRobot, target).GetLineOfSight(false).hit)
+                {
+                    break;
+                }
+
                 BeamBuilder deployBeamBuilder = Beam.NewBuilder()
                     .WithType(BeamType.medium_e_nezt_beam)
                     .WithSource(chainedRobot)
@@ -78,39 +85,37 @@ namespace Perpetuum.Modules
                     target.AddThreat(ParentRobot, new Threat(ThreatType.EnWar, threatValue));
                 }
 
-                IDamageBuilder builder = GetDamageBuilder(coreNeutralizedDone);
+                IDamageBuilder builder = GetDamageBuilder(coreNeutralizedDone * chainedDamageModifier);
                 _ = Task.Delay(TimeSpan.FromSeconds(1)).ContinueWith(t => target.TakeDamage(builder.Build()));
                 CombatLogPacket packet = new CombatLogPacket(CombatLogType.EnergyNeutralize, target, ParentRobot, this);
                 packet.AppendDouble(coreNeutralized);
                 packet.AppendDouble(coreNeutralizedDone);
                 packet.Send(target, ParentRobot);
                 chainedRobot = (Robot)target;
+                chainedDamageModifier -= 0.15;
             }
         }
 
-        private List<Unit> GetAffectedTargetsRecursively(Unit target, int depth)
+        private void GetAffectedTargetsRecursively(List<Unit> targets, Unit lastTarget, int depth)
         {
-            List<Unit> targets = new List<Unit> { target };
             if (depth <= 0)
             {
-                return targets;
+                return;
             }
 
-            Unit unit = target.Zone
-                .GetUnitsWithinRange2D(target.CurrentPosition, OptimalRange)
+            Unit newTarget = lastTarget.Zone
+                .GetUnitsWithinRange2D(lastTarget.CurrentPosition, OptimalRange)
                 .OfType<Robot>()
-                .Except(targets)
                 .Where(x =>
                     x != ParentRobot &&
-                    target.GetVisibility(x).GetLineOfSight(false).hit &&
+                    !targets.Any(y => y.Eid == x.Eid) &&
                     (!(ParentRobot is Npc) || x.IsPlayer() || (x is RemoteControlledCreature)))
-                .GetNearestUnit(target.CurrentPosition);
-            if (unit != null)
+                .GetNearestUnit(lastTarget.CurrentPosition);
+            if (newTarget != null)
             {
-                targets.AddRange(GetAffectedTargetsRecursively(unit, depth - 1));
+                targets.Add(newTarget);
+                GetAffectedTargetsRecursively(targets, newTarget, depth - 1);
             }
-
-            return targets;
         }
 
         private IDamageBuilder GetDamageBuilder(double damageValue)

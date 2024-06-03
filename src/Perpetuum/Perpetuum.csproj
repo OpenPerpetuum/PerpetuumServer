@@ -259,6 +259,7 @@
     <Compile Include="Log\LogType.cs" />
     <Compile Include="LookupExtensions.cs" />
     <Compile Include="MathHelper.cs" />
+    <Compile Include="MessageConstants.cs" />
     <Compile Include="Modules\EffectModules\MineDetectorModule.cs" />
     <Compile Include="Modules\EffectModules\TargetBlinderModule.cs" />
     <Compile Include="Modules\GathererModule.cs" />
@@ -628,7 +629,9 @@
     <Compile Include="TimeSpanExtensions.cs" />
     <Compile Include="Units\CombatLogType.cs" />
     <Compile Include="Units\CoreRecharger.cs" />
+    <Compile Include="Units\ExpiringLosHolder.cs" />
     <Compile Include="Units\ICoreRecharger.cs" />
+    <Compile Include="Units\IUnitVisibility.cs" />
     <Compile Include="Units\INotifyOptionalPropertyChanged.cs" />
     <Compile Include="Units\IOptionalProperty.cs" />
     <Compile Include="Units\ITaggable.cs" />
@@ -644,6 +647,7 @@
     <Compile Include="Units\UnitUpdatedEventArgs.cs" />
     <Compile Include="Units\UnitUpdatePacketBuilder.cs" />
     <Compile Include="Units\UnitUpdateTypes.cs" />
+    <Compile Include="Units\UnitVisibility.cs" />
     <Compile Include="Units\UpdatePacketControl.cs" />
     <Compile Include="Threading\ThreadLock.cs" />
     <Compile Include="ValueTypeExtensions.cs" />

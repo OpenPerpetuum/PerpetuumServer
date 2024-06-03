@@ -26,15 +26,15 @@ namespace Perpetuum.Zones.NpcSystem
         private readonly string _aggroMsg;
         private readonly CustomRiftConfig _riftConfig;
         private bool _speak;
-        private bool overrideRelations;
+        private readonly bool overrideRelations;
         private readonly TimeKeeper _onDamageDebounce = new TimeKeeper(TimeSpan.FromSeconds(5));
         private readonly TimeKeeper _aggroDebounce = new TimeKeeper(TimeSpan.FromSeconds(5));
 
-        private bool IsOutpostBoss { get { return _outpostEID != null; } }
+        private bool IsOutpostBoss => _outpostEID != null;
 
-        private int StabilityPoints { get { return _stabilityPts ?? 0; } }
+        private int StabilityPoints => _stabilityPts ?? 0;
 
-        private bool HasRiftToSpawn { get { return _riftConfig != null; } }
+        private bool HasRiftToSpawn => _riftConfig != null;
 
         public int FlockId { get; }
 
@@ -45,6 +45,10 @@ namespace Perpetuum.Zones.NpcSystem
         public bool IsDead { get; private set; }
 
         public bool IsAnnounced { get; private set; }
+
+        public bool IsServerWideAnnouncement { get; private set; }
+
+        public bool IsNoRadioDelay { get; private set; }
 
         public NpcBossInfo(
             EventListenerService eventChannel,
@@ -58,7 +62,9 @@ namespace Perpetuum.Zones.NpcSystem
             string customDeathMsg,
             string customAggroMsg,
             CustomRiftConfig riftConfig,
-            bool announce)
+            bool announce,
+            bool isServerWideAnnouncement,
+            bool isNoRadioDelay)
         {
             _eventChannel = eventChannel;
             _id = id;
@@ -74,6 +80,8 @@ namespace Perpetuum.Zones.NpcSystem
             IsAnnounced = announce;
             _speak = true;
             IsDead = false;
+            IsServerWideAnnouncement = isServerWideAnnouncement;
+            IsNoRadioDelay = isNoRadioDelay;
         }
 
         /// <summary>
@@ -133,7 +141,23 @@ namespace Perpetuum.Zones.NpcSystem
         {
             _speak = true;
             IsDead = false;
-            AnnouceRespawn();
+
+            if (IsServerWideAnnouncement)
+            {
+                Message.Builder
+                .SetCommand(Commands.ServerMessage)
+                .WithData(new Dictionary<string, object>
+                {
+                    { k.message, MessageConstants.NianiCultistsDetected },
+                    { k.type, 0 },
+                    { k.recipients, 0 },
+                    { k.translate, 1 },
+                })
+                .ToOnlineCharacters()
+                .Send();
+            }
+
+            AnnouceRespawn(IsNoRadioDelay);
         }
 
         public override bool Equals(object obj)
@@ -143,7 +167,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         public bool Equals(NpcBossInfo other)
         {
-            return other != null && ReferenceEquals(this, other) || other._id == _id && other.FlockId == FlockId;
+            return (other != null && ReferenceEquals(this, other)) || (other._id == _id && other.FlockId == FlockId);
         }
 
         public override int GetHashCode()
@@ -152,8 +176,8 @@ namespace Perpetuum.Zones.NpcSystem
             {
                 int hash = 23;
 
-                hash = hash * 31 + _id.GetHashCode();
-                hash = hash * 31 + FlockId.GetHashCode();
+                hash = (hash * 31) + _id.GetHashCode();
+                hash = (hash * 31) + FlockId.GetHashCode();
 
                 return hash;
             }
@@ -166,22 +190,24 @@ namespace Perpetuum.Zones.NpcSystem
         /// <returns>modified respawn time of npc</returns>
         public TimeSpan GetNextSpawnTime(TimeSpan respawnTime)
         {
-            var factor = _respawnNoiseFactor ?? 0.0;
+            double factor = _respawnNoiseFactor ?? 0.0;
 
             return respawnTime.Multiply(FastRandom.NextDouble(1.0 - factor, 1.0 + factor));
         }
 
-        private void AnnouceRespawn()
+        private void AnnouceRespawn(bool noDelay = false)
         {
             if (!IsAnnounced)
             {
                 return;
             }
 
-            var randomDelay = FastRandom.NextTimeSpan(RespawnTime.Divide(5), RespawnTime.Divide(2));
-            var timeStamp = DateTime.UtcNow;
+            TimeSpan randomDelay = noDelay
+                ? TimeSpan.Zero
+                : FastRandom.NextTimeSpan(RespawnTime.Divide(5), RespawnTime.Divide(2));
+            DateTime timeStamp = DateTime.UtcNow;
 
-            Task.Delay(randomDelay).ContinueWith((t) =>
+            _ = Task.Delay(randomDelay).ContinueWith((t) =>
             {
                 PublishMessage(new NpcStateMessage(FlockId, NpcState.Alive, timeStamp));
             });
@@ -227,18 +253,18 @@ namespace Perpetuum.Zones.NpcSystem
                 return;
             }
 
-            var zone = npc.Zone;
+            IZone zone = npc.Zone;
 
             IEnumerable<Unit> outposts = zone.Units.OfType<Outpost>();
 
-            var outpost = outposts.First(o => o.Eid == _outpostEID);
+            Unit outpost = outposts.First(o => o.Eid == _outpostEID);
 
             if (outpost is Outpost)
             {
-                var participants = npc.ThreatManager.Hostiles
+                List<Player> participants = npc.ThreatManager.Hostiles
                     .Select(x => zone.ToPlayerOrGetOwnerPlayer(x.Unit))
                     .ToList();
-                var builder = StabilityAffectingEvent.Builder()
+                StabilityAffectingEvent.StabilityAffectBuilder builder = StabilityAffectingEvent.Builder()
                     .WithOutpost(outpost as Outpost)
                     .WithOverrideRelations(overrideRelations)
                     .WithSapDefinition(npc.Definition)

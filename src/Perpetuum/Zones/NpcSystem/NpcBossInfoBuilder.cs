@@ -20,19 +20,21 @@ namespace Perpetuum.Zones.NpcSystem
 
         public NpcBossInfo CreateBossInfoFromDB(IDataRecord record)
         {
-            var id = record.GetValue<int>("id");
-            var flockid = record.GetValue<int>("flockid");
-            var respawnFactor = record.GetValue<double?>("respawnNoiseFactor");
-            var lootSplit = record.GetValue<bool>("lootSplitFlag");
-            var outpostEID = record.GetValue<long?>("outpostEID");
-            var stabilityPts = record.GetValue<int?>("stabilityPts");
-            var overrideRelations = record.GetValue<bool>("overrideRelations");
-            var deathMessage = record.GetValue<string>("customDeathMessage");
-            var aggressMessage = record.GetValue<string>("customAggressMessage");
-            var riftConfigId = record.GetValue<int?>("riftConfigId");
-            var riftConfig = _customRiftConfigReader.GetById(riftConfigId ?? -1);
-            var announce = record.GetValue<bool>("isAnnounced");
-            var info = new NpcBossInfo(
+            int id = record.GetValue<int>("id");
+            int flockid = record.GetValue<int>("flockid");
+            double? respawnFactor = record.GetValue<double?>("respawnNoiseFactor");
+            bool lootSplit = record.GetValue<bool>("lootSplitFlag");
+            long? outpostEID = record.GetValue<long?>("outpostEID");
+            int? stabilityPts = record.GetValue<int?>("stabilityPts");
+            bool overrideRelations = record.GetValue<bool>("overrideRelations");
+            string deathMessage = record.GetValue<string>("customDeathMessage");
+            string aggressMessage = record.GetValue<string>("customAggressMessage");
+            int? riftConfigId = record.GetValue<int?>("riftConfigId");
+            CustomRiftConfig riftConfig = _customRiftConfigReader.GetById(riftConfigId ?? -1);
+            bool announce = record.GetValue<bool>("isAnnounced");
+            bool isServerWideAnnouncement = record.GetValueOrDefault<bool>("isServerWideAnnouncement");
+            bool isNoRadioDelay = record.GetValueOrDefault<bool>("isNoRadioDelay");
+            NpcBossInfo info = new NpcBossInfo(
                 _eventChannel,
                 id,
                 flockid,
@@ -44,7 +46,9 @@ namespace Perpetuum.Zones.NpcSystem
                 deathMessage,
                 aggressMessage,
                 riftConfig,
-                announce
+                announce,
+                isServerWideAnnouncement,
+                isNoRadioDelay
              );
 
             return info;
@@ -52,16 +56,16 @@ namespace Perpetuum.Zones.NpcSystem
 
         public NpcBossInfo GetBossInfoByFlockID(int flockid, IFlockConfiguration config)
         {
-            var bossInfos = Db.Query()
+            System.Collections.Generic.IEnumerable<NpcBossInfo> bossInfos = Db.Query()
                 .CommandText(@"SELECT TOP 1 id, flockid, respawnNoiseFactor, lootSplitFlag, outpostEID,
                     stabilityPts, overrideRelations, customDeathMessage, customAggressMessage, riftConfigId,
-                    isAnnounced
+                    isAnnounced, isServerWideAnnouncement, isNoRadioDelay
                     FROM dbo.npcbossinfo WHERE flockid=@flockid;")
                 .SetParameter("@flockid", flockid)
                 .Execute()
                 .Select(CreateBossInfoFromDB);
 
-            var info = bossInfos.SingleOrDefault();
+            NpcBossInfo info = bossInfos.SingleOrDefault();
 
             if (info == null)
             {

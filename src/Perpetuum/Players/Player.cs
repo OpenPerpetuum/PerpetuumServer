@@ -722,7 +722,8 @@ namespace Perpetuum.Players
                 unit is ProximityDeviceBase ||
                 (unit is BlobEmitterUnit b && b.IsPlayerSpawned) ||
                 (unit is RemoteControlledCreature remoteControlledCreature &&
-                    remoteControlledCreature.CommandRobot is Player);
+                    remoteControlledCreature.CommandRobot is Player player &&
+                    remoteControlledCreature.CommandRobot != player);
         }
 
         protected override void OnDead(Unit killer)
