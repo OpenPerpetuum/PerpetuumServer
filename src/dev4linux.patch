@@ -1,0 +1,253 @@
+diff --git a/.nuget/NuGet.Config b/.nuget/nuget.config
+similarity index 100%
+rename from .nuget/NuGet.Config
+rename to .nuget/nuget.config
+diff --git a/.nuget/NuGet.exe b/.nuget/nuget.exe
+similarity index 100%
+rename from .nuget/NuGet.exe
+rename to .nuget/nuget.exe
+diff --git a/.nuget/NuGet.targets b/.nuget/nuget.targets
+similarity index 100%
+rename from .nuget/NuGet.targets
+rename to .nuget/nuget.targets
+diff --git a/Perpetuum.sln b/Perpetuum.sln
+index bab491d..4fd3b49 100644
+--- a/Perpetuum.sln
++++ b/Perpetuum.sln
+@@ -87,13 +87,11 @@ Global
+ 		{F69F19CA-DF42-420E-BC21-2ADD28C50A0C}.Release|x86.ActiveCfg = Release|Any CPU
+ 		{F69F19CA-DF42-420E-BC21-2ADD28C50A0C}.Release|x86.Build.0 = Release|Any CPU
+ 		{4736AD6B-6565-4EEF-ABCB-19454342A986}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+-		{4736AD6B-6565-4EEF-ABCB-19454342A986}.Debug|Any CPU.Build.0 = Debug|Any CPU
+ 		{4736AD6B-6565-4EEF-ABCB-19454342A986}.Debug|x64.ActiveCfg = Debug|Any CPU
+ 		{4736AD6B-6565-4EEF-ABCB-19454342A986}.Debug|x64.Build.0 = Debug|Any CPU
+ 		{4736AD6B-6565-4EEF-ABCB-19454342A986}.Debug|x86.ActiveCfg = Debug|Any CPU
+ 		{4736AD6B-6565-4EEF-ABCB-19454342A986}.Debug|x86.Build.0 = Debug|Any CPU
+ 		{4736AD6B-6565-4EEF-ABCB-19454342A986}.Release|Any CPU.ActiveCfg = Release|Any CPU
+-		{4736AD6B-6565-4EEF-ABCB-19454342A986}.Release|Any CPU.Build.0 = Release|Any CPU
+ 		{4736AD6B-6565-4EEF-ABCB-19454342A986}.Release|x64.ActiveCfg = Release|Any CPU
+ 		{4736AD6B-6565-4EEF-ABCB-19454342A986}.Release|x64.Build.0 = Release|Any CPU
+ 		{4736AD6B-6565-4EEF-ABCB-19454342A986}.Release|x86.ActiveCfg = Release|Any CPU
+@@ -111,13 +109,11 @@ Global
+ 		{E113962C-AD5D-4F17-8D08-656221CBD2D4}.Release|x86.ActiveCfg = Release|Any CPU
+ 		{E113962C-AD5D-4F17-8D08-656221CBD2D4}.Release|x86.Build.0 = Release|Any CPU
+ 		{9C77CE95-825E-4BB1-9129-66835BDB8C96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+-		{9C77CE95-825E-4BB1-9129-66835BDB8C96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+ 		{9C77CE95-825E-4BB1-9129-66835BDB8C96}.Debug|x64.ActiveCfg = Debug|Any CPU
+ 		{9C77CE95-825E-4BB1-9129-66835BDB8C96}.Debug|x64.Build.0 = Debug|Any CPU
+ 		{9C77CE95-825E-4BB1-9129-66835BDB8C96}.Debug|x86.ActiveCfg = Debug|Any CPU
+ 		{9C77CE95-825E-4BB1-9129-66835BDB8C96}.Debug|x86.Build.0 = Debug|Any CPU
+ 		{9C77CE95-825E-4BB1-9129-66835BDB8C96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+-		{9C77CE95-825E-4BB1-9129-66835BDB8C96}.Release|Any CPU.Build.0 = Release|Any CPU
+ 		{9C77CE95-825E-4BB1-9129-66835BDB8C96}.Release|x64.ActiveCfg = Release|Any CPU
+ 		{9C77CE95-825E-4BB1-9129-66835BDB8C96}.Release|x64.Build.0 = Release|Any CPU
+ 		{9C77CE95-825E-4BB1-9129-66835BDB8C96}.Release|x86.ActiveCfg = Release|Any CPU
+diff --git a/src/Perpetuum.AdminTool/LocalServerPage.xaml.cs b/src/Perpetuum.AdminTool/LocalServerPage.xaml.cs
+index 38355cd..c890fa9 100644
+--- a/src/Perpetuum.AdminTool/LocalServerPage.xaml.cs
++++ b/src/Perpetuum.AdminTool/LocalServerPage.xaml.cs
+@@ -59,7 +59,6 @@ private void HandleOutData(string line)
+ 
+         private void HandleErrorData(string line)
+         {
+-            Console.Beep();
+             Dispatcher.BeginInvoke(DispatcherPriority.Normal,new Action<string>(ServerProcessLogAddLine),line);
+         }
+ 
+diff --git a/src/Perpetuum.RequestHandlers/Missions/MissionFlush.cs b/src/Perpetuum.RequestHandlers/Missions/MissionFlush.cs
+index 3321c57..a24cb3f 100644
+--- a/src/Perpetuum.RequestHandlers/Missions/MissionFlush.cs
++++ b/src/Perpetuum.RequestHandlers/Missions/MissionFlush.cs
+@@ -27,9 +27,7 @@ public MissionFlush(MissionProcessor missionProcessor,MissionDataCache missionDa
+         public  void HandleRequest(IRequest request)
+         {
+             //!!! only in DEBUG !!!
+-#if !DEBUG
+-            return;
+-#endif
++#if DEBUG
+             using (var scope = Db.CreateTransaction())
+             {
+                 //clear sql
+@@ -56,6 +54,7 @@ public  void HandleRequest(IRequest request)
+                 
+                 scope.Complete();
+             }
++#endif
+         }
+     }
+ }
+\ No newline at end of file
+diff --git a/src/Perpetuum.Server/Perpetuum.Server.csproj b/src/Perpetuum.Server/Perpetuum.Server.csproj
+index b4b385d..3e90847 100644
+--- a/src/Perpetuum.Server/Perpetuum.Server.csproj
++++ b/src/Perpetuum.Server/Perpetuum.Server.csproj
+@@ -130,12 +130,12 @@
+     <PostBuildEvent>
+     </PostBuildEvent>
+   </PropertyGroup>
+-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
++  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\nuget.targets')" />
+   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+     <PropertyGroup>
+       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+     </PropertyGroup>
+-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
++    <Error Condition="!Exists('$(SolutionDir)\.nuget\nuget.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\nuget.targets'))" />
+   </Target>
+   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+        Other similar extension points exist, see Microsoft.Common.targets.
+diff --git a/src/Perpetuum/Data/DbQuery.cs b/src/Perpetuum/Data/DbQuery.cs
+index fcae10c..7b76444 100644
+--- a/src/Perpetuum/Data/DbQuery.cs
++++ b/src/Perpetuum/Data/DbQuery.cs
+@@ -55,9 +55,6 @@ private T ExecuteHelper<T>(Func<IDbCommand,T> execute)
+             {
+                 connection.Open();
+ 
+-                if (Transaction.Current != null && connection is DbConnection dbConnection)
+-                    dbConnection.EnlistTransaction(Transaction.Current);
+-
+                 var command = connection.CreateCommand();
+                 command.CommandText = _commandText;
+                 command.CommandType = _commandText.Contains(" ") ? CommandType.Text : CommandType.StoredProcedure;
+diff --git a/src/Perpetuum/GenericTypeExtensions.cs b/src/Perpetuum/GenericTypeExtensions.cs
+index 44a923f..70174e9 100644
+--- a/src/Perpetuum/GenericTypeExtensions.cs
++++ b/src/Perpetuum/GenericTypeExtensions.cs
+@@ -1,8 +1,7 @@
+ ﻿using System;
+ using System.Diagnostics;
+-using System.IO;
+ using System.Runtime.InteropServices;
+-using System.Runtime.Serialization.Formatters.Binary;
++using Force.DeepCloner;
+ 
+ namespace Perpetuum
+ {
+@@ -58,13 +57,8 @@ public static T Clone<T>(this T source)
+ 
+             Debug.Assert(typeof(T).IsSerializable, "EZ NEM SERIALIZALHATO: " + typeof(T));
+ 
+-            using (var ms = new MemoryStream())
+-            {
+-                var bf = new BinaryFormatter();
+-                bf.Serialize(ms, source);
+-                ms.Seek(0, SeekOrigin.Begin);
+-                return (T)(bf.Deserialize(ms));
+-            }
++            var obj = (object)source;
++            return (T)obj.DeepClone();
+         }
+     }
+ }
+diff --git a/src/Perpetuum/Log/Loggers/ColoredConsoleLogger.cs b/src/Perpetuum/Log/Loggers/ColoredConsoleLogger.cs
+index d329405..ffc7c23 100644
+--- a/src/Perpetuum/Log/Loggers/ColoredConsoleLogger.cs
++++ b/src/Perpetuum/Log/Loggers/ColoredConsoleLogger.cs
+@@ -25,7 +25,6 @@ public override void Log(LogEvent logEvent)
+                     {
+                         {
+                             Console.ForegroundColor = ConsoleColor.Red;
+-                            Console.Beep(4000, 30);
+                             break;
+                         }
+                     }
+diff --git a/src/Perpetuum/Network/TcpConnection.cs b/src/Perpetuum/Network/TcpConnection.cs
+index ee78668..852a1a4 100644
+--- a/src/Perpetuum/Network/TcpConnection.cs
++++ b/src/Perpetuum/Network/TcpConnection.cs
+@@ -34,7 +34,6 @@ public TcpConnection(Socket socket)
+             _socket.NoDelay = true;
+             _socket.ReceiveBufferSize = RECEIVE_BUFFER_SIZE;
+             _socket.SendBufferSize = SEND_BUFFER_SIZE;
+-            _socket.SetKeepAlive(true, 1000 * 60 * 60 * 24, 5000);
+ 
+             RemoteEndPoint = (IPEndPoint)_socket.RemoteEndPoint;
+         }
+@@ -62,8 +61,6 @@ public void Disconnect()
+             if (Interlocked.CompareExchange(ref _isDisconnected, 1, 0) == 1)
+                 return;
+ 
+-            Console.Beep(100, 200);
+-
+             Task.Run(() =>
+             {
+                 OnDisconnected();
+diff --git a/src/Perpetuum/Network/TcpListenerExtensions.cs b/src/Perpetuum/Network/TcpListenerExtensions.cs
+index 35e2d66..9d46122 100644
+--- a/src/Perpetuum/Network/TcpListenerExtensions.cs
++++ b/src/Perpetuum/Network/TcpListenerExtensions.cs
+@@ -23,7 +23,6 @@ private static void AcceptSocketCallback(IAsyncResult ar)
+                 var helper = (ListenerHelper) ar.AsyncState;
+                 var socket = helper.listener.EndAcceptSocket(ar);
+                 helper.listener.BeginAcceptSocket(AcceptSocketCallback, helper);
+-                Console.Beep(200, 200);
+                 helper.onConnectionAccepted(socket);
+             }
+             catch (ObjectDisposedException)
+diff --git a/src/Perpetuum/Perpetuum.csproj b/src/Perpetuum/Perpetuum.csproj
+index 165a32c..d953ef9 100644
+--- a/src/Perpetuum/Perpetuum.csproj
++++ b/src/Perpetuum/Perpetuum.csproj
+@@ -70,6 +70,9 @@
+     <PlatformTarget>x64</PlatformTarget>
+   </PropertyGroup>
+   <ItemGroup>
++    <Reference Include="DeepCloner, Version=0.10.0.0, Culture=neutral, PublicKeyToken=dc0b95cf99bf4e99, processorArchitecture=MSIL">
++      <HintPath>..\..\packages\DeepCloner.0.10.4\lib\net40\DeepCloner.dll</HintPath>
++    </Reference>
+     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+       <HintPath>..\..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+     </Reference>
+@@ -265,7 +268,6 @@
+     <Compile Include="Network\EncryptedTcpConnection.cs" />
+     <Compile Include="Network\Http.cs" />
+     <Compile Include="Network\ITcpConnection.cs" />
+-    <Compile Include="Network\SocketExtensions.cs" />
+     <Compile Include="Network\TcpConnection.cs" />
+     <Compile Include="Network\TcpListenerExtensions.cs" />
+     <Compile Include="ObjectCacheExtensions.cs" />
+diff --git a/src/Perpetuum/Zones/NpcSystem/NPCBossInfo.cs b/src/Perpetuum/Zones/NpcSystem/NpcBossInfo.cs
+similarity index 100%
+rename from src/Perpetuum/Zones/NpcSystem/NPCBossInfo.cs
+rename to src/Perpetuum/Zones/NpcSystem/NpcBossInfo.cs
+diff --git a/src/Perpetuum/Zones/ZoneTicket.cs b/src/Perpetuum/Zones/ZoneTicket.cs
+index f4d378c..2c06baa 100644
+--- a/src/Perpetuum/Zones/ZoneTicket.cs
++++ b/src/Perpetuum/Zones/ZoneTicket.cs
+@@ -16,7 +16,7 @@ public struct ZoneTicket
+         private static readonly Rijndael _rijndael = Rijndael.Create();
+ 
+         private readonly int _characterId;
+-        private readonly DateTime _created;
++        private readonly long _created;
+ 
+         public int CharacterId
+         {
+@@ -32,12 +32,12 @@ static ZoneTicket()
+         private ZoneTicket(int characterId) : this()
+         {
+             _characterId = characterId;
+-            _created = DateTime.Now;
++            _created = DateTime.Now.ToBinary();
+         }
+ 
+         public bool IsExpired
+         {
+-            get { return DateTime.Now.Subtract(_created) > _ticketLifetime; }
++            get { return DateTime.Now.Subtract(DateTime.FromBinary(_created)) > _ticketLifetime; }
+         }
+ 
+         private static byte[] Encrypt(ZoneTicket ticket)
+diff --git a/src/Perpetuum/packages.config b/src/Perpetuum/packages.config
+index 5f43db9..80bdabd 100644
+--- a/src/Perpetuum/packages.config
++++ b/src/Perpetuum/packages.config
+@@ -1,5 +1,6 @@
+ ﻿<?xml version="1.0" encoding="utf-8"?>
+ <packages>
++  <package id="DeepCloner" version="0.10.4" targetFramework="net461" />
+   <package id="Newtonsoft.Json" version="10.0.3" targetFramework="net461" />
+   <package id="System.Collections.Immutable" version="1.4.0" targetFramework="net461" />
+   <package id="System.Globalization" version="4.3.0" targetFramework="net461" />
