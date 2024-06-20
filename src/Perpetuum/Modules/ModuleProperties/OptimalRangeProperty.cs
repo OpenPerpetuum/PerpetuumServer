@@ -12,12 +12,13 @@ namespace Perpetuum.Modules.ModuleProperties
         {
             _module = module;
             AddEffectModifier(AggregateField.effect_optimal_range_modifier);
+            AddEffectModifier(AggregateField.drone_amplification_long_range_modifier);
         }
 
         protected override double CalculateValue()
         {
-            var optimalRange = ItemPropertyModifier.Create(AggregateField.optimal_range);
-            var ammo = _module.GetAmmo();
+            ItemPropertyModifier optimalRange = ItemPropertyModifier.Create(AggregateField.optimal_range);
+            Items.Ammos.Ammo ammo = _module.GetAmmo();
 
             if (module is MissileWeaponModule m)
             {
@@ -25,7 +26,7 @@ namespace Perpetuum.Modules.ModuleProperties
                 {
                     optimalRange = ammo.OptimalRangePropertyModifier;
 
-                    var missileRangeMod = m.MissileRangeModifier.ToPropertyModifier();
+                    ItemPropertyModifier missileRangeMod = m.MissileRangeModifier.ToPropertyModifier();
 
                     missileRangeMod.Modify(ref optimalRange);
                     module.ApplyRobotPropertyModifiers(ref optimalRange);

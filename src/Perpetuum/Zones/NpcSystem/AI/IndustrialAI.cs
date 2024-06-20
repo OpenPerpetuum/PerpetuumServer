@@ -1,38 +1,44 @@
-﻿using Perpetuum.Timers;
+﻿using Perpetuum.Collections;
+using Perpetuum.PathFinders;
+using Perpetuum.Timers;
 using Perpetuum.Zones.Locking;
 using Perpetuum.Zones.Locking.Locks;
-using Perpetuum.Zones.NpcSystem.AI.Behaviors;
-using Perpetuum.Zones.NpcSystem.IndustrialTargetsManagement;
-using Perpetuum.Zones.NpcSystem.TargettingStrategies;
-using Perpetuum.Zones.NpcSystem.ThreatManaging;
+using Perpetuum.Zones.Movements;
 using Perpetuum.Zones.RemoteControl;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Drawing;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Perpetuum.Zones.NpcSystem.AI
 {
     public class IndustrialAI : BaseAI
     {
         private const int UpdateFrequency = 1650;
+        private const int Sqrt2 = 141;
+        private const int Weight = 1000;
         private const int EjectFrequency = 300000;
+        private readonly IntervalTimer updateIndustrialTargetTimer = new IntervalTimer(UpdateFrequency, true);
         private readonly IntervalTimer processIndustrialTargetsTimer = new IntervalTimer(UpdateFrequency);
         private readonly IntervalTimer processEjectTimer = new IntervalTimer(EjectFrequency);
         private readonly IntervalTimer primarySelectTimer;
         private List<ModuleActivator> moduleActivators;
         private TimeSpan industrialTargetsUpdateFrequency = TimeSpan.FromMilliseconds(UpdateFrequency);
         private TimeSpan ejectCargoFrequency = TimeSpan.FromMilliseconds(EjectFrequency);
-        private IndustrialPrimaryLockSelectionStrategySelector stratSelector;
+        private PathMovement movement;
+        private PathMovement nextMovement;
 
         public IndustrialAI(SmartCreature smartCreature) : base(smartCreature)
         {
             primarySelectTimer = new IntervalTimer((this.smartCreature.ActiveModules.Max(x => x?.CycleTime.Milliseconds) ?? 0) + UpdateFrequency);
         }
 
+        public CancellationTokenSource source;
+
         public override void Enter()
         {
-            stratSelector = InitSelector();
             moduleActivators = smartCreature.ActiveModules
                 .Select(m => new ModuleActivator(m))
                 .ToList();
@@ -45,30 +51,10 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         public override void Update(TimeSpan time)
         {
-            UpdateIndustrialTargets(time);
+            UpdateIndustrialTarget(time);
             UpdatePrimaryTarget(time);
             RunModules(time);
             EjectCargo(time);
-        }
-
-        protected virtual IndustrialPrimaryLockSelectionStrategySelector InitSelector()
-        {
-            return IndustrialPrimaryLockSelectionStrategySelector.Create()
-                .WithStrategy(IndustrialPrimaryLockSelectionStrategy.RichestTile, 5)
-                .WithStrategy(IndustrialPrimaryLockSelectionStrategy.PoorestTile, 5)
-                .WithStrategy(IndustrialPrimaryLockSelectionStrategy.RandomTile, 20)
-                .Build();
-        }
-
-        protected void UpdateIndustrialTargets(TimeSpan time)
-        {
-            _ = processIndustrialTargetsTimer.Update(time);
-
-            if (processIndustrialTargetsTimer.Passed)
-            {
-                processIndustrialTargetsTimer.Reset();
-                ProcessIndustrialTargets();
-            }
         }
 
         protected void UpdatePrimaryTarget(TimeSpan time)
@@ -78,9 +64,92 @@ namespace Perpetuum.Zones.NpcSystem.AI
             if (primarySelectTimer.Passed)
             {
                 bool success = SelectPrimaryTarget();
-
                 SetPrimaryUpdateDelay(success);
             }
+        }
+
+        private bool SelectPrimaryTarget()
+        {
+            return SetLock(GetPrimaryTerrainLock());
+        }
+
+        protected virtual TimeSpan SetPrimaryDwellTime()
+        {
+            return FastRandom.NextTimeSpan(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(10));
+        }
+
+        protected virtual void SetPrimaryUpdateDelay(bool newPrimary)
+        {
+            primarySelectTimer.Interval = newPrimary
+                ? SetPrimaryDwellTime()
+                : GetValidLocks().Length > 0
+                    ? TimeSpan.FromSeconds(1)
+                    : smartCreature.GetLocks().Count > 0 ? TimeSpan.FromSeconds(1.5) : TimeSpan.FromSeconds(3.5);
+        }
+
+        protected void UpdateIndustrialTarget(TimeSpan time)
+        {
+            if (!(smartCreature.GetPrimaryLock() is TerrainLock mostValuable))
+            {
+                return;
+            }
+
+            bool forceCheckPrimary = false;
+            _ = updateIndustrialTargetTimer.Update(time);
+            if (updateIndustrialTargetTimer.Passed)
+            {
+                updateIndustrialTargetTimer.Reset();
+
+                // Forced check of the main hostile target.
+                forceCheckPrimary = movement?.Arrived ?? true;
+            }
+
+            if (forceCheckPrimary)
+            {
+                bool findNewTargetPosition = false;
+
+                if (!smartCreature.IsInRangeOf3D(mostValuable.Location, smartCreature.BestActionRange))
+                {
+                    findNewTargetPosition = true;
+                }
+                else
+                {
+                    LOSResult losResult = smartCreature.Zone.IsInLineOfSight(smartCreature, mostValuable.Location, false);
+
+                    if (losResult.hit)
+                    {
+                        findNewTargetPosition = true;
+                    }
+                }
+
+                if (findNewTargetPosition)
+                {
+                    _ = FindNewAttackPositionAsync(mostValuable.Location).ContinueWith(t =>
+                    {
+                        if (t.IsCanceled)
+                        {
+                            return;
+                        }
+
+                        List<Point> path = t.Result;
+
+                        if (path == null)
+                        {
+                            return;
+                        }
+
+                        _ = Interlocked.Exchange(ref nextMovement, new PathMovement(path));
+                    });
+                }
+            }
+
+            if (nextMovement != null)
+            {
+                movement = Interlocked.Exchange(ref nextMovement, null);
+                movement.Start(smartCreature);
+            }
+
+            movement?.Update(smartCreature, time);
         }
 
         protected void RunModules(TimeSpan time)
@@ -98,140 +167,16 @@ namespace Perpetuum.Zones.NpcSystem.AI
             if (processEjectTimer.Passed)
             {
                 processEjectTimer.Reset();
-                (smartCreature as IndustrialTurret).EjectCargo(smartCreature.Zone);
+                (smartCreature as IndustrialDrone).EjectCargo(smartCreature.Zone);
             }
         }
 
-        protected virtual TimeSpan SetPrimaryDwellTime()
+        protected Task<List<Point>> FindNewAttackPositionAsync(Position position)
         {
-            return FastRandom.NextTimeSpan(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5));
-        }
+            source?.Cancel();
+            source = new CancellationTokenSource();
 
-        protected virtual void SetPrimaryUpdateDelay(bool newPrimary)
-        {
-            primarySelectTimer.Interval = newPrimary
-                ? SetPrimaryDwellTime()
-                : TimeSpan.FromSeconds(1);
-        }
-
-        protected bool IsAttackable(Hostile hostile)
-        {
-            if (!hostile.Unit.InZone)
-            {
-                return false;
-            }
-
-            if (hostile.Unit.States.Dead)
-            {
-                return false;
-            }
-
-            if (!hostile.Unit.IsLockable)
-            {
-                return false;
-            }
-
-            if (hostile.Unit.IsAttackable != ErrorCodes.NoError)
-            {
-                return false;
-            }
-
-            if (hostile.Unit.IsInvulnerable)
-            {
-                return false;
-            }
-
-            if (smartCreature.Behavior.Type == BehaviorType.Neutral && hostile.IsExpired)
-            {
-                return false;
-            }
-
-            bool isVisible = smartCreature.IsVisible(hostile.Unit);
-
-            return isVisible;
-        }
-
-        protected virtual void ProcessIndustrialTargets()
-        {
-            if (!smartCreature.IndustrialValueManager.IndustrialTargets.Any())
-            {
-                if (smartCreature.GetLocks().Any())
-                {
-                    smartCreature.ResetLocks();
-                }
-
-                return;
-            }
-
-            List<IndustrialTarget> cleanUpList = new List<IndustrialTarget>();
-
-            ImmutableSortedSet<IndustrialTarget>.Enumerator industrialTargetsEnumerator =
-                smartCreature.IndustrialValueManager.IndustrialTargets.GetEnumerator();
-
-            while (industrialTargetsEnumerator.MoveNext())
-            {
-                IndustrialTarget industrialTarget = industrialTargetsEnumerator.Current;
-
-                if (industrialTarget.IndustrialValue > 0 &&
-                    smartCreature.IsInLockingRange(industrialTarget.Position))
-                {
-                    SetLockForIndustrialTarget(industrialTarget);
-
-                    break;
-                }
-                else
-                {
-                    cleanUpList.Add(industrialTarget);
-                }
-            }
-
-            foreach (IndustrialTarget industrialTarget in cleanUpList)
-            {
-                smartCreature.ProcessIndustrialTarget(industrialTarget.Position, industrialTarget.IndustrialValue);
-            }
-        }
-
-        protected bool TryMakeFreeLockSlotFor(IndustrialTarget industrialTarget)
-        {
-            if (smartCreature.HasFreeLockSlot)
-            {
-                return true;
-            }
-
-            smartCreature.GetSecondaryLocks().ForEach(x => x.Cancel());
-
-            return true;
-        }
-
-        protected IndustrialTarget GetValuableIndustrialTarget()
-        {
-            IndustrialTarget primaryTarget = smartCreature.IndustrialValueManager.IndustrialTargets
-                .Where(h => h.Position == (smartCreature.GetPrimaryLock() as TerrainLock)?.Location &&
-                h.IndustrialValue > 0)
-                .FirstOrDefault();
-
-            return primaryTarget;
-        }
-
-        private void SetLockForIndustrialTarget(IndustrialTarget industrialTarget)
-        {
-            bool mostValuable = GetValuableIndustrialTarget() == industrialTarget;
-            TerrainLock industrialLock = smartCreature.GetLockByPosition(industrialTarget.Position);
-
-            if (industrialLock == null)
-            {
-                if (TryMakeFreeLockSlotFor(industrialTarget))
-                {
-                    smartCreature.AddLock(industrialTarget.Position, mostValuable);
-                }
-            }
-            else
-            {
-                if (mostValuable && !industrialLock.Primary)
-                {
-                    smartCreature.SetPrimaryLock(industrialLock.Id);
-                }
-            }
+            return Task.Run(() => FindNewAttackPosition(position, source.Token), source.Token);
         }
 
         private bool IsLockValidTarget(TerrainLock industrialLock)
@@ -249,11 +194,125 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 .ToArray();
         }
 
-        private bool SelectPrimaryTarget()
+        private bool SetLock(TerrainLock terrainLock)
         {
-            TerrainLock[] validLocks = GetValidLocks();
+            bool isNewLock = false;
+            if (terrainLock == null)
+            {
+                smartCreature.ResetLocks();
 
-            return validLocks.Length >= 1 && (stratSelector?.TryUseStrategy(smartCreature, validLocks) ?? false);
+                return false;
+            }
+
+            if (!smartCreature.HasFreeLockSlot)
+            {
+                smartCreature.GetLocks().First(x => !x.Primary).Cancel();
+            }
+
+            TerrainLock primaryLock = smartCreature.GetPrimaryLock() as TerrainLock;
+            if ((primaryLock != null && primaryLock != terrainLock) || smartCreature.GetLocks().Count == 0)
+            {
+                isNewLock = true;
+
+                smartCreature.AddLock(terrainLock.Location, true);
+            }
+
+            return isNewLock;
+        }
+
+        private List<Point> FindNewAttackPosition(Position position, CancellationToken cancellationToken)
+        {
+            Point end = position.GetRandomPositionInRange2D(0, smartCreature.BestActionRange - 1).ToPoint();
+
+            smartCreature.StopMoving();
+            // Nulling movement so that the unit does not resume it at zero speed if the path is not found.
+            movement = null;
+
+            double maxNode = Math.Pow(smartCreature.HomeRange, 2) * Math.PI;
+            PriorityQueue<Node> priorityQueue = new PriorityQueue<Node>((int)maxNode);
+            Node startNode = new Node(smartCreature.CurrentPosition);
+
+            priorityQueue.Enqueue(startNode);
+
+            HashSet<Point> closed = new HashSet<Point>
+            {
+                startNode.position
+            };
+
+
+            while (priorityQueue.TryDequeue(out Node current))
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return null;
+                }
+
+                if (IsValidAttackPosition(position, current.position))
+                {
+                    return BuildPath(current);
+                }
+
+                foreach (Point n in current.position.GetNeighbours())
+                {
+                    if (closed.Contains(n))
+                    {
+                        continue;
+                    }
+
+                    _ = closed.Add(n);
+
+                    if (!smartCreature.IsWalkable(n.X, n.Y))
+                    {
+                        continue;
+                    }
+
+                    if (!n.IsInRange(smartCreature.HomePosition, smartCreature.HomeRange))
+                    {
+                        continue;
+                    }
+
+                    int newG = current.g + (n.X - current.position.X == 0 || n.Y - current.position.Y == 0 ? 100 : Sqrt2);
+                    int newH = Heuristic.Manhattan.Calculate(n.X, n.Y, end.X, end.Y) * Weight;
+                    Node newNode = new Node(n)
+                    {
+                        g = newG,
+                        f = newG + newH,
+                        parent = current
+                    };
+
+                    priorityQueue.Enqueue(newNode);
+                }
+            }
+
+            return null;
+        }
+
+        private bool IsValidAttackPosition(Position targetPosition, Point position)
+        {
+            Position position3 = smartCreature.Zone.FixZ(position.ToPosition()).AddToZ(smartCreature.Height);
+
+            if (!targetPosition.IsInRangeOf3D(position3, smartCreature.BestActionRange))
+            {
+                return false;
+            }
+
+            LOSResult r = smartCreature.Zone.IsInLineOfSight(smartCreature, position3, false);
+
+            return !r.hit;
+        }
+
+        private static List<Point> BuildPath(Node current)
+        {
+            Stack<Point> stack = new Stack<Point>();
+            Node node = current;
+
+            while (node != null)
+            {
+                stack.Push(node.position);
+                node = node.parent;
+            }
+
+            return stack.ToList();
         }
     }
 }

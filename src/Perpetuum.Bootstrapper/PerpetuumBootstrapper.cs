@@ -852,6 +852,8 @@ namespace Perpetuum.Bootstrapper
             RegisterRobot<SentryTurret>().OnActivated(e => e.Instance.SetCoreRecharger(e.Context.Resolve<ICoreRecharger>()));
             RegisterRobot<IndustrialTurret>().OnActivated(e => e.Instance.SetCoreRecharger(e.Context.Resolve<ICoreRecharger>()));
             RegisterRobot<CombatDrone>().OnActivated(e => e.Instance.SetCoreRecharger(e.Context.Resolve<ICoreRecharger>()));
+            RegisterRobot<IndustrialDrone>().OnActivated(e => e.Instance.SetCoreRecharger(e.Context.Resolve<ICoreRecharger>()));
+            RegisterRobot<SupportDrone>().OnActivated(e => e.Instance.SetCoreRecharger(e.Context.Resolve<ICoreRecharger>()));
             RegisterRobot<PBSTurret>();
             RegisterRobot<PunchBag>();
 
@@ -977,7 +979,10 @@ namespace Perpetuum.Bootstrapper
             RegisterModule<SiegeHackModule>();
             RegisterModule<NeuralyzerModule>();
             RegisterModule<BlobEmissionModulatorModule>();
-            RegisterModule<RemoteControllerModule>();
+            RegisterModule<TacticalRemoteControllerModule>();
+            RegisterModule<AssaultRemoteControllerModule>();
+            RegisterModule<IndustrialRemoteControllerModule>();
+            RegisterModule<SupportRemoteControllerModule>();
             RegisterModule<TerraformMultiModule>();
             RegisterModule<WallBuilderModule>();
             RegisterModule<ConstructionModule>();
@@ -1123,12 +1128,10 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<WeaponAmmo>(CategoryFlags.cf_projectile_ammo);
                 ByCategoryFlags<WeaponAmmo>(CategoryFlags.cf_missile_ammo);
                 ByCategoryFlags<MiningAmmo>(CategoryFlags.cf_mining_ammo);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_sentry_turret_units);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_mining_turret_units);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_harvesting_turret_units);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_pelistal_combat_drones_units);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_nuimqol_combat_drones_units);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_thelodica_combat_drones_units);
+                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_assault_drones_units);
+                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_attack_drones_units);
+                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_industrial_drones_units);
+                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_support_drones_units);
                 ByCategoryFlags<TileScannerAmmo>(CategoryFlags.cf_mining_probe_ammo_tile);
                 ByCategoryFlags<OneTileScannerAmmo>(CategoryFlags.cf_mining_probe_ammo_one_tile);
                 ByCategoryFlags<ArtifactScannerAmmo>(CategoryFlags.cf_mining_probe_ammo_artifact);
@@ -1219,7 +1222,10 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<SiegeHackModule>(CategoryFlags.cf_siege_hack_modules);
                 ByCategoryFlags<NeuralyzerModule>(CategoryFlags.cf_neuralyzer);
                 ByCategoryFlags<BlobEmissionModulatorModule>(CategoryFlags.cf_blob_emission_modulator, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_blob_emission_modulator_ammo));
-                ByCategoryFlags<RemoteControllerModule>(CategoryFlags.cf_remote_controllers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_remote_controlled_units));
+                ByCategoryFlags<TacticalRemoteControllerModule>(CategoryFlags.cf_tactical_remote_controllers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_attack_drones_units));
+                ByCategoryFlags<AssaultRemoteControllerModule>(CategoryFlags.cf_assault_remote_controllers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_assault_drones_units));
+                ByCategoryFlags<IndustrialRemoteControllerModule>(CategoryFlags.cf_industrial_remote_controllers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_industrial_drones_units));
+                ByCategoryFlags<SupportRemoteControllerModule>(CategoryFlags.cf_support_remote_controllers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_support_drones_units));
                 ByCategoryFlags<WebberModule>(CategoryFlags.cf_webber);
                 ByCategoryFlags<SensorDampenerModule>(CategoryFlags.cf_sensor_dampeners);
                 ByCategoryFlags<RemoteSensorBoosterModule>(CategoryFlags.cf_remote_sensor_boosters);
@@ -1272,6 +1278,10 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<IndustrialTurret>(CategoryFlags.cf_mining_turrets);
                 ByCategoryFlags<IndustrialTurret>(CategoryFlags.cf_harvesting_turrets);
                 ByCategoryFlags<CombatDrone>(CategoryFlags.cf_combat_drones);
+                ByCategoryFlags<CombatDrone>(CategoryFlags.cf_assault_drones);
+                ByCategoryFlags<CombatDrone>(CategoryFlags.cf_attack_drones);
+                ByCategoryFlags<SupportDrone>(CategoryFlags.cf_support_drones);
+                ByCategoryFlags<IndustrialDrone>(CategoryFlags.cf_industrial_drones);
                 ByCategoryFlags<Item>(CategoryFlags.cf_reactor_cores);
                 ByCategoryFlags<Kiosk>(CategoryFlags.cf_kiosk);
                 ByCategoryFlags<AlarmSwitch>(CategoryFlags.cf_alarm_switch);

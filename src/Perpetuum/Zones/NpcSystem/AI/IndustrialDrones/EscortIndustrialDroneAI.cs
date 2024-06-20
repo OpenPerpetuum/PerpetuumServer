@@ -1,24 +1,25 @@
 ﻿using Perpetuum.PathFinders;
 using Perpetuum.Zones.Movements;
+using Perpetuum.Zones.RemoteControl;
 using System;
 
-namespace Perpetuum.Zones.NpcSystem.AI
+namespace Perpetuum.Zones.NpcSystem.AI.IndustrialDrones
 {
-    public class HomingAI : BaseAI
+    public class EscortIndustrialDroneAI : BaseAI
     {
         private PathMovement movement;
-        private readonly double maxReturnHomeRadius;
+        private readonly double maxReturnGuardRadius;
         private readonly PathFinder pathFinder;
 
-        public HomingAI(SmartCreature smartCreature) : base(smartCreature)
+        public EscortIndustrialDroneAI(SmartCreature smartCreature) : base(smartCreature)
         {
-            maxReturnHomeRadius = (smartCreature.HomeRange * 0.4).Clamp(3, 20);
+            maxReturnGuardRadius = ((this.smartCreature as IndustrialDrone).GuardRange * 0.4).Clamp(3, 20);
             pathFinder = new AStarFinder(Heuristic.Manhattan, smartCreature.IsWalkable);
         }
 
         public override void Enter()
         {
-            Position randomHome = smartCreature.Zone.FindPassablePointInRadius(smartCreature.HomePosition, (int)maxReturnHomeRadius);
+            Position randomHome = smartCreature.Zone.FindPassablePointInRadius(smartCreature.HomePosition, (int)maxReturnGuardRadius);
 
             if (randomHome == default)
             {
@@ -54,6 +55,13 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         public override void Update(TimeSpan time)
         {
+            if (GetPrimaryTerrainLock() != null)
+            {
+                ToGatheringIndustrialDroneAI();
+
+                return;
+            }
+
             if (movement != null)
             {
                 movement.Update(smartCreature, time);
@@ -66,9 +74,5 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 }
             }
         }
-
-        protected override void ToHomeAI() { }
-
-        protected override void ToAggressorAI() { }
     }
 }

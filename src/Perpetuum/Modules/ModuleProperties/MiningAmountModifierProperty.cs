@@ -10,6 +10,7 @@ namespace Perpetuum.Modules.ModuleProperties
         {
             _module = module;
             AddEffectModifier(AggregateField.effect_mining_amount_modifier);
+            AddEffectModifier(AggregateField.drone_amplification_mining_amount_modifier);
         }
 
         protected override double CalculateValue()
@@ -19,11 +20,12 @@ namespace Perpetuum.Modules.ModuleProperties
                 return 1.0;
             }
 
-            var m = module.ParentRobot.GetPropertyModifier(AggregateField.mining_amount_modifier);
-            var ammo = (MiningAmmo)_module.GetAmmo();
+            Items.ItemPropertyModifier m = module.ParentRobot.GetPropertyModifier(AggregateField.mining_amount_modifier);
+            MiningAmmo ammo = (MiningAmmo)_module.GetAmmo();
 
             ammo?.ApplyMiningAmountModifier(ref m);
             module.ParentRobot?.ApplyEffectPropertyModifiers(AggregateField.effect_mining_amount_modifier, ref m);
+            module.ParentRobot?.ApplyEffectPropertyModifiers(AggregateField.drone_amplification_mining_amount_modifier, ref m);
 
             return m.Value;
         }

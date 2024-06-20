@@ -945,6 +945,10 @@ namespace Perpetuum.Units
 
         internal virtual bool IsHostile(IndustrialTurret turret) { return false; }
 
+        internal virtual bool IsHostile(IndustrialDrone turret) { return false; }
+
+        internal virtual bool IsHostile(SupportDrone turret) { return false; }
+
         internal virtual bool IsHostile(Npc npc) { return false; }
 
         internal virtual bool IsHostile(CombatDrone drone) { return false; }
@@ -978,6 +982,29 @@ namespace Perpetuum.Units
         protected override void OnPropertyChanged(ItemProperty property)
         {
             base.OnPropertyChanged(property);
+
+            switch (property.Field)
+            {
+                case AggregateField.blob_effect:
+                    {
+                        _sensorStrength.Update();
+                        _detectionStrength.Update();
+
+                        break;
+                    }
+                case AggregateField.drone_amplification_core_max_modifier:
+                    {
+                        _coreMax.Update();
+
+                        break;
+                    }
+                case AggregateField.drone_amplification_core_recharge_time_modifier:
+                    {
+                        _coreRechargeTime.Update();
+
+                        break;
+                    }
+            }
 
             if (property.Field == AggregateField.blob_effect)
             {
@@ -1039,7 +1066,12 @@ namespace Perpetuum.Units
 
         private void InitUnitProperties()
         {
-            _armorMax = new UnitProperty(this, AggregateField.armor_max, AggregateField.armor_max_modifier, AggregateField.effect_armor_max_modifier);
+            _armorMax = new UnitProperty(
+                this,
+                AggregateField.armor_max,
+                AggregateField.armor_max_modifier,
+                AggregateField.effect_armor_max_modifier,
+                AggregateField.drone_amplification_armor_max_modifier);
 
             _armorMax.PropertyChanged += property =>
             {
@@ -1055,7 +1087,11 @@ namespace Perpetuum.Units
 
             AddProperty(_armor);
 
-            _coreMax = new UnitProperty(this, AggregateField.core_max, AggregateField.core_max_modifier);
+            _coreMax = new UnitProperty(
+                this,
+                AggregateField.core_max,
+                AggregateField.core_max_modifier,
+                AggregateField.drone_amplification_core_max_modifier);
             AddProperty(_coreMax);
 
             _core = new CoreProperty(this);
@@ -1070,7 +1106,12 @@ namespace Perpetuum.Units
             };
             AddProperty(_core);
 
-            _coreRechargeTime = new UnitProperty(this, AggregateField.core_recharge_time, AggregateField.core_recharge_time_modifier, AggregateField.effect_core_recharge_time_modifier);
+            _coreRechargeTime = new UnitProperty(
+                this,
+                AggregateField.core_recharge_time,
+                AggregateField.core_recharge_time_modifier,
+                AggregateField.drone_amplification_core_recharge_time_modifier,
+                AggregateField.effect_core_recharge_time_modifier);
             AddProperty(_coreRechargeTime);
 
             _actualMass = new ActualMassProperty(this);

@@ -41,6 +41,11 @@ namespace Perpetuum.Zones.NpcSystem.IndustrialTargetsManagement
             _ = ImmutableInterlocked.TryRemove(ref _industrialTargets, tile.Center.ToString(), out _);
         }
 
+        public IndustrialTarget GetMostValuableTarget()
+        {
+            return IndustrialTargets.Max;
+        }
+
         public string ToDebugString()
         {
             if (_industrialTargets.Count == 0)

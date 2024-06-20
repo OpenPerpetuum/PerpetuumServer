@@ -260,9 +260,11 @@
     <Compile Include="LookupExtensions.cs" />
     <Compile Include="MathHelper.cs" />
     <Compile Include="MessageConstants.cs" />
+    <Compile Include="Modules\AssaultRemoteControllerModule.cs" />
     <Compile Include="Modules\EffectModules\MineDetectorModule.cs" />
     <Compile Include="Modules\EffectModules\TargetBlinderModule.cs" />
     <Compile Include="Modules\GathererModule.cs" />
+    <Compile Include="Modules\IndustrialRemoteControllerModule.cs" />
     <Compile Include="Modules\ModuleProperties\CycleTimeProperty.cs" />
     <Compile Include="Modules\ModuleProperties\FalloffProperty.cs" />
     <Compile Include="Modules\ModuleProperties\HarvestingAmountModifierProperty.cs" />
@@ -275,6 +277,8 @@
     <Compile Include="Modules\RemoteControlledHarvesterModule.cs" />
     <Compile Include="Modules\RemoteControllerModule.cs" />
     <Compile Include="Modules\ScorcherModule.cs" />
+    <Compile Include="Modules\SupportRemoteControllerModule.cs" />
+    <Compile Include="Modules\TacticalRemoteControllerModule.cs" />
     <Compile Include="Network\ClientConnection.cs" />
     <Compile Include="Network\EncryptedTcpConnection.cs" />
     <Compile Include="Network\Http.cs" />
@@ -695,6 +699,9 @@
     <Compile Include="Zones\NpcSystem\AI\IdleAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\InactiveAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\IndustrialAI.cs" />
+    <Compile Include="Zones\NpcSystem\AI\IndustrialDrones\EscortIndustrialDroneAI.cs" />
+    <Compile Include="Zones\NpcSystem\AI\IndustrialDrones\GatheringIndustrialDroneAI.cs" />
+    <Compile Include="Zones\NpcSystem\AI\IndustrialDrones\GuardIndustrialDroneAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\MiningIndustrialTurretAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\ModuleActivator.cs" />
     <Compile Include="Zones\NpcSystem\AI\Behaviors\NeutralBehavior.cs" />
@@ -734,6 +741,7 @@
     <Compile Include="Zones\NpcSystem\ThreatManagement\ThreatManager.cs" />
     <Compile Include="Zones\NpcSystem\ThreatManagement\ThreatType.cs" />
     <Compile Include="Zones\RemoteControl\CombatDrone.cs" />
+    <Compile Include="Zones\RemoteControl\IndustrialDrone.cs" />
     <Compile Include="Zones\RemoteControl\IndustrialTurret.cs" />
     <Compile Include="Zones\RemoteControl\RemoteChannel.cs" />
     <Compile Include="Zones\RemoteControl\BandwidthHandler.cs" />
@@ -1042,6 +1050,7 @@
     <Compile Include="Zones\Environments\IEnvironmentHandler.cs" />
     <Compile Include="Zones\Environments\ZoneEnvironmentHandler.cs" />
     <Compile Include="Zones\RemoteControl\RemoteControlledUnit.cs" />
+    <Compile Include="Zones\RemoteControl\SupportDrone.cs" />
     <Compile Include="Zones\RemoteControl\TurretType.cs" />
     <Compile Include="Zones\StrongHoldZone.cs" />
     <Compile Include="Zones\Teleporting\MobileStrongholdTeleport.cs" />

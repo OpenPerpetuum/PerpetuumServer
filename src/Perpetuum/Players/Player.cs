@@ -87,8 +87,6 @@ namespace Perpetuum.Players
 
         public Gang Gang { get; set; }
 
-        protected override bool isSafe => false;
-
         public bool IsInSafeArea
         {
             get

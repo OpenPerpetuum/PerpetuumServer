@@ -267,6 +267,8 @@ namespace Perpetuum.Modules
                 case AggregateField.cycle_time:
                 case AggregateField.effect_weapon_cycle_time_modifier:
                 case AggregateField.effect_gathering_cycle_time_modifier:
+                case AggregateField.drone_amplification_cycle_time_modifier:
+                case AggregateField.drone_amplification_remote_repair_cycle_time_modifier:
                     {
                         cycleTime.Update();
 
@@ -277,6 +279,7 @@ namespace Perpetuum.Modules
                 case AggregateField.effect_ew_optimal_range_modifier:
                 case AggregateField.module_missile_range_modifier:
                 case AggregateField.effect_missile_range_modifier:
+                case AggregateField.drone_amplification_long_range_modifier:
                     {
                         optimalRange.Update();
 

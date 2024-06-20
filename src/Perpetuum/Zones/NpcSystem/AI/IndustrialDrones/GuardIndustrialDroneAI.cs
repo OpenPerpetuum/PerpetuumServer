@@ -2,20 +2,20 @@
 using Perpetuum.Zones.RemoteControl;
 using System;
 
-namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
+namespace Perpetuum.Zones.NpcSystem.AI.IndustrialDrones
 {
-    public class GuardCombatDroneAI : BaseAI
+    public class GuardIndustrialDroneAI : BaseAI
     {
         private RandomMovement movement;
 
-        public GuardCombatDroneAI(SmartCreature smartCreature) : base(smartCreature) { }
+        public GuardIndustrialDroneAI(SmartCreature smartCreature) : base(smartCreature) { }
 
         public override void Enter()
         {
             smartCreature.StopAllModules();
             smartCreature.ResetLocks();
 
-            movement = new RandomMovement(smartCreature.HomePosition, (smartCreature as CombatDrone).GuardRange);
+            movement = new RandomMovement(smartCreature.HomePosition, (smartCreature as IndustrialDrone).GuardRange);
 
             movement.Start(smartCreature);
 
@@ -24,16 +24,16 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
 
         public override void Update(TimeSpan time)
         {
-            if (!(smartCreature as CombatDrone).IsInGuardRange)
+            if (!(smartCreature as IndustrialDrone).IsInGuardRange)
             {
-                ToEscortCombatDroneAI();
+                ToEscortIndustrialDroneAI();
 
                 return;
             }
 
-            if (smartCreature.ThreatManager.IsThreatened)
+            if (GetPrimaryTerrainLock() != null)
             {
-                ToAttackCombatDroneAI();
+                ToGatheringIndustrialDroneAI();
 
                 return;
             }

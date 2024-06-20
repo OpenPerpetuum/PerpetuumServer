@@ -13,7 +13,6 @@ namespace Perpetuum.Modules
         private readonly EffectType effectType;
         private readonly ItemProperty noxEffectEnhancerRadiusModifier;
         private readonly ItemProperty effectNegator;
-        private readonly ItemProperty pelistalPlasmaConsumption;
 
         public NoxModule(EffectType effectType, AggregateField effectModifier)
         {
@@ -22,7 +21,6 @@ namespace Perpetuum.Modules
             AddProperty(noxEffectEnhancerRadiusModifier);
             effectNegator = new ModuleProperty(this, effectModifier);
             AddProperty(effectNegator);
-            pelistalPlasmaConsumption = new ModuleProperty(this, AggregateField.ppm_pelistal_plasma_consumption);
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)

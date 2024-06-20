@@ -6,5 +6,7 @@
         Mining,
         Harvesting,
         CombatDrone,
+        IndustrialDrone,
+        SupportDrone,
     }
 }
