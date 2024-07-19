@@ -307,8 +307,11 @@
     <Compile Include="Reactive\Observable.cs" />
     <Compile Include="Reactive\ObservableExtensions.cs" />
     <Compile Include="Reactive\Observer.cs" />
+    <Compile Include="Robots\RobotChassis.cs" />
+    <Compile Include="Robots\RobotHead.cs" />
     <Compile Include="Robots\RobotHelper.cs" />
     <Compile Include="Robots\RobotInfoPacketBuilder.cs" />
+    <Compile Include="Robots\RobotLeg.cs" />
     <Compile Include="Rsa.cs" />
     <Compile Include="Selectors\ISelector.cs" />
     <Compile Include="Selectors\ModuloBasedSelector.cs" />
@@ -320,6 +323,7 @@
     <Compile Include="Services\Channels\PreMadeChatMessageNames.cs" />
     <Compile Include="Services\EventServices\EventMessages\DirectMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\NpcReinforcementsMessage.cs" />
+    <Compile Include="Services\EventServices\EventMessages\NpcState.cs" />
     <Compile Include="Services\EventServices\EventMessages\NpcStateMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\SpawnPortalMessage.cs" />
     <Compile Include="Services\EventServices\EventProcessors\NpcSpawnEventHandlers\NpcSpawnEventHandler.cs" />

@@ -1,6 +1,9 @@
-﻿using Perpetuum.PathFinders;
+﻿using Perpetuum.Modules;
+using Perpetuum.PathFinders;
 using Perpetuum.Zones.Movements;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Perpetuum.Zones.NpcSystem.AI
 {
@@ -18,7 +21,8 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         public override void Enter()
         {
-            Position randomHome = smartCreature.Zone.FindPassablePointInRadius(smartCreature.HomePosition, (int)maxReturnHomeRadius);
+            Position randomHome =
+                smartCreature.Zone.FindPassablePointInRadius(smartCreature.HomePosition, (int)maxReturnHomeRadius);
 
             if (randomHome == default)
             {
@@ -52,6 +56,14 @@ namespace Perpetuum.Zones.NpcSystem.AI
             base.Enter();
         }
 
+        protected override List<ModuleActivator> FillModuleActivators()
+        {
+            return smartCreature.ActiveModules
+                .Where(x => x is NoxModule)
+                .Select(m => new ModuleActivator(m))
+                .ToList();
+        }
+
         public override void Update(TimeSpan time)
         {
             if (movement != null)
@@ -65,6 +77,8 @@ namespace Perpetuum.Zones.NpcSystem.AI
                     return;
                 }
             }
+
+            base.Update(time);
         }
 
         protected override void ToHomeAI() { }

@@ -416,6 +416,16 @@ namespace Perpetuum.Zones.NpcSystem
             }
         }
 
+        protected override void OnRemovedFromZone(IZone zone)
+        {
+            if (!States.Dead)
+            {
+                BossInfo?.OnSafeDespawn();
+            }
+
+            base.OnRemovedFromZone(zone);
+        }
+
         protected override void OnDamageTaken(Unit source, DamageTakenEventArgs e)
         {
             base.OnDamageTaken(source, e);

@@ -10,36 +10,31 @@ using System.Linq;
 
 namespace Perpetuum.Robots
 {
-    public class RobotHead : RobotComponent
-    {
-        public RobotHead(IExtensionReader extensionReader) : base(RobotComponentType.Head, extensionReader)
-        {
-        }
-    }
-
-    public class RobotChassis : RobotComponent
-    {
-        public RobotChassis(IExtensionReader extensionReader) : base(RobotComponentType.Chassis, extensionReader)
-        {
-        }
-    }
-
-    public class RobotLeg : RobotComponent
-    {
-        public RobotLeg(IExtensionReader extensionReader) : base(RobotComponentType.Leg, extensionReader)
-        {
-        }
-    }
-
     public abstract class RobotComponent : Item
     {
-        private readonly IExtensionReader _extensionReader;
+        private readonly IExtensionReader extensionReader;
+        private Lazy<IEnumerable<Module>> modules;
+        private Lazy<IEnumerable<ActiveModule>> activeModules;
 
         protected RobotComponent(RobotComponentType type, IExtensionReader extensionReader)
         {
             Type = type;
-            _extensionReader = extensionReader;
+            this.extensionReader = extensionReader;
         }
+
+        public ExtensionBonus[] ExtensionBonuses => extensionReader.GetRobotComponentExtensionBonus(Definition);
+
+        public Robot ParentRobot => (Robot)ParentEntity;
+
+        public RobotComponentType Type { get; }
+
+        public string ComponentName => Type.ToString().ToLower();
+
+        public IEnumerable<Module> Modules => modules.Value;
+
+        public IEnumerable<ActiveModule> ActiveModules => activeModules.Value;
+
+        public int MaxSlots => ED.Options.SlotFlags.Length;
 
         public override void Initialize()
         {
@@ -47,13 +42,10 @@ namespace Perpetuum.Robots
             base.Initialize();
         }
 
-        private Lazy<IEnumerable<Module>> _modules;
-        private Lazy<IEnumerable<ActiveModule>> _activeModules;
-
         private void InitModules()
         {
-            _modules = new Lazy<IEnumerable<Module>>(() => Children.OfType<Module>().ToArray());
-            _activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().ToArray());
+            modules = new Lazy<IEnumerable<Module>>(() => Children.OfType<Module>().ToArray());
+            activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().ToArray());
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
@@ -64,23 +56,11 @@ namespace Perpetuum.Robots
             }
         }
 
-        public ExtensionBonus[] ExtensionBonuses => _extensionReader.GetRobotComponentExtensionBonus(Definition);
-
         [CanBeNull]
         public Module GetModule(int slot)
         {
             return Modules.FirstOrDefault(m => m.Slot == slot);
         }
-
-        public Robot ParentRobot => (Robot)ParentEntity;
-
-        public RobotComponentType Type { get; }
-
-        public string ComponentName => Type.ToString().ToLower();
-
-        public IEnumerable<Module> Modules => _modules.Value;
-
-        public IEnumerable<ActiveModule> ActiveModules => _activeModules.Value;
 
         public void Update(TimeSpan time)
         {
@@ -94,8 +74,6 @@ namespace Perpetuum.Robots
         {
             return ED.Options.SlotFlags[slot - 1];
         }
-
-        public int MaxSlots => ED.Options.SlotFlags.Length;
 
         private bool IsValidModuleSlot(int slot)
         {
@@ -123,13 +101,9 @@ namespace Perpetuum.Robots
 
         public bool CheckUniqueModule(Module module)
         {
-            if (ParentRobot == null)
-            {
-                return true;
-            }
-
-            return !module.ED.CategoryFlags.IsUniqueCategoryFlags(out CategoryFlags uniqueCategoryFlag)
-|| ParentRobot.FindModuleByCategoryFlag(uniqueCategoryFlag) == null;
+            return ParentRobot == null ||
+                !module.ED.CategoryFlags.IsUniqueCategoryFlags(out CategoryFlags uniqueCategoryFlag) ||
+                ParentRobot.FindModuleByCategoryFlag(uniqueCategoryFlag) == null;
         }
 
         public bool IsValidSlotTo(Module module, int slot)
@@ -141,29 +115,27 @@ namespace Perpetuum.Robots
 
             long slotFlagMask = GetSlotFlagMask(slot);
             long moduleFlagMask = module.ModuleFlag;
-            return (moduleFlagMask & slotFlagMask) == moduleFlagMask;
+            long specializedFlag = (long)Math.Pow(2, (double)SlotFlags.specialized);
+            bool specializedSlot = (slotFlagMask & specializedFlag) == specializedFlag;
+            bool specializedModule = (moduleFlagMask & specializedFlag) == specializedFlag;
+
+            return (moduleFlagMask & slotFlagMask) == moduleFlagMask &&
+                (!specializedSlot || specializedModule);
         }
 
         public ErrorCodes CanEquipModule(Module module, int slot)
         {
-            if (IsUsedSlot(slot))
-            {
-                return ErrorCodes.UsedSlot;
-            }
-
-            if (!IsValidSlotTo(module, slot))
-            {
-                return ErrorCodes.InvalidSlot;
-            }
-
-            if (module.Quantity <= 0)
-            {
-                return ErrorCodes.WTFErrorMedicalAttentionSuggested;
-            }
-
-            return module.IsDamaged
-                ? ErrorCodes.ItemHasToBeRepaired
-                : !CheckUniqueModule(module) ? ErrorCodes.OnlyOnePerCategoryPerRobotAllowed : ErrorCodes.NoError;
+            return IsUsedSlot(slot)
+                ? ErrorCodes.UsedSlot
+                : !IsValidSlotTo(module, slot)
+                    ? ErrorCodes.InvalidSlot
+                    : module.Quantity <= 0
+                        ? ErrorCodes.WTFErrorMedicalAttentionSuggested
+                        : module.IsDamaged
+                            ? ErrorCodes.ItemHasToBeRepaired
+                            : !CheckUniqueModule(module)
+                                ? ErrorCodes.OnlyOnePerCategoryPerRobotAllowed
+                                : ErrorCodes.NoError;
         }
 
         public void EquipModuleOrThrow(Module module, int slot)
@@ -181,7 +153,6 @@ namespace Perpetuum.Robots
 
             module.Owner = Owner;
             module.IsRepackaged = false;
-
             AddChild(module);
             module.Slot = slot;
         }
@@ -195,7 +166,10 @@ namespace Perpetuum.Robots
             }
 
             Module targetModule = GetModule(targetSlot);
-            return targetModule != null && !IsValidSlotTo(targetModule, sourceSlot) ? ErrorCodes.InvalidSlot : ErrorCodes.NoError;
+
+            return targetModule != null && !IsValidSlotTo(targetModule, sourceSlot)
+                ? ErrorCodes.InvalidSlot
+                : ErrorCodes.NoError;
         }
 
         public void ChangeModuleOrThrow(int sourceSlot, int targetSlot)
@@ -208,7 +182,6 @@ namespace Perpetuum.Robots
         {
             Module sourceModule = GetModule(sourceSlot);
             Module targetModule = GetModule(targetSlot);
-
             if (sourceModule != null)
             {
                 sourceModule.Slot = targetSlot;
@@ -224,6 +197,7 @@ namespace Perpetuum.Robots
         {
             Dictionary<string, object> result = base.ToDictionary();
             result.Add(k.modules, Modules.ToDictionary("m", m => m.ToDictionary()));
+
             return result;
         }
 

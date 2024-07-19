@@ -17,24 +17,24 @@ namespace Perpetuum.Zones.NpcSystem
     /// </summary>
     public class NpcBossInfo
     {
-        private readonly EventListenerService _eventChannel;
-        private readonly int _id;
-        private readonly double? _respawnNoiseFactor;
-        private readonly long? _outpostEID;
-        private readonly int? _stabilityPts;
-        private readonly string _deathMsg;
-        private readonly string _aggroMsg;
-        private readonly CustomRiftConfig _riftConfig;
-        private bool _speak;
+        private readonly EventListenerService eventChannel;
+        private readonly int id;
+        private readonly double? respawnNoiseFactor;
+        private readonly long? outpostEID;
+        private readonly int? stabilityPts;
+        private readonly string deathMsg;
+        private readonly string aggroMsg;
+        private readonly CustomRiftConfig riftConfig;
+        private bool speak;
         private readonly bool overrideRelations;
-        private readonly TimeKeeper _onDamageDebounce = new TimeKeeper(TimeSpan.FromSeconds(5));
-        private readonly TimeKeeper _aggroDebounce = new TimeKeeper(TimeSpan.FromSeconds(5));
+        private readonly TimeKeeper onDamageDebounce = new TimeKeeper(TimeSpan.FromSeconds(5));
+        private readonly TimeKeeper aggroDebounce = new TimeKeeper(TimeSpan.FromSeconds(5));
 
-        private bool IsOutpostBoss => _outpostEID != null;
+        private bool IsOutpostBoss => outpostEID != null;
 
-        private int StabilityPoints => _stabilityPts ?? 0;
+        private int StabilityPoints => stabilityPts ?? 0;
 
-        private bool HasRiftToSpawn => _riftConfig != null;
+        private bool HasRiftToSpawn => riftConfig != null;
 
         public int FlockId { get; }
 
@@ -66,19 +66,19 @@ namespace Perpetuum.Zones.NpcSystem
             bool isServerWideAnnouncement,
             bool isNoRadioDelay)
         {
-            _eventChannel = eventChannel;
-            _id = id;
+            this.eventChannel = eventChannel;
+            this.id = id;
             FlockId = flockid;
-            _respawnNoiseFactor = respawnNoiseFactor;
+            this.respawnNoiseFactor = respawnNoiseFactor;
             IsLootSplit = lootSplit;
-            _outpostEID = outpostEID;
-            _stabilityPts = stabilityPts;
+            this.outpostEID = outpostEID;
+            this.stabilityPts = stabilityPts;
             this.overrideRelations = overrideRelations;
-            _deathMsg = customDeathMsg;
-            _aggroMsg = customAggroMsg;
-            _riftConfig = riftConfig;
+            deathMsg = customDeathMsg;
+            aggroMsg = customAggroMsg;
+            this.riftConfig = riftConfig;
             IsAnnounced = announce;
-            _speak = true;
+            speak = true;
             IsDead = false;
             IsServerWideAnnouncement = isServerWideAnnouncement;
             IsNoRadioDelay = isNoRadioDelay;
@@ -89,7 +89,7 @@ namespace Perpetuum.Zones.NpcSystem
         /// </summary>
         public void OnDeAggro()
         {
-            _speak = true;
+            speak = true;
         }
 
         /// <summary>
@@ -111,10 +111,10 @@ namespace Perpetuum.Zones.NpcSystem
         /// <param name="aggressor">Player damager</param>
         public void OnDamageTaken(SmartCreature smartCreature, Player aggressor)
         {
-            if (_onDamageDebounce.Expired)
+            if (onDamageDebounce.Expired)
             {
                 PublishMessage(new NpcReinforcementsMessage(smartCreature, smartCreature.Zone.Id));
-                _onDamageDebounce.Reset();
+                onDamageDebounce.Reset();
             }
         }
 
@@ -131,17 +131,16 @@ namespace Perpetuum.Zones.NpcSystem
             SpawnPortal(npc, killer);
             IsDead = true;
             PublishMessage(new NpcReinforcementsMessage(npc, npc.Zone.Id));
-            AnnounceDeath();
+            AnnounceDisappearance(NpcState.Dead);
         }
 
-        /// <summary>
-        /// The boss lives again
-        /// </summary>
-        public void OnRespawn()
+        public void OnSafeDespawn()
         {
-            _speak = true;
-            IsDead = false;
+            AnnounceDisappearance(NpcState.SafeDespawned);
+        }
 
+        public void AnnounceServerWide()
+        {
             if (IsServerWideAnnouncement)
             {
                 Message.Builder
@@ -156,6 +155,17 @@ namespace Perpetuum.Zones.NpcSystem
                 .ToOnlineCharacters()
                 .Send();
             }
+        }
+
+        /// <summary>
+        /// The boss lives again
+        /// </summary>
+        public void OnRespawn()
+        {
+            speak = true;
+            IsDead = false;
+
+            AnnounceServerWide();
 
             AnnouceRespawn(IsNoRadioDelay);
         }
@@ -167,7 +177,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         public bool Equals(NpcBossInfo other)
         {
-            return (other != null && ReferenceEquals(this, other)) || (other._id == _id && other.FlockId == FlockId);
+            return (other != null && ReferenceEquals(this, other)) || (other.id == id && other.FlockId == FlockId);
         }
 
         public override int GetHashCode()
@@ -176,7 +186,7 @@ namespace Perpetuum.Zones.NpcSystem
             {
                 int hash = 23;
 
-                hash = (hash * 31) + _id.GetHashCode();
+                hash = (hash * 31) + id.GetHashCode();
                 hash = (hash * 31) + FlockId.GetHashCode();
 
                 return hash;
@@ -190,7 +200,7 @@ namespace Perpetuum.Zones.NpcSystem
         /// <returns>modified respawn time of npc</returns>
         public TimeSpan GetNextSpawnTime(TimeSpan respawnTime)
         {
-            double factor = _respawnNoiseFactor ?? 0.0;
+            double factor = respawnNoiseFactor ?? 0.0;
 
             return respawnTime.Multiply(FastRandom.NextDouble(1.0 - factor, 1.0 + factor));
         }
@@ -213,14 +223,14 @@ namespace Perpetuum.Zones.NpcSystem
             });
         }
 
-        private void AnnounceDeath()
+        private void AnnounceDisappearance(NpcState npcState)
         {
             if (!IsAnnounced)
             {
                 return;
             }
 
-            PublishMessage(new NpcStateMessage(FlockId, NpcState.Dead, DateTime.UtcNow));
+            PublishMessage(new NpcStateMessage(FlockId, npcState, DateTime.UtcNow));
         }
 
         private void HandleBossOutpostAggro(Player aggressor)
@@ -233,17 +243,17 @@ namespace Perpetuum.Zones.NpcSystem
 
         private void CommunicateAggression(Unit aggressor)
         {
-            if (_aggroDebounce.Expired && _speak)
+            if (aggroDebounce.Expired && speak)
             {
-                _speak = false;
-                SendMessage(aggressor, _aggroMsg);
-                _aggroDebounce.Reset();
+                speak = false;
+                SendMessage(aggressor, aggroMsg);
+                aggroDebounce.Reset();
             }
         }
 
         private void CommunicateDeath(Unit aggressor)
         {
-            SendMessage(aggressor, _deathMsg);
+            SendMessage(aggressor, deathMsg);
         }
 
         private void HandleBossOutpostDeath(Npc npc, Unit killer)
@@ -257,7 +267,7 @@ namespace Perpetuum.Zones.NpcSystem
 
             IEnumerable<Unit> outposts = zone.Units.OfType<Outpost>();
 
-            Unit outpost = outposts.First(o => o.Eid == _outpostEID);
+            Unit outpost = outposts.First(o => o.Eid == outpostEID);
 
             if (outpost is Outpost)
             {
@@ -284,7 +294,7 @@ namespace Perpetuum.Zones.NpcSystem
                 return;
             }
 
-            PublishMessage(new SpawnPortalMessage(npc.Zone.Id, npc.CurrentPosition, _riftConfig));
+            PublishMessage(new SpawnPortalMessage(npc.Zone.Id, npc.CurrentPosition, riftConfig));
         }
 
         private void SendMessage(Unit src, string msg)
@@ -297,7 +307,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         private void PublishMessage(IEventMessage eventMessage)
         {
-            _eventChannel.PublishMessage(eventMessage);
+            eventChannel.PublishMessage(eventMessage);
         }
     }
 }

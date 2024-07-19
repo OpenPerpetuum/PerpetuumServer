@@ -6,6 +6,7 @@ using Perpetuum.Zones.NpcSystem.AI.CombatDrones;
 using Perpetuum.Zones.NpcSystem.AI.IndustrialDrones;
 using Perpetuum.Zones.RemoteControl;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -14,6 +15,7 @@ namespace Perpetuum.Zones.NpcSystem.AI
     public abstract class BaseAI : IState
     {
         protected readonly SmartCreature smartCreature;
+        private List<ModuleActivator> moduleActivators;
 
         protected BaseAI(SmartCreature smartCreature)
         {
@@ -22,6 +24,7 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         public virtual void Enter()
         {
+            moduleActivators = FillModuleActivators();
             WriteLog("enter state = " + GetType().Name);
         }
 
@@ -31,7 +34,15 @@ namespace Perpetuum.Zones.NpcSystem.AI
             WriteLog("exit state = " + GetType().Name);
         }
 
-        public abstract void Update(TimeSpan time);
+        protected virtual List<ModuleActivator> FillModuleActivators()
+        {
+            return Enumerable.Empty<ModuleActivator>().ToList();
+        }
+
+        public virtual void Update(TimeSpan time)
+        {
+            RunModules(time);
+        }
 
         protected virtual void ToHomeAI()
         {
@@ -80,6 +91,14 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 .GetLocks()
                 .Where(x => x is TerrainLock && x.Primary)
                 .FirstOrDefault() as TerrainLock;
+        }
+
+        protected void RunModules(TimeSpan time)
+        {
+            foreach (ModuleActivator activator in moduleActivators)
+            {
+                activator.Update(time);
+            }
         }
     }
 }
