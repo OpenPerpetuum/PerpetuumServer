@@ -56,6 +56,8 @@ namespace Perpetuum.Modules
             double coreRechargeTimeModifier = GetPropertyModifier(AggregateField.drone_amplification_core_recharge_time_modifier).Value;
             double longRangeModifier = GetPropertyModifier(AggregateField.drone_amplification_long_range_modifier).Value;
             double accuracyModifier = GetPropertyModifier(AggregateField.drone_amplification_accuracy_modifier).Value;
+            double speedMaxModifier = GetPropertyModifier(AggregateField.drone_amplification_speed_max_modifier).Value;
+            double reactorRadiationModifier = GetPropertyModifier(AggregateField.drone_amplification_reactor_radiation_modifier).Value;
 
             _ = effectBuilder
                 .SetType(EffectType.drone_amplification)
@@ -66,7 +68,9 @@ namespace Perpetuum.Modules
                 .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_core_max_modifier, AggregateFormula.Modifier, coreMaxModifier))
                 .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_core_recharge_time_modifier, AggregateFormula.Inverse, coreRechargeTimeModifier))
                 .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_long_range_modifier, AggregateFormula.Modifier, longRangeModifier))
-                .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_accuracy_modifier, AggregateFormula.Inverse, accuracyModifier));
+                .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_accuracy_modifier, AggregateFormula.Inverse, accuracyModifier))
+                .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_speed_max_modifier, AggregateFormula.Modifier, speedMaxModifier))
+                .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_reactor_radiation_modifier, AggregateFormula.Inverse, reactorRadiationModifier));
         }
     }
 }

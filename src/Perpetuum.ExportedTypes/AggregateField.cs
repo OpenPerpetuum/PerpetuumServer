@@ -474,5 +474,11 @@ namespace Perpetuum.ExportedTypes
         drone_amplification_long_range_modifier_modifier = 714,
         drone_amplification_accuracy_modifier = 715,
         drone_amplification_accuracy_modifier_modifier = 716,
+        drone_amplification_speed_max_modifier = 717,
+        drone_amplification_speed_max_modifier_modifier = 718,
+        drone_amplification_reactor_radiation_modifier = 719,
+        drone_amplification_reactor_radiation_modifier_modifier = 720,
+        cpu_usage_remote_controller_modifier = 721,
+        powergrid_usage_remote_controller_modifier = 722,
     }
 }

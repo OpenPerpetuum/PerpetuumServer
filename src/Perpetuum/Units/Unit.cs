@@ -53,6 +53,7 @@ namespace Perpetuum.Units
             speedMaxMod.Modify(ref speedMax);
 
             _owner.ApplyEffectPropertyModifiers(AggregateField.effect_speed_max_modifier, ref speedMax);
+            _owner.ApplyEffectPropertyModifiers(AggregateField.drone_amplification_speed_max_modifier, ref speedMax);
             _owner.ApplyEffectPropertyModifiers(AggregateField.effect_massivness_speed_max_modifier, ref speedMax);
 
             if (_owner.ActualMass > 0)
@@ -70,6 +71,7 @@ namespace Perpetuum.Units
             {
                 case AggregateField.speed_max:
                 case AggregateField.speed_max_modifier:
+                case AggregateField.drone_amplification_speed_max_modifier:
                 case AggregateField.effect_speed_max_modifier:
                 case AggregateField.effect_massivness_speed_max_modifier:
                 case AggregateField.effect_speed_highway_modifier:
@@ -976,7 +978,10 @@ namespace Perpetuum.Units
         public IEnumerable<T> GetUnitsWithinRange<T>(double distance) where T : Unit
         {
             IZone zone = Zone;
-            return zone == null ? Enumerable.Empty<T>() : zone.Units.OfType<T>().WithinRange(CurrentPosition, distance);
+
+            return zone == null
+                ? Enumerable.Empty<T>()
+                : zone.Units.OfType<T>().WithinRange(CurrentPosition, distance);
         }
 
         protected override void OnPropertyChanged(ItemProperty property)
@@ -986,30 +991,22 @@ namespace Perpetuum.Units
             switch (property.Field)
             {
                 case AggregateField.blob_effect:
-                    {
-                        _sensorStrength.Update();
-                        _detectionStrength.Update();
+                    _sensorStrength.Update();
+                    _detectionStrength.Update();
 
-                        break;
-                    }
+                    break;
                 case AggregateField.drone_amplification_core_max_modifier:
-                    {
-                        _coreMax.Update();
+                    _coreMax.Update();
 
-                        break;
-                    }
+                    break;
                 case AggregateField.drone_amplification_core_recharge_time_modifier:
-                    {
-                        _coreRechargeTime.Update();
+                    _coreRechargeTime.Update();
 
-                        break;
-                    }
-            }
+                    break;
+                case AggregateField.drone_amplification_reactor_radiation_modifier:
+                    _reactorRadiation.Update();
 
-            if (property.Field == AggregateField.blob_effect)
-            {
-                _sensorStrength.Update();
-                _detectionStrength.Update();
+                    break;
             }
         }
 
@@ -1173,7 +1170,12 @@ namespace Perpetuum.Units
             _kersExplosive = new UnitProperty(this, AggregateField.explosive_damage_to_core_modifier);
             AddProperty(_kersExplosive);
 
-            _reactorRadiation = new UnitProperty(this, AggregateField.reactor_radiation, AggregateField.reactor_radiation_modifier);
+            _reactorRadiation =
+                new UnitProperty(
+                    this,
+                    AggregateField.reactor_radiation,
+                    AggregateField.reactor_radiation_modifier,
+                    AggregateField.drone_amplification_reactor_radiation_modifier);
             AddProperty(_reactorRadiation);
         }
 

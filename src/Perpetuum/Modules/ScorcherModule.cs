@@ -21,6 +21,7 @@ namespace Perpetuum.Modules
     public class ScorcherModule : EnergyDispersionModule
     {
         private const int AffectedTargetsDepth = 5;
+        private const double BouncingDistance = 7.5;
         private readonly ItemProperty electricDamage;
 
         public ScorcherModule()
@@ -68,7 +69,7 @@ namespace Perpetuum.Modules
                     .WithState(BeamState.Hit)
                     .WithDuration(TimeSpan.FromSeconds(5));
                 Zone.CreateBeam(deployBeamBuilder);
-                double coreNeutralized = electricDamage.Value;
+                double coreNeutralized = electricDamage.Value * chainedDamageModifier;
                 double coreNeutralizedDone = 0.0;
                 ModifyValueByReactorRadiation(target, ref coreNeutralized);
                 coreNeutralized = ModifyValueByOptimalRange(chainedRobot, target, coreNeutralized);
@@ -85,7 +86,7 @@ namespace Perpetuum.Modules
                     target.AddThreat(ParentRobot, new Threat(ThreatType.EnWar, threatValue));
                 }
 
-                IDamageBuilder builder = GetDamageBuilder(coreNeutralizedDone * chainedDamageModifier);
+                IDamageBuilder builder = GetDamageBuilder(coreNeutralizedDone);
                 _ = Task.Delay(TimeSpan.FromSeconds(1)).ContinueWith(t => target.TakeDamage(builder.Build()));
                 CombatLogPacket packet = new CombatLogPacket(CombatLogType.EnergyNeutralize, target, ParentRobot, this);
                 packet.AppendDouble(coreNeutralized);
@@ -104,7 +105,7 @@ namespace Perpetuum.Modules
             }
 
             Unit newTarget = lastTarget.Zone
-                .GetUnitsWithinRange2D(lastTarget.CurrentPosition, OptimalRange)
+                .GetUnitsWithinRange2D(lastTarget.CurrentPosition, BouncingDistance)
                 .OfType<Robot>()
                 .Where(x =>
                     x != ParentRobot &&

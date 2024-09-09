@@ -47,6 +47,8 @@ namespace Perpetuum.Modules
             double remoteRepairCycleTime = GetPropertyModifier(AggregateField.drone_amplification_remote_repair_cycle_time_modifier).Value;
             double coreMaxModifier = GetPropertyModifier(AggregateField.drone_amplification_core_max_modifier).Value;
             double coreRechargeTimeModifier = GetPropertyModifier(AggregateField.drone_amplification_core_recharge_time_modifier).Value;
+            double speedMaxModifier = GetPropertyModifier(AggregateField.drone_amplification_speed_max_modifier).Value;
+            double reactorRadiationModifier = GetPropertyModifier(AggregateField.drone_amplification_reactor_radiation_modifier).Value;
 
             _ = effectBuilder
                 .SetType(EffectType.drone_amplification)
@@ -55,7 +57,9 @@ namespace Perpetuum.Modules
                 .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_remote_repair_amount_modifier, AggregateFormula.Modifier, remoteRepairAmount))
                 .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_remote_repair_cycle_time_modifier, AggregateFormula.Inverse, remoteRepairCycleTime))
                 .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_core_max_modifier, AggregateFormula.Modifier, coreMaxModifier))
-                .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_core_recharge_time_modifier, AggregateFormula.Inverse, coreRechargeTimeModifier));
+                .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_core_recharge_time_modifier, AggregateFormula.Inverse, coreRechargeTimeModifier))
+                .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_speed_max_modifier, AggregateFormula.Modifier, speedMaxModifier))
+                .WithPropertyModifier(new ItemPropertyModifier(AggregateField.drone_amplification_reactor_radiation_modifier, AggregateFormula.Inverse, reactorRadiationModifier));
         }
     }
 }

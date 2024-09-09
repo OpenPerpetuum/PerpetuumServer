@@ -25,6 +25,8 @@ namespace Perpetuum.Modules
         private readonly ModuleProperty droneArmorMax;
         private readonly ModuleProperty droneCoreMax;
         private readonly ModuleProperty droneCoreRechargeTime;
+        private readonly ModuleProperty droneSpeedMax;
+        private readonly ModuleProperty droneReactorRadiation;
 
         private BandwidthHandler bandwidthHandler;
 
@@ -54,6 +56,12 @@ namespace Perpetuum.Modules
 
             droneCoreRechargeTime = new ModuleProperty(this, AggregateField.drone_amplification_core_recharge_time_modifier);
             AddProperty(droneCoreRechargeTime);
+
+            droneSpeedMax = new ModuleProperty(this, AggregateField.drone_amplification_speed_max_modifier);
+            AddProperty(droneSpeedMax);
+
+            droneReactorRadiation = new ModuleProperty(this, AggregateField.drone_amplification_reactor_radiation_modifier);
+            AddProperty(droneReactorRadiation);
 
             InitBandwidthHandler(this);
         }
