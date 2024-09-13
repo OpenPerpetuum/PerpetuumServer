@@ -8,11 +8,12 @@ namespace Perpetuum.Modules.ModuleProperties
         public HarvestingAmountModifierProperty(GathererModule module) : base(module, AggregateField.harvesting_amount_modifier)
         {
             AddEffectModifier(AggregateField.effect_harvesting_amount_modifier);
+            AddEffectModifier(AggregateField.drone_amplification_harvesting_amount_modifier);
         }
 
         public double GetValueByPlantType(PlantType plantType)
         {
-            var modifier = AggregateField.undefined;
+            AggregateField modifier = AggregateField.undefined;
 
             switch (plantType)
             {
@@ -42,11 +43,11 @@ namespace Perpetuum.Modules.ModuleProperties
                     }
             }
 
-            var property = this.ToPropertyModifier();
+            Items.ItemPropertyModifier property = ToPropertyModifier();
 
             if (module.ParentRobot != null && modifier != AggregateField.undefined)
             {
-                var mod = module.ParentRobot.GetPropertyModifier(modifier);
+                Items.ItemPropertyModifier mod = module.ParentRobot.GetPropertyModifier(modifier);
 
                 mod.Modify(ref property);
             }
@@ -61,9 +62,10 @@ namespace Perpetuum.Modules.ModuleProperties
                 return 1.0;
             }
 
-            var p = module.ParentRobot.GetPropertyModifier(AggregateField.harvesting_amount_modifier);
+            Items.ItemPropertyModifier p = module.ParentRobot.GetPropertyModifier(AggregateField.harvesting_amount_modifier);
 
             ApplyEffectModifiers(ref p);
+            module.ParentRobot?.ApplyEffectPropertyModifiers(AggregateField.drone_amplification_harvesting_amount_modifier, ref p);
 
             return p.Value;
         }

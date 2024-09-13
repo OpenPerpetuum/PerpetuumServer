@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Net.Sockets;
-using System.Threading;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Common.Loggers;
 using Perpetuum.EntityFramework;
@@ -27,7 +19,6 @@ using Perpetuum.Zones.Blobs;
 using Perpetuum.Zones.Decors;
 using Perpetuum.Zones.Effects.ZoneEffects;
 using Perpetuum.Zones.Environments;
-using Perpetuum.Zones.LandMines;
 using Perpetuum.Zones.NpcSystem.Presences;
 using Perpetuum.Zones.NpcSystem.SafeSpawnPoints;
 using Perpetuum.Zones.PBS;
@@ -38,6 +29,14 @@ using Perpetuum.Zones.Terrains;
 using Perpetuum.Zones.Terrains.Materials.Plants;
 using Perpetuum.Zones.Terrains.Terraforming;
 using Perpetuum.Zones.ZoneEntityRepositories;
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using System.Net.Sockets;
+using System.Threading;
 
 namespace Perpetuum.Zones
 {
@@ -45,12 +44,12 @@ namespace Perpetuum.Zones
     {
         private ImmutableHashSet<ZoneSession> _sessions = ImmutableHashSet<ZoneSession>.Empty;
         private ImmutableDictionary<long, Unit> _units = ImmutableDictionary<long, Unit>.Empty;
-        private ImmutableDictionary<long,Player> _players = ImmutableDictionary<long, Player>.Empty;
+        private ImmutableDictionary<long, Player> _players = ImmutableDictionary<long, Player>.Empty;
 
         public int Id => Configuration.Id;
         public Size Size => Configuration.Size;
 
-        public IDecorHandler DecorHandler { get; set;}
+        public IDecorHandler DecorHandler { get; set; }
 
         public ZoneConfiguration Configuration { get; set; }
 
@@ -105,7 +104,7 @@ namespace Perpetuum.Zones
         {
             EnterQueueService.RemovePlayer(character);
 
-            var zoneSession = GetSessionByCharacter(character);
+            ZoneSession zoneSession = GetSessionByCharacter(character);
             zoneSession?.Disconnect();
         }
 
@@ -133,37 +132,43 @@ namespace Perpetuum.Zones
         private void OnGangMemberJoined(Gang gang, Character character)
         {
             if (this.TryGetPlayer(character, out Player player))
+            {
                 player.Gang = gang;
+            }
         }
 
         private void OnGangMemberRemoved(Gang gang, Character character)
         {
             if (this.TryGetPlayer(character, out Player player))
+            {
                 player.Gang = null;
+            }
         }
 
         private void OnGangDisbanded(Gang gang)
         {
-            foreach (var player in Players)
+            foreach (Player player in Players)
             {
                 if (player.Gang == gang)
+                {
                     player.Gang = null;
+                }
             }
         }
 
         public void LoadUnits()
         {
-            foreach (var kvp in UnitService.GetAll())
+            foreach (KeyValuePair<Unit, Position> kvp in UnitService.GetAll())
             {
-                var unit = kvp.Key;
-                var position = kvp.Value;
+                Unit unit = kvp.Key;
+                Position position = kvp.Value;
                 unit.AddToZone(this, position);
             }
         }
 
         private void UpdateSessions(TimeSpan time)
         {
-            foreach (var session in _sessions)
+            foreach (ZoneSession session in _sessions)
             {
                 session.Update(time);
             }
@@ -174,26 +179,25 @@ namespace Perpetuum.Zones
         [CanBeNull]
         public ZoneSession GetSessionByCharacter(Character character)
         {
-            if (character == Character.None)
-                return null;
-
-            return _sessions.FirstOrDefault(s => s.Character == character);
+            return character == Character.None ? null : _sessions.FirstOrDefault(s => s.Character == character);
         }
 
         private void OnConnectionAccepted(Socket socket)
         {
-            var session = ZoneSessionFactory(this, socket);
+            ZoneSession session = ZoneSessionFactory(this, socket);
             session.Stopped += OnSessionStopped;
-            ImmutableInterlocked.Update(ref _sessions, s => s.Add(session));
+            _ = ImmutableInterlocked.Update(ref _sessions, s => s.Add(session));
             session.Start();
         }
 
         private void OnSessionStopped(IZoneSession session)
         {
-            if ( session.Id == 0 )
+            if (session.Id == 0)
+            {
                 return;
+            }
 
-            ImmutableInterlocked.Update(ref _sessions, s => s.Remove((ZoneSession) session));
+            _ = ImmutableInterlocked.Update(ref _sessions, s => s.Remove((ZoneSession)session));
         }
 
         public void SetGang(Player player)
@@ -204,11 +208,13 @@ namespace Perpetuum.Zones
         public void AddUnit(Unit unit)
         {
             if (!ImmutableInterlocked.TryAdd(ref _units, unit.Eid, unit))
+            {
                 return;
+            }
 
             if (unit is Player player)
             {
-                ImmutableInterlocked.TryAdd(ref _players, player.Eid, player);
+                _ = ImmutableInterlocked.TryAdd(ref _players, player.Eid, player);
                 StrongholdPlayerStateManager.OnPlayerAddToZone(this, player);
             }
 
@@ -222,29 +228,32 @@ namespace Perpetuum.Zones
         private void OnUnitDead(Unit killer, Unit victim)
         {
             // alapesetben ez a player kapja
-            var killerPlayer = killer as Player;
-            if (killerPlayer == null)
+            if (!(killer is Player killerPlayer))
+            {
                 return;
+            }
 
-            var taggable = victim as ITaggable;
+            ITaggable taggable = victim as ITaggable;
             // ha taggelve volt akkor az kapja
-            var tagger = taggable?.GetTagger();
+            Player tagger = taggable?.GetTagger();
             if (tagger != null)
             {
                 killerPlayer = tagger;
             }
 
-            HighScores.UpdateHighScoreAsync(killerPlayer, victim);
+            _ = HighScores.UpdateHighScoreAsync(killerPlayer, victim);
         }
 
         public void RemoveUnit(Unit unit)
         {
             if (!ImmutableInterlocked.TryRemove(ref _units, unit.Eid, out Unit u))
+            {
                 return;
+            }
 
             if (u is Player player)
             {
-                ImmutableInterlocked.TryRemove(ref _players, player.Eid, out player);
+                _ = ImmutableInterlocked.TryRemove(ref _players, player.Eid, out player);
                 PlayerStateManager?.OnPlayerExitZone(player);
             }
 
@@ -259,39 +268,43 @@ namespace Perpetuum.Zones
             ImmutableHashSet<Unit> updatedUnits;
 
             if ((updatedUnits = Interlocked.CompareExchange(ref _updatedUnits, ImmutableHashSet<Unit>.Empty, _updatedUnits)) == ImmutableHashSet<Unit>.Empty)
-                return;
-
-            foreach (var kvp in _units)
             {
-                var targetUnit = kvp.Value;
+                return;
+            }
 
-                foreach (var sourceUnit in updatedUnits)
+            foreach (KeyValuePair<long, Unit> kvp in _units)
+            {
+                Unit targetUnit = kvp.Value;
+                foreach (Unit sourceUnit in updatedUnits)
                 {
-                    if ( sourceUnit == targetUnit )
+                    if (sourceUnit == targetUnit)
+                    {
                         continue;
+                    }
 
                     sourceUnit.UpdateVisibilityOf(targetUnit);
                     targetUnit.UpdateVisibilityOf(sourceUnit);
 
                     if (Configuration.Protected)
+                    {
                         continue;
+                    }
 
-                    var bSource = sourceUnit as IBlobableUnit;
+                    IBlobableUnit bSource = sourceUnit as IBlobableUnit;
                     bSource?.BlobHandler.UpdateBlob(targetUnit);
-
-                    var bTarget = targetUnit as IBlobableUnit;
-                    bTarget?.BlobHandler.UpdateBlob(sourceUnit);
                 }
             }
         }
 
         private void OnUnitUpdated(Unit unit, UnitUpdatedEventArgs e)
         {
-            var visibilityUpdated = (e.UpdateTypes & UnitUpdateTypes.Visibility) > 0;
+            bool visibilityUpdated = (e.UpdateTypes & UnitUpdateTypes.Visibility) > 0;
             if (!visibilityUpdated)
+            {
                 return;
+            }
 
-            ImmutableInterlocked.Update(ref _updatedUnits, h => h.Add(unit));
+            _ = ImmutableInterlocked.Update(ref _updatedUnits, h => h.Add(unit));
         }
 
         public IEnumerable<Unit> Units => _units.Values;
@@ -315,7 +328,7 @@ namespace Perpetuum.Zones
         [Conditional("DEBUG")]
         private void MeasureUpdate(TimeSpan time)
         {
-            var profiler = _updateProfiler ?? (_updateProfiler = Profiler.CreateUpdateProfiler(TimeSpan.FromSeconds(30),e =>
+            Action<TimeSpan> profiler = _updateProfiler ?? (_updateProfiler = Profiler.CreateUpdateProfiler(TimeSpan.FromSeconds(30), e =>
             {
                 Logger.Info($"zone {Id} update average: {e.TotalMilliseconds} ms");
             }));
@@ -326,7 +339,7 @@ namespace Perpetuum.Zones
         public override void Update(TimeSpan time)
         {
             UpdateSessions(time);
-            
+
             _updateUnitsTimer.Update(time).IsPassed(ProcessUpdatedUnits);
 
             UpdateUnits(time);
@@ -340,7 +353,7 @@ namespace Perpetuum.Zones
 
         private void UpdateUnits(TimeSpan time)
         {
-            foreach (var kvp in _units)
+            foreach (KeyValuePair<long, Unit> kvp in _units)
             {
                 kvp.Value.Update(time);
             }
@@ -353,8 +366,8 @@ namespace Perpetuum.Zones
 
         private void SaveUnitsToDb<T>() where T : Unit
         {
-            var units = _units.Values.OfType<T>().ToList();
-            foreach (var unit in units)
+            List<T> units = _units.Values.OfType<T>().ToList();
+            foreach (T unit in units)
             {
                 Entity.Repository.ForceUpdate(unit);
             }
@@ -369,20 +382,20 @@ namespace Perpetuum.Zones
             try
             {
 
-                if (this.TryGetPlayer(character,out Player player))
+                if (this.TryGetPlayer(character, out Player player))
                 {
                     Logger.Info("[Zone Enter] player on zone. player: " + player.Eid + " character:" + character.Id + " reply:" + replyCommand);
-                    EnterQueueService.SendReplyCommand(character,player,replyCommand);
+                    EnterQueueService.SendReplyCommand(character, player, replyCommand);
                     return;
                 }
 
                 if (replyCommand == Commands.TeleportUse)
                 {
-                    EnterQueueService.LoadPlayerAndSendReply(character,replyCommand);
+                    EnterQueueService.LoadPlayerAndSendReply(character, replyCommand);
                     return;
                 }
 
-                EnterQueueService.EnqueuePlayer(character,replyCommand);
+                EnterQueueService.EnqueuePlayer(character, replyCommand);
             }
             finally
             {

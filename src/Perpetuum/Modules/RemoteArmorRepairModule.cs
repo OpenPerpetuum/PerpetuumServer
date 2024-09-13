@@ -1,3 +1,4 @@
+using Perpetuum.EntityFramework;
 using Perpetuum.Units;
 using Perpetuum.Zones.Locking.Locks;
 using Perpetuum.Zones.NpcSystem;
@@ -14,7 +15,7 @@ namespace Perpetuum.Modules
 
         protected override void OnAction()
         {
-            var unitLock = GetLock().ThrowIfNotType<UnitLock>(ErrorCodes.InvalidLockType);
+            UnitLock unitLock = GetLock().ThrowIfNotType<UnitLock>(ErrorCodes.InvalidLockType);
 
             (ParentIsPlayer() && unitLock.Target is Npc).ThrowIfTrue(ErrorCodes.ThisModuleIsNotSupportedOnNPCs);
             // csak pbs-re nezzuk
@@ -27,11 +28,19 @@ namespace Perpetuum.Modules
                 return;
             }
 
-            var repairAmount = armorRepairAmount.Value;
+            double repairAmount = armorRepairAmount.Value;
 
-            repairAmount = ModifyValueByOptimalRange(unitLock.Target,repairAmount);
-            OnRepair(unitLock.Target,repairAmount);
-            unitLock.Target.SpreadAssistThreatToNpcs(ParentRobot,new Threat(ThreatType.Support,repairAmount * 2));
+            repairAmount = ModifyValueByOptimalRange(unitLock.Target, repairAmount);
+            OnRepair(unitLock.Target, repairAmount);
+            unitLock.Target.SpreadAssistThreatToNpcs(ParentRobot, new Threat(ThreatType.Support, repairAmount * 2));
+        }
+
+        public override void AcceptVisitor(IEntityVisitor visitor)
+        {
+            if (!TryAcceptVisitor(this, visitor))
+            {
+                base.AcceptVisitor(visitor);
+            }
         }
     }
 }

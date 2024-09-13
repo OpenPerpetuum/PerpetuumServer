@@ -53,6 +53,7 @@ namespace Perpetuum.Units
             speedMaxMod.Modify(ref speedMax);
 
             _owner.ApplyEffectPropertyModifiers(AggregateField.effect_speed_max_modifier, ref speedMax);
+            _owner.ApplyEffectPropertyModifiers(AggregateField.drone_amplification_speed_max_modifier, ref speedMax);
             _owner.ApplyEffectPropertyModifiers(AggregateField.effect_massivness_speed_max_modifier, ref speedMax);
 
             if (_owner.ActualMass > 0)
@@ -70,6 +71,7 @@ namespace Perpetuum.Units
             {
                 case AggregateField.speed_max:
                 case AggregateField.speed_max_modifier:
+                case AggregateField.drone_amplification_speed_max_modifier:
                 case AggregateField.effect_speed_max_modifier:
                 case AggregateField.effect_massivness_speed_max_modifier:
                 case AggregateField.effect_speed_highway_modifier:
@@ -241,6 +243,8 @@ namespace Perpetuum.Units
         public bool HasPvpEffect => EffectHandler.ContainsEffect(EffectType.effect_pvp);
 
         public bool HasTeleportSicknessEffect => EffectHandler.ContainsEffect(EffectType.effect_teleport_sickness);
+
+        public bool HasNoxTeleportNegationEffect => EffectHandler.ContainsEffect(EffectType.nox_effect_teleport_negation);
 
         public bool HasDespawnEffect => EffectHandler.ContainsEffect(EffectType.effect_despawn_timer);
 
@@ -943,6 +947,10 @@ namespace Perpetuum.Units
 
         internal virtual bool IsHostile(IndustrialTurret turret) { return false; }
 
+        internal virtual bool IsHostile(IndustrialDrone turret) { return false; }
+
+        internal virtual bool IsHostile(SupportDrone turret) { return false; }
+
         internal virtual bool IsHostile(Npc npc) { return false; }
 
         internal virtual bool IsHostile(CombatDrone drone) { return false; }
@@ -970,17 +978,35 @@ namespace Perpetuum.Units
         public IEnumerable<T> GetUnitsWithinRange<T>(double distance) where T : Unit
         {
             IZone zone = Zone;
-            return zone == null ? Enumerable.Empty<T>() : zone.Units.OfType<T>().WithinRange(CurrentPosition, distance);
+
+            return zone == null
+                ? Enumerable.Empty<T>()
+                : zone.Units.OfType<T>().WithinRange(CurrentPosition, distance);
         }
 
         protected override void OnPropertyChanged(ItemProperty property)
         {
             base.OnPropertyChanged(property);
 
-            if (property.Field == AggregateField.blob_effect)
+            switch (property.Field)
             {
-                _sensorStrength.Update();
-                _detectionStrength.Update();
+                case AggregateField.blob_effect:
+                    _sensorStrength.Update();
+                    _detectionStrength.Update();
+
+                    break;
+                case AggregateField.drone_amplification_core_max_modifier:
+                    _coreMax.Update();
+
+                    break;
+                case AggregateField.drone_amplification_core_recharge_time_modifier:
+                    _coreRechargeTime.Update();
+
+                    break;
+                case AggregateField.drone_amplification_reactor_radiation_modifier:
+                    _reactorRadiation.Update();
+
+                    break;
             }
         }
 
@@ -1014,7 +1040,7 @@ namespace Perpetuum.Units
 
         public double DetectionStrength => _detectionStrength.Value;
 
-        public double StealthStrength => _stealthStrength.Value;
+        public virtual double StealthStrength => _stealthStrength.Value;
 
         public double Massiveness => _massiveness.Value;
 
@@ -1037,7 +1063,12 @@ namespace Perpetuum.Units
 
         private void InitUnitProperties()
         {
-            _armorMax = new UnitProperty(this, AggregateField.armor_max, AggregateField.armor_max_modifier, AggregateField.effect_armor_max_modifier);
+            _armorMax = new UnitProperty(
+                this,
+                AggregateField.armor_max,
+                AggregateField.armor_max_modifier,
+                AggregateField.effect_armor_max_modifier,
+                AggregateField.drone_amplification_armor_max_modifier);
 
             _armorMax.PropertyChanged += property =>
             {
@@ -1053,7 +1084,11 @@ namespace Perpetuum.Units
 
             AddProperty(_armor);
 
-            _coreMax = new UnitProperty(this, AggregateField.core_max, AggregateField.core_max_modifier);
+            _coreMax = new UnitProperty(
+                this,
+                AggregateField.core_max,
+                AggregateField.core_max_modifier,
+                AggregateField.drone_amplification_core_max_modifier);
             AddProperty(_coreMax);
 
             _core = new CoreProperty(this);
@@ -1068,7 +1103,12 @@ namespace Perpetuum.Units
             };
             AddProperty(_core);
 
-            _coreRechargeTime = new UnitProperty(this, AggregateField.core_recharge_time, AggregateField.core_recharge_time_modifier, AggregateField.effect_core_recharge_time_modifier);
+            _coreRechargeTime = new UnitProperty(
+                this,
+                AggregateField.core_recharge_time,
+                AggregateField.core_recharge_time_modifier,
+                AggregateField.drone_amplification_core_recharge_time_modifier,
+                AggregateField.effect_core_recharge_time_modifier);
             AddProperty(_coreRechargeTime);
 
             _actualMass = new ActualMassProperty(this);
@@ -1130,7 +1170,12 @@ namespace Perpetuum.Units
             _kersExplosive = new UnitProperty(this, AggregateField.explosive_damage_to_core_modifier);
             AddProperty(_kersExplosive);
 
-            _reactorRadiation = new UnitProperty(this, AggregateField.reactor_radiation, AggregateField.reactor_radiation_modifier);
+            _reactorRadiation =
+                new UnitProperty(
+                    this,
+                    AggregateField.reactor_radiation,
+                    AggregateField.reactor_radiation_modifier,
+                    AggregateField.drone_amplification_reactor_radiation_modifier);
             AddProperty(_reactorRadiation);
         }
 

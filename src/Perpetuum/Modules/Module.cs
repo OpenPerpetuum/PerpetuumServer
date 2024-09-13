@@ -26,15 +26,9 @@ namespace Perpetuum.Modules
 
         public ILookup<AggregateField, AggregateField> PropertyModifiers { get; set; }
 
-        public double PowerGridUsage
-        {
-            get { return _powerGridUsage.Value; }
-        }
+        public double PowerGridUsage => _powerGridUsage.Value;
 
-        public double CpuUsage
-        {
-            get { return _cpuUsage.Value; }
-        }
+        public double CpuUsage => _cpuUsage.Value;
 
         public IEnumerable<AggregateField> GetPropertyModifiers()
         {
@@ -44,7 +38,9 @@ namespace Perpetuum.Modules
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         [CanBeNull]
@@ -63,19 +59,18 @@ namespace Perpetuum.Modules
 
         public int Slot
         {
-            get { return DynamicProperties.GetOrDefault<int>(k.slot); }
-            set { DynamicProperties.Update(k.slot, value); }
+            get => DynamicProperties.GetOrDefault<int>(k.slot);
+            set => DynamicProperties.Update(k.slot, value);
         }
 
-        public long ModuleFlag
-        {
-            get { return ED.Options.ModuleFlag; }
-        }
+        public long ModuleFlag => ED.Options.ModuleFlag;
 
         public virtual void Unequip(Container container)
         {
             if (!IsRepackaged)
+            {
                 this.Pack();
+            }
 
             container.AddItem(this, true);
             Slot = 0;
@@ -83,7 +78,7 @@ namespace Perpetuum.Modules
 
         public override Dictionary<string, object> ToDictionary()
         {
-            var result = base.ToDictionary();
+            Dictionary<string, object> result = base.ToDictionary();
 
             result.Add(k.slot, Slot);
             result.Add(k.state, (byte)ModuleStateType.Idle);
@@ -91,10 +86,7 @@ namespace Perpetuum.Modules
             return result;
         }
 
-        public bool IsPassive
-        {
-            get { return ED.AttributeFlags.PassiveModule; }
-        }
+        public bool IsPassive => ED.AttributeFlags.PassiveModule;
 
         protected virtual void OnUpdateProperty(AggregateField field)
         {
@@ -107,16 +99,16 @@ namespace Perpetuum.Modules
 
         public Packet BuildModuleInfoPacket()
         {
-            var packet = new Packet(ZoneCommand.ModuleInfoResult);
+            Packet packet = new Packet(ZoneCommand.ModuleInfoResult);
 
             packet.AppendByte((byte)ParentComponent.Type);
             packet.AppendByte((byte)Slot);
 
-            var properties = Properties.ToList();
+            List<ItemProperty> properties = Properties.ToList();
 
             packet.AppendByte((byte)properties.Count);
 
-            foreach (var property in properties)
+            foreach (ItemProperty property in properties)
             {
                 property.AppendToPacket(packet);
             }
@@ -126,16 +118,16 @@ namespace Perpetuum.Modules
 
         public override ItemPropertyModifier GetPropertyModifier(AggregateField field)
         {
-            var modifier = base.GetPropertyModifier(field);
+            ItemPropertyModifier modifier = base.GetPropertyModifier(field);
             ApplyRobotPropertyModifiers(ref modifier);
             return modifier;
         }
 
         public void ApplyRobotPropertyModifiers(ref ItemPropertyModifier modifier)
         {
-            var modifiers = PropertyModifiers.GetOrEmpty(modifier.Field);
+            AggregateField[] modifiers = PropertyModifiers.GetOrEmpty(modifier.Field);
 
-            foreach (var m in modifiers)
+            foreach (AggregateField m in modifiers)
             {
                 ParentRobot?.GetPropertyModifier(m).Modify(ref modifier);
             }
@@ -143,9 +135,9 @@ namespace Perpetuum.Modules
 
         public void SimulateRobotPropertyModifiers(Robot parent, ref ItemPropertyModifier modifier)
         {
-            var modifiers = PropertyModifiers.GetOrEmpty(modifier.Field);
+            AggregateField[] modifiers = PropertyModifiers.GetOrEmpty(modifier.Field);
 
-            foreach (var m in modifiers)
+            foreach (AggregateField m in modifiers)
             {
                 parent.GetPropertyModifier(m).Modify(ref modifier);
             }

@@ -3,29 +3,31 @@ using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
 using Perpetuum.Modules.ModuleProperties;
 using Perpetuum.Players;
-using Perpetuum.Units;
-using Perpetuum.Units.DockingBases;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Beams;
+using Perpetuum.Zones.Effects;
 using Perpetuum.Zones.Finders;
 using Perpetuum.Zones.Finders.PositionFinders;
-using Perpetuum.Zones.Locking.Locks;
-using Perpetuum.Zones.NpcSystem.AI.Behaviors;
 using Perpetuum.Zones.RemoteControl;
-using Perpetuum.Zones.Teleporting;
 using System;
-using System.Linq;
 
 namespace Perpetuum.Modules
 {
     public class RemoteControllerModule : ActiveModule
     {
-        private const int SentryTurretHeight = 7;
+        private readonly EffectToken _token = EffectToken.NewToken();
         private const double SpawnRangeMin = 2;
         private const double SpawnRangeMax = 5;
         private readonly ModuleProperty bandwidthMax;
         private readonly ModuleProperty operationalRange;
         private readonly ModuleProperty lifetime;
+        private readonly ModuleProperty droneLockingTime;
+        private readonly ModuleProperty droneArmorMax;
+        private readonly ModuleProperty droneCoreMax;
+        private readonly ModuleProperty droneCoreRechargeTime;
+        private readonly ModuleProperty droneSpeedMax;
+        private readonly ModuleProperty droneReactorRadiation;
+
         private BandwidthHandler bandwidthHandler;
 
         public double BandwidthMax => bandwidthMax.Value;
@@ -42,6 +44,24 @@ namespace Perpetuum.Modules
 
             lifetime = new ModuleProperty(this, AggregateField.remote_control_lifetime);
             AddProperty(lifetime);
+
+            droneLockingTime = new ModuleProperty(this, AggregateField.drone_amplification_locking_time_modifier);
+            AddProperty(droneLockingTime);
+
+            droneArmorMax = new ModuleProperty(this, AggregateField.drone_amplification_armor_max_modifier);
+            AddProperty(droneArmorMax);
+
+            droneCoreMax = new ModuleProperty(this, AggregateField.drone_amplification_core_max_modifier);
+            AddProperty(droneCoreMax);
+
+            droneCoreRechargeTime = new ModuleProperty(this, AggregateField.drone_amplification_core_recharge_time_modifier);
+            AddProperty(droneCoreRechargeTime);
+
+            droneSpeedMax = new ModuleProperty(this, AggregateField.drone_amplification_speed_max_modifier);
+            AddProperty(droneSpeedMax);
+
+            droneReactorRadiation = new ModuleProperty(this, AggregateField.drone_amplification_reactor_radiation_modifier);
+            AddProperty(droneReactorRadiation);
 
             InitBandwidthHandler(this);
         }
@@ -81,6 +101,11 @@ namespace Perpetuum.Modules
             bandwidthHandler.CloseAllChannels();
         }
 
+        public virtual RemoteControlledCreature CreateAndConfigureRcu(RemoteControlledUnit ammo)
+        {
+            return null;
+        }
+
         protected override void OnAction()
         {
             if (bandwidthHandler == null)
@@ -89,128 +114,46 @@ namespace Perpetuum.Modules
             }
 
             SyncRemoteChannels();
-
             RemoteControlledUnit ammo = GetAmmo() as RemoteControlledUnit;
-
             HasFreeBandwidthFor(ammo).ThrowIfFalse(ErrorCodes.MaxBandwidthExceed);
-
-            Position targetPosition;
-
-            if (ammo.ED.Options.TurretType != TurretType.CombatDrone)
-            {
-
-                Lock myLock = GetLock();
-
-                if (myLock is TerrainLock)
-                {
-                    targetPosition = (myLock as TerrainLock).Location;
-                }
-                else if (myLock is UnitLock)
-                {
-                    targetPosition = (myLock as UnitLock).Target.CurrentPosition;
-                }
-                else
-                {
-                    OnError(ErrorCodes.InvalidLockType);
-
-                    return;
-                }
-
-                Zone.Units
-                    .OfType<RemoteControlledCreature>()
-                    .WithinRange(Zone.FixZ(targetPosition), DistanceConstants.RCU_DEPLOY_RANGE_FROM_RCU)
-                    .Any()
-                    .ThrowIfTrue(ErrorCodes.RemoteControlledTurretInRange);
-
-                LOSResult r = Zone.IsInLineOfSight(ParentRobot, targetPosition.AddToZ(SentryTurretHeight), false);
-
-                if (r.hit)
-                {
-                    OnError(ErrorCodes.LOSFailed);
-
-                    return;
-                }
-            }
-            else
-            {
-                targetPosition = GetSpawnPosition(ParentRobot.CurrentPosition);
-            }
-
+            Position targetPosition = GetSpawnPosition(ParentRobot.CurrentPosition);
             Player player = ParentRobot is Player robotAsPlayer
                 ? robotAsPlayer
                 : null;
-
-
             if (player != null)
             {
                 ammo.CheckEnablerExtensionsAndThrowIfFailed(player.Character, ErrorCodes.ExtensionLevelMismatchTerrain);
             }
 
-            RemoteControlledCreature remoteControlledCreature;
-            if (ammo.ED.Options.TurretType == TurretType.Sentry)
+            RemoteControlledCreature remoteControlledCreature = CreateAndConfigureRcu(ammo);
+            if (remoteControlledCreature == null)
             {
-                remoteControlledCreature = (SentryTurret)Factory.CreateWithRandomEID(ammo.ED.Options.TurretId);
-                remoteControlledCreature.Behavior = Behavior.Create(BehaviorType.RemoteControlledTurret);
-
-                Position spawnPosition = Zone.FixZ(targetPosition);
-
-                Zone.Units
-                    .OfType<DockingBase>()
-                    .WithinRange(spawnPosition, DistanceConstants.RCU_DEPLOY_RANGE_FROM_BASE)
-                    .Any()
-                    .ThrowIfTrue(ErrorCodes.TurretNotDeployableNearObject);
-
-                Zone.Units
-                    .OfType<Teleport>()
-                    .WithinRange(spawnPosition, DistanceConstants.RCU_DEPLOY_RANGE_FROM_TELEPORT)
-                    .Any()
-                    .ThrowIfTrue(ErrorCodes.TurretNotDeployableNearObject);
-            }
-            else if (ammo.ED.Options.TurretType == TurretType.Mining || ammo.ED.Options.TurretType == TurretType.Harvesting)
-            {
-                remoteControlledCreature = (IndustrialTurret)Factory.CreateWithRandomEID(ammo.ED.Options.TurretId);
-                (remoteControlledCreature as IndustrialTurret).SetTurretType(ammo.ED.Options.TurretType);
-                remoteControlledCreature.Behavior = Behavior.Create(BehaviorType.RemoteControlledTurret);
-            }
-            else if (ammo.ED.Options.TurretType == TurretType.CombatDrone)
-            {
-                remoteControlledCreature = (CombatDrone)Factory.CreateWithRandomEID(ammo.ED.Options.TurretId);
-                remoteControlledCreature.Behavior = Behavior.Create(BehaviorType.RemoteControlledDrone);
-                (remoteControlledCreature as CombatDrone).GuardRange = 5;
-            }
-            else
-            {
-                _ = PerpetuumException.Create(ErrorCodes.InvalidAmmoDefinition);
-
                 return;
             }
 
             remoteControlledCreature.SetCommandRobot(player ?? ParentRobot);
-
             remoteControlledCreature.Owner = ParentRobot.Owner;
             remoteControlledCreature.SetBandwidthUsage(ammo.RemoteChannelBandwidthUsage);
-
             UseRemoteChannel(remoteControlledCreature);
-
             remoteControlledCreature.DespawnTime = TimeSpan.FromMilliseconds(lifetime.Value);
             remoteControlledCreature.SetGroup(bandwidthHandler);
-
             ClosestWalkablePositionFinder finder = new ClosestWalkablePositionFinder(Zone, targetPosition);
             Position position = finder.FindOrThrow();
-
             remoteControlledCreature.HomePosition = position;
             remoteControlledCreature.HomeRange = operationalRange.Value;
             remoteControlledCreature.Orientation = FastRandom.NextInt(0, 3) * 0.25;
             remoteControlledCreature.CallForHelp = true;
-
             BeamBuilder deployBeamBuilder = Beam.NewBuilder()
                 .WithType(BeamType.dock_in)
                 .WithSource(remoteControlledCreature.CommandRobot)
                 .WithTarget(remoteControlledCreature)
                 .WithState(BeamState.Hit)
                 .WithDuration(TimeSpan.FromSeconds(5));
-
             remoteControlledCreature.AddToZone(Zone, position, ZoneEnterType.Default, deployBeamBuilder);
+            EffectBuilder effectBuilder = remoteControlledCreature.NewEffectBuilder();
+            SetupEffect(effectBuilder);
+            _ = effectBuilder.WithToken(_token);
+            remoteControlledCreature.ApplyEffect(effectBuilder);
             ConsumeAmmo();
         }
 
@@ -221,6 +164,10 @@ namespace Perpetuum.Modules
             Position spawnPosition = spawnOrigin.GetRandomPositionInRange2D(spawnRangeMin, spawnRangeMax).Clamp(Zone.Size);
 
             return spawnPosition;
+        }
+
+        protected virtual void SetupEffect(EffectBuilder effectBuilder)
+        {
         }
     }
 }

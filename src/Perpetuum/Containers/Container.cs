@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using Perpetuum.Accounting.Characters;
+﻿using Perpetuum.Accounting.Characters;
 using Perpetuum.Common.Loggers.Transaction;
 using Perpetuum.Data;
 using Perpetuum.EntityFramework;
@@ -11,6 +7,10 @@ using Perpetuum.Groups.Corporations;
 using Perpetuum.Items;
 using Perpetuum.Log;
 using Perpetuum.Robots;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace Perpetuum.Containers
 {
@@ -24,13 +24,12 @@ namespace Perpetuum.Containers
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
-        public ContainerLogger ContainerLogger
-        {
-            get { return LazyInitializer.EnsureInitialized(ref _logger, () => new ContainerLogger(this)); }
-        }
+        public ContainerLogger ContainerLogger => LazyInitializer.EnsureInitialized(ref _logger, () => new ContainerLogger(this));
 
         public long StructureRoot
         {
@@ -39,8 +38,8 @@ namespace Perpetuum.Containers
                 //look up the structure's root
                 if (!DynamicProperties.Contains(k.structureRoot))
                 {
-                    DynamicProperties.Update(k.structureRoot,TraverseForStructureRootEid());
-                    this.Save();
+                    DynamicProperties.Update(k.structureRoot, TraverseForStructureRootEid());
+                    Save();
                 }
 
                 return DynamicProperties.GetOrAdd<long>(k.structureRoot);
@@ -50,29 +49,35 @@ namespace Perpetuum.Containers
         public long TraverseForStructureRootEid()
         {
             if (Parent == 0)
+            {
                 return 0L;
+            }
 
-            var record = Db.Query().CommandText("getStructureRoot")
+            System.Data.IDataRecord record = Db.Query().CommandText("getStructureRoot")
                                  .SetParameter("@eid", Eid)
                                  .ExecuteSingleRow();
 
-            var rootEid = record.GetValue<long>(0);
-            var rootDefinition = record.GetValue<int>(1);
+            long rootEid = record.GetValue<long>(0);
+            int rootDefinition = record.GetValue<int>(1);
 
             if (rootEid == 0L)
+            {
                 return 0L; //safety
+            }
 
             //root found
             return EntityDefault.Get(rootDefinition).CategoryFlags.IsCategory(CategoryFlags.cf_structures) || EntityDefault.Get(rootDefinition).CategoryFlags.IsCategory(CategoryFlags.cf_pbs_docking_base) ? rootEid : 0L;
         }
 
 
-        protected void AddLogEntry(Character character, ContainerAccess access,int definition = 0,int quantity = 0)
+        protected void AddLogEntry(Character character, ContainerAccess access, int definition = 0, int quantity = 0)
         {
             if (!IsLogging())
+            {
                 return;
+            }
 
-            ContainerLogger.AddLogEntry(character,access,definition,quantity);
+            ContainerLogger.AddLogEntry(character, access, definition, quantity);
         }
 
         public bool IsLogging()
@@ -83,11 +88,13 @@ namespace Perpetuum.Containers
         public virtual void SetLogging(bool state, Character character, bool writeLog = false)
         {
             if (IsLogging() == state)
+            {
                 return;
+            }
 
-            DynamicProperties.Update(k.log,(state) ? 1 : 0);
+            DynamicProperties.Update(k.log, state ? 1 : 0);
 
-            if (writeLog && character != Character.None )
+            if (writeLog && character != Character.None)
             {
                 ContainerLogger.AddLogEntry(character, state ? ContainerAccess.LogStart : ContainerAccess.LogStop);
             }
@@ -96,19 +103,21 @@ namespace Perpetuum.Containers
         public override void OnSaveToDb()
         {
             if (_logger != null)
+            {
                 ContainerLogger.SaveToDb();
+            }
 
             base.OnSaveToDb();
         }
 
         public void CheckAccessAndThrowIfFailed(Character character, ContainerAccess containerAccess)
         {
-            CheckAccess(character, containerAccess).ThrowIfError();
+            _ = CheckAccess(character, containerAccess).ThrowIfError();
         }
 
         public ErrorCodes CheckAccess(Character character, ContainerAccess access)
         {
-            var checker = ContainerAccessChecker.Create(character, access);
+            IContainerAccessChecker checker = ContainerAccessChecker.Create(character, access);
             return checker.CheckAccess(this);
         }
 
@@ -120,29 +129,30 @@ namespace Perpetuum.Containers
 
         public virtual void ReloadItems(long? ownerEid)
         {
-            var children = Repository.LoadByOwner(Eid, ownerEid);
+            List<Entity> children = Repository.LoadByOwner(Eid, ownerEid);
             RebuildTree(children);
         }
 
         public IEnumerable<Item> GetItems(IEnumerable<long> itemEids)
         {
-            if (itemEids == null) 
-                yield break;
-
-            foreach (var itemEid in itemEids)
+            if (itemEids == null)
             {
-                var item = GetItem(itemEid);
+                yield break;
+            }
+
+            foreach (long itemEid in itemEids)
+            {
+                Item item = GetItem(itemEid);
                 if (item != null)
+                {
                     yield return item;
+                }
             }
         }
 
         public IEnumerable<Item> GetItems(bool allItemsInFullTree = false)
         {
-            if ( allItemsInFullTree )
-                return GetFullTree().OfType<Item>();
-
-            return Children.OfType<Item>();
+            return allItemsInFullTree ? GetFullTree().OfType<Item>() : Children.OfType<Item>();
         }
 
         [NotNull]
@@ -152,20 +162,26 @@ namespace Perpetuum.Containers
         }
 
         [CanBeNull]
-        public Item GetItem(long itemEid,bool searchInFullTree = false)
+        public Item GetItem(long itemEid, bool searchInFullTree = false)
         {
             return GetItems(searchInFullTree).FirstOrDefault(i => i.Eid == itemEid);
         }
 
-        public void AddItem(Item item,bool doStack)
+        [CanBeNull]
+        public Item GetItemByDefinition(int definition, bool searchInFullTree = false)
+        {
+            return GetItems(searchInFullTree).FirstOrDefault(i => i.Definition == definition);
+        }
+
+        public void AddItem(Item item, bool doStack)
         {
             AddItem(item, item.Owner, doStack);
         }
 
-        public virtual void AddItem(Item item,long issuerEid,bool doStack)
+        public virtual void AddItem(Item item, long issuerEid, bool doStack)
         {
             Item targetItem = null;
-            
+
             // ha nem lehet stackelni akkor nem eroltetjuk siman csak add lesz
             if (doStack && item.IsStackable)
             {
@@ -185,7 +201,7 @@ namespace Perpetuum.Containers
 
         public void RemoveItemOrThrow(Item item)
         {
-            RemoveItem(item).ThrowIfNull(ErrorCodes.ItemNotFound);
+            _ = RemoveItem(item).ThrowIfNull(ErrorCodes.ItemNotFound);
         }
 
         [CanBeNull]
@@ -198,11 +214,15 @@ namespace Perpetuum.Containers
         public Item RemoveItem(Item item, int quantity)
         {
             if (item.Parent != Eid)
+            {
                 return null;
+            }
 
-            var resultItem = item;
+            Item resultItem = item;
             if (item.Quantity > quantity)
+            {
                 resultItem = item.Unstack(quantity);
+            }
 
             RemoveChild(resultItem);
             return resultItem;
@@ -211,16 +231,16 @@ namespace Perpetuum.Containers
         //ammo loados remove - ez van a terepen
         public int RemoveItemByDefinition(int definition, int requestedQuantity)
         {
-            var resultedQuantity = 0;
-            var ed = EntityDefault.Get(definition).ThrowIfEqual(EntityDefault.None,ErrorCodes.DefinitionNotSupported);
+            int resultedQuantity = 0;
+            EntityDefault ed = EntityDefault.Get(definition).ThrowIfEqual(EntityDefault.None, ErrorCodes.DefinitionNotSupported);
             ed.AttributeFlags.AlwaysStackable.ThrowIfFalse(ErrorCodes.DefinitionNotSupported);
 
-            var items = GetItems().Where(c => c.Definition == definition).OrderByDescending(c => c.Quantity);
+            IOrderedEnumerable<Item> items = GetItems().Where(c => c.Definition == definition).OrderByDescending(c => c.Quantity);
 
-            foreach (var item in items)
+            foreach (Item item in items)
             {
-                var quantity = item.Quantity;
-                var remainQty = requestedQuantity - resultedQuantity;
+                int quantity = item.Quantity;
+                int remainQty = requestedQuantity - resultedQuantity;
 
                 if (quantity <= remainQty)
                 {
@@ -237,7 +257,9 @@ namespace Perpetuum.Containers
                 }
 
                 if (resultedQuantity >= requestedQuantity)
+                {
                     break;
+                }
             }
 
             return resultedQuantity;
@@ -246,13 +268,15 @@ namespace Perpetuum.Containers
         [CanBeNull]
         public Item GetAndRemoveItemByDefinition(int definition, int requestedQuantity)
         {
-            var q = RemoveItemByDefinition(definition, requestedQuantity);
+            int q = RemoveItemByDefinition(definition, requestedQuantity);
             if (q == 0)
+            {
                 return null;
+            }
 
-            var resultItem = Factory.CreateWithRandomEID(definition);
+            Entity resultItem = Factory.CreateWithRandomEID(definition);
             resultItem.Quantity = q;
-            return (Item) resultItem;
+            return (Item)resultItem;
         }
 
         protected virtual void RelocateItem(Character character, long issuerEid, Item item, Container targetContainer)
@@ -262,42 +286,44 @@ namespace Perpetuum.Containers
 
             //add to container
             // ebbol a kontenerbol kikerult,ha sikerul a targetbe pakolni!
-            targetContainer.AddItem(item,issuerEid, true);
+            targetContainer.AddItem(item, issuerEid, true);
 
             //item left his set or a new item added to the his set
             if (IsPersonalContainer != targetContainer.IsPersonalContainer)
             {
-                var b = TransactionLogEvent.Builder();
+                TransactionLogEventBuilder b = TransactionLogEvent.Builder();
 
                 if (IsPersonalContainer)
                 {
-                    b.SetTransactionType(TransactionType.ItemDonate).SetContainer(targetContainer);
+                    _ = b.SetTransactionType(TransactionType.ItemDonate).SetContainer(targetContainer);
                 }
                 else
                 {
-                    b.SetTransactionType(TransactionType.ItemObtain).SetContainer(this);
+                    _ = b.SetTransactionType(TransactionType.ItemObtain).SetContainer(this);
                 }
 
                 character.LogTransaction(b);
             }
 
             //corp hangar and folder hierarchy check, other things if needed.
-            if (IsLogSkipped(targetContainer)) 
+            if (IsLogSkipped(targetContainer))
+            {
                 return;
+            }
 
-            targetContainer.AddLogEntry(character,ContainerAccess.Add,item.Definition,item.Quantity);
-            AddLogEntry(character,ContainerAccess.Remove,item.Definition,item.Quantity);
+            targetContainer.AddLogEntry(character, ContainerAccess.Add, item.Definition, item.Quantity);
+            AddLogEntry(character, ContainerAccess.Remove, item.Definition, item.Quantity);
         }
 
-        public void RelocateItems(Character character,Character issuer,IEnumerable<long> itemEids, Container targetContainer)
+        public void RelocateItems(Character character, Character issuer, IEnumerable<long> itemEids, Container targetContainer)
         {
-            var items = GetItems().Where(i => itemEids.Contains(i.Eid));
+            IEnumerable<Item> items = GetItems().Where(i => itemEids.Contains(i.Eid));
             RelocateItems(character, issuer, items, targetContainer);
         }
 
-        public void RelocateItems(Character character,Character issuer, IEnumerable<Item> items, Container targetContainer)
+        public void RelocateItems(Character character, Character issuer, IEnumerable<Item> items, Container targetContainer)
         {
-            var itemArray = items.ToArray();
+            Item[] itemArray = items.ToArray();
 
             if (itemArray.Length == 1)
             {
@@ -305,9 +331,9 @@ namespace Perpetuum.Containers
             }
             else
             {
-                using (var n = new ItemErrorNotifier(true))
+                using (ItemErrorNotifier n = new ItemErrorNotifier(true))
                 {
-                    foreach (var item in itemArray)
+                    foreach (Item item in itemArray)
                     {
                         try
                         {
@@ -325,38 +351,44 @@ namespace Perpetuum.Containers
 
         public void UnstackItem(long itemEid, Character issuer, int amount, int size, Container targetContainer)
         {
-            size.ThrowIfLessOrEqual(0, ErrorCodes.WTFErrorMedicalAttentionSuggested);
-            amount.ThrowIfLessOrEqual(0, ErrorCodes.WTFErrorMedicalAttentionSuggested);
+            _ = size.ThrowIfLessOrEqual(0, ErrorCodes.WTFErrorMedicalAttentionSuggested);
+            _ = amount.ThrowIfLessOrEqual(0, ErrorCodes.WTFErrorMedicalAttentionSuggested);
 
-            var sourceItem = GetItemOrThrow(itemEid);
+            Item sourceItem = GetItemOrThrow(itemEid);
 
             if (amount * size == sourceItem.Quantity)
             {
                 //unstack A containerbol Bbe 400 ammobol 1db 400as csomagot ... inkabb relocateljen
-                amount.ThrowIfLessOrEqual(1, ErrorCodes.UnstackNotPossibleUseRelocate);
+                _ = amount.ThrowIfLessOrEqual(1, ErrorCodes.UnstackNotPossibleUseRelocate);
                 //100at szeretne 2db 50esre -> 1db 50es + 50 maradek
                 amount--;
             }
 
-            var sumQty = 0;
+            int sumQty = 0;
 
-            for (var i = 0; i < amount; i++)
+            for (int i = 0; i < amount; i++)
             {
                 if (sourceItem.Quantity < size)
+                {
                     continue;
+                }
 
-                var unstackedItem = sourceItem.Unstack(size);
+                Item unstackedItem = sourceItem.Unstack(size);
 
                 targetContainer.AddItem(unstackedItem, issuer.Eid, false);
 
                 sumQty += size;
             }
 
-            if (sumQty <= 0 || targetContainer.Equals(this)) 
+            if (sumQty <= 0 || targetContainer.Equals(this))
+            {
                 return;
+            }
 
-            if (IsLogSkipped(targetContainer)) 
+            if (IsLogSkipped(targetContainer))
+            {
                 return;
+            }
 
             targetContainer.AddLogEntry(issuer, ContainerAccess.Add, sourceItem.Definition, sumQty);
             AddLogEntry(issuer, ContainerAccess.Remove, sourceItem.Definition, sumQty);
@@ -366,8 +398,8 @@ namespace Perpetuum.Containers
         {
             if (this is CorporateHangar || this is CorporateHangarFolder || targetContainer is CorporateHangar || targetContainer is CorporateHangarFolder)
             {
-                var parentEntity = GetOrLoadParentEntity();
-                var targetParentEntity = targetContainer.GetOrLoadParentEntity();
+                Entity parentEntity = GetOrLoadParentEntity();
+                Entity targetParentEntity = targetContainer.GetOrLoadParentEntity();
 
                 if ((parentEntity != null && parentEntity.Eid == targetContainer.Eid) || (targetParentEntity != null && targetParentEntity.Eid == Eid))
                 {
@@ -387,11 +419,11 @@ namespace Perpetuum.Containers
 
         public void TrashItems(Character issuerCharacter, IEnumerable<long> target)
         {
-            var trashableItems = GetItems(target).Where(i => i.IsTrashable).ToList();
+            List<Item> trashableItems = GetItems(target).Where(i => i.IsTrashable).ToList();
 
-            using (var n = new ItemErrorNotifier(true))
+            using (ItemErrorNotifier n = new ItemErrorNotifier(true))
             {
-                foreach (var item in trashableItems)
+                foreach (Item item in trashableItems)
                 {
                     try
                     {
@@ -402,7 +434,7 @@ namespace Perpetuum.Containers
                         Repository.Delete(item);
 
                         AddLogEntry(issuerCharacter, ContainerAccess.Delete, item.Definition, item.Quantity);
-                        var b = TransactionLogEvent.Builder()
+                        TransactionLogEventBuilder b = TransactionLogEvent.Builder()
                                                    .SetTransactionType(TransactionType.TrashItem)
                                                    .SetCharacter(issuerCharacter)
                                                    .SetContainer(this)
@@ -412,7 +444,7 @@ namespace Perpetuum.Containers
                     catch (PerpetuumException gex)
                     {
                         Logger.Error("Failed to delete item:" + item.Eid + " " + item.ED.Name + " owner:" + item.Owner + " issuerCharacter:" + issuerCharacter.Id);
-                        n.AddError(item,gex);
+                        n.AddError(item, gex);
                     }
                 }
             }
@@ -423,7 +455,7 @@ namespace Perpetuum.Containers
         /// </summary>
         public virtual void SetItemName(long itemEid, string newName)
         {
-            var item = GetItemOrThrow(itemEid);
+            Item item = GetItemOrThrow(itemEid);
 
             item.ThrowIfType<VolumeWrapperContainer>(ErrorCodes.AccessDenied);
 
@@ -452,7 +484,7 @@ namespace Perpetuum.Containers
 
         public override Dictionary<string, object> ToDictionary()
         {
-            var result = base.ToDictionary();
+            Dictionary<string, object> result = base.ToDictionary();
             result.Add(k.items, GetItems().ToDictionary("c", i => i.ToDictionary()));
             result.Add(k.log, IsLogging());
             return result;
@@ -461,50 +493,58 @@ namespace Perpetuum.Containers
         public bool RemoveItemFromTree(Item item)
         {
             if (RemoveItem(item) != null)
-                return true;
-
-            foreach (var i in GetItems())
             {
-                var container = i as Container;
+                return true;
+            }
 
-                if ( container != null && !container.IsRepackaged)
+            foreach (Item i in GetItems())
+            {
+                if (i is Container container && !container.IsRepackaged)
                 {
                     if (container.RemoveItemFromTree(item))
+                    {
                         return true;
+                    }
                 }
 
-                var robot = i as Robot;
 
-                if (robot == null || robot.IsRepackaged) 
+                if (!(i is Robot robot) || robot.IsRepackaged)
+                {
                     continue;
+                }
 
-                var robotInventory = robot.GetContainer();
+                RobotInventory robotInventory = robot.GetContainer();
 
-                if (robotInventory == null) 
+                if (robotInventory == null)
+                {
                     continue;
+                }
 
                 if (robotInventory.RemoveItemFromTree(item))
+                {
                     return true;
+                }
             }
 
             return false;
         }
 
-        protected virtual bool IsPersonalContainer
-        {
-            get { return true; }
-        }
+        protected virtual bool IsPersonalContainer => true;
 
         public IEnumerable<Item> SelectDamagedItems(IEnumerable<long> targetEids)
         {
-            foreach (var targetEid in targetEids)
+            foreach (long targetEid in targetEids)
             {
-                var item = GetItem(targetEid,true);
-                if ( item == null )
+                Item item = GetItem(targetEid, true);
+                if (item == null)
+                {
                     continue;
+                }
 
                 if (item.IsDamaged)
+                {
                     yield return item;
+                }
             }
         }
 
@@ -513,29 +553,29 @@ namespace Perpetuum.Containers
             return CreateAndAddItem(itemInfo, itemInfo.IsRepackaged, action);
         }
 
-        public Item CreateAndAddItem(ItemInfo itemInfo,bool doStack, Action<Item> action = null)
+        public Item CreateAndAddItem(ItemInfo itemInfo, bool doStack, Action<Item> action = null)
         {
-            var item = CreateWithRandomEid(itemInfo);
+            Item item = CreateWithRandomEid(itemInfo);
 
             action?.Invoke(item);
 
             AddItem(item, doStack);
-            this.Save();
+            Save();
             return item;
         }
 
-        public Item CreateAndAddItem(int definition,bool doStack,Action<Item> action = null)
+        public Item CreateAndAddItem(int definition, bool doStack, Action<Item> action = null)
         {
-            var item = (Item)Factory.CreateWithRandomEID(definition);
+            Item item = (Item)Factory.CreateWithRandomEID(definition);
 
             action?.Invoke(item);
 
             AddItem(item, doStack);
-            this.Save();
+            Save();
             return item;
         }
 
-        public T CreateAndAddItem<T>(int definition,bool doStack,Action<T> action) where T:Item
+        public T CreateAndAddItem<T>(int definition, bool doStack, Action<T> action) where T : Item
         {
             return (T)CreateAndAddItem(definition, doStack, item => action((T)item));
         }

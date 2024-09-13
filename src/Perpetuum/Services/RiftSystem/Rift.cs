@@ -36,6 +36,7 @@ namespace Perpetuum.Services.RiftSystem
         public virtual void UseItem(Player player)
         {
             player.HasTeleportSicknessEffect.ThrowIfTrue(ErrorCodes.TeleportTimerStillRunning);
+            player.HasNoxTeleportNegationEffect.ThrowIfTrue(ErrorCodes.NoxTeleportForbidden);
             player.HasPvpEffect.ThrowIfTrue(ErrorCodes.CantBeUsedInPvp);
             player.CurrentPosition.IsInRangeOf3D(CurrentPosition, 8).ThrowIfFalse(ErrorCodes.TeleportOutOfRange);
         }

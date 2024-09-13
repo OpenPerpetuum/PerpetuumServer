@@ -1,31 +1,34 @@
-﻿using System;
-using Perpetuum.EntityFramework;
+﻿using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
 using Perpetuum.Modules.ModuleProperties;
 using Perpetuum.Zones.Effects;
+using System;
 
 namespace Perpetuum.Modules.EffectModules
 {
     public class ShieldGeneratorModule : EffectModule
     {
-        private readonly ItemProperty _shieldRadius;
-        private readonly ModuleProperty _shieldAbsorbtion;
+        private readonly ItemProperty shieldRadius;
+        private readonly ModuleProperty shieldAbsorbtion;
 
         public ShieldGeneratorModule()
         {
-            _shieldRadius = new ModuleProperty(this,AggregateField.shield_radius);
-            AddProperty(_shieldRadius);
-            _shieldAbsorbtion = new ModuleProperty(this, AggregateField.shield_absorbtion);
-            _shieldAbsorbtion.AddEffectModifier(AggregateField.effect_shield_absorbtion_modifier);
+            shieldRadius = new ModuleProperty(this, AggregateField.shield_radius);
+            AddProperty(shieldRadius);
+            shieldAbsorbtion = new ModuleProperty(this, AggregateField.shield_absorbtion);
+            shieldAbsorbtion.AddEffectModifier(AggregateField.effect_shield_absorbtion_modifier);
+            shieldAbsorbtion.AddEffectModifier(AggregateField.nox_shield_absorbtion_modifier);
 
-            AddProperty(_shieldAbsorbtion);
+            AddProperty(shieldAbsorbtion);
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override void UpdateProperty(AggregateField field)
@@ -35,10 +38,11 @@ namespace Perpetuum.Modules.EffectModules
                 case AggregateField.shield_absorbtion:
                 case AggregateField.shield_absorbtion_modifier:
                 case AggregateField.effect_shield_absorbtion_modifier:
-                    _shieldAbsorbtion.Update();
+                case AggregateField.nox_shield_absorbtion_modifier:
+                    shieldAbsorbtion.Update();
                     break;
             }
-            
+
             base.UpdateProperty(field);
         }
 
@@ -46,16 +50,16 @@ namespace Perpetuum.Modules.EffectModules
         {
             get
             {
-                var ratio = ParentRobot.SignatureRadius / _shieldRadius.Value;
+                double ratio = ParentRobot.SignatureRadius / shieldRadius.Value;
                 ratio = Math.Max(ratio, 1.0);
-                var result = (1 / _shieldAbsorbtion.Value) * ratio;
+                double result = 1 / shieldAbsorbtion.Value * ratio;
                 return result;
             }
         }
 
         protected override void SetupEffect(EffectBuilder effectBuilder)
         {
-            effectBuilder.SetType(EffectType.effect_shield);
+            _ = effectBuilder.SetType(EffectType.effect_shield);
         }
     }
 }

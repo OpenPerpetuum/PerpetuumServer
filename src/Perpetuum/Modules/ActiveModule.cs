@@ -267,6 +267,8 @@ namespace Perpetuum.Modules
                 case AggregateField.cycle_time:
                 case AggregateField.effect_weapon_cycle_time_modifier:
                 case AggregateField.effect_gathering_cycle_time_modifier:
+                case AggregateField.drone_amplification_cycle_time_modifier:
+                case AggregateField.drone_amplification_remote_repair_cycle_time_modifier:
                     {
                         cycleTime.Update();
 
@@ -277,6 +279,7 @@ namespace Perpetuum.Modules
                 case AggregateField.effect_ew_optimal_range_modifier:
                 case AggregateField.module_missile_range_modifier:
                 case AggregateField.effect_missile_range_modifier:
+                case AggregateField.drone_amplification_long_range_modifier:
                     {
                         optimalRange.Update();
 
@@ -295,9 +298,14 @@ namespace Perpetuum.Modules
 
         protected double ModifyValueByOptimalRange(Unit target, double value)
         {
-            Debug.Assert(ParentRobot != null, "ParentRobot != null");
+            return ModifyValueByOptimalRange(ParentRobot, target, value);
+        }
 
-            double distance = ParentRobot.GetDistance(target);
+        protected double ModifyValueByOptimalRange(Unit issuer, Unit target, double value)
+        {
+            Debug.Assert(issuer != null, "issuer != null");
+
+            double distance = issuer.GetDistance(target);
 
             if (distance <= OptimalRange)
             {

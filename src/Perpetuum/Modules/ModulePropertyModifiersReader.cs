@@ -1,15 +1,15 @@
-using System.Collections.Generic;
-using System.Linq;
 using Perpetuum.Data;
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Perpetuum.Modules
 {
     public class ModulePropertyModifiersReader
     {
         private readonly IEntityDefaultReader _entityDefaultReader;
-        private Dictionary<int,ILookup<AggregateField,AggregateField>> _modifiers;
+        private Dictionary<int, ILookup<AggregateField, AggregateField>> _modifiers;
 
         public ModulePropertyModifiersReader(IEntityDefaultReader entityDefaultReader)
         {
@@ -30,29 +30,31 @@ namespace Perpetuum.Modules
                 .ToLookup(r => r.categoryFlags);
 
 
-            var modules = _entityDefaultReader.GetAll().GetByCategoryFlags(CategoryFlags.cf_robot_equipment);
-            _modifiers = new Dictionary<int,ILookup<AggregateField,AggregateField>>();
+            IEnumerable<EntityDefault> modules = _entityDefaultReader.GetAll().GetByCategoryFlags(CategoryFlags.cf_robot_equipment);
+            _modifiers = new Dictionary<int, ILookup<AggregateField, AggregateField>>();
 
-            foreach (var ed in modules)
+            foreach (EntityDefault ed in modules)
             {
-                var p = new List<KeyValuePair<AggregateField,AggregateField>>();
+                List<KeyValuePair<AggregateField, AggregateField>> p = new List<KeyValuePair<AggregateField, AggregateField>>();
 
-                foreach (var cf in ed.CategoryFlags.GetCategoryFlagsTree())
+                foreach (CategoryFlags cf in ed.CategoryFlags.GetCategoryFlagsTree())
                 {
                     foreach (var record in records.GetOrEmpty(cf))
                     {
-                        p.Add(new KeyValuePair<AggregateField,AggregateField>(record.baseField,record.modifierField));
+                        p.Add(new KeyValuePair<AggregateField, AggregateField>(record.baseField, record.modifierField));
                     }
 
                     if (cf == CategoryFlags.cf_robot_equipment)
+                    {
                         break;
+                    }
                 }
 
-                _modifiers[ed.Definition] = p.ToLookup(kvp => kvp.Key,kvp => kvp.Value);
+                _modifiers[ed.Definition] = p.ToLookup(kvp => kvp.Key, kvp => kvp.Value);
             }
         }
 
-        public ILookup<AggregateField,AggregateField> GetModifiers(Module module)
+        public ILookup<AggregateField, AggregateField> GetModifiers(Module module)
         {
             return _modifiers.GetOrDefault(module.Definition);
         }

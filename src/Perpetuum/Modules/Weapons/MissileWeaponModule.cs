@@ -8,25 +8,28 @@ namespace Perpetuum.Modules.Weapons
 {
     public class MissileWeaponModule : WeaponModule
     {
-        private readonly ItemProperty _propertyExplosionRadius;
+        private readonly ModuleProperty propertyExplosionRadius;
         public readonly ModuleProperty MissileRangeModifier;
         public readonly ModuleProperty MissileFalloffModifier;
 
         public MissileWeaponModule(CategoryFlags ammoCategoryFlags) : base(ammoCategoryFlags)
         {
-            _propertyExplosionRadius = new ExplosionRadiusProperty(this);
-            AddProperty(_propertyExplosionRadius);
+            propertyExplosionRadius = new ExplosionRadiusProperty(this);
+            AddProperty(propertyExplosionRadius);
             MissileRangeModifier = new ModuleProperty(this, AggregateField.module_missile_range_modifier);
             MissileRangeModifier.AddEffectModifier(AggregateField.effect_missile_range_modifier);
             AddProperty(MissileRangeModifier);
             MissileFalloffModifier = new ModuleProperty(this, AggregateField.module_missile_falloff_modifier);
             AddProperty(MissileFalloffModifier);
+            propertyExplosionRadius.AddEffectModifier(AggregateField.drone_amplification_accuracy_modifier);
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override void UpdateProperty(AggregateField field)
@@ -35,8 +38,9 @@ namespace Perpetuum.Modules.Weapons
             {
                 case AggregateField.explosion_radius:
                 case AggregateField.explosion_radius_modifier:
+                case AggregateField.drone_amplification_accuracy_modifier:
                     {
-                        _propertyExplosionRadius.Update();
+                        propertyExplosionRadius.Update();
                         return;
                     }
                 case AggregateField.module_missile_range_modifier:
@@ -57,33 +61,37 @@ namespace Perpetuum.Modules.Weapons
 
         protected override bool CheckAccuracy(Unit victim)
         {
-            var rnd = FastRandom.NextDouble();
-            var isMiss = rnd > ParentRobot.MissileHitChance;
+            double rnd = FastRandom.NextDouble();
+            bool isMiss = rnd > ParentRobot.MissileHitChance;
             return isMiss;
         }
 
         protected override IDamageBuilder GetDamageBuilder()
         {
-            return base.GetDamageBuilder().WithExplosionRadius(_propertyExplosionRadius.Value);
+            return base.GetDamageBuilder().WithExplosionRadius(propertyExplosionRadius.Value);
         }
 
         private class ExplosionRadiusProperty : ModuleProperty
         {
-            private readonly MissileWeaponModule _module;
+            private new readonly MissileWeaponModule module;
 
-            public ExplosionRadiusProperty(MissileWeaponModule module) : base(module,AggregateField.explosion_radius)
+            public ExplosionRadiusProperty(MissileWeaponModule module) : base(module, AggregateField.explosion_radius)
             {
-                _module = module;
+                this.module = module;
             }
 
             protected override double CalculateValue()
             {
-                var ammo = (WeaponAmmo)_module.GetAmmo();
-                if (ammo == null) 
+                WeaponAmmo ammo = (WeaponAmmo)module.GetAmmo();
+                if (ammo == null)
+                {
                     return 0.0;
+                }
 
-                var property = ammo.GetExplosionRadius();
-                _module.ApplyRobotPropertyModifiers(ref property);
+                ItemPropertyModifier property = ammo.GetExplosionRadius();
+                module.ApplyRobotPropertyModifiers(ref property);
+                ApplyEffectModifiers(ref property);
+
                 return property.Value;
             }
         }

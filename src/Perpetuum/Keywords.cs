@@ -4,7 +4,7 @@ namespace Perpetuum
 {
     public class k
     {
-        
+
 
         //keywords in abc order
         public const string absHeightH = "absHeightH";
@@ -47,7 +47,7 @@ namespace Perpetuum
         public const string allowedTerrainTypes = "allowedTerrainTypes";
         public const string alreadySpent = "alreadySpent";
         public const string altitude = "altitude";
-        
+
         public const string amount = "amount";
         public const string ammo = "ammo";
         public const string ammoCapacity = "ammoCapacity";
@@ -90,7 +90,7 @@ namespace Perpetuum
         public const string banReleaseSeconds = "banReleaseSeconds";
         public const string banTime = "banTime";
         public const string banWithAccount = "banWithAccount";
-        
+
         public const string baseEID = "baseEID";
         public const string baseDefinition = "baseDefinition";
         public const string baseName = "baseName";
@@ -98,7 +98,7 @@ namespace Perpetuum
         public const string beam = "beam";
         public const string beamID = "beamID";
         public const string beamState = "beamState";
-        
+
         public const string bit = "bit";
         public const string blockedCharacters = "blockedCharacters";
         public const string blockingHeight = "blockingHeight";
@@ -106,7 +106,7 @@ namespace Perpetuum
         public const string blockingRadius = "blockingRadius";
         public const string blocks = "blocks";
         public const string blockTrades = "blockTrades";
-        
+
         public const string body = "body";
         public const string bodypull = "bodypull";
 
@@ -203,7 +203,7 @@ namespace Perpetuum
         public const string coreBufferCurrent = "coreBufferCurrent";
         public const string coreBufferMax = "coreBufferMax";
         public const string coreCalories = "coreCalories";
-        
+
         public const string coreConsumption = "coreConsumption";
         public const string coreGenerated = "coreGenerated";
         public const string coreKickStartThreshold = "coreKickStartThreshold";
@@ -248,13 +248,13 @@ namespace Perpetuum
 
         public const string damageChemical = "damageChemical";
         public const string damage_chemical = "damage_chemical";
-        
+
         public const string damageExplosive = "damageExplosive";
         public const string damage_explosive = "damage_explosive";
 
         public const string damageKinetic = "damageKinetic";
         public const string damage_kinetic = "damage_kinetic";
-        
+
         public const string damageThermal = "damageThermal";
         public const string damage_thermal = "damage_thermal";
 
@@ -996,7 +996,7 @@ namespace Perpetuum
         public const string standingPercentage = "standingPercentage";
         public const string standingPoints = "standingPoints";
         public const string standingSet = "standingSet";
-        public const string standingThreshold= "standingThreshold";
+        public const string standingThreshold = "standingThreshold";
         public const string standingThreshold_add = "standingThreshold_add";
         public const string standingThreshold_list = "standingThreshold_list";
         public const string standingThreshold_remove = "standingThreshold_remove";
@@ -1138,7 +1138,7 @@ namespace Perpetuum
         public const string vote = "vote";
         public const string voteID = "voteID";
         public const string vulnerable = "vulnerable";
-        public const string vulnerableEnd = "vulnerableEnd"; 
+        public const string vulnerableEnd = "vulnerableEnd";
         public const string welcome = "welcome";
         public const string wallet = "wallet";
         public const string warning = "warning";
@@ -1223,5 +1223,9 @@ namespace Perpetuum
 
         // Definition of field turret
         public const string TurretId = "turretId";
+
+        // Plasma-based modules
+        public const string PlasmaDefinition = "plasmaDefinition";
+        public const string PlasmaConsumption = "plasmaConsumption";
     }
 }

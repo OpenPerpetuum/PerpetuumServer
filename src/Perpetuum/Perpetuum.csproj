@@ -259,9 +259,12 @@
     <Compile Include="Log\LogType.cs" />
     <Compile Include="LookupExtensions.cs" />
     <Compile Include="MathHelper.cs" />
+    <Compile Include="MessageConstants.cs" />
+    <Compile Include="Modules\AssaultRemoteControllerModule.cs" />
     <Compile Include="Modules\EffectModules\MineDetectorModule.cs" />
     <Compile Include="Modules\EffectModules\TargetBlinderModule.cs" />
     <Compile Include="Modules\GathererModule.cs" />
+    <Compile Include="Modules\IndustrialRemoteControllerModule.cs" />
     <Compile Include="Modules\ModuleProperties\CycleTimeProperty.cs" />
     <Compile Include="Modules\ModuleProperties\FalloffProperty.cs" />
     <Compile Include="Modules\ModuleProperties\HarvestingAmountModifierProperty.cs" />
@@ -269,9 +272,13 @@
     <Compile Include="Modules\ModuleProperties\ModuleProperty.cs" />
     <Compile Include="Modules\ModuleProperties\OptimalRangeProperty.cs" />
     <Compile Include="Modules\ModulePropertyModifiersReader.cs" />
+    <Compile Include="Modules\NoxModule.cs" />
     <Compile Include="Modules\RemoteControlledDrillerModule.cs" />
     <Compile Include="Modules\RemoteControlledHarvesterModule.cs" />
     <Compile Include="Modules\RemoteControllerModule.cs" />
+    <Compile Include="Modules\ScorcherModule.cs" />
+    <Compile Include="Modules\SupportRemoteControllerModule.cs" />
+    <Compile Include="Modules\TacticalRemoteControllerModule.cs" />
     <Compile Include="Network\ClientConnection.cs" />
     <Compile Include="Network\EncryptedTcpConnection.cs" />
     <Compile Include="Network\Http.cs" />
@@ -300,8 +307,11 @@
     <Compile Include="Reactive\Observable.cs" />
     <Compile Include="Reactive\ObservableExtensions.cs" />
     <Compile Include="Reactive\Observer.cs" />
+    <Compile Include="Robots\RobotChassis.cs" />
+    <Compile Include="Robots\RobotHead.cs" />
     <Compile Include="Robots\RobotHelper.cs" />
     <Compile Include="Robots\RobotInfoPacketBuilder.cs" />
+    <Compile Include="Robots\RobotLeg.cs" />
     <Compile Include="Rsa.cs" />
     <Compile Include="Selectors\ISelector.cs" />
     <Compile Include="Selectors\ModuloBasedSelector.cs" />
@@ -313,6 +323,7 @@
     <Compile Include="Services\Channels\PreMadeChatMessageNames.cs" />
     <Compile Include="Services\EventServices\EventMessages\DirectMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\NpcReinforcementsMessage.cs" />
+    <Compile Include="Services\EventServices\EventMessages\NpcState.cs" />
     <Compile Include="Services\EventServices\EventMessages\NpcStateMessage.cs" />
     <Compile Include="Services\EventServices\EventMessages\SpawnPortalMessage.cs" />
     <Compile Include="Services\EventServices\EventProcessors\NpcSpawnEventHandlers\NpcSpawnEventHandler.cs" />
@@ -626,7 +637,9 @@
     <Compile Include="TimeSpanExtensions.cs" />
     <Compile Include="Units\CombatLogType.cs" />
     <Compile Include="Units\CoreRecharger.cs" />
+    <Compile Include="Units\ExpiringLosHolder.cs" />
     <Compile Include="Units\ICoreRecharger.cs" />
+    <Compile Include="Units\IUnitVisibility.cs" />
     <Compile Include="Units\INotifyOptionalPropertyChanged.cs" />
     <Compile Include="Units\IOptionalProperty.cs" />
     <Compile Include="Units\ITaggable.cs" />
@@ -642,6 +655,7 @@
     <Compile Include="Units\UnitUpdatedEventArgs.cs" />
     <Compile Include="Units\UnitUpdatePacketBuilder.cs" />
     <Compile Include="Units\UnitUpdateTypes.cs" />
+    <Compile Include="Units\UnitVisibility.cs" />
     <Compile Include="Units\UpdatePacketControl.cs" />
     <Compile Include="Threading\ThreadLock.cs" />
     <Compile Include="ValueTypeExtensions.cs" />
@@ -662,6 +676,7 @@
     <Compile Include="Zones\CombatLogs\CombatLogSaver.cs" />
     <Compile Include="Zones\CombatLogs\CombatSummary.cs" />
     <Compile Include="Zones\CombatLogs\ICombatLogSaver.cs" />
+    <Compile Include="Zones\Effects\NoxEffect.cs" />
     <Compile Include="Zones\Effects\ZoneEffects\IZoneEffectHandler.cs" />
     <Compile Include="Zones\Effects\ZoneEffects\ZoneEffect.cs" />
     <Compile Include="Zones\Effects\ZoneEffects\ZoneEffectHandler.cs" />
@@ -688,6 +703,9 @@
     <Compile Include="Zones\NpcSystem\AI\IdleAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\InactiveAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\IndustrialAI.cs" />
+    <Compile Include="Zones\NpcSystem\AI\IndustrialDrones\EscortIndustrialDroneAI.cs" />
+    <Compile Include="Zones\NpcSystem\AI\IndustrialDrones\GatheringIndustrialDroneAI.cs" />
+    <Compile Include="Zones\NpcSystem\AI\IndustrialDrones\GuardIndustrialDroneAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\MiningIndustrialTurretAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\ModuleActivator.cs" />
     <Compile Include="Zones\NpcSystem\AI\Behaviors\NeutralBehavior.cs" />
@@ -727,6 +745,7 @@
     <Compile Include="Zones\NpcSystem\ThreatManagement\ThreatManager.cs" />
     <Compile Include="Zones\NpcSystem\ThreatManagement\ThreatType.cs" />
     <Compile Include="Zones\RemoteControl\CombatDrone.cs" />
+    <Compile Include="Zones\RemoteControl\IndustrialDrone.cs" />
     <Compile Include="Zones\RemoteControl\IndustrialTurret.cs" />
     <Compile Include="Zones\RemoteControl\RemoteChannel.cs" />
     <Compile Include="Zones\RemoteControl\BandwidthHandler.cs" />
@@ -1035,6 +1054,7 @@
     <Compile Include="Zones\Environments\IEnvironmentHandler.cs" />
     <Compile Include="Zones\Environments\ZoneEnvironmentHandler.cs" />
     <Compile Include="Zones\RemoteControl\RemoteControlledUnit.cs" />
+    <Compile Include="Zones\RemoteControl\SupportDrone.cs" />
     <Compile Include="Zones\RemoteControl\TurretType.cs" />
     <Compile Include="Zones\StrongHoldZone.cs" />
     <Compile Include="Zones\Teleporting\MobileStrongholdTeleport.cs" />

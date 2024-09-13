@@ -28,8 +28,12 @@ namespace Perpetuum.Modules.Weapons
             AddProperty(DamageModifier);
             Accuracy = new ModuleProperty(this, AggregateField.accuracy);
             AddProperty(Accuracy);
-
-            cycleTime.AddEffectModifier(AggregateField.effect_weapon_cycle_time_modifier);
+            cycleTime
+                .AddEffectModifier(AggregateField.effect_weapon_cycle_time_modifier);
+            cycleTime
+                .AddEffectModifier(AggregateField.drone_amplification_cycle_time_modifier);
+            DamageModifier.AddEffectModifier(AggregateField.drone_amplification_damage_modifier);
+            Accuracy.AddEffectModifier(AggregateField.drone_amplification_accuracy_modifier);
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
@@ -38,6 +42,27 @@ namespace Perpetuum.Modules.Weapons
             {
                 base.AcceptVisitor(visitor);
             }
+        }
+
+        public override void UpdateProperty(AggregateField field)
+        {
+            switch (field)
+            {
+                case AggregateField.drone_amplification_damage_modifier:
+                    {
+                        DamageModifier.Update();
+
+                        return;
+                    }
+                case AggregateField.drone_amplification_accuracy_modifier:
+                    {
+                        Accuracy.Update();
+
+                        return;
+                    }
+            }
+
+            base.UpdateProperty(field);
         }
 
         protected override void OnAction()

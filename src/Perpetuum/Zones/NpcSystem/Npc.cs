@@ -53,8 +53,8 @@ namespace Perpetuum.Zones.NpcSystem
 
         public override IDictionary<string, object> GetDebugInfo()
         {
-            var info = base.GetDebugInfo();
-            var homeDistance = HomePosition.TotalDistance2D(CurrentPosition);
+            IDictionary<string, object> info = base.GetDebugInfo();
+            double homeDistance = HomePosition.TotalDistance2D(CurrentPosition);
 
             info.Add("homePositionX", HomePosition.intX);
             info.Add("homePositionY", HomePosition.intY);
@@ -64,7 +64,7 @@ namespace Perpetuum.Zones.NpcSystem
             info.Add("coreCurrent", Core);
             info.Add("bestCombatRange", BestActionRange);
 
-            var currentAI = AI.Current;
+            StateMachines.IState currentAI = AI.Current;
 
             if (currentAI != null)
             {
@@ -80,13 +80,13 @@ namespace Perpetuum.Zones.NpcSystem
 
         protected override void OnDead(Unit killer)
         {
-            var zone = Zone;
-            var tagger = GetTagger();
+            IZone zone = Zone;
+            Player tagger = GetTagger();
 
             Debug.Assert(zone != null, "zone != null");
 
             BossInfo?.OnDeath(this, killer);
-            HandleNpcDeadAsync(zone, killer, tagger)
+            _ = HandleNpcDeadAsync(zone, killer, tagger)
                 .ContinueWith((t) => base.OnDead(killer))
                 .LogExceptions();
         }
@@ -121,10 +121,12 @@ namespace Perpetuum.Zones.NpcSystem
                 return;
             }
 
-            var ep = NpcEp.GetEpForNpc(this);
+            int ep = NpcEp.GetEpForNpc(this);
 
             if (zone.Configuration.IsBeta)
+            {
                 ep *= 2;
+            }
 
             EP = ep;
             Logger.DebugInfo($"Ep4Npc:{ep} def:{Definition} {ED.Name}");
@@ -134,9 +136,9 @@ namespace Perpetuum.Zones.NpcSystem
         {
             get
             {
-                var infoString = $"Npc:{ED.Name}:{Eid}";
+                string infoString = $"Npc:{ED.Name}:{Eid}";
 
-                var zone = Zone;
+                IZone zone = Zone;
                 if (zone != null)
                 {
                     infoString += " z:" + zone.Id;
@@ -171,6 +173,11 @@ namespace Perpetuum.Zones.NpcSystem
             return true;
         }
 
+        internal override bool IsHostile(IndustrialDrone turret)
+        {
+            return true;
+        }
+
         internal override bool IsHostile(CombatDrone drone)
         {
             return true;
@@ -198,7 +205,7 @@ namespace Perpetuum.Zones.NpcSystem
         {
             Logger.DebugInfo($"   >>>> NPC died.  Killer unitName:{killer.Name} o:{killer.Owner}   Tagger botname:{tagger?.Name} o:{killer.Owner} characterId:{tagger?.Character.Id}");
 
-            using (var scope = Db.CreateTransaction())
+            using (System.Transactions.TransactionScope scope = Db.CreateTransaction())
             {
                 if (BossInfo?.IsLootSplit ?? false)
                 {
@@ -210,9 +217,9 @@ namespace Perpetuum.Zones.NpcSystem
                         ISplittableLootGenerator splitLooter = new SplittableLootGenerator(LootGenerator);
                         List<ILootGenerator> lootGenerators = splitLooter.GetGenerators(participants.Count);
 
-                        for (var i = 0; i < participants.Count; i++)
+                        for (int i = 0; i < participants.Count; i++)
                         {
-                            LootContainer.Create()
+                            _ = LootContainer.Create()
                                 .SetOwner(participants[i])
                                 .AddLoot(lootGenerators[i])
                                 .BuildAndAddToZone(zone, participants[i].CurrentPosition);
@@ -221,10 +228,10 @@ namespace Perpetuum.Zones.NpcSystem
                 }
                 else
                 {
-                    LootContainer.Create().SetOwner(tagger).AddLoot(LootGenerator).BuildAndAddToZone(zone, CurrentPosition);
+                    _ = LootContainer.Create().SetOwner(tagger).AddLoot(LootGenerator).BuildAndAddToZone(zone, CurrentPosition);
                 }
 
-                var killerPlayer = zone.ToPlayerOrGetOwnerPlayer(killer);
+                Player killerPlayer = zone.ToPlayerOrGetOwnerPlayer(killer);
 
                 if (GetMissionGuid() != Guid.Empty)
                 {
@@ -244,14 +251,14 @@ namespace Perpetuum.Zones.NpcSystem
 
                 if (EP > 0)
                 {
-                    var awardedPlayers = new List<Unit>();
+                    List<Unit> awardedPlayers = new List<Unit>();
 
-                    foreach (var hostile in ThreatManager.Hostiles.Where(x => x.Unit is Player))
+                    foreach (ThreatManaging.Hostile hostile in ThreatManager.Hostiles.Where(x => x.Unit is Player))
                     {
-                        var playerUnit = hostile.Unit;
-                        var hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(playerUnit);
+                        Unit playerUnit = hostile.Unit;
+                        Player hostilePlayer = zone.ToPlayerOrGetOwnerPlayer(playerUnit);
 
-                        hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, EP);
+                        _ = (hostilePlayer?.Character.AddExtensionPointsBoostAndLog(EpForActivityType.Npc, EP));
                         awardedPlayers.Add(playerUnit);
                     }
 
@@ -268,13 +275,13 @@ namespace Perpetuum.Zones.NpcSystem
         /// </summary>
         private void SearchForMissionOwnerAndSubmitKill(IZone zone, Unit killerUnit)
         {
-            var missionGuid = GetMissionGuid();
-            var missionOwner = MissionHelper.FindMissionOwnerByGuid(missionGuid);
-            var missionOwnerPlayer = zone.GetPlayer(missionOwner);
+            Guid missionGuid = GetMissionGuid();
+            Accounting.Characters.Character missionOwner = MissionHelper.FindMissionOwnerByGuid(missionGuid);
+            Player missionOwnerPlayer = zone.GetPlayer(missionOwner);
 
             if (missionOwnerPlayer == null)
             {
-                var info = new Dictionary<string, object>
+                Dictionary<string, object> info = new Dictionary<string, object>
                 {
                     {k.characterID, missionOwner.Id},
                     {k.guid, missionGuid.ToString()},
@@ -290,7 +297,7 @@ namespace Perpetuum.Zones.NpcSystem
                     info[k.assistingCharacterID] = killerPlayer.Character.Id;
                 }
 
-                Task.Run(() =>
+                _ = Task.Run(() =>
                 {
                     MissionHelper.MissionProcessor.NpcGotKilledInAway(missionOwner, missionGuid, info);
                 });
@@ -303,7 +310,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         private void EnqueueKill(Player missionOwnerPlayer, Unit killerUnit)
         {
-            var eventSourcePlayer = missionOwnerPlayer;
+            Player eventSourcePlayer = missionOwnerPlayer;
 
             if (killerUnit is Player killerPlayer && !killerPlayer.Equals(missionOwnerPlayer))
             {

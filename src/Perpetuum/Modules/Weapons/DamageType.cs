@@ -6,6 +6,7 @@
         Kinetic,
         Thermal,
         Explosive,
-        Toxic
+        Toxic,
+        Electric,
     }
 }

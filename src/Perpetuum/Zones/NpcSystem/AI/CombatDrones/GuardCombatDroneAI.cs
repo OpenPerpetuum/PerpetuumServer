@@ -12,33 +12,33 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
 
         public override void Enter()
         {
-            this.smartCreature.StopAllModules();
-            this.smartCreature.ResetLocks();
+            smartCreature.StopAllModules();
+            smartCreature.ResetLocks();
 
-            this.movement = new RandomMovement(this.smartCreature.HomePosition, (this.smartCreature as CombatDrone).GuardRange);
+            movement = new RandomMovement(smartCreature.HomePosition, (smartCreature as CombatDrone).GuardRange);
 
-            movement.Start(this.smartCreature);
+            movement.Start(smartCreature);
 
             base.Enter();
         }
 
         public override void Update(TimeSpan time)
         {
-            if (!(this.smartCreature as CombatDrone).IsInGuardRange)
+            if (!(smartCreature as CombatDrone).IsInGuardRange)
             {
-                this.ToEscortCombatDroneAI();
+                ToEscortCombatDroneAI();
 
                 return;
             }
 
-            if (this.smartCreature.ThreatManager.IsThreatened)
+            if (smartCreature.ThreatManager.IsThreatened)
             {
-                this.ToAttackCombatDroneAI();
+                ToAttackCombatDroneAI();
 
                 return;
             }
 
-            this.movement?.Update(this.smartCreature, time);
+            movement?.Update(smartCreature, time);
         }
     }
 }

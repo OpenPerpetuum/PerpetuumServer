@@ -69,6 +69,16 @@ namespace Perpetuum.Zones.RemoteControl
             return !(drone.CommandRobot is Player player) || IsHostilePlayer(player);
         }
 
+        internal override bool IsHostile(IndustrialDrone drone)
+        {
+            return !(drone.CommandRobot is Player player) || IsHostilePlayer(player);
+        }
+
+        internal override bool IsHostile(SupportDrone drone)
+        {
+            return !(drone.CommandRobot is Player player) || IsHostilePlayer(player);
+        }
+
         internal override bool IsHostile(SentryTurret turret)
         {
             return !(turret.CommandRobot is Player player) || IsHostilePlayer(player);

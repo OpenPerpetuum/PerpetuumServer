@@ -24,9 +24,9 @@ namespace Perpetuum.Modules
     public class DrillerModule : GathererModule
     {
         private const int MAX_EP_PER_DAY = 1440;
-        private readonly RareMaterialHandler _rareMaterialHandler;
-        private readonly MaterialHelper _materialHelper;
-        private readonly ItemProperty _miningAmountModifier;
+        private readonly RareMaterialHandler rareMaterialHandler;
+        private readonly MaterialHelper materialHelper;
+        private readonly ItemProperty miningAmountModifier;
         private readonly ISet<int> LIQUIDS = new HashSet<int>(new int[]
         {
             (int)MaterialType.Crude,
@@ -37,10 +37,10 @@ namespace Perpetuum.Modules
         public DrillerModule(CategoryFlags ammoCategoryFlags, RareMaterialHandler rareMaterialHandler, MaterialHelper materialHelper)
             : base(ammoCategoryFlags, true)
         {
-            _rareMaterialHandler = rareMaterialHandler;
-            _materialHelper = materialHelper;
-            _miningAmountModifier = new MiningAmountModifierProperty(this);
-            AddProperty(_miningAmountModifier);
+            this.rareMaterialHandler = rareMaterialHandler;
+            this.materialHelper = materialHelper;
+            miningAmountModifier = new MiningAmountModifierProperty(this);
+            AddProperty(miningAmountModifier);
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
@@ -57,8 +57,9 @@ namespace Perpetuum.Modules
             {
                 case AggregateField.mining_amount_modifier:
                 case AggregateField.effect_mining_amount_modifier:
+                case AggregateField.drone_amplification_mining_amount_modifier:
                     {
-                        _miningAmountModifier.Update();
+                        miningAmountModifier.Update();
 
                         return;
                     }
@@ -74,7 +75,7 @@ namespace Perpetuum.Modules
                 return new List<ItemInfo>();
             }
 
-            MineralExtractor extractor = new MineralExtractor(location, amount, _materialHelper);
+            MineralExtractor extractor = new MineralExtractor(location, amount, materialHelper);
             layer.AcceptVisitor(extractor);
 
             return new List<ItemInfo>(extractor.Items);
@@ -135,7 +136,7 @@ namespace Perpetuum.Modules
                 materialType = ammo.MaterialType;
             }
 
-            MaterialInfo materialInfo = _materialHelper.GetMaterialInfo(materialType);
+            MaterialInfo materialInfo = materialHelper.GetMaterialInfo(materialType);
             CheckEnablerEffect(materialInfo, terrainLock);
             MineralLayer mineralLayer = zone.Terrain
                 .GetMineralLayerOrThrow(
@@ -143,7 +144,7 @@ namespace Perpetuum.Modules
                     (PerpetuumException ex) =>
                         (ParentRobot as RemoteControlledCreature)
                             .ProcessIndustrialTarget(terrainLock.Location.Center, 0));
-            double materialAmount = materialInfo.Amount * _miningAmountModifier.Value;
+            double materialAmount = materialInfo.Amount * miningAmountModifier.Value;
             List<ItemInfo> extractedMaterials = Extract(mineralLayer, terrainLock.Location, (uint)materialAmount);
             _ = extractedMaterials.Count
                 .ThrowIfEqual(
@@ -153,7 +154,7 @@ namespace Perpetuum.Modules
                         (ParentRobot as RemoteControlledCreature)
                             .ProcessIndustrialTarget(terrainLock.Location.Center, 0));
             extractedMaterials
-                .AddRange(_rareMaterialHandler.GenerateRareMaterials(materialInfo.EntityDefault.Definition));
+                .AddRange(rareMaterialHandler.GenerateRareMaterials(materialInfo.EntityDefault.Definition));
             CreateBeam(terrainLock.Location, BeamState.AlignToTerrain);
             using (TransactionScope scope = Db.CreateTransaction())
             {

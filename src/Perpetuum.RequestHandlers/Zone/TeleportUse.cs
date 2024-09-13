@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Transactions;
 using Perpetuum.Data;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Host.Requests;
@@ -10,6 +8,8 @@ using Perpetuum.Services.MissionEngine.MissionProcessorObjects;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Teleporting;
 using Perpetuum.Zones.Teleporting.Strategies;
+using System.Linq;
+using System.Transactions;
 
 namespace Perpetuum.RequestHandlers.Zone
 {
@@ -18,7 +18,7 @@ namespace Perpetuum.RequestHandlers.Zone
         private readonly ITeleportStrategyFactories _teleportStrategyFactories;
         private readonly MissionProcessor _missionProcessor;
 
-        public TeleportUse(ITeleportStrategyFactories teleportStrategyFactories,MissionProcessor missionProcessor)
+        public TeleportUse(ITeleportStrategyFactories teleportStrategyFactories, MissionProcessor missionProcessor)
         {
             _teleportStrategyFactories = teleportStrategyFactories;
             _missionProcessor = missionProcessor;
@@ -26,22 +26,22 @@ namespace Perpetuum.RequestHandlers.Zone
 
         public void HandleRequest(IZoneRequest request)
         {
-            using (var scope = Db.CreateTransaction())
+            using (TransactionScope scope = Db.CreateTransaction())
             {
-                var teleport = GetTeleport(request);
-                var character = request.Session.Character;
-                var player = request.Zone.GetPlayerOrThrow(character);
+                Teleport teleport = GetTeleport(request);
+                Accounting.Characters.Character character = request.Session.Character;
+                Player player = request.Zone.GetPlayerOrThrow(character);
 
                 ValidatePlayer(player, teleport);
-                var playerPosition = player.CurrentPosition;
+                Position playerPosition = player.CurrentPosition;
 
-                var description = GetTeleportDescription(request, teleport);
-                var strategy = CreateTeleportStrategy(request, description);
+                TeleportDescription description = GetTeleportDescription(request, teleport);
+                ITeleportStrategy strategy = CreateTeleportStrategy(request, description);
                 strategy.DoTeleport(player);
 
                 Transaction.Current.OnCommited(() =>
                 {
-                    _missionProcessor.EnqueueMissionTargetAsync(character,MissionTargetType.teleport, d =>
+                    _ = _missionProcessor.EnqueueMissionTargetAsync(character, MissionTargetType.teleport, d =>
                     {
                         d.Add(k.channel, description.id);
                         d.Add(k.zoneID, request.Zone.Id);
@@ -51,34 +51,34 @@ namespace Perpetuum.RequestHandlers.Zone
                     switch (teleport)
                     {
                         case MobileStrongholdTeleport mobileStrongholdTeleport:
-                        {
-                            mobileStrongholdTeleport.ApplyTeleportCooldownEffect();
-                            mobileStrongholdTeleport.Activate(player, description);
-                            break;
-                        }
+                            {
+                                mobileStrongholdTeleport.ApplyTeleportCooldownEffect();
+                                mobileStrongholdTeleport.Activate(player, description);
+                                break;
+                            }
                         case MobileWorldTeleport mobileWorldTeleport:
-                        {
-                            mobileWorldTeleport.ApplyTeleportCooldownEffect();
-                            mobileWorldTeleport.Activate(player, description);
-                            break;
-                        }
+                            {
+                                mobileWorldTeleport.ApplyTeleportCooldownEffect();
+                                mobileWorldTeleport.Activate(player, description);
+                                break;
+                            }
                         case MobileTeleport mobileTeleport:
-                        {
-                            mobileTeleport.ApplyTeleportCooldownEffect();
-                            break;
-                        }
+                            {
+                                mobileTeleport.ApplyTeleportCooldownEffect();
+                                break;
+                            }
 
                     }
                 });
-                
+
                 scope.Complete();
             }
         }
 
         private static TeleportDescription GetTeleportDescription(IRequest request, Teleport teleport)
         {
-            var descriptionId = request.Data.GetOrDefault<int>(k.ID);
-            var description = teleport.GetTeleportDescriptions().FirstOrDefault(d => d.id == descriptionId).ThrowIfNull(ErrorCodes.TeleportDescriptionNotFound);
+            int descriptionId = request.Data.GetOrDefault<int>(k.ID);
+            TeleportDescription description = teleport.GetTeleportDescriptions().FirstOrDefault(d => d.id == descriptionId).ThrowIfNull(ErrorCodes.TeleportDescriptionNotFound);
             description.active.ThrowIfFalse(ErrorCodes.TeleportChannelInactive);
             description.IsValid().ThrowIfFalse(ErrorCodes.InvalidTeleportChannel);
             return description;
@@ -86,41 +86,41 @@ namespace Perpetuum.RequestHandlers.Zone
 
         private static void ValidatePlayer(Player player, Teleport teleport)
         {
-            var validator = new TeleportPlayerValidator(player);
+            TeleportPlayerValidator validator = new TeleportPlayerValidator(player);
             teleport.AcceptVisitor(validator);
         }
 
         private Teleport GetTeleport(IZoneRequest request)
         {
-            var teleportEid = request.Data.GetOrDefault<long>(k.eid);
-            var teleport = (Teleport) request.Zone.GetUnitOrThrow(teleportEid);
+            long teleportEid = request.Data.GetOrDefault<long>(k.eid);
+            Teleport teleport = (Teleport)request.Zone.GetUnitOrThrow(teleportEid);
             teleport.IsEnabled.ThrowIfFalse(ErrorCodes.TeleportDisabled);
             return teleport;
         }
 
         [CanBeNull]
-        private ITeleportStrategy CreateTeleportStrategy(IRequest request,TeleportDescription description)
+        private ITeleportStrategy CreateTeleportStrategy(IRequest request, TeleportDescription description)
         {
             switch (description.descriptionType)
             {
                 case TeleportDescriptionType.WithinZone:
-                {
-                    var t = _teleportStrategyFactories.TeleportWithinZoneFactory();
-                    t.TargetPosition = description.GetRandomTargetPosition();
-                    return t;
-                }
+                    {
+                        TeleportWithinZone t = _teleportStrategyFactories.TeleportWithinZoneFactory();
+                        t.TargetPosition = description.GetRandomTargetPosition();
+                        return t;
+                    }
                 case TeleportDescriptionType.AnotherZone:
-                {
-                    var toAnotherZone = _teleportStrategyFactories.TeleportToAnotherZoneFactory(description.TargetZone);
-                    toAnotherZone.TargetPosition = description.GetRandomTargetPosition();
-                    return toAnotherZone;
-                }
+                    {
+                        TeleportToAnotherZone toAnotherZone = _teleportStrategyFactories.TeleportToAnotherZoneFactory(description.TargetZone);
+                        toAnotherZone.TargetPosition = description.GetRandomTargetPosition();
+                        return toAnotherZone;
+                    }
                 case TeleportDescriptionType.TrainingExit:
-                {
-                    var exitStrategy = _teleportStrategyFactories.TrainingExitStrategyFactory(description);
-                    exitStrategy.TrainingRewardLevel = request.Data.GetOrDefault<int>(k.rewardLevel);
-                    return exitStrategy;
-                }
+                    {
+                        TrainingExitStrategy exitStrategy = _teleportStrategyFactories.TrainingExitStrategyFactory(description);
+                        exitStrategy.TrainingRewardLevel = request.Data.GetOrDefault<int>(k.rewardLevel);
+                        return exitStrategy;
+                    }
             }
 
             return null;
@@ -139,6 +139,7 @@ namespace Perpetuum.RequestHandlers.Zone
             public override void VisitTeleport(Teleport teleport)
             {
                 _player.HasTeleportSicknessEffect.ThrowIfTrue(ErrorCodes.TeleportTimerStillRunning);
+                _player.HasNoxTeleportNegationEffect.ThrowIfTrue(ErrorCodes.NoxTeleportForbidden);
                 (_player.HasPvpEffect && _player.HasNoTeleportWhilePVP).ThrowIfTrue(ErrorCodes.CantBeUsedInPvp);
                 _player.CurrentPosition.IsInRangeOf3D(teleport.CurrentPosition, Teleport.TeleportRange).ThrowIfFalse(ErrorCodes.TeleportOutOfRange);
                 base.VisitTeleport(teleport);
@@ -152,12 +153,12 @@ namespace Perpetuum.RequestHandlers.Zone
                     teleport.EffectHandler.ContainsEffect(EffectType.effect_teleport_cooldown).ThrowIfTrue(ErrorCodes.TeleportSourceNotUsable);
                 }
 
-                var ownerCharacter = teleport.GetOwnerAsCharacter();
+                Accounting.Characters.Character ownerCharacter = teleport.GetOwnerAsCharacter();
 
                 if (_player.Character != ownerCharacter)
                 {
-                    var playerGang = _player.Gang;
-                    playerGang.ThrowIfNull(ErrorCodes.CharacterNotInGang);
+                    Groups.Gangs.Gang playerGang = _player.Gang;
+                    _ = playerGang.ThrowIfNull(ErrorCodes.CharacterNotInGang);
                     playerGang.IsMember(ownerCharacter).ThrowIfFalse(ErrorCodes.CharacterNotInTheOwnerGang);
                 }
 

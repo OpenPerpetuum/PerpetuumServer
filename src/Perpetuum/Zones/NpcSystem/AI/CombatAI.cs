@@ -44,23 +44,30 @@ namespace Perpetuum.Zones.NpcSystem.AI
         public override void Enter()
         {
             stratSelector = InitSelector();
-            moduleActivators = this.smartCreature.ActiveModules
+            moduleActivators = smartCreature.ActiveModules
                 .Select(m => new ModuleActivator(m))
                 .ToList();
-            IsNpcHasMissiles = this.smartCreature.ActiveModules
+            IsNpcHasMissiles = smartCreature.ActiveModules
                 .OfType<MissileWeaponModule>()
                 .Any();
-            processHostilesTimer.Update(hostilesUpdateFrequency);
-            primarySelectTimer.Update(hostilesUpdateFrequency);
+            _ = processHostilesTimer.Update(hostilesUpdateFrequency);
+            _ = primarySelectTimer.Update(hostilesUpdateFrequency);
 
             base.Enter();
+        }
+
+        protected override List<ModuleActivator> FillModuleActivators()
+        {
+            return moduleActivators = smartCreature.ActiveModules
+                .Select(m => new ModuleActivator(m))
+                .ToList();
         }
 
         public override void Update(TimeSpan time)
         {
             UpdateHostiles(time);
             UpdatePrimaryTarget(time);
-            RunModules(time);
+            base.Update(time);
         }
 
         protected virtual CombatPrimaryLockSelectionStrategySelector InitSelector()
@@ -73,7 +80,7 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         protected void UpdateHostiles(TimeSpan time)
         {
-            processHostilesTimer.Update(time);
+            _ = processHostilesTimer.Update(time);
 
             if (processHostilesTimer.Passed)
             {
@@ -84,20 +91,12 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         protected void UpdatePrimaryTarget(TimeSpan time)
         {
-            primarySelectTimer.Update(time);
+            _ = primarySelectTimer.Update(time);
 
             if (primarySelectTimer.Passed)
             {
-                var success = SelectPrimaryTarget();
+                bool success = SelectPrimaryTarget();
                 SetPrimaryUpdateDelay(success);
-            }
-        }
-
-        protected void RunModules(TimeSpan time)
-        {
-            foreach (var activator in moduleActivators)
-            {
-                activator.Update(time);
             }
         }
 
@@ -108,22 +107,11 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         protected virtual void SetPrimaryUpdateDelay(bool newPrimary)
         {
-            if (newPrimary)
-            {
-                primarySelectTimer.Interval = SetPrimaryDwellTime();
-            }
-            else if (GetValidLocks().Length > 0)
-            {
-                primarySelectTimer.Interval = TimeSpan.FromSeconds(1);
-            }
-            else if (this.smartCreature.GetLocks().Count > 0)
-            {
-                primarySelectTimer.Interval = TimeSpan.FromSeconds(1.5);
-            }
-            else
-            {
-                primarySelectTimer.Interval = TimeSpan.FromSeconds(3.5);
-            }
+            primarySelectTimer.Interval = newPrimary
+                ? SetPrimaryDwellTime()
+                : GetValidLocks().Length > 0
+                    ? TimeSpan.FromSeconds(1)
+                    : smartCreature.GetLocks().Count > 0 ? TimeSpan.FromSeconds(1.5) : TimeSpan.FromSeconds(3.5);
         }
 
         protected bool IsAttackable(Hostile hostile)
@@ -153,38 +141,33 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 return false;
             }
 
-            if (this.smartCreature.Behavior.Type == BehaviorType.Neutral && hostile.IsExpired)
+            if (smartCreature.Behavior.Type == BehaviorType.Neutral && hostile.IsExpired)
             {
                 return false;
             }
 
-            var isVisible = this.smartCreature.IsVisible(hostile.Unit);
+            bool isVisible = smartCreature.IsVisible(hostile.Unit);
 
-            if (!isVisible)
-            {
-                return false;
-            }
-
-            return true;
+            return isVisible;
         }
 
         protected virtual void ProcessHostiles()
         {
-            var hostileEnumerator = this.smartCreature.ThreatManager.Hostiles.GetEnumerator();
+            System.Collections.Immutable.ImmutableSortedSet<Hostile>.Enumerator hostileEnumerator = smartCreature.ThreatManager.Hostiles.GetEnumerator();
 
             while (hostileEnumerator.MoveNext())
             {
-                var hostile = hostileEnumerator.Current;
+                Hostile hostile = hostileEnumerator.Current;
 
                 if (!IsAttackable(hostile))
                 {
-                    this.smartCreature.ThreatManager.Remove(hostile);
-                    this.smartCreature.AddPseudoThreat(hostile.Unit);
+                    smartCreature.ThreatManager.Remove(hostile);
+                    smartCreature.AddPseudoThreat(hostile.Unit);
 
                     continue;
                 }
 
-                if (!this.smartCreature.IsInLockingRange(hostile.Unit))
+                if (!smartCreature.IsInLockingRange(hostile.Unit))
                 {
                     continue;
                 }
@@ -195,19 +178,19 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         protected bool TryMakeFreeLockSlotFor(Hostile hostile)
         {
-            if (this.smartCreature.HasFreeLockSlot)
+            if (smartCreature.HasFreeLockSlot)
             {
                 return true;
             }
 
-            this.smartCreature.ThreatManager.Hostiles
+            smartCreature.ThreatManager.Hostiles
                 .Where(x => x.Threat == 0)
-                .ForEach(x => this.smartCreature.GetLockByUnit(x.Unit).Cancel());
+                .ForEach(x => smartCreature.GetLockByUnit(x.Unit).Cancel());
 
-            var weakestLock = this.smartCreature.ThreatManager.Hostiles
+            UnitLock weakestLock = smartCreature.ThreatManager.Hostiles
                 .SkipWhile(x => x != hostile)
                 .Skip(1)
-                .Select(x => this.smartCreature.GetLockByUnit(x.Unit))
+                .Select(x => smartCreature.GetLockByUnit(x.Unit))
                 .LastOrDefault();
 
             if (weakestLock == null)
@@ -222,49 +205,44 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         protected Hostile GetPrimaryOrMostHatedHostile()
         {
-            var primaryHostile = GetPrimaryHostile();
+            Hostile primaryHostile = GetPrimaryHostile();
 
-            if (primaryHostile != null)
-            {
-                return primaryHostile;
-            }
-
-            return this.smartCreature.ThreatManager.GetMostHatedHostile();
+            return primaryHostile ?? smartCreature.ThreatManager.GetMostHatedHostile();
         }
 
         protected Hostile GetPrimaryHostile()
         {
-            return this.smartCreature.ThreatManager.Hostiles
-                .Where(h => h.Unit == (this.smartCreature.GetPrimaryLock() as UnitLock)?.Target)
+            return smartCreature.ThreatManager.Hostiles
+                .Where(h => h.Unit == (smartCreature.GetPrimaryLock() as UnitLock)?.Target)
                 .FirstOrDefault();
         }
 
         protected virtual void ReturnToHomePosition()
         {
-            smartCreature.AI.Pop();
+            _ = smartCreature.AI.Pop();
             smartCreature.AI.Push(new HomingAI(smartCreature));
-            this.WriteLog("Enter evade mode.");
+            WriteLog("Enter evade mode.");
         }
 
         protected Task<List<Point>> FindNewAttackPositionAsync(Unit hostile)
         {
-            this.source?.Cancel();
-            this.source = new CancellationTokenSource();
+            source?.Cancel();
+            source = new CancellationTokenSource();
 
-            return Task.Run(() => FindNewAttackPosition(hostile, this.source.Token), this.source.Token);
+            return Task.Run(() => FindNewAttackPosition(hostile, source.Token), source.Token);
         }
 
         protected void UpdateHostile(TimeSpan time, bool moveThreatToPseudoThreat = true)
         {
-            var mostHated = GetPrimaryOrMostHatedHostile();
+            Hostile mostHated = GetPrimaryOrMostHatedHostile();
 
             if (mostHated == null)
             {
                 return;
             }
 
-            var forceCheckPrimary = false;
-            updateHostileTimer.Update(time);
+            bool forceCheckPrimary = false;
+            _ = updateHostileTimer.Update(time);
             if (updateHostileTimer.Passed)
             {
                 updateHostileTimer.Reset();
@@ -273,11 +251,11 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 forceCheckPrimary = movement?.Arrived ?? true;
             }
 
-            if (!mostHated.Unit.CurrentPosition.IsEqual2D(this.lastTargetPosition) || forceCheckPrimary)
+            if (!mostHated.Unit.CurrentPosition.IsEqual2D(lastTargetPosition) || forceCheckPrimary)
             {
-                this.lastTargetPosition = mostHated.Unit.CurrentPosition;
+                lastTargetPosition = mostHated.Unit.CurrentPosition;
 
-                var findNewTargetPosition = false;
+                bool findNewTargetPosition = false;
 
                 if (!smartCreature.IsInRangeOf3D(mostHated.Unit, smartCreature.BestActionRange))
                 {
@@ -285,11 +263,11 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 }
                 else
                 {
-                    var visibility = smartCreature.GetVisibility(mostHated.Unit);
+                    IUnitVisibility visibility = smartCreature.GetVisibility(mostHated.Unit);
 
                     if (visibility != null)
                     {
-                        var r = visibility.GetLineOfSight(this.IsNpcHasMissiles);
+                        LOSResult r = visibility.GetLineOfSight(IsNpcHasMissiles);
 
                         if (r.hit)
                         {
@@ -300,14 +278,14 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
                 if (findNewTargetPosition)
                 {
-                    FindNewAttackPositionAsync(mostHated.Unit).ContinueWith(t =>
+                    _ = FindNewAttackPositionAsync(mostHated.Unit).ContinueWith(t =>
                     {
                         if (t.IsCanceled)
                         {
                             return;
                         }
 
-                        var path = t.Result;
+                        List<Point> path = t.Result;
 
                         if (path == null)
                         {
@@ -320,37 +298,37 @@ namespace Perpetuum.Zones.NpcSystem.AI
                             return;
                         }
 
-                        Interlocked.Exchange(ref this.nextMovement, new PathMovement(path));
+                        _ = Interlocked.Exchange(ref nextMovement, new PathMovement(path));
                     });
                 }
             }
 
-            if (this.nextMovement != null)
+            if (nextMovement != null)
             {
-                movement = Interlocked.Exchange(ref this.nextMovement, null);
-                movement.Start(this.smartCreature);
+                movement = Interlocked.Exchange(ref nextMovement, null);
+                movement.Start(smartCreature);
             }
 
-            this.movement?.Update(this.smartCreature, time);
+            movement?.Update(smartCreature, time);
         }
 
         private void SetLockForHostile(Hostile hostile)
         {
-            var mostHated = GetPrimaryOrMostHatedHostile() == hostile;
-            var combatLock = this.smartCreature.GetLockByUnit(hostile.Unit);
+            bool mostHated = GetPrimaryOrMostHatedHostile() == hostile;
+            UnitLock combatLock = smartCreature.GetLockByUnit(hostile.Unit);
 
             if (combatLock == null)
             {
                 if (TryMakeFreeLockSlotFor(hostile))
                 {
-                    this.smartCreature.AddLock(hostile.Unit, mostHated);
+                    smartCreature.AddLock(hostile.Unit, mostHated);
                 }
             }
             else
             {
                 if (mostHated && !combatLock.Primary)
                 {
-                    this.smartCreature.SetPrimaryLock(combatLock.Id);
+                    smartCreature.SetPrimaryLock(combatLock.Id);
                 }
             }
         }
@@ -362,26 +340,22 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 return false;
             }
 
-            var visibility = this.smartCreature.GetVisibility(unitLock.Target);
+            IUnitVisibility visibility = smartCreature.GetVisibility(unitLock.Target);
 
             if (visibility == null)
             {
                 return false;
             }
 
-            var r = visibility.GetLineOfSight(IsNpcHasMissiles);
+            LOSResult r = visibility.GetLineOfSight(IsNpcHasMissiles);
 
-            if (r != null && r.hit && (r.blockingFlags & BlockingFlags.Plant) == 0)
-            {
-                return false;
-            }
-
-            return unitLock.Target.GetDistance(this.smartCreature) < this.smartCreature.MaxActionRange;
+            return (r == null || !r.hit || (r.blockingFlags & BlockingFlags.Plant) != 0)
+&& unitLock.Target.GetDistance(smartCreature) < smartCreature.MaxActionRange;
         }
 
         private UnitLock[] GetValidLocks()
         {
-            return this.smartCreature
+            return smartCreature
                 .GetLocks()
                 .Select(l => (UnitLock)l)
                 .Where(u => IsLockValidTarget(u))
@@ -390,38 +364,32 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         private bool SelectPrimaryTarget()
         {
-            var validLocks = GetValidLocks();
+            UnitLock[] validLocks = GetValidLocks();
 
-            if (validLocks.Length < 1)
-            {
-                return false;
-            }
-
-            return stratSelector?.TryUseStrategy(smartCreature, validLocks) ?? false;
+            return validLocks.Length >= 1 && (stratSelector?.TryUseStrategy(smartCreature, validLocks) ?? false);
         }
 
         private List<Point> FindNewAttackPosition(Unit hostile, CancellationToken cancellationToken)
         {
-            var end = hostile.CurrentPosition.GetRandomPositionInRange2D(0, smartCreature.BestActionRange - 1).ToPoint();
+            Point end = hostile.CurrentPosition.GetRandomPositionInRange2D(0, smartCreature.BestActionRange - 1).ToPoint();
 
             smartCreature.StopMoving();
             // Nulling movement so that the unit does not resume it at zero speed if the path is not found.
             movement = null;
 
-            var maxNode = Math.Pow(smartCreature.HomeRange, 2) * Math.PI;
-            var priorityQueue = new PriorityQueue<Node>((int)maxNode);
-            var startNode = new Node(smartCreature.CurrentPosition);
+            double maxNode = Math.Pow(smartCreature.HomeRange, 2) * Math.PI;
+            PriorityQueue<Node> priorityQueue = new PriorityQueue<Node>((int)maxNode);
+            Node startNode = new Node(smartCreature.CurrentPosition);
 
             priorityQueue.Enqueue(startNode);
 
-            var closed = new HashSet<Point>
+            HashSet<Point> closed = new HashSet<Point>
             {
                 startNode.position
             };
 
-            Node current;
 
-            while (priorityQueue.TryDequeue(out current))
+            while (priorityQueue.TryDequeue(out Node current))
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -433,14 +401,14 @@ namespace Perpetuum.Zones.NpcSystem.AI
                     return BuildPath(current);
                 }
 
-                foreach (var n in current.position.GetNeighbours())
+                foreach (Point n in current.position.GetNeighbours())
                 {
                     if (closed.Contains(n))
                     {
                         continue;
                     }
 
-                    closed.Add(n);
+                    _ = closed.Add(n);
 
                     if (!smartCreature.IsWalkable(n.X, n.Y))
                     {
@@ -452,9 +420,9 @@ namespace Perpetuum.Zones.NpcSystem.AI
                         continue;
                     }
 
-                    var newG = current.g + (n.X - current.position.X == 0 || n.Y - current.position.Y == 0 ? 100 : Sqrt2);
-                    var newH = Heuristic.Manhattan.Calculate(n.X, n.Y, end.X, end.Y) * Weight;
-                    var newNode = new Node(n)
+                    int newG = current.g + (n.X - current.position.X == 0 || n.Y - current.position.Y == 0 ? 100 : Sqrt2);
+                    int newH = Heuristic.Manhattan.Calculate(n.X, n.Y, end.X, end.Y) * Weight;
+                    Node newNode = new Node(n)
                     {
                         g = newG,
                         f = newG + newH,
@@ -470,22 +438,22 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         private bool IsValidAttackPosition(Unit hostile, Point position)
         {
-            var position3 = smartCreature.Zone.FixZ(position.ToPosition()).AddToZ(smartCreature.Height);
+            Position position3 = smartCreature.Zone.FixZ(position.ToPosition()).AddToZ(smartCreature.Height);
 
             if (!hostile.CurrentPosition.IsInRangeOf3D(position3, smartCreature.BestActionRange))
             {
                 return false;
             }
 
-            var r = smartCreature.Zone.IsInLineOfSight(position3, hostile, false);
+            LOSResult r = smartCreature.Zone.IsInLineOfSight(position3, hostile, false);
 
             return !r.hit;
         }
 
         private static List<Point> BuildPath(Node current)
         {
-            var stack = new Stack<Point>();
-            var node = current;
+            Stack<Point> stack = new Stack<Point>();
+            Node node = current;
 
             while (node != null)
             {

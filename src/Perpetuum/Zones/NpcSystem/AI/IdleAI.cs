@@ -1,4 +1,5 @@
-﻿using Perpetuum.Zones.Movements;
+﻿using Perpetuum.Modules;
+using Perpetuum.Zones.Movements;
 using System;
 
 namespace Perpetuum.Zones.NpcSystem.AI
@@ -11,33 +12,33 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         public override void Enter()
         {
-            this.smartCreature.StopAllModules();
-            this.smartCreature.ResetLocks();
+            smartCreature.StopAllModules(new Type[] { typeof(NoxModule) });
+            smartCreature.ResetLocks();
 
-            this.movement = new RandomMovement(this.smartCreature.HomePosition, this.smartCreature.HomeRange);
+            movement = new RandomMovement(smartCreature.HomePosition, smartCreature.HomeRange);
 
-            movement.Start(this.smartCreature);
+            movement.Start(smartCreature);
 
             base.Enter();
         }
 
         public override void Update(TimeSpan time)
         {
-            if (!this.smartCreature.IsInHomeRange)
+            if (!smartCreature.IsInHomeRange)
             {
-                this.ToHomeAI();
+                ToHomeAI();
 
                 return;
             }
 
-            if (this.smartCreature.ThreatManager.IsThreatened)
+            if (smartCreature.ThreatManager.IsThreatened)
             {
-                this.ToAggressorAI();
+                ToAggressorAI();
 
                 return;
             }
 
-            this.movement?.Update(this.smartCreature, time);
+            movement?.Update(smartCreature, time);
         }
     }
 }

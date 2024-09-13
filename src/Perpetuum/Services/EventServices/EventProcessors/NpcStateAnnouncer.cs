@@ -1,59 +1,68 @@
 ﻿using Perpetuum.Accounting.Characters;
 using Perpetuum.EntityFramework;
+using Perpetuum.Log;
 using Perpetuum.Services.Channels;
 using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Zones.NpcSystem.Flocks;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Perpetuum.Log;
 
 namespace Perpetuum.Services.EventServices.EventProcessors
 {
     public class NpcStateAnnouncer : EventProcessor
     {
-        private readonly IChannelManager _channelManager;
+        private readonly IChannelManager channelManager;
         private const string SENDER_CHARACTER_NICKNAME = "[OPP] Announcer";
         private const string CHANNEL = "Syndicate Radio";
-        private readonly Character _announcer;
-        private readonly IFlockConfigurationRepository _flockConfigReader;
-        private readonly IDictionary<string, object> _nameDictionary;
-        private readonly IDictionary<int, NpcStateMessage> _state;
+        private readonly Character announcer;
+        private readonly IFlockConfigurationRepository flockConfigReader;
+        private readonly IDictionary<string, object> nameDictionary;
+        private readonly IDictionary<int, NpcStateMessage> state;
 
-        public NpcStateAnnouncer(IChannelManager channelManager, IFlockConfigurationRepository flockConfigurationRepo, ICustomDictionary customDictionary)
+        public NpcStateAnnouncer(
+            IChannelManager channelManager,
+            IFlockConfigurationRepository flockConfigurationRepo,
+            ICustomDictionary customDictionary)
         {
-            _announcer = Character.GetByNick(SENDER_CHARACTER_NICKNAME);
-            _channelManager = channelManager;
-            _flockConfigReader = flockConfigurationRepo;
-            _nameDictionary = customDictionary.GetDictionary(0);
-            _state = new Dictionary<int, NpcStateMessage>();
+            announcer = Character.GetByNick(SENDER_CHARACTER_NICKNAME);
+            this.channelManager = channelManager;
+            flockConfigReader = flockConfigurationRepo;
+            nameDictionary = customDictionary.GetDictionary(0);
+            state = new Dictionary<int, NpcStateMessage>();
         }
 
         //TODO use ChannelMessageHandler w/ PreMadeChatMessages
-        private readonly IList<string> _aliveMessages = new List<string>()
+        private readonly IList<string> aliveMessages = new List<string>()
         {
             "has spawned!",
             "has appeared on Syndicate scanners",
-            "has been detected"
+            "has been detected",
         };
 
-        private readonly IList<string> _deathMessages = new List<string>()
+        private readonly IList<string> deathMessages = new List<string>()
         {
             "has been defeated",
             "is no longer a threat to Syndicate activity",
-            "'s signature is no longer detected at this time"
+            "'s signature is no longer detected at this time",
+        };
+
+        private readonly IList<string> safeDespawnMessages = new List<string>()
+        {
+            "has been recalled by Niani Gods",
+            "is no longer on Syndicate scanners",
+            "is disappeared",
         };
 
         private int GetNpcDef(NpcStateMessage msg)
         {
-            var config = _flockConfigReader.Get(msg.FlockId);
+            IFlockConfiguration config = flockConfigReader.Get(msg.FlockId);
             return config?.EntityDefault?.Definition ?? -1;
         }
 
         private string GetNpcName(int def)
         {
-            var nameToken = EntityDefault.Get(def).Name + "_name";
-            var name = "";
-            if (_nameDictionary.TryGetValue(nameToken, out name) != true)
+            string nameToken = EntityDefault.Get(def).Name + "_name";
+            if (nameDictionary.TryGetValue(nameToken, out string name) != true)
             {
                 WriteNPCStateAnnouncerLog($"Missing localized name for {nameToken}");
             }
@@ -62,7 +71,7 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 
         private void WriteNPCStateAnnouncerLog(string message)
         {
-            var e = new LogEvent
+            LogEvent e = new LogEvent
             {
                 LogType = LogType.Error,
                 Tag = "NpcStateAnnouncer",
@@ -74,32 +83,36 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 
         private string GetStateMessage(NpcStateMessage msg)
         {
-            if (msg.State == NpcState.Alive)
+            switch (msg.State)
             {
-                return _aliveMessages[FastRandom.NextInt(_aliveMessages.Count - 1)];
+                case NpcState.Alive:
+                    return aliveMessages[FastRandom.NextInt(aliveMessages.Count - 1)];
+                case NpcState.Dead:
+                    return deathMessages[FastRandom.NextInt(deathMessages.Count - 1)];
+                case NpcState.SafeDespawned:
+                    return safeDespawnMessages[FastRandom.NextInt(safeDespawnMessages.Count - 1)];
+                default:
+                    return string.Empty;
+
             }
-            else if (msg.State == NpcState.Dead)
-            {
-                return _deathMessages[FastRandom.NextInt(_deathMessages.Count - 1)];
-            }
-            return string.Empty;
         }
 
         private string BuildChatAnnouncement(NpcStateMessage msg)
         {
-            var def = GetNpcDef(msg);
+            int def = GetNpcDef(msg);
             if (def < 0)
+            {
                 return string.Empty;
+            }
 
-            var npcName = GetNpcName(def);
+            string npcName = GetNpcName(def);
             if (npcName == string.Empty)
+            {
                 return string.Empty;
+            }
 
-            var stateMessage = GetStateMessage(msg);
-            if (stateMessage == string.Empty)
-                return string.Empty;
-
-            return $"{npcName} {stateMessage}";
+            string stateMessage = GetStateMessage(msg);
+            return stateMessage == string.Empty ? string.Empty : $"{npcName} {stateMessage}";
         }
 
         private static string Strip(string str)
@@ -109,9 +122,9 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 
         private static string Abbreviate(string name, int charLim)
         {
-            var words = name.Split(' ');
-            var perWordLen = (charLim / (words.Length).Max(1)).Clamp(3, 24);
-            for (var i = 0; i < words.Length; i++)
+            string[] words = name.Split(' ');
+            int perWordLen = (charLim / words.Length.Max(1)).Clamp(3, 24);
+            for (int i = 0; i < words.Length; i++)
             {
                 words[i] = Strip(words[i]).Clamp(perWordLen) ?? "";
             }
@@ -120,14 +133,20 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 
         private string BuildTopicFromState()
         {
-            var topic = "Current: ";
-            var allowableNameLens = (190 / (_state.Count).Max(1)).Clamp(3, 64);
-            foreach (var pair in _state)
+            string topic = "Current: ";
+            int allowableNameLens = (190 / state.Count.Max(1)).Clamp(3, 64);
+            foreach (KeyValuePair<int, NpcStateMessage> pair in state)
             {
-                var name = Abbreviate(GetNpcName(pair.Key), allowableNameLens);
-                if (name == string.Empty) continue;
-                if(pair.Value.State == NpcState.Alive)
+                string name = Abbreviate(GetNpcName(pair.Key), allowableNameLens);
+                if (name == string.Empty)
+                {
+                    continue;
+                }
+
+                if (pair.Value.State == NpcState.Alive)
+                {
                     topic += $"{name}|";
+                }
             }
             return topic;
         }
@@ -139,14 +158,14 @@ namespace Perpetuum.Services.EventServices.EventProcessors
 
         private bool UpdateState(NpcStateMessage msg)
         {
-            var defKey = GetNpcDef(msg);
+            int defKey = GetNpcDef(msg);
             if (defKey < 0)
             {
                 return false;
             }
-            else if (!_state.ContainsKey(defKey) || IsUpdatable(_state[defKey], msg))
+            else if (!state.ContainsKey(defKey) || IsUpdatable(state[defKey], msg))
             {
-                _state[defKey] = msg;
+                state[defKey] = msg;
                 return true;
             }
             return false;
@@ -159,15 +178,15 @@ namespace Perpetuum.Services.EventServices.EventProcessors
             {
                 if (UpdateState(msg))
                 {
-                    var announcement = BuildChatAnnouncement(msg);
-                    var motd = BuildTopicFromState();
+                    string announcement = BuildChatAnnouncement(msg);
+                    string motd = BuildTopicFromState();
                     if (!announcement.IsNullOrEmpty())
                     {
-                        _channelManager.Announcement(CHANNEL, _announcer, announcement);
+                        channelManager.Announcement(CHANNEL, announcer, announcement);
                     }
                     if (!motd.IsNullOrEmpty())
                     {
-                        _channelManager.SetTopic(CHANNEL, _announcer, motd);
+                        channelManager.SetTopic(CHANNEL, announcer, motd);
                     }
                 }
 

@@ -172,7 +172,16 @@ namespace Perpetuum.Robots
 
         public void StopAllModules()
         {
-            foreach (ActiveModule module in ActiveModules)
+            StopAllModules(new Type[0]);
+        }
+
+        public void StopAllModules(Type[] except)
+        {
+            ActiveModule[] activeModules = ActiveModules
+                .Where(x => !except.Contains(x.GetType()))
+                .ToArray();
+
+            foreach (ActiveModule module in activeModules)
             {
                 module.State.SwitchTo(ModuleStateType.Idle);
             }
@@ -372,6 +381,12 @@ namespace Perpetuum.Robots
             _robotComponents = new Lazy<IEnumerable<RobotComponent>>(() => Components.OfType<RobotComponent>().ToArray());
             _modules = new Lazy<IEnumerable<Module>>(() => RobotComponents.SelectMany(c => c.Modules).ToArray());
             _activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().ToArray());
+        }
+
+        protected override void OnEnterZone(IZone zone, ZoneEnterType enterType)
+        {
+            base.OnEnterZone(zone, enterType);
+            CamouflageUpdate();
         }
     }
 }

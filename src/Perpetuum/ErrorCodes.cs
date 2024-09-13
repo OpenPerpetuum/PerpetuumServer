@@ -714,5 +714,7 @@ namespace Perpetuum
         MaxBandwidthExceed,
         RemoteControlledTurretInRange,
         TurretNotDeployableNearObject,
+        NoxTeleportForbidden,
+        PlasmaNotFound,
     }
 }

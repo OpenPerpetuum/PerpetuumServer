@@ -686,6 +686,12 @@ namespace Perpetuum.Bootstrapper
             _ = _builder.RegisterType<GangEffect>().Keyed<Effect>(EffectType.effect_aura_gang_armor_max);
             _ = _builder.RegisterType<GangEffect>().Keyed<Effect>(EffectType.effect_aura_gang_shield_absorbtion_ratio);
 
+            // NOX effects
+
+            _ = _builder.RegisterType<NoxEffect>().Keyed<Effect>(EffectType.nox_effect_repair_negation);
+            _ = _builder.RegisterType<NoxEffect>().Keyed<Effect>(EffectType.nox_effect_shield_negation);
+            _ = _builder.RegisterType<NoxEffect>().Keyed<Effect>(EffectType.nox_effect_teleport_negation);
+
             // intrusion effects
 
             _ = _builder.RegisterType<CorporationEffect>().Keyed<Effect>(EffectType.effect_intrusion_geoscan_lvl1);
@@ -846,6 +852,8 @@ namespace Perpetuum.Bootstrapper
             RegisterRobot<SentryTurret>().OnActivated(e => e.Instance.SetCoreRecharger(e.Context.Resolve<ICoreRecharger>()));
             RegisterRobot<IndustrialTurret>().OnActivated(e => e.Instance.SetCoreRecharger(e.Context.Resolve<ICoreRecharger>()));
             RegisterRobot<CombatDrone>().OnActivated(e => e.Instance.SetCoreRecharger(e.Context.Resolve<ICoreRecharger>()));
+            RegisterRobot<IndustrialDrone>().OnActivated(e => e.Instance.SetCoreRecharger(e.Context.Resolve<ICoreRecharger>()));
+            RegisterRobot<SupportDrone>().OnActivated(e => e.Instance.SetCoreRecharger(e.Context.Resolve<ICoreRecharger>()));
             RegisterRobot<PBSTurret>();
             RegisterRobot<PunchBag>();
 
@@ -962,6 +970,7 @@ namespace Perpetuum.Bootstrapper
             RegisterModule<CoreBoosterModule>();
             RegisterModule<SensorJammerModule>();
             RegisterModule<EnergyNeutralizerModule>();
+            RegisterModule<ScorcherModule>();
             RegisterModule<EnergyTransfererModule>();
             RegisterModule<EnergyVampireModule>();
             RegisterModule<GeoScannerModule>();
@@ -970,7 +979,10 @@ namespace Perpetuum.Bootstrapper
             RegisterModule<SiegeHackModule>();
             RegisterModule<NeuralyzerModule>();
             RegisterModule<BlobEmissionModulatorModule>();
-            RegisterModule<RemoteControllerModule>();
+            RegisterModule<TacticalRemoteControllerModule>();
+            RegisterModule<AssaultRemoteControllerModule>();
+            RegisterModule<IndustrialRemoteControllerModule>();
+            RegisterModule<SupportRemoteControllerModule>();
             RegisterModule<TerraformMultiModule>();
             RegisterModule<WallBuilderModule>();
             RegisterModule<ConstructionModule>();
@@ -984,6 +996,7 @@ namespace Perpetuum.Bootstrapper
             RegisterEffectModule<StealthModule>();
             RegisterEffectModule<DetectionModule>();
             RegisterEffectModule<GangModule>();
+            RegisterEffectModule<NoxModule>();
             RegisterEffectModule<ShieldGeneratorModule>();
             RegisterEffectModule<MineDetectorModule>();
 
@@ -1115,12 +1128,10 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<WeaponAmmo>(CategoryFlags.cf_projectile_ammo);
                 ByCategoryFlags<WeaponAmmo>(CategoryFlags.cf_missile_ammo);
                 ByCategoryFlags<MiningAmmo>(CategoryFlags.cf_mining_ammo);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_sentry_turret_units);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_mining_turret_units);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_harvesting_turret_units);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_pelistal_combat_drones_units);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_nuimqol_combat_drones_units);
-                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_thelodica_combat_drones_units);
+                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_assault_drones_units);
+                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_attack_drones_units);
+                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_industrial_drones_units);
+                ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_support_drones_units);
                 ByCategoryFlags<TileScannerAmmo>(CategoryFlags.cf_mining_probe_ammo_tile);
                 ByCategoryFlags<OneTileScannerAmmo>(CategoryFlags.cf_mining_probe_ammo_one_tile);
                 ByCategoryFlags<ArtifactScannerAmmo>(CategoryFlags.cf_mining_probe_ammo_artifact);
@@ -1198,6 +1209,7 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<CoreBoosterModule>(CategoryFlags.cf_core_boosters, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_core_booster_ammo));
                 ByCategoryFlags<SensorJammerModule>(CategoryFlags.cf_sensor_jammers);
                 ByCategoryFlags<EnergyNeutralizerModule>(CategoryFlags.cf_energy_neutralizers);
+                ByCategoryFlags<ScorcherModule>(CategoryFlags.cf_scorchers);
                 ByCategoryFlags<EnergyTransfererModule>(CategoryFlags.cf_energy_transferers);
                 ByCategoryFlags<EnergyVampireModule>(CategoryFlags.cf_energy_vampires);
                 ByCategoryFlags<DrillerModule>(CategoryFlags.cf_drillers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_mining_ammo));
@@ -1210,7 +1222,10 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<SiegeHackModule>(CategoryFlags.cf_siege_hack_modules);
                 ByCategoryFlags<NeuralyzerModule>(CategoryFlags.cf_neuralyzer);
                 ByCategoryFlags<BlobEmissionModulatorModule>(CategoryFlags.cf_blob_emission_modulator, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_blob_emission_modulator_ammo));
-                ByCategoryFlags<RemoteControllerModule>(CategoryFlags.cf_remote_controllers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_remote_controlled_units));
+                ByCategoryFlags<TacticalRemoteControllerModule>(CategoryFlags.cf_tactical_remote_controllers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_attack_drones_units));
+                ByCategoryFlags<AssaultRemoteControllerModule>(CategoryFlags.cf_assault_remote_controllers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_assault_drones_units));
+                ByCategoryFlags<IndustrialRemoteControllerModule>(CategoryFlags.cf_industrial_remote_controllers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_industrial_drones_units));
+                ByCategoryFlags<SupportRemoteControllerModule>(CategoryFlags.cf_support_remote_controllers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_support_drones_units));
                 ByCategoryFlags<WebberModule>(CategoryFlags.cf_webber);
                 ByCategoryFlags<SensorDampenerModule>(CategoryFlags.cf_sensor_dampeners);
                 ByCategoryFlags<RemoteSensorBoosterModule>(CategoryFlags.cf_remote_sensor_boosters);
@@ -1250,6 +1265,9 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<GangModule>(CategoryFlags.cf_gang_assist_ewar, new NamedParameter("effectType", EffectType.effect_aura_gang_ewar_optimal), new NamedParameter("effectModifier", AggregateField.effect_ew_optimal_range_modifier));
                 ByCategoryFlags<GangModule>(CategoryFlags.cf_gang_assist_fast_extracting, new NamedParameter("effectType", EffectType.effect_aura_gang_fast_extraction), new NamedParameter("effectModifier", AggregateField.effect_gathering_cycle_time_modifier));
 
+                ByCategoryFlags<NoxModule>(CategoryFlags.cf_nox_shield_negators, new NamedParameter("effectType", EffectType.nox_effect_shield_negation), new NamedParameter("effectModifier", AggregateField.nox_shield_absorbtion_modifier));
+                ByCategoryFlags<NoxModule>(CategoryFlags.cf_nox_repair_negators, new NamedParameter("effectType", EffectType.nox_effect_repair_negation), new NamedParameter("effectModifier", AggregateField.nox_repair_amount_modifier));
+                ByCategoryFlags<NoxModule>(CategoryFlags.cf_nox_teleport_negators, new NamedParameter("effectType", EffectType.nox_effect_teleport_negation), new NamedParameter("effectModifier", AggregateField.nox_teleport_negation));
 
                 ByCategoryFlags<SystemContainer>(CategoryFlags.cf_logical_storage);
                 ByCategoryFlags<Item>(CategoryFlags.cf_mission_items);
@@ -1260,6 +1278,10 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<IndustrialTurret>(CategoryFlags.cf_mining_turrets);
                 ByCategoryFlags<IndustrialTurret>(CategoryFlags.cf_harvesting_turrets);
                 ByCategoryFlags<CombatDrone>(CategoryFlags.cf_combat_drones);
+                ByCategoryFlags<CombatDrone>(CategoryFlags.cf_assault_drones);
+                ByCategoryFlags<CombatDrone>(CategoryFlags.cf_attack_drones);
+                ByCategoryFlags<SupportDrone>(CategoryFlags.cf_support_drones);
+                ByCategoryFlags<IndustrialDrone>(CategoryFlags.cf_industrial_drones);
                 ByCategoryFlags<Item>(CategoryFlags.cf_reactor_cores);
                 ByCategoryFlags<Kiosk>(CategoryFlags.cf_kiosk);
                 ByCategoryFlags<AlarmSwitch>(CategoryFlags.cf_alarm_switch);

@@ -1,10 +1,13 @@
-﻿using Perpetuum.PathFinders;
+﻿using Perpetuum.Modules;
+using Perpetuum.PathFinders;
 using Perpetuum.Zones.Movements;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Perpetuum.Zones.NpcSystem.AI
 {
-    public class HomingAI : CombatAI
+    public class HomingAI : BaseAI
     {
         private PathMovement movement;
         private readonly double maxReturnHomeRadius;
@@ -12,55 +15,64 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         public HomingAI(SmartCreature smartCreature) : base(smartCreature)
         {
-            this.maxReturnHomeRadius = (smartCreature.HomeRange * 0.4).Clamp(3, 20);
-            this.pathFinder = new AStarFinder(Heuristic.Manhattan, smartCreature.IsWalkable);
+            maxReturnHomeRadius = (smartCreature.HomeRange * 0.4).Clamp(3, 20);
+            pathFinder = new AStarFinder(Heuristic.Manhattan, smartCreature.IsWalkable);
         }
 
         public override void Enter()
         {
-            var randomHome = this.smartCreature.Zone.FindPassablePointInRadius(this.smartCreature.HomePosition, (int)this.maxReturnHomeRadius);
+            Position randomHome =
+                smartCreature.Zone.FindPassablePointInRadius(smartCreature.HomePosition, (int)maxReturnHomeRadius);
 
             if (randomHome == default)
             {
-                randomHome = this.smartCreature.HomePosition;
+                randomHome = smartCreature.HomePosition;
             }
 
-            pathFinder
-                .FindPathAsync(this.smartCreature.CurrentPosition, randomHome)
+            _ = pathFinder
+                .FindPathAsync(smartCreature.CurrentPosition, randomHome)
                 .ContinueWith(t =>
                 {
-                    var path = t.Result;
+                    System.Drawing.Point[] path = t.Result;
 
                     if (path == null)
                     {
-                        WriteLog("Path not found! (" + this.smartCreature.CurrentPosition + " => " + this.smartCreature.HomePosition + ")");
+                        WriteLog("Path not found! (" + smartCreature.CurrentPosition + " => " + smartCreature.HomePosition + ")");
 
-                        var f = new AStarFinder(Heuristic.Manhattan, (x, y) => true);
+                        AStarFinder f = new AStarFinder(Heuristic.Manhattan, (x, y) => true);
 
-                        path = f.FindPath(this.smartCreature.CurrentPosition, this.smartCreature.HomePosition);
+                        path = f.FindPath(smartCreature.CurrentPosition, smartCreature.HomePosition);
 
                         if (path == null)
                         {
-                            WriteLog("Safe path not found! (" + this.smartCreature.CurrentPosition + " => " + this.smartCreature.HomePosition + ")");
+                            WriteLog("Safe path not found! (" + smartCreature.CurrentPosition + " => " + smartCreature.HomePosition + ")");
                         }
                     }
 
-                    this.movement = new PathMovement(path);
-                    this.movement.Start(this.smartCreature);
+                    movement = new PathMovement(path);
+                    movement.Start(smartCreature);
                 });
 
             base.Enter();
         }
 
+        protected override List<ModuleActivator> FillModuleActivators()
+        {
+            return smartCreature.ActiveModules
+                .Where(x => x is NoxModule)
+                .Select(m => new ModuleActivator(m))
+                .ToList();
+        }
+
         public override void Update(TimeSpan time)
         {
-            if (this.movement != null)
+            if (movement != null)
             {
-                this.movement.Update(this.smartCreature, time);
+                movement.Update(smartCreature, time);
 
-                if (this.movement.Arrived)
+                if (movement.Arrived)
                 {
-                    this.smartCreature.AI.Pop();
+                    _ = smartCreature.AI.Pop();
 
                     return;
                 }
@@ -70,6 +82,7 @@ namespace Perpetuum.Zones.NpcSystem.AI
         }
 
         protected override void ToHomeAI() { }
+
         protected override void ToAggressorAI() { }
     }
 }

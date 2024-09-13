@@ -11,6 +11,7 @@ using Perpetuum.Zones.Locking.Locks;
 using Perpetuum.Zones.NpcSystem.AI;
 using Perpetuum.Zones.NpcSystem.AI.Behaviors;
 using Perpetuum.Zones.NpcSystem.AI.CombatDrones;
+using Perpetuum.Zones.NpcSystem.AI.IndustrialDrones;
 using Perpetuum.Zones.NpcSystem.Flocks;
 using Perpetuum.Zones.NpcSystem.IndustrialTargetsManagement;
 using Perpetuum.Zones.NpcSystem.ThreatManaging;
@@ -397,9 +398,13 @@ namespace Perpetuum.Zones.NpcSystem
                     AI.Push(new HarvestingIndustrialTurretAI(this));
                 }
             }
-            else if (this is CombatDrone)
+            else if (this is CombatDrone || this is SupportDrone)
             {
                 AI.Push(new GuardCombatDroneAI(this));
+            }
+            else if (this is IndustrialDrone)
+            {
+                AI.Push(new GuardIndustrialDroneAI(this));
             }
             else if (IsStationary)
             {
@@ -409,6 +414,16 @@ namespace Perpetuum.Zones.NpcSystem
             {
                 AI.Push(new IdleAI(this));
             }
+        }
+
+        protected override void OnRemovedFromZone(IZone zone)
+        {
+            if (!States.Dead)
+            {
+                BossInfo?.OnSafeDespawn();
+            }
+
+            base.OnRemovedFromZone(zone);
         }
 
         protected override void OnDamageTaken(Unit source, DamageTakenEventArgs e)
