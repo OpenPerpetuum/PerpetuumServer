@@ -18,6 +18,9 @@ namespace Perpetuum.Zones.Terrains.Materials
         Gammaterial, //13
         Plants, //14
         EnergyMineral, //15
-        FluxOre //16
+        FluxOre, //16
+        Deeptanium, //17
+        Deepriton, //18
+        DHDT, //19
     }
 }

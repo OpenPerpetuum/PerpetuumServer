@@ -116,6 +116,7 @@ namespace Perpetuum.ExportedTypes
         cf_pelistal_combat_drones_units = 0x000000000102120A,
         cf_nuimqol_combat_drones_units = 0x000000000202120A,
         cf_thelodica_combat_drones_units = 0x000000000302120A,
+        cf_deep_mining_ammo = 0x000000000000130A,
 
         cf_attack_drones_units = 0x000000000003120A,
         cf_assault_drones_units = 0x000000000004120A,
@@ -218,6 +219,7 @@ namespace Perpetuum.ExportedTypes
         cf_drillers = 0x000000000001060F,
         cf_small_drillers = 0x000000000101060F,
         cf_medium_drillers = 0x000000000201060F,
+        cf_large_drillers = 0x000000000301060F,
         cf_medium_drillers_old = 0x000000000002060F,
         cf_industrial_turret_drillers = 0x000000000003060F,
         cf_mining_upgrades = 0x000000000004060F,

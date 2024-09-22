@@ -1128,6 +1128,7 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<WeaponAmmo>(CategoryFlags.cf_projectile_ammo);
                 ByCategoryFlags<WeaponAmmo>(CategoryFlags.cf_missile_ammo);
                 ByCategoryFlags<MiningAmmo>(CategoryFlags.cf_mining_ammo);
+                ByCategoryFlags<MiningAmmo>(CategoryFlags.cf_deep_mining_ammo);
                 ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_assault_drones_units);
                 ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_attack_drones_units);
                 ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_industrial_drones_units);
@@ -1212,7 +1213,9 @@ namespace Perpetuum.Bootstrapper
                 ByCategoryFlags<ScorcherModule>(CategoryFlags.cf_scorchers);
                 ByCategoryFlags<EnergyTransfererModule>(CategoryFlags.cf_energy_transferers);
                 ByCategoryFlags<EnergyVampireModule>(CategoryFlags.cf_energy_vampires);
-                ByCategoryFlags<DrillerModule>(CategoryFlags.cf_drillers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_mining_ammo));
+                ByCategoryFlags<DrillerModule>(CategoryFlags.cf_small_drillers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_mining_ammo));
+                ByCategoryFlags<DrillerModule>(CategoryFlags.cf_medium_drillers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_mining_ammo));
+                ByCategoryFlags<DrillerModule>(CategoryFlags.cf_large_drillers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_deep_mining_ammo));
                 ByCategoryFlags<RemoteControlledDrillerModule>(CategoryFlags.cf_industrial_turret_drillers);
                 ByCategoryFlags<RemoteControlledHarvesterModule>(CategoryFlags.cf_industrial_turret_harvesters);
                 ByCategoryFlags<HarvesterModule>(CategoryFlags.cf_harvesters, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_harvesting_ammo));
