@@ -151,8 +151,10 @@ namespace Perpetuum.Modules
                     0,
                     ErrorCodes.NoMineralOnTile,
                     (PerpetuumException ex) =>
-                        (ParentRobot as RemoteControlledCreature)
-                            .ProcessIndustrialTarget(terrainLock.Location.Center, 0));
+                    {
+                        RemoteControlledCreature creature = ParentRobot as RemoteControlledCreature;
+                        creature?.ProcessIndustrialTarget(terrainLock.Location.Center, 0);
+                    });
             extractedMaterials
                 .AddRange(rareMaterialHandler.GenerateRareMaterials(materialInfo.EntityDefault.Definition));
             CreateBeam(terrainLock.Location, BeamState.AlignToTerrain);
