@@ -34,6 +34,8 @@ namespace Perpetuum.Robots
 
         public bool IsSelected => RobotHelper.IsSelected(this);
 
+        public bool IsBlessed => EffectHandler.ContainsEffect(EffectType.effect_gods_bless);
+
         public override double Health => IsRepackaged
                     ? base.Health
                     : ArmorMax > 0.0 && Armor > 0.0

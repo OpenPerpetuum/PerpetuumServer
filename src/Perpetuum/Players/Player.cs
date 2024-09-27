@@ -68,8 +68,34 @@ namespace Perpetuum.Players
         private CancellableDespawnHelper despawnHelper;
 
         public static readonly TimeSpan NormalUndockDelay = TimeSpan.FromSeconds(7);
+        public static readonly TimeSpan BlessedUndockDelay = TimeSpan.FromMinutes(3); // Supposed to be 15
         public const int ARKHE_REQUEST_TIMER_MINUTES_PVP = 3;
         public const int ARKHE_REQUEST_TIMER_MINUTES_NPC = 1;
+
+        private readonly Dictionary<CategoryFlags, int> baseTokenPrices = new Dictionary<CategoryFlags, int>
+        {
+            { CategoryFlags.cf_runners, 50 },
+            { CategoryFlags.cf_nuimqol_runners, 50 },
+            { CategoryFlags.cf_pelistal_runners, 50 },
+            { CategoryFlags.cf_thelodica_runners, 50 },
+            { CategoryFlags.cf_industrial_runners, 50 },
+            { CategoryFlags.cf_crawlers, 75 },
+            { CategoryFlags.cf_nuimqol_crawlers, 75 },
+            { CategoryFlags.cf_pelistal_crawlers, 75 },
+            { CategoryFlags.cf_thelodica_crawlers, 75 },
+            { CategoryFlags.cf_industrial_crawlers, 75 },
+            { CategoryFlags.cf_mechs, 100 },
+            { CategoryFlags.cf_nuimqol_mechs, 100 },
+            { CategoryFlags.cf_pelistal_mechs, 100 },
+            { CategoryFlags.cf_thelodica_mechs, 100 },
+            { CategoryFlags.cf_industrial_mechs, 100 },
+            { CategoryFlags.cf_heavy_mechs, 125 },
+            { CategoryFlags.cf_nuimqol_heavymechs, 125 },
+            { CategoryFlags.cf_pelistal_heavymechs, 125 },
+            { CategoryFlags.cf_thelodica_heavymechs, 125 },
+            { CategoryFlags.cf_industrial_heavymechs, 125 },
+            { CategoryFlags.cf_walkers, 125 },
+        };
 
         private bool HasAggressorEffect => EffectHandler.ContainsEffect(EffectType.effect_aggressor);
 
@@ -1061,144 +1087,19 @@ namespace Perpetuum.Players
                     Character character = Character;
                     DockingBase dockingBase = character.GetHomeBaseOrCurrentBase();
 
-                    dockingBase.DockIn(character, NormalUndockDelay, ZoneExitType.Died);
+                    dockingBase.DockIn(character, IsBlessed ? BlessedUndockDelay : NormalUndockDelay, ZoneExitType.Died);
 
                     PlayerDeathLogger.Log.Write(zone, this, killer);
 
                     bool wasInsured = InsuranceHelper.CheckInsuranceOnDeath(Eid, Definition);
 
-                    if (!Session.AccessLevel.IsAdminOrGm())
+                    if (!Session.AccessLevel.IsAdminOrGm() && !IsBlessed)
                     {
-                        RobotInventory robotInventory = GetContainer();
-
-                        Debug.Assert(robotInventory != null);
-
-                        List<LootItem> lootItems = new List<LootItem>();
-
-                        foreach (Module module in Modules.Where(m => LootHelper.Roll()))
-                        {
-                            lootItems.Add(LootItemBuilder.Create(module).AsDamaged().Build());
-
-                            ActiveModule activeModule = module as ActiveModule;
-                            Items.Ammos.Ammo ammo = activeModule?.GetAmmo();
-
-                            if (ammo != null && LootHelper.Roll())
-                            {
-                                lootItems.Add(LootItemBuilder.Create(ammo).Build());
-                            }
-
-                            module.Parent = robotInventory.Eid;
-
-                            Repository.Delete(module);
-                        }
-
-                        foreach (Item item in robotInventory.GetItems(true).Where(i => i is VolumeWrapperContainer))
-                        {
-                            if (!(item is VolumeWrapperContainer wrapper))
-                            {
-                                continue;
-                            }
-
-                            lootItems.AddRange(wrapper.GetLootItems());
-                            wrapper.SetAllowDelete();
-                            Repository.Delete(wrapper);
-                        }
-
-                        foreach (Item item in robotInventory
-                            .GetItems()
-                            .Where(i => LootHelper.Roll() && !i.ED.AttributeFlags.NonStackable))
-                        {
-                            double qtyMod = FastRandom.NextDouble();
-
-                            item.Quantity = (int)(item.Quantity * qtyMod);
-
-                            if (item.Quantity > 0)
-                            {
-                                lootItems.Add(
-                                    LootItemBuilder
-                                        .Create(item.Definition)
-                                        .SetQuantity(item.Quantity)
-                                        .SetRepackaged(item.ED.AttributeFlags.Repackable)
-                                        .Build());
-                            }
-                            else
-                            {
-                                robotInventory.RemoveItemOrThrow(item);
-                                Repository.Delete(item);
-                            }
-                        }
-
-                        if (ED.Config.Tint != Tint && LootHelper.Roll(0.5))
-                        {
-                            EntityDefault paint = EntityDefault.Reader.GetAll()
-                                .Where(i => i.CategoryFlags == CategoryFlags.cf_paints)
-                                .Where(i => i.Config.Tint == Tint).FirstOrDefault();
-
-                            if (paint != null)
-                            {
-                                lootItems.Add(LootItemBuilder.Create(paint.Definition).SetQuantity(1).SetDamaged(false).Build());
-                            }
-                        }
-
-                        if (lootItems.Count > 0)
-                        {
-                            LootContainer lootContainer = LootContainer.Create()
-                                .AddLoot(lootItems)
-                                .BuildAndAddToZone(zone, CurrentPosition);
-
-                            if (lootContainer != null)
-                            {
-                                TransactionLogEventBuilder b = TransactionLogEvent.Builder()
-                                    .SetTransactionType(TransactionType.PutLoot)
-                                    .SetCharacter(character)
-                                    .SetContainer(lootContainer.Eid);
-
-                                foreach (LootItem lootItem in lootItems)
-                                {
-                                    _ = b.SetItem(lootItem.ItemInfo.Definition, lootItem.ItemInfo.Quantity);
-                                    Character.LogTransaction(b);
-                                }
-                            }
-                        }
-
-                        bool killedByPlayer = killer != null && killer.IsPlayer();
-
-                        Trashcan.Get()
-                            .MoveToTrash(this, Session.DisconnectTime, wasInsured, killedByPlayer, Session.InactiveTime);
-
-                        character.NextAvailableRobotRequestTime =
-                            DateTime.Now.AddMinutes(killedByPlayer ? ARKHE_REQUEST_TIMER_MINUTES_PVP : ARKHE_REQUEST_TIMER_MINUTES_NPC);
-
-                        Robot activeRobot = null;
-
-                        if (!killedByPlayer)
-                        {
-                            activeRobot = dockingBase.CreateStarterRobotForCharacter(character);
-
-                            if (activeRobot != null)
-                            {
-                                Transaction.Current.OnCommited(() =>
-                                {
-                                    Dictionary<string, object> starterRobotInfo = new Dictionary<string, object>
-                                    {
-                                        {k.baseEID, Eid},
-                                        {k.robotEID, activeRobot.Eid}
-                                    };
-
-                                    Message.Builder.SetCommand(Commands.StarterRobotCreated).WithData(starterRobotInfo).ToCharacter(character).Send();
-                                });
-                            }
-                        }
-
-                        character.SetActiveRobot(activeRobot);
+                        DieAndDropLoot(zone, killer, character, dockingBase, wasInsured);
                     }
                     else
                     {
-                        this.Repair();
-
-                        PublicContainer container = dockingBase.GetPublicContainer();
-
-                        container.AddItem(this, false);
+                        ResurrectAndLoseCargo(zone, character, dockingBase);
                     }
 
                     Save();
@@ -1211,6 +1112,205 @@ namespace Perpetuum.Players
                 }
             }
         }
+
+        private void ResurrectAndLoseCargo(IZone zone, Character character, DockingBase dockingBase)
+        {
+            this.Repair();
+
+            PublicContainer container = dockingBase.GetPublicContainer();
+
+            container.AddItem(this, false);
+
+            if (IsBlessed)
+            {
+                RobotInventory robotInventory = GetContainer();
+
+                Debug.Assert(robotInventory != null);
+
+                List<LootItem> lootItems = new List<LootItem>();
+
+                foreach (Item item in robotInventory.GetItems(true).Where(i => i is VolumeWrapperContainer))
+                {
+                    if (!(item is VolumeWrapperContainer wrapper))
+                    {
+                        continue;
+                    }
+
+                    wrapper.SetAllowDelete();
+                    Repository.Delete(wrapper);
+                }
+
+                foreach (Item item in robotInventory.GetItems())
+                {
+                    robotInventory.RemoveItemOrThrow(item);
+                    Repository.Delete(item);
+                }
+
+                // Calculate and add tokens here
+                ItemInfo tokens = CalculateTokensDrop();
+                lootItems.Add(LootItemBuilder.Create(tokens).Build());
+
+                if (lootItems.Count > 0)
+                {
+                    LootContainer lootContainer = LootContainer.Create()
+                        .AddLoot(lootItems)
+                        .BuildAndAddToZone(zone, CurrentPosition);
+
+                    if (lootContainer != null)
+                    {
+                        TransactionLogEventBuilder b = TransactionLogEvent.Builder()
+                            .SetTransactionType(TransactionType.PutLoot)
+                            .SetCharacter(character)
+                            .SetContainer(lootContainer.Eid);
+
+                        foreach (LootItem lootItem in lootItems)
+                        {
+                            _ = b.SetItem(lootItem.ItemInfo.Definition, lootItem.ItemInfo.Quantity);
+                            Character.LogTransaction(b);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void DieAndDropLoot(IZone zone, Unit killer, Character character, DockingBase dockingBase, bool wasInsured)
+        {
+            RobotInventory robotInventory = GetContainer();
+
+            Debug.Assert(robotInventory != null);
+
+            List<LootItem> lootItems = new List<LootItem>();
+
+            foreach (Module module in Modules.Where(m => LootHelper.Roll()))
+            {
+                lootItems.Add(LootItemBuilder.Create(module).AsDamaged().Build());
+
+                ActiveModule activeModule = module as ActiveModule;
+                Items.Ammos.Ammo ammo = activeModule?.GetAmmo();
+
+                if (ammo != null && LootHelper.Roll())
+                {
+                    lootItems.Add(LootItemBuilder.Create(ammo).Build());
+                }
+
+                module.Parent = robotInventory.Eid;
+
+                Repository.Delete(module);
+            }
+
+            foreach (Item item in robotInventory.GetItems(true).Where(i => i is VolumeWrapperContainer))
+            {
+                if (!(item is VolumeWrapperContainer wrapper))
+                {
+                    continue;
+                }
+
+                lootItems.AddRange(wrapper.GetLootItems());
+                wrapper.SetAllowDelete();
+                Repository.Delete(wrapper);
+            }
+
+            foreach (Item item in robotInventory
+                .GetItems()
+                .Where(i => LootHelper.Roll() && !i.ED.AttributeFlags.NonStackable))
+            {
+                double qtyMod = FastRandom.NextDouble();
+
+                item.Quantity = (int)(item.Quantity * qtyMod);
+
+                if (item.Quantity > 0)
+                {
+                    lootItems.Add(
+                        LootItemBuilder
+                            .Create(item.Definition)
+                            .SetQuantity(item.Quantity)
+                            .SetRepackaged(item.ED.AttributeFlags.Repackable)
+                            .Build());
+                }
+                else
+                {
+                    robotInventory.RemoveItemOrThrow(item);
+                    Repository.Delete(item);
+                }
+            }
+
+            if (ED.Config.Tint != Tint && LootHelper.Roll(0.5))
+            {
+                EntityDefault paint = EntityDefault.Reader.GetAll()
+                    .Where(i => i.CategoryFlags == CategoryFlags.cf_paints)
+                    .Where(i => i.Config.Tint == Tint).FirstOrDefault();
+
+                if (paint != null)
+                {
+                    lootItems.Add(LootItemBuilder.Create(paint.Definition).SetQuantity(1).SetDamaged(false).Build());
+                }
+            }
+
+            if (lootItems.Count > 0)
+            {
+                LootContainer lootContainer = LootContainer.Create()
+                    .AddLoot(lootItems)
+                    .BuildAndAddToZone(zone, CurrentPosition);
+
+                if (lootContainer != null)
+                {
+                    TransactionLogEventBuilder b = TransactionLogEvent.Builder()
+                        .SetTransactionType(TransactionType.PutLoot)
+                        .SetCharacter(character)
+                        .SetContainer(lootContainer.Eid);
+
+                    foreach (LootItem lootItem in lootItems)
+                    {
+                        _ = b.SetItem(lootItem.ItemInfo.Definition, lootItem.ItemInfo.Quantity);
+                        Character.LogTransaction(b);
+                    }
+                }
+            }
+
+            bool killedByPlayer = killer != null && killer.IsPlayer();
+
+            Trashcan.Get()
+                .MoveToTrash(this, Session.DisconnectTime, wasInsured, killedByPlayer, Session.InactiveTime);
+
+            character.NextAvailableRobotRequestTime =
+                DateTime.Now.AddMinutes(killedByPlayer ? ARKHE_REQUEST_TIMER_MINUTES_PVP : ARKHE_REQUEST_TIMER_MINUTES_NPC);
+
+            Robot activeRobot = null;
+
+            if (!killedByPlayer)
+            {
+                activeRobot = dockingBase.CreateStarterRobotForCharacter(character);
+
+                if (activeRobot != null)
+                {
+                    Transaction.Current.OnCommited(() =>
+                    {
+                        Dictionary<string, object> starterRobotInfo = new Dictionary<string, object>
+                                    {
+                                        {k.baseEID, Eid},
+                                        {k.robotEID, activeRobot.Eid}
+                                    };
+
+                        Message.Builder.SetCommand(Commands.StarterRobotCreated).WithData(starterRobotInfo).ToCharacter(character).Send();
+                    });
+                }
+            }
+
+            character.SetActiveRobot(activeRobot);
+        }
+
+        private ItemInfo CalculateTokensDrop()
+        {
+            int baseCost = baseTokenPrices.ContainsKey(ED.CategoryFlags)
+                ? baseTokenPrices[ED.CategoryFlags]
+                : 50;
+
+            return new ItemInfo(
+                EntityDefault.GetByName(DefinitionNames.UNIVERSAL_MISSION_COIN).Definition,
+                baseCost);
+        }
+
+
 
         protected override double CamouflageBonus()
         {

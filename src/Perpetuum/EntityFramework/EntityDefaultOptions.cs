@@ -1,5 +1,6 @@
 using Perpetuum.ExportedTypes;
 using Perpetuum.GenXY;
+using Perpetuum.Zones.NpcSystem;
 using Perpetuum.Zones.RemoteControl;
 using System;
 using System.Collections.Generic;
@@ -135,6 +136,18 @@ namespace Perpetuum.EntityFramework
                 string typeString = _dictionary.GetOrDefault<string>("turretType");
 
                 return (TurretType)Enum.Parse(typeof(TurretType), typeString);
+            }
+        }
+
+        public Faction Faction
+        {
+            get
+            {
+                string typeString = _dictionary.GetOrDefault<string>("faction");
+
+                return typeString != null ?
+                    (Faction)Enum.Parse(typeof(Faction), typeString)
+                    : Faction.Niani;
             }
         }
 

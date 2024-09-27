@@ -155,7 +155,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         public override bool IsHostile(Player player)
         {
-            return true;
+            return ED.Options.Faction != Faction.Syndicate;
         }
 
         internal override bool IsHostile(AreaBomb bomb)
@@ -188,9 +188,15 @@ namespace Perpetuum.Zones.NpcSystem
             return unit.IsHostile(this);
         }
 
+        internal override bool IsHostile(Npc npc)
+        {
+            return npc.ED.Options.Faction != ED.Options.Faction;
+        }
+
         protected override void UpdateUnitVisibility(Unit target)
         {
-            if (target is RemoteControlledCreature)
+            if (target is RemoteControlledCreature ||
+                (target is Npc npc && npc.ED.Options.Faction != ED.Options.Faction))
             {
                 UpdateVisibility(target);
             }

@@ -102,33 +102,34 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         public void Visit(Npc npc)
         {
-            ProcessRcuThreats(npc);
+            ProcessNpcThreats(npc);
         }
 
         public void Visit(SentryTurret sentryTurret)
         {
-            ProcessRcuThreats(sentryTurret);
+            ProcessNpcThreats(sentryTurret);
         }
 
         public void Visit(CombatDrone combatDrone)
         {
-            ProcessRcuThreats(combatDrone);
+            ProcessNpcThreats(combatDrone);
         }
 
         public void Visit(Portal portal)
         {
-            ProcessRcuThreats(portal);
+            ProcessNpcThreats(portal);
         }
 
         public void Visit(MobileTeleport teleport)
         {
-            ProcessRcuThreats(teleport);
+            ProcessNpcThreats(teleport);
         }
 
-        private void ProcessRcuThreats(Unit unit)
+        private void ProcessNpcThreats(Unit unit)
         {
             if (smartCreature.Behavior.Type != BehaviorType.RemoteControlledTurret &&
-                smartCreature.Behavior.Type != BehaviorType.RemoteControlledDrone)
+                smartCreature.Behavior.Type != BehaviorType.RemoteControlledDrone &&
+                smartCreature.ED.Options.Faction == unit.ED.Options.Faction)
             {
                 return;
             }

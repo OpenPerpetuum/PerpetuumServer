@@ -718,6 +718,7 @@
     <Compile Include="Zones\NpcSystem\AI\StationaryCombatAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\StationaryIdleAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\TurretAI.cs" />
+    <Compile Include="Zones\NpcSystem\Faction.cs" />
     <Compile Include="Zones\NpcSystem\Flocks\ISmartCreatureGroup.cs" />
     <Compile Include="Zones\NpcSystem\IndustrialTargetsManagement\IIndustrialValueManager.cs" />
     <Compile Include="Zones\NpcSystem\IndustrialTargetsManagement\IndustrialTarget.cs" />

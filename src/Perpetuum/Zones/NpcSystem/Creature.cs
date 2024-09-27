@@ -1,4 +1,3 @@
-using System.Linq;
 using Perpetuum.Modules;
 using Perpetuum.Players;
 using Perpetuum.Robots;
@@ -8,6 +7,7 @@ using Perpetuum.Zones.Eggs;
 using Perpetuum.Zones.LandMines;
 using Perpetuum.Zones.Locking;
 using Perpetuum.Zones.Locking.Locks;
+using System.Linq;
 
 namespace Perpetuum.Zones.NpcSystem
 {
@@ -23,7 +23,10 @@ namespace Perpetuum.Zones.NpcSystem
 
         protected internal override void UpdatePlayerVisibility(Player player)
         {
-            UpdateVisibility(player);
+            if (ED.Options.Faction != Faction.Syndicate)
+            {
+                UpdateVisibility(player);
+            }
         }
 
         protected override void OnUnitVisibilityUpdated(Unit target, Visibility visibility)
@@ -31,27 +34,27 @@ namespace Perpetuum.Zones.NpcSystem
             switch (visibility)
             {
                 case Visibility.Visible:
-                {
-                    var robot = target as Robot;
-                    robot?.SubscribeLockEvents(OnUnitLockStateChanged);
+                    {
+                        Robot robot = target as Robot;
+                        robot?.SubscribeLockEvents(OnUnitLockStateChanged);
 
-                    target.TileChanged += OnUnitTileChanged;
-                    target.EffectChanged += OnUnitEffectChanged;
-                    OnUnitTileChanged(target);
-                    break;
-                }
+                        target.TileChanged += OnUnitTileChanged;
+                        target.EffectChanged += OnUnitEffectChanged;
+                        OnUnitTileChanged(target);
+                        break;
+                    }
                 case Visibility.Invisible:
-                {
-                    var robot = target as Robot;
-                    robot?.UnsubscribeLockEvents(OnUnitLockStateChanged);
+                    {
+                        Robot robot = target as Robot;
+                        robot?.UnsubscribeLockEvents(OnUnitLockStateChanged);
 
-                    target.TileChanged -= OnUnitTileChanged;
-                    target.EffectChanged -= OnUnitEffectChanged;
-                    break;
-                }
+                        target.TileChanged -= OnUnitTileChanged;
+                        target.EffectChanged -= OnUnitEffectChanged;
+                        break;
+                    }
             }
 
-            base.OnUnitVisibilityUpdated(target,visibility);
+            base.OnUnitVisibilityUpdated(target, visibility);
         }
 
         protected virtual void OnUnitEffectChanged(Unit unit, Effect effect, bool apply)
@@ -66,7 +69,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         protected virtual void OnUnitTileChanged(Unit unit)
         {
-            
+
         }
 
         private const double PRIMARY_LOCK_CHANCE_FOR_SECONDARY_MODULE = 0.3;
@@ -74,45 +77,40 @@ namespace Perpetuum.Zones.NpcSystem
         [CanBeNull]
         public UnitLock SelectOptimalLockTargetFor(ActiveModule module)
         {
-            var range = module.OptimalRange + module.Falloff;
-            var locks = GetLocks().OfType<UnitLock>().Where(l =>
+            double range = module.OptimalRange + module.Falloff;
+            UnitLock[] locks = GetLocks().OfType<UnitLock>().Where(l =>
             {
                 if (l.State != LockState.Locked)
+                {
                     return false;
+                }
 
-                var isInOptimalRange = IsInRangeOf3D(l.Target, range);
+                bool isInOptimalRange = IsInRangeOf3D(l.Target, range);
                 return isInOptimalRange;
 
             }).ToArray();
 
-            var primaryLock = locks.FirstOrDefault(l => l.Primary);
+            UnitLock primaryLock = locks.FirstOrDefault(l => l.Primary);
 
             if (module.ED.AttributeFlags.PrimaryLockedTarget)
+            {
                 return primaryLock;
+            }
 
-            var chance = FastRandom.NextDouble() <= PRIMARY_LOCK_CHANCE_FOR_SECONDARY_MODULE;
-            if (primaryLock != null && chance)
-                return primaryLock;
-
-            return locks.RandomElement();
+            bool chance = FastRandom.NextDouble() <= PRIMARY_LOCK_CHANCE_FOR_SECONDARY_MODULE;
+            return primaryLock != null && chance ? primaryLock : locks.RandomElement();
         }
 
         [CanBeNull]
         public TerrainLock SelectOptimalLockIndustrialTargetFor(ActiveModule module)
         {
-            var range = module.OptimalRange;
-            var locks = GetLocks().OfType<TerrainLock>().Where(industrialLock =>
+            double range = module.OptimalRange;
+            TerrainLock[] locks = GetLocks().OfType<TerrainLock>().Where(industrialLock =>
             {
-                if (industrialLock.State != LockState.Locked)
-                {
-                    return false;
-                }
-
-                return true;
-
+                return industrialLock.State == LockState.Locked;
             }).ToArray();
 
-            var primaryLock = locks.FirstOrDefault(l => l.Primary);
+            TerrainLock primaryLock = locks.FirstOrDefault(l => l.Primary);
 
             return primaryLock;
         }
