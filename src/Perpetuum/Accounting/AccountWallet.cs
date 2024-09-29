@@ -1,51 +1,54 @@
-using System.Collections.Generic;
 using Perpetuum.Wallets;
+using System.Collections.Generic;
 
 namespace Perpetuum.Accounting
 {
-    public class AccountWallet : Wallet<int>,IAccountWallet
+    public class AccountWallet : Wallet<int>, IAccountWallet
     {
-        private readonly Account _account;
-        private readonly AccountTransactionType _transactionType;
+        private readonly Account account;
+        private readonly AccountTransactionType transactionType;
 
-        public AccountWallet(Account account,AccountTransactionType transactionType)
+        public AccountWallet(Account account, AccountTransactionType transactionType)
         {
-            _account = account;
-            _transactionType = transactionType;
+            this.account = account;
+            this.transactionType = transactionType;
         }
 
         protected override void SetBalance(int value)
         {
-            _account.Credit = value;
+            account.Credit = value;
         }
 
         protected override int GetBalance()
         {
-            return _account.Credit;
+            return account.Credit;
         }
 
         protected override void OnBalanceUpdating(int currentCredit, int desiredCredit)
         {
             // handles negative credit as well.
             if (desiredCredit - currentCredit < 0 && desiredCredit < 0)
+            {
                 throw new PerpetuumException(ErrorCodes.AccountNotEnoughMoney);
+            }
         }
 
         protected override void OnCommited(int startBalance)
         {
-            var currentCredit = GetBalance();
-            var change = currentCredit - startBalance;
+            int currentCredit = GetBalance();
+            int change = currentCredit - startBalance;
 
-            var info = new Dictionary<string, object>
+            Dictionary<string, object> info = new Dictionary<string, object>
                     {
-                        {k.credit, currentCredit}, 
+                        {k.credit, currentCredit},
                         {k.change, change},
-                        {k.transactionType, (int)_transactionType}
+                        {k.transactionType, (int)transactionType}
                     };
 
-            Message.Builder.SetCommand(Commands.AccountUpdateBalance)
+            Message.Builder
+                .SetCommand(Commands.AccountUpdateBalance)
                 .WithData(info)
-                .ToAccount(_account)
+                .ToAccount(account)
                 .Send();
         }
     }

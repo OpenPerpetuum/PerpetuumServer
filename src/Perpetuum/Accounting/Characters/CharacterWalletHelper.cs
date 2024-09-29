@@ -6,21 +6,21 @@ namespace Perpetuum.Accounting.Characters
 {
     public class CharacterWalletHelper
     {
-        private readonly CharacterWalletFactory _walletFactory;
-        private readonly ICentralBank _centralBank;
+        private readonly CharacterWalletFactory walletFactory;
+        private readonly ICentralBank centralBank;
 
-        public CharacterWalletHelper(CharacterWalletFactory walletFactory,ICentralBank centralBank)
+        public CharacterWalletHelper(CharacterWalletFactory walletFactory, ICentralBank centralBank)
         {
-            _walletFactory = walletFactory;
-            _centralBank = centralBank;
+            this.walletFactory = walletFactory;
+            this.centralBank = centralBank;
         }
 
-        public IWallet<double> GetWallet(Character character,TransactionType transactionType)
+        public IWallet<double> GetWallet(Character character, TransactionType transactionType)
         {
-            return _walletFactory(character,transactionType);
+            return walletFactory(character, transactionType);
         }
 
-        public void TransferCredit(Character source,Character target,long amount)
+        public void TransferCredit(Character source, Character target, long amount)
         {
             source.IsInTraining().ThrowIfTrue(ErrorCodes.TrainingCharacterInvolved);
             target.IsInTraining().ThrowIfTrue(ErrorCodes.TrainingCharacterInvolved);
@@ -41,7 +41,7 @@ namespace Perpetuum.Accounting.Characters
             //if gm is the source - transactions are controlled
             source.CheckPrivilegedTransactionsAndThrowIfFailed();
 
-            var sourceWallet = _walletFactory(source,TransactionType.characterTransfer_to);
+            ICharacterWallet sourceWallet = walletFactory(source, TransactionType.characterTransfer_to);
             sourceWallet.Balance -= amount;
 
             source.LogTransaction(TransactionLogEvent.Builder()
@@ -51,7 +51,7 @@ namespace Perpetuum.Accounting.Characters
                 .SetCharacter(source)
                 .SetInvolvedCharacter(target));
 
-            var targetWallet = _walletFactory(target,TransactionType.characterTransfer_from);
+            ICharacterWallet targetWallet = walletFactory(target, TransactionType.characterTransfer_from);
             targetWallet.Balance += amount;
 
             source.LogTransaction(TransactionLogEvent.Builder()
@@ -62,27 +62,27 @@ namespace Perpetuum.Accounting.Characters
                 .SetInvolvedCharacter(source));
         }
 
-        public void AddToWallet(Character character,TransactionType transactionType,double amount)
+        public void AddToWallet(Character character, TransactionType transactionType, double amount)
         {
-            var wallet = _walletFactory(character,transactionType);
+            ICharacterWallet wallet = walletFactory(character, transactionType);
             wallet.Balance += amount;
 
-            var b = TransactionLogEvent.Builder()
+            TransactionLogEventBuilder b = TransactionLogEvent.Builder()
                 .SetTransactionType(transactionType)
                 .SetCreditBalance(wallet.Balance)
                 .SetCreditChange(amount)
                 .SetCharacter(character);
 
             character.LogTransaction(b);
-            _centralBank.SubAmount(amount,transactionType);
+            centralBank.SubAmount(amount, transactionType);
         }
 
-        public void SubtractFromWallet(Character character,TransactionType transactionType,double amount)
+        public void SubtractFromWallet(Character character, TransactionType transactionType, double amount)
         {
-            var wallet = _walletFactory(character,transactionType);
+            ICharacterWallet wallet = walletFactory(character, transactionType);
             wallet.Balance -= amount;
 
-            var b = TransactionLogEvent.Builder()
+            TransactionLogEventBuilder b = TransactionLogEvent.Builder()
                 .SetTransactionType(transactionType)
                 .SetCreditBalance(wallet.Balance)
                 .SetCreditChange(-amount)

@@ -3,7 +3,6 @@ using System.Drawing;
 
 namespace Perpetuum.Collections.Spatial
 {
-
     public class Grid
     {
         public static int TilesPerGrid = 64;

@@ -16,7 +16,7 @@ namespace Perpetuum.Collections.Spatial
 
         public GridDistricts ComputeDistrict(CellCoord cell)
         {
-            var district = GridDistricts.Undefined;
+            GridDistricts district = GridDistricts.Undefined;
 
             if (Math.Abs(x - cell.x) > 1 || Math.Abs(y - cell.y) > 1)
             {
@@ -46,10 +46,10 @@ namespace Perpetuum.Collections.Spatial
 
         public Area ToArea()
         {
-            var x1 = x * Grid.TilesPerGrid;
-            var y1 = y * Grid.TilesPerGrid;
-            var x2 = x1 + Grid.TilesPerGrid - 1;
-            var y2 = y1 + Grid.TilesPerGrid - 1;
+            int x1 = x * Grid.TilesPerGrid;
+            int y1 = y * Grid.TilesPerGrid;
+            int x2 = x1 + Grid.TilesPerGrid - 1;
+            int y2 = y1 + Grid.TilesPerGrid - 1;
 
             return new Area(x1, y1, x2, y2);
         }
@@ -66,10 +66,7 @@ namespace Perpetuum.Collections.Spatial
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
-                return false;
-
-            return obj is CellCoord && Equals((CellCoord)obj);
+            return !(obj is null) && obj is CellCoord && Equals((CellCoord)obj);
         }
 
         public override int GetHashCode()
@@ -94,8 +91,8 @@ namespace Perpetuum.Collections.Spatial
 
         public static CellCoord FromXY(int x, int y)
         {
-            var cx = x / Grid.TilesPerGrid;
-            var cy = y / Grid.TilesPerGrid;
+            int cx = x / Grid.TilesPerGrid;
+            int cy = y / Grid.TilesPerGrid;
 
             return new CellCoord(cx, cy);
         }
@@ -115,27 +112,31 @@ namespace Perpetuum.Collections.Spatial
 
         public IEnumerable<CellCoord> GetNeighbours(GridDistricts gridDistricts = GridDistricts.All)
         {
-            var mask = 0x80;
+            int mask = 0x80;
             do
             {
-                var district = gridDistricts & (GridDistricts)mask;
+                GridDistricts district = gridDistricts & (GridDistricts)mask;
 
                 if (district == GridDistricts.Undefined)
+                {
                     continue;
+                }
 
-                var n = _neighbours[district];
+
+                CellCoord n = _neighbours[district];
 
                 n.x += x;
                 n.y += y;
 
                 yield return n;
 
-            } while ((mask >>= 1) > 0);
+            }
+            while ((mask >>= 1) > 0);
         }
 
         public bool IsNeighbouring(CellCoord coord)
         {
-            return (Math.Abs(coord.x - x) <= 1 & Math.Abs(coord.y - y) <= 1);
+            return Math.Abs(coord.x - x) <= 1 & Math.Abs(coord.y - y) <= 1;
         }
     }
 }

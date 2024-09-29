@@ -1,52 +1,53 @@
-using System.Collections.Generic;
 using Perpetuum.Common.Loggers.Transaction;
 using Perpetuum.Wallets;
+using System.Collections.Generic;
 
 namespace Perpetuum.Accounting.Characters
 {
-    public class CharacterWallet : Wallet<double>,ICharacterWallet
+    public class CharacterWallet : Wallet<double>, ICharacterWallet
     {
-        private Character _character;
-        private readonly ICharacterCreditService _creditService;
-        private readonly TransactionType _transactionType;
-
-        public CharacterWallet(Character character,ICharacterCreditService creditService,TransactionType transactionType)
+        public CharacterWallet(Character character, ICharacterCreditService creditService, TransactionType transactionType)
         {
-            _character = character;
-            _creditService = creditService;
-            _transactionType = transactionType;
+            this.character = character;
+            this.creditService = creditService;
+            this.transactionType = transactionType;
         }
+
+        private readonly Character character;
+        private readonly ICharacterCreditService creditService;
+        private readonly TransactionType transactionType;
 
         protected override double GetBalance()
         {
-            return _creditService.GetCredit(_character.Id);
+            return creditService.GetCredit(character.Id);
         }
 
         protected override void SetBalance(double value)
         {
-            _creditService.SetCredit(_character.Id,value);
+            creditService.SetCredit(character.Id, value);
         }
 
         protected override void OnBalanceUpdating(double currentCredit, double desiredCredit)
         {
-            desiredCredit.ThrowIfLess(0,ErrorCodes.CharacterNotEnoughMoney);
+            desiredCredit.ThrowIfLess(0, ErrorCodes.CharacterNotEnoughMoney);
         }
 
         protected override void OnCommited(double startBalance)
         {
-            var currentCredit = GetBalance();
-            var change = currentCredit - startBalance;
+            double currentCredit = GetBalance();
+            double change = currentCredit - startBalance;
 
-            var info = new Dictionary<string, object>
-                {
-                    { k.credit, (long)currentCredit}, 
-                    { k.amount,change}, 
-                    { k.transactionType, (int)_transactionType }
-                };
+            Dictionary<string, object> info = new Dictionary<string, object>
+            {
+                { k.credit, (long)currentCredit},
+                { k.amount,change},
+                { k.transactionType, (int)transactionType },
+            };
 
-            Message.Builder.SetCommand(Commands.CharacterUpdateBalance)
+            Message.Builder
+                .SetCommand(Commands.CharacterUpdateBalance)
                 .WithData(info)
-                .ToCharacter(_character)
+                .ToCharacter(character)
                 .Send();
         }
     }

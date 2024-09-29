@@ -32,22 +32,22 @@ namespace Perpetuum.Accounting
 
         public IDictionary<string, object> ToDictionary()
         {
-            var dictionary = new Dictionary<string, object>
+            Dictionary<string, object> dictionary = new Dictionary<string, object>
             {
-                    {k.accountID, Id},
-                    {k.accLevel, (int) AccessLevel},
-                    {k.accountState, (int) State},
-                    {k.isSubscriber, ValidUntil != DateTime.MaxValue},
-                    {k.isEarlyAccess,false},
-                    {k.validUntil, ValidUntil},
-                    {k.email,Email},
-                    {k.emailConfirmed, EmailConfirmed },
-                    {k.credit,Credit},
-                    {"twitchAuthToken",TwitchAuthToken},
-                    {k.banLength, (int)BanLength.TotalSeconds },
-                    {k.banNote , BanNote },
-                    {k.banTime, BanTime }
-                };
+                {k.accountID, Id},
+                {k.accLevel, (int) AccessLevel},
+                {k.accountState, (int) State},
+                {k.isSubscriber, ValidUntil != DateTime.MaxValue},
+                {k.isEarlyAccess,false},
+                {k.validUntil, ValidUntil},
+                {k.email,Email},
+                {k.emailConfirmed, EmailConfirmed },
+                {k.credit,Credit},
+                {"twitchAuthToken",TwitchAuthToken},
+                {k.banLength, (int)BanLength.TotalSeconds },
+                {k.banNote , BanNote },
+                {k.banTime, BanTime },
+            };
 
             return dictionary;
         }
@@ -57,11 +57,12 @@ namespace Perpetuum.Accounting
         /// </summary>
         public void ForceConfirmEmail()
         {
-            Db.Query().CommandText("UPDATE accounts SET EmailConfirmed = 1 WHERE accountID = @id")
-                .SetParameter("@id", this.Id)
+            Db.Query()
+                .CommandText("UPDATE accounts SET EmailConfirmed = 1 WHERE accountID = @id")
+                .SetParameter("@id", Id)
                 .ExecuteNonQuery();
 
-            this.EmailConfirmed = true;
+            EmailConfirmed = true;
         }
     }
 }

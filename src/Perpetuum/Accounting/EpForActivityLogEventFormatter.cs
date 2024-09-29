@@ -7,10 +7,12 @@ namespace Perpetuum.Accounting
     {
         protected override void BuildCommand(EpForActivityLogEvent logEvent, DbQuery query)
         {
-            const string q = @"INSERT dbo.epforactivitylog (accountid, characterid, epforactivitytype, rawpoints, points, boostfactor, multiplier, bonusMultiplier ) VALUES ( @accountId, @characterId, @epforactivityType, @rawPoints, @points, @boostFactor, @boostMultiplier, @bonusMultiplier)";
+            const string q = @"
+INSERT dbo.epforactivitylog (accountid, characterid, epforactivitytype, rawpoints, points, boostfactor, multiplier, bonusMultiplier )
+VALUES ( @accountId, @characterId, @epforactivityType, @rawPoints, @points, @boostFactor, @boostMultiplier, @bonusMultiplier)";
 
             query.CommandText(q)
-                .SetParameter("@accountId",logEvent.Account.Id)
+                .SetParameter("@accountId", logEvent.Account.Id)
                 .SetParameter("@characterId", logEvent.CharacterId)
                 .SetParameter("@epforactivityType", (int)logEvent.TransactionType)
                 .SetParameter("@rawPoints", logEvent.RawPoints)

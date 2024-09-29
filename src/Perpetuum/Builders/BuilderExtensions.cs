@@ -2,19 +2,19 @@ namespace Perpetuum.Builders
 {
     public static class BuilderExtensions
     {
-        private class ProxyBuilder<T> : IBuilder<T> where T:class
+        private class ProxyBuilder<T> : IBuilder<T> where T : class
         {
-            private readonly IBuilder<T> _builder;
-            private T _object;
+            private readonly IBuilder<T> builder;
+            private T objectToBuild;
 
             public ProxyBuilder(IBuilder<T> builder)
             {
-                _builder = builder;
+                this.builder = builder;
             }
 
             public T Build()
             {
-                return _object ?? (_object = _builder.Build());
+                return objectToBuild ?? (objectToBuild = builder.Build());
             }
         }
 

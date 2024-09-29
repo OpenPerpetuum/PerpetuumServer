@@ -5,96 +5,101 @@ namespace Perpetuum.Collections
 {
     public class PriorityQueue<T>
     {
-        private readonly int _capacity;
-        private int _count;
-        private T[] _items;
-        private readonly IComparer<T> _comparer;
+        private readonly int capacity;
+        private int count;
+        private T[] items;
+        private readonly IComparer<T> comparer;
 
-        public PriorityQueue(int capacity,IComparer<T> comparer = null)
+        public PriorityQueue(int capacity, IComparer<T> comparer = null)
         {
-            _capacity = capacity;
-            _items = new T[capacity + 1];
-            _comparer = comparer ?? Comparer<T>.Default;
+            this.capacity = capacity;
+            items = new T[capacity + 1];
+            this.comparer = comparer ?? Comparer<T>.Default;
         }
 
         public void Enqueue(T item)
         {
-            if (_count >= _items.Length - 1)
+            if (count >= items.Length - 1)
             {
-                Array.Resize(ref _items, _items.Length + (_capacity / 2));
+                Array.Resize(ref items, items.Length + (capacity / 2));
             }
 
-            _count++;
-            _items[_count] = item;
+            count++;
+            items[count] = item;
 
-            var m = _count;
+            int m = count;
 
             while (m > 1)
             {
-                var parentIndex = m / 2;
+                int parentIndex = m / 2;
 
-                var parentItem = _items[parentIndex];
-                var currentItem = _items[m];
+                T parentItem = items[parentIndex];
+                T currentItem = items[m];
 
-                if (_comparer.Compare(currentItem, parentItem) >= 0)
+                if (comparer.Compare(currentItem, parentItem) >= 0)
+                {
                     break;
+                }
 
-                _items[parentIndex] = currentItem;
-                _items[m] = parentItem;
+                items[parentIndex] = currentItem;
+                items[m] = parentItem;
                 m = parentIndex;
             }
         }
 
         public bool TryDequeue(out T item)
         {
-            if ( _count < 1)
+            if (count < 1)
             {
-                item = default(T);
+                item = default;
+
                 return false;
             }
 
-            item = _items[1];
-            _items[1] = _items[_count];
+            item = items[1];
+            items[1] = items[count];
 
-            _count--;
+            count--;
 
-            if (_count == 0)
+            if (count == 0)
+            {
                 return true;
+            }
 
-            var v = 1;
+            int v = 1;
 
             while (true)
             {
-                var u = v;
+                int u = v;
 
-                if ( (2 * u + 1) <= _count)
+                if (((2 * u) + 1) <= count)
                 {
-                    if ( _comparer.Compare(_items[u],_items[2 * u]) >= 0 )
+                    if (comparer.Compare(items[u], items[2 * u]) >= 0)
                     {
-                        v = 2*u;
+                        v = 2 * u;
                     }
 
-                    if ( _comparer.Compare(_items[v],_items[2 * u + 1]) >= 0 )
+                    if (comparer.Compare(items[v], items[(2 * u) + 1]) >= 0)
                     {
-                        v = 2*u + 1;
+                        v = (2 * u) + 1;
                     }
                 }
-                else if ( 2 * u <= _count )
+                else if (2 * u <= count)
                 {
-                    if ( _comparer.Compare(_items[u],_items[2 * u]) >= 0 )
+                    if (comparer.Compare(items[u], items[2 * u]) >= 0)
                     {
-                        v = 2*u;
+                        v = 2 * u;
                     }
                 }
 
                 if (u == v)
+                {
                     break;
+                }
 
-                var tmp = _items[u];
-                _items[u] = _items[v];
-                _items[v] = tmp;
+                (items[v], items[u]) = (items[u], items[v]);
             }
-         
+
             return true;
         }
     }

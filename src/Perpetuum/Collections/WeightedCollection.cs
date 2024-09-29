@@ -9,53 +9,45 @@ namespace Perpetuum.Collections
     /// <typeparam name="T">Any data to be kept in the list</typeparam>
     public class WeightedCollection<T>
     {
-        private readonly List<WeightedEntry> _list = new List<WeightedEntry>();
-        private int _sumWeights = 0;
+        private readonly List<WeightedEntry<T>> list = new List<WeightedEntry<T>>();
+        private int sumWeights = 0;
         public void Add(T item, int weight = 1)
         {
-            _sumWeights += weight;
-            _list.Add(new WeightedEntry(item, weight));
+            sumWeights += weight;
+            list.Add(new WeightedEntry<T>(item, weight));
         }
 
         public void Clear()
         {
-            _sumWeights = 0;
-            _list.Clear();
+            sumWeights = 0;
+            list.Clear();
         }
 
         public T GetRandom()
         {
-            if (_sumWeights == 0)
+            if (sumWeights == 0)
+            {
                 return default;
+            }
 
-            if (_list.Count == 1)
-                return _list.First().Item;
+            if (list.Count == 1)
+            {
+                return list.First().Item;
+            }
 
-            var weightTarget = FastRandom.NextInt(_sumWeights - 1);
-            var current = 0;
-            var iterator = _list.GetEnumerator();
+            int weightTarget = FastRandom.NextInt(sumWeights - 1);
+            int current = 0;
+            List<WeightedEntry<T>>.Enumerator iterator = list.GetEnumerator();
             while (iterator.MoveNext())
             {
                 current += iterator.Current.Weight;
                 if (current > weightTarget)
+                {
                     break;
+                }
             }
-            if (iterator.Current != null)
-            {
-                return iterator.Current.Item;
-            }
-            return default;
-        }
 
-        private class WeightedEntry
-        {
-            public T Item { get; private set; }
-            public int Weight { get; private set; }
-            public WeightedEntry(T item, int weight)
-            {
-                Item = item;
-                Weight = weight;
-            }
+            return iterator.Current != null ? iterator.Current.Item : default;
         }
     }
 }

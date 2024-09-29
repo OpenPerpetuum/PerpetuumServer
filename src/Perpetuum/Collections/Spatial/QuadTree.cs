@@ -5,16 +5,11 @@ namespace Perpetuum.Collections.Spatial
 {
     public class QuadTree<T>
     {
-        private readonly QuadTreeNode<T> _root;
-
-        public QuadTreeNode<T> Root
-        {
-            get { return _root; }
-        }
+        public QuadTreeNode<T> Root { get; }
 
         public QuadTree(Area area)
         {
-            _root = new QuadTreeNode<T>(area);
+            Root = new QuadTreeNode<T>(area);
         }
 
         public QuadTreeItem<T> Add(Point position, T value)
@@ -24,35 +19,36 @@ namespace Perpetuum.Collections.Spatial
 
         public QuadTreeItem<T> Add(int x, int y, T value)
         {
-            QuadTreeItem<T> item;
-            if (!_root.TryAdd(x, y, value, out item))
-                return null;
-
-            return item;
+            return !Root.TryAdd(x, y, value, out QuadTreeItem<T> item) ? null : item;
         }
 
         public IEnumerable<QuadTreeItem<T>> Query(Area area)
         {
-            var q = new Queue<QuadTreeNode<T>>();
-            q.Enqueue(_root);
+            Queue<QuadTreeNode<T>> q = new Queue<QuadTreeNode<T>>();
+            q.Enqueue(Root);
 
-            QuadTreeNode<T> node;
-            while (q.TryDequeue(out node))
+            while (q.TryDequeue(out QuadTreeNode<T> node))
             {
-                if ( !area.IntersectsWith(node.Area) )
-                    continue;
-
-                foreach (var item in node.GetItems())
+                if (!area.IntersectsWith(node.Area))
                 {
-                    if ( area.Contains(item.X,item.Y))
-                        yield return item;
+                    continue;
                 }
 
-                var nodes = node.GetNodes();
-                if (nodes == null)
-                    continue;
+                foreach (QuadTreeItem<T> item in node.GetItems())
+                {
+                    if (area.Contains(item.X, item.Y))
+                    {
+                        yield return item;
+                    }
+                }
 
-                for (var i = 0; i < 4; i++)
+                QuadTreeNode<T>[] nodes = node.GetNodes();
+                if (nodes == null)
+                {
+                    continue;
+                }
+
+                for (int i = 0; i < 4; i++)
                 {
                     q.Enqueue(nodes[i]);
                 }

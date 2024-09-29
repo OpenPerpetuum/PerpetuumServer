@@ -1,21 +1,24 @@
-﻿using System;
-using System.Threading;
-using Perpetuum.Data;
+﻿using Perpetuum.Data;
 using Perpetuum.Log;
 using Perpetuum.Threading.Process;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Threading;
+using System.Transactions;
 
 namespace Perpetuum.Accounting
 {
     public class AccountCreditHandler : IProcess
     {
-        private readonly IAccountManager _accountManager;
-        private readonly IAccountRepository _accountRepository;
-        private int _workInProgress;
+        private readonly IAccountManager accountManager;
+        private readonly IAccountRepository accountRepository;
+        private int workInProgress;
 
-        public AccountCreditHandler(IAccountManager accountManager,IAccountRepository accountRepository)
+        public AccountCreditHandler(IAccountManager accountManager, IAccountRepository accountRepository)
         {
-            _accountManager = accountManager;
-            _accountRepository = accountRepository;
+            this.accountManager = accountManager;
+            this.accountRepository = accountRepository;
         }
 
         public void Start()
@@ -33,8 +36,10 @@ namespace Perpetuum.Accounting
 
         private void ProcessCreditPayments()
         {
-            if ( Interlocked.CompareExchange(ref _workInProgress,1,0) == 1)
+            if (Interlocked.CompareExchange(ref workInProgress, 1, 0) == 1)
+            {
                 return;
+            }
 
             try
             {
@@ -42,7 +47,7 @@ namespace Perpetuum.Accounting
             }
             finally
             {
-                _workInProgress = 0;
+                workInProgress = 0;
             }
         }
 
@@ -52,46 +57,57 @@ namespace Perpetuum.Accounting
         /// </summary>
         private void ProcessCreditQueue()
         {
-            var records = Db.Query().CommandText("select * from accountcreditqueue").Execute();
+            List<IDataRecord> records = Db.Query().CommandText("select * from accountcreditqueue").Execute();
 
             if (records.Count == 0)
             {
                 Logger.DebugInfo("no new account credit record was found");
+
                 return;
             }
 
             Logger.Info(records.Count + " new account credit records were found");
 
             //process all new records 
-            foreach (var record in records)
+            foreach (IDataRecord record in records)
             {
                 try
                 {
-                    using (var scope = Db.CreateTransaction())
+                    using (TransactionScope scope = Db.CreateTransaction())
                     {
-                        var accountId = record.GetValue<int>("accountid");
+                        int accountId = record.GetValue<int>("accountid");
 
                         Logger.Info("processing account credit queue for accountId:" + accountId);
 
-                        var account = _accountRepository.Get(accountId);
+                        Account account = accountRepository.Get(accountId);
                         if (account == null)
+                        {
                             continue;
+                        }
 
-                        var credit = record.GetValue<int>("credit");
-                        var id = record.GetValue<int>("id");
+                        int credit = record.GetValue<int>("credit");
+                        int id = record.GetValue<int>("id");
 
-                        var wallet = _accountManager.GetWallet(account,AccountTransactionType.Purchase);
+                        IAccountWallet wallet = accountManager.GetWallet(account, AccountTransactionType.Purchase);
 
                         Logger.Info("accountId:" + accountId + " pre balance:" + wallet.Balance);
 
                         wallet.Balance += credit;
 
-                        var e = new AccountTransactionLogEvent(account,AccountTransactionType.Purchase) {Credit = wallet.Balance, CreditChange = credit};
-                        _accountManager.LogTransaction(e);
+                        AccountTransactionLogEvent e = new AccountTransactionLogEvent(account, AccountTransactionType.Purchase)
+                        {
+                            Credit = wallet.Balance,
+                            CreditChange = credit
+                        };
+                        accountManager.LogTransaction(e);
 
-                        Db.Query().CommandText("delete accountcreditqueue where id = @id").SetParameter("@id", id).ExecuteNonQuery().ThrowIfEqual(0, ErrorCodes.SQLDeleteError);
+                        Db.Query()
+                            .CommandText("delete accountcreditqueue where id = @id")
+                            .SetParameter("@id", id)
+                            .ExecuteNonQuery()
+                            .ThrowIfEqual(0, ErrorCodes.SQLDeleteError);
 
-                        _accountRepository.Update(account);
+                        accountRepository.Update(account);
 
                         Logger.Info(credit + " credits processed for account " + account.Email + " id:" + account.Id);
 

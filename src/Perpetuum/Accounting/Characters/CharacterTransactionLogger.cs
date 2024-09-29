@@ -4,13 +4,13 @@ using Perpetuum.Data;
 
 namespace Perpetuum.Accounting.Characters
 {
-    public class CharacterTransactionLogger : DbLogger<TransactionLogEvent>,ICharacterTransactionLogger
+    public class CharacterTransactionLogger : DbLogger<TransactionLogEvent>, ICharacterTransactionLogger
     {
-        protected override void BuildCommand(TransactionLogEvent e,DbQuery query)
+        protected override void BuildCommand(TransactionLogEvent e, DbQuery query)
         {
-            const string sqlCmd = @"insert charactertransactions (characterid,transactiontype,amount,definition,quantity, currentcredit, othercharacter,containereid) 
-                                                                 values 
-                                                                (@characterId,@transactionType,@amount,@definition,@quantity,@currentCredit,@otherCharacter,@containerEid)";
+            const string sqlCmd =
+@"insert charactertransactions (characterid,transactiontype,amount,definition,quantity, currentcredit, othercharacter,containereid) values
+(@characterId,@transactionType,@amount,@definition,@quantity,@currentCredit,@otherCharacter,@containerEid)";
 
             query.CommandText(sqlCmd)
                 .SetParameter("characterId", e.CharacterID)

@@ -5,62 +5,62 @@ namespace Perpetuum.Collections.Spatial
     public class QuadTreeNode<T>
     {
         private const int CAPACITY = 4;
-        private readonly Area _area;
-        private readonly List<QuadTreeItem<T>> _items = new List<QuadTreeItem<T>>(CAPACITY);
+        private readonly List<QuadTreeItem<T>> items = new List<QuadTreeItem<T>>(CAPACITY);
 
-        private QuadTreeNode<T>[] _nodes;
+        private QuadTreeNode<T>[] nodes;
 
         public QuadTreeItem<T>[] GetItems()
         {
-            return _items.ToArray();
+            return items.ToArray();
         }
 
         public QuadTreeNode<T>[] GetNodes()
         {
-            return _nodes;
+            return nodes;
         }
 
-        public Area Area
-        {
-            get { return _area; }
-        }
+        public Area Area { get; }
 
         public QuadTreeNode(Area area)
         {
-            _area = area;
+            Area = area;
         }
 
-        public bool TryAdd(int x, int y, T value,out QuadTreeItem<T> item)
+        public bool TryAdd(int x, int y, T value, out QuadTreeItem<T> item)
         {
-            if (!_area.Contains(x, y))
+            if (!Area.Contains(x, y))
             {
                 item = null;
+
                 return false;
             }
 
-            if (_items.Count < CAPACITY)
+            if (items.Count < CAPACITY)
             {
-                item = new QuadTreeItem<T>(this,x,y,value);
-                _items.Add(item);
+                item = new QuadTreeItem<T>(this, x, y, value);
+                items.Add(item);
+
                 return true;
             }
 
-            if (_nodes == null)
+            if (nodes == null)
             {
-                _nodes = new QuadTreeNode<T>[CAPACITY];
-                var w = _area.Width / 2;
-                var h = _area.Height / 2;
+                nodes = new QuadTreeNode<T>[CAPACITY];
+                int w = Area.Width / 2;
+                int h = Area.Height / 2;
 
-                _nodes[0] = new QuadTreeNode<T>(Area.FromRectangle(_area.X1, _area.Y1, w, h));
-                _nodes[1] = new QuadTreeNode<T>(Area.FromRectangle(_area.X1 + w, _area.Y1, w, h));
-                _nodes[2] = new QuadTreeNode<T>(Area.FromRectangle(_area.X1, _area.Y1 + h, w, h));
-                _nodes[3] = new QuadTreeNode<T>(Area.FromRectangle(_area.X1 + w, _area.Y1 + h, w, h));
+                nodes[0] = new QuadTreeNode<T>(Area.FromRectangle(Area.X1, Area.Y1, w, h));
+                nodes[1] = new QuadTreeNode<T>(Area.FromRectangle(Area.X1 + w, Area.Y1, w, h));
+                nodes[2] = new QuadTreeNode<T>(Area.FromRectangle(Area.X1, Area.Y1 + h, w, h));
+                nodes[3] = new QuadTreeNode<T>(Area.FromRectangle(Area.X1 + w, Area.Y1 + h, w, h));
             }
 
-            for (var i = 0; i < 4; i++)
+            for (int i = 0; i < 4; i++)
             {
-                if (_nodes[i].TryAdd(x, y, value,out item))
+                if (nodes[i].TryAdd(x, y, value, out item))
+                {
                     return true;
+                }
             }
 
             item = null;
@@ -69,7 +69,7 @@ namespace Perpetuum.Collections.Spatial
 
         public void Remove(QuadTreeItem<T> item)
         {
-            _items.Remove(item);
+            items.Remove(item);
         }
     }
 }

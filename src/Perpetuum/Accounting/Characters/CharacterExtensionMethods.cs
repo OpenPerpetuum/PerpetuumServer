@@ -7,13 +7,15 @@ namespace Perpetuum.Accounting.Characters
     {
         public static List<Character> ToCharacter(this IEnumerable<int> characterIds)
         {
-            var result = new List<Character>();
+            List<Character> result = new List<Character>();
 
-            foreach (var characterId in characterIds)
+            foreach (int characterId in characterIds)
             {
-                var c = Character.Get(characterId);
+                Character c = Character.Get(characterId);
                 if (c == Character.None)
+                {
                     continue;
+                }
 
                 result.Add(c);
             }

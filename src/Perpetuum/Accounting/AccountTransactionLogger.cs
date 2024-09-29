@@ -7,8 +7,11 @@ namespace Perpetuum.Accounting
     {
         protected override void BuildCommand(AccountTransactionLogEvent logEvent, DbQuery query)
         {
-            query.CommandText("insert into accounttransactionlog (accountId,transactionType,definition,quantity,eid,credit,creditChange,created) values (@accountId,@transactionType,@definition,@quantity,@eid,@credit,@creditChange,@created)")
-                .SetParameter("@accountId",logEvent.Account.Id)
+            query
+                .CommandText(
+@"insert into accounttransactionlog (accountId,transactionType,definition,quantity,eid,credit,creditChange,created) values
+(@accountId,@transactionType,@definition,@quantity,@eid,@credit,@creditChange,@created)")
+                .SetParameter("@accountId", logEvent.Account.Id)
                 .SetParameter("@transactionType", (int)logEvent.TransactionType)
                 .SetParameter("@definition", logEvent.Definition)
                 .SetParameter("@quantity", logEvent.Quantity)
