@@ -3,6 +3,7 @@ using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
 using Perpetuum.Modules;
+using Perpetuum.Modules.EffectModules;
 using Perpetuum.Services.ExtensionService;
 using System;
 using System.Collections.Generic;
@@ -67,6 +68,11 @@ namespace Perpetuum.Robots
             foreach (ActiveModule activeModule in ActiveModules)
             {
                 activeModule.Update(time);
+            }
+
+            foreach (PassiveEffectModule module in Modules.Where(x => x is PassiveEffectModule))
+            {
+                module.Update();
             }
         }
 

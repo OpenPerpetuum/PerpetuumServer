@@ -143,6 +143,7 @@ namespace Perpetuum.ExportedTypes
         cf_explosive_armor_hardeners = 0x000000000304010F,
         cf_thermal_armor_hardeners = 0x000000000404010F,
         cf_resistance_plating = 0x000000000504010F,
+        cf_adaptive_alloys = 0x000000000604010F,
         cf_lightweight_frame = 0x000000000005010F,
         cf_armor_repair_upgrades = 0x000000000006010F,
         cf_shield_equipment = 0x000000000000020F,

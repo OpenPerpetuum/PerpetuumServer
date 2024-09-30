@@ -103,6 +103,8 @@
     <Compile Include="Accounting\AccountManager.cs" />
     <Compile Include="Accounting\AccountTransactionLogger.cs" />
     <Compile Include="Accounting\AccountWalletFactory.cs" />
+    <Compile Include="Accounting\Characters\CachedCharacterProfileRepository.cs" />
+    <Compile Include="Accounting\Characters\CharacterConstants.cs" />
     <Compile Include="Accounting\Characters\CharacterProfile.cs" />
     <Compile Include="Accounting\Characters\CharacterProfileRepository.cs" />
     <Compile Include="Accounting\Characters\CharacterTransactionLogger.cs" />
@@ -128,7 +130,10 @@
     <Compile Include="Accounting\IAccountManager.cs" />
     <Compile Include="Accounting\IAccountRepository.cs" />
     <Compile Include="Accounting\IAccountWallet.cs" />
-    <Compile Include="Accounting\MtProductPrices.cs" />
+    <Compile Include="Accounting\IMtProductRepository.cs" />
+    <Compile Include="Accounting\MtProduct.cs" />
+    <Compile Include="Accounting\MtProductHelper.cs" />
+    <Compile Include="Accounting\MtProductRepository.cs" />
     <Compile Include="AggregateFieldExtensions.cs" />
     <Compile Include="Annotations.cs" />
     <Compile Include="Area.cs" />
@@ -154,6 +159,7 @@
     <Compile Include="Collections\Spatial\QuadTreeItem.cs" />
     <Compile Include="Collections\Spatial\QuadTreeNode.cs" />
     <Compile Include="Collections\WeightedCollection.cs" />
+    <Compile Include="Collections\WeightedEntry.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="Common\CentralBank.cs" />
@@ -260,8 +266,10 @@
     <Compile Include="LookupExtensions.cs" />
     <Compile Include="MathHelper.cs" />
     <Compile Include="MessageConstants.cs" />
+    <Compile Include="Modules\AdaptiveAlloy\AdaptiveAlloyModule.cs" />
     <Compile Include="Modules\AssaultRemoteControllerModule.cs" />
     <Compile Include="Modules\EffectModules\MineDetectorModule.cs" />
+    <Compile Include="Modules\EffectModules\PassiveEffectModule.cs" />
     <Compile Include="Modules\EffectModules\TargetBlinderModule.cs" />
     <Compile Include="Modules\GathererModule.cs" />
     <Compile Include="Modules\IndustrialRemoteControllerModule.cs" />

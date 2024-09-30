@@ -1,4 +1,5 @@
-﻿using Perpetuum.Modules.EffectModules;
+﻿using Perpetuum.Modules.AdaptiveAlloy;
+using Perpetuum.Modules.EffectModules;
 using Perpetuum.Modules.Weapons;
 using Perpetuum.Robots;
 using Perpetuum.Units;
@@ -12,45 +13,54 @@ namespace Perpetuum.Zones.DamageProcessors
 {
     public class DamageProcessor
     {
-        private readonly Unit _unit;
-        private Lazy<ShieldGeneratorModule> _shield;
-        private readonly Queue<DamageInfo> _damageInfos = new Queue<DamageInfo>();
-        private bool _processing;
+        private readonly Unit unit;
+        private Lazy<ShieldGeneratorModule> shield;
+        private Lazy<AdaptiveAlloyModule> adaptiveAlloy;
+        private readonly Queue<DamageInfo> damageInfos = new Queue<DamageInfo>();
+        private bool processing;
 
         public CombatEventHandler<DamageTakenEventArgs> DamageTaken { private get; set; }
 
         public DamageProcessor(Unit unit)
         {
-            _unit = unit;
+            this.unit = unit;
             OnRequipUnit();
         }
 
         public void OnRequipUnit()
         {
-            _shield = new Lazy<ShieldGeneratorModule>(() =>
+            shield = new Lazy<ShieldGeneratorModule>(() =>
             {
-                Robot robot = _unit as Robot;
+                Robot robot = unit as Robot;
+
                 return robot?.Modules.OfType<ShieldGeneratorModule>().FirstOrDefault();
+            });
+
+            adaptiveAlloy = new Lazy<AdaptiveAlloyModule>(() =>
+            {
+                Robot robot = unit as Robot;
+
+                return robot?.Modules.OfType<AdaptiveAlloyModule>().FirstOrDefault();
             });
         }
 
         public void TakeDamage(DamageInfo damageInfo)
         {
-            if (!_unit.InZone || _unit.IsAttackable != ErrorCodes.NoError || _unit.States.Dead || _unit.IsInvulnerable)
+            if (!unit.InZone || unit.IsAttackable != ErrorCodes.NoError || unit.States.Dead || unit.IsInvulnerable)
             {
                 return;
             }
 
-            lock (_damageInfos)
+            lock (damageInfos)
             {
-                if (!_processing)
+                if (!processing)
                 {
-                    _processing = true;
-                    _ = Task.Run(() => ProcessFirstDamage(damageInfo)).ContinueWith(t => _processing = false);
+                    processing = true;
+                    _ = Task.Run(() => ProcessFirstDamage(damageInfo)).ContinueWith(t => processing = false);
                     return;
                 }
 
-                _damageInfos.Enqueue(damageInfo);
+                damageInfos.Enqueue(damageInfo);
             }
         }
 
@@ -60,21 +70,21 @@ namespace Perpetuum.Zones.DamageProcessors
             {
                 ProcessDamage(info);
 
-                lock (_damageInfos)
+                lock (damageInfos)
                 {
-                    if (_damageInfos.Count == 0)
+                    if (damageInfos.Count == 0)
                     {
                         return;
                     }
 
-                    info = _damageInfos.Dequeue();
+                    info = damageInfos.Dequeue();
                 }
             }
         }
 
         private void ProcessDamage(DamageInfo damageInfo)
         {
-            if (!_unit.InZone || _unit.IsAttackable != ErrorCodes.NoError || _unit.States.Dead || _unit.IsInvulnerable)
+            if (!unit.InZone || unit.IsAttackable != ErrorCodes.NoError || unit.States.Dead || unit.IsInvulnerable)
             {
                 return;
             }
@@ -83,7 +93,7 @@ namespace Perpetuum.Zones.DamageProcessors
             double totalKers = 0.0;
             double totalAbsorbedDamage = 0.0;
 
-            foreach (Damage damage in damageInfo.CalculateDamages(_unit))
+            foreach (Damage damage in damageInfo.CalculateDamages(unit))
             {
                 double partialDamage = damage.type == DamageType.Electric
                     ? CalculateAbsorbedDamage(damage.value, true, ref totalAbsorbedDamage)
@@ -93,17 +103,19 @@ namespace Perpetuum.Zones.DamageProcessors
                     continue;
                 }
 
-                double resist = _unit.GetResistByDamageType(damage.type);
+                double resist = unit.GetResistByDamageType(damage.type);
                 partialDamage -= partialDamage * resist;
 
                 double kers = CalculateKersValue(damage.type, partialDamage);
                 if (kers > 0.0)
                 {
-                    _unit.Core += kers;
+                    unit.Core += kers;
                     totalKers += kers;
                 }
 
                 totalDamage += partialDamage;
+
+                adaptiveAlloy.Value?.RegisterDamage(damage.type, partialDamage);
             }
 
             CombatEventHandler<DamageTakenEventArgs> h = DamageTaken;
@@ -126,18 +138,18 @@ namespace Perpetuum.Zones.DamageProcessors
 
         private double CalculateAbsorbedDamage(double damage, bool isPenetrating, ref double absorbed)
         {
-            if (_shield.Value == null || !_unit.HasShieldEffect)
+            if (shield.Value == null || !unit.HasShieldEffect)
             {
                 return damage;
             }
 
-            double absorbtionModifier = _shield.Value.AbsorbtionModifier;
+            double absorbtionModifier = shield.Value.AbsorbtionModifier;
             if (absorbtionModifier <= 0.0)
             {
                 return damage;
             }
 
-            double currCore = _unit.Core;
+            double currCore = unit.Core;
             if (currCore < 1.0)
             {
                 return damage;
@@ -161,14 +173,14 @@ namespace Perpetuum.Zones.DamageProcessors
                 currCore -= coreDamage;
             }
 
-            _unit.Core = currCore;
+            unit.Core = currCore;
 
             return damage;
         }
 
         private double CalculateKersValue(DamageType damageType, double damage)
         {
-            double kersModifier = _unit.GetKersByDamageType(damageType);
+            double kersModifier = unit.GetKersByDamageType(damageType);
 
             if (Math.Abs(kersModifier - 1.0) < double.Epsilon)
             {
@@ -182,7 +194,7 @@ namespace Perpetuum.Zones.DamageProcessors
                 return 0.0;
             }
 
-            double kersMod = (Math.Sin(_unit.Core / _unit.CoreMax * Math.PI) / 2) + 0.5;
+            double kersMod = (Math.Sin(unit.Core / unit.CoreMax * Math.PI) / 2) + 0.5;
             return kers * kersMod;
         }
     }

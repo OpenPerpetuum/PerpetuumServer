@@ -480,5 +480,6 @@ namespace Perpetuum.ExportedTypes
         drone_amplification_reactor_radiation_modifier_modifier = 720,
         cpu_usage_remote_controller_modifier = 721,
         powergrid_usage_remote_controller_modifier = 722,
+        adaptive_resist_points = 723,
     }
 }

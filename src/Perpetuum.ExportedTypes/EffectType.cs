@@ -128,5 +128,6 @@ namespace Perpetuum.ExportedTypes
         nox_effect_teleport_negation = 125,
         drone_amplification = 126,
         effect_gods_bless = 127,
+        effect_adaptive_alloy = 128,
     }
 }

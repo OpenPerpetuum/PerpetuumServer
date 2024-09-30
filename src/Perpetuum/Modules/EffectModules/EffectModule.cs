@@ -8,11 +8,11 @@ namespace Perpetuum.Modules.EffectModules
 {
     public abstract class EffectModule : ActiveModule
     {
-        private readonly EffectToken _token = EffectToken.NewToken();
+        private readonly EffectToken token = EffectToken.NewToken();
 
-        protected EffectModule() : this(false) 
+        protected EffectModule() : this(false)
         {
-            
+
         }
 
         protected EffectModule(bool ranged) : base(ranged)
@@ -21,13 +21,13 @@ namespace Perpetuum.Modules.EffectModules
 
         protected override void OnStateChanged(IState state)
         {
-            var moduleState = (IModuleState) state;
+            IModuleState moduleState = (IModuleState)state;
 
             if (moduleState.Type == ModuleStateType.Idle)
             {
                 if (ED.AttributeFlags.SelfEffect)
                 {
-                    ParentRobot?.EffectHandler.RemoveEffectByToken(_token);
+                    ParentRobot?.EffectHandler.RemoveEffectByToken(token);
                 }
             }
 
@@ -44,21 +44,23 @@ namespace Perpetuum.Modules.EffectModules
             }
             else
             {
-                var unitLock = GetLock().ThrowIfNotType<UnitLock>(ErrorCodes.InvalidLockType);
+                UnitLock unitLock = GetLock().ThrowIfNotType<UnitLock>(ErrorCodes.InvalidLockType);
                 target = unitLock.Target;
             }
 
             if (!CanApplyEffect(target))
+            {
                 return;
+            }
 
             target.InZone.ThrowIfFalse(ErrorCodes.TargetNotFound);
             target.States.Dead.ThrowIfTrue(ErrorCodes.TargetIsDead);
 
             OnApplyingEffect(target);
 
-            var effectBuilder = target.NewEffectBuilder();
+            EffectBuilder effectBuilder = target.NewEffectBuilder();
             SetupEffect(effectBuilder);
-            effectBuilder.WithToken(_token);
+            effectBuilder.WithToken(token);
             target.ApplyEffect(effectBuilder);
         }
 
@@ -70,10 +72,12 @@ namespace Perpetuum.Modules.EffectModules
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
-        protected virtual void OnApplyingEffect(Unit target) {}
+        protected virtual void OnApplyingEffect(Unit target) { }
 
         protected abstract void SetupEffect(EffectBuilder effectBuilder);
     }

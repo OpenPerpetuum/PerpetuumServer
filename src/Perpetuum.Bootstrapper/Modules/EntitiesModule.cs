@@ -12,6 +12,7 @@ using Perpetuum.Items;
 using Perpetuum.Items.Ammos;
 using Perpetuum.Items.Helpers;
 using Perpetuum.Modules;
+using Perpetuum.Modules.AdaptiveAlloy;
 using Perpetuum.Modules.EffectModules;
 using Perpetuum.Modules.Terraforming;
 using Perpetuum.Modules.Weapons;
@@ -226,6 +227,9 @@ namespace Perpetuum.Bootstrapper.Modules
             RegisterModule<TerraformMultiModule>(builder);
             RegisterModule<WallBuilderModule>(builder);
             RegisterModule<ConstructionModule>(builder);
+
+            RegisterModule<AdaptiveAlloyModule>(builder);
+
             RegisterEffectModule<WebberModule>(builder);
             RegisterEffectModule<SensorDampenerModule>(builder);
             RegisterEffectModule<RemoteSensorBoosterModule>(builder);
@@ -493,6 +497,8 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByCategoryFlags<Perpetuum.Modules.Module>(CategoryFlags.cf_shield_hardener);
                 ByCategoryFlags<Perpetuum.Modules.Module>(CategoryFlags.cf_eccm);
                 ByCategoryFlags<Perpetuum.Modules.Module>(CategoryFlags.cf_resistance_plating);
+
+                ByCategoryFlags<AdaptiveAlloyModule>(CategoryFlags.cf_adaptive_alloys);
 
                 ByCategoryFlags<GangModule>(CategoryFlags.cf_gang_assist_speed, new NamedParameter("effectType", EffectType.effect_aura_gang_speed), new NamedParameter("effectModifier", AggregateField.effect_speed_max_modifier));
                 ByCategoryFlags<GangModule>(CategoryFlags.cf_gang_assist_defense, new NamedParameter("effectType", EffectType.effect_aura_gang_armor_max), new NamedParameter("effectModifier", AggregateField.effect_armor_max_modifier));

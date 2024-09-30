@@ -257,7 +257,9 @@ namespace Perpetuum.Accounting.Characters
                 double? x = ReadValueFromDb<double?>(CharacterConstants.FIELD_POSITION_X);
                 double? y = ReadValueFromDb<double?>(CharacterConstants.FIELD_POSITION_Y);
 
-                return x == null || y == null ? null : new Position((double)x, (double)y);
+                return x == null || y == null
+                    ? null
+                    : (Position?)new Position((double)x, (double)y);
             }
             set
             {

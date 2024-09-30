@@ -33,6 +33,12 @@ namespace Perpetuum.Zones.NpcSystem.AI
         IEntityVisitor<EnergyTransfererModule>,
         IEntityVisitor<RemoteArmorRepairModule>
     {
+        public ModuleActivator(ActiveModule module)
+        {
+            this.module = module;
+            timer = new IntervalTimer(TimeSpan.FromSeconds(1), true);
+        }
+
         private const double ENERGY_INJECTOR_THRESHOLD = 0.65;
         private const double ARMOR_REPAIR_THRESHOLD = 0.95;
         private const double ARMOR_REPAIR_CORE_THRESHOLD = 0.35;
@@ -46,32 +52,26 @@ namespace Perpetuum.Zones.NpcSystem.AI
         private const double ENERGY_NEUTRALIZER_CORE_THRESHOLD = 0.55;
         private const double ENERGY_VAMPIRE_CORE_THRESHOLD = 0.05;
 
-        private readonly IntervalTimer _timer;
-        private readonly ActiveModule _module;
-
-        public ModuleActivator(ActiveModule module)
-        {
-            _module = module;
-            _timer = new IntervalTimer(TimeSpan.FromSeconds(1), true);
-        }
+        private readonly IntervalTimer timer;
+        private readonly ActiveModule module;
 
         public void Update(TimeSpan time)
         {
-            _ = _timer.Update(time);
+            _ = timer.Update(time);
 
-            if (!_timer.Passed)
+            if (!timer.Passed)
             {
                 return;
             }
 
-            _timer.Reset();
+            timer.Reset();
 
-            if (_module.State.Type != ModuleStateType.Idle)
+            if (module.State.Type != ModuleStateType.Idle)
             {
                 return;
             }
 
-            _module.AcceptVisitor(this);
+            module.AcceptVisitor(this);
         }
 
         public void Visit(MissileWeaponModule module)
@@ -504,8 +504,8 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 return;
             }
 
-            _module.Lock = primaryLock;
-            _module.State.SwitchTo(ModuleStateType.Oneshot);
+            module.Lock = primaryLock;
+            module.State.SwitchTo(ModuleStateType.Oneshot);
         }
     }
 }
