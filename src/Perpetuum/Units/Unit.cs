@@ -10,6 +10,8 @@ using Perpetuum.Players;
 using Perpetuum.Robots;
 using Perpetuum.Services.RiftSystem;
 using Perpetuum.Timers;
+using Perpetuum.Units.ItemProperties;
+using Perpetuum.Units.UnitProperties;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Beams;
 using Perpetuum.Zones.Blobs;
@@ -36,53 +38,6 @@ using System.Threading.Tasks;
 
 namespace Perpetuum.Units
 {
-    public class SpeedMaxProperty : ItemProperty
-    {
-        private readonly Unit _owner;
-
-        public SpeedMaxProperty(Unit owner)
-            : base(AggregateField.speed_max)
-        {
-            _owner = owner;
-        }
-
-        protected override double CalculateValue()
-        {
-            ItemPropertyModifier speedMax = _owner.GetPropertyModifier(AggregateField.speed_max);
-            ItemPropertyModifier speedMaxMod = _owner.GetPropertyModifier(AggregateField.speed_max_modifier);
-            speedMaxMod.Modify(ref speedMax);
-
-            _owner.ApplyEffectPropertyModifiers(AggregateField.effect_speed_max_modifier, ref speedMax);
-            _owner.ApplyEffectPropertyModifiers(AggregateField.drone_amplification_speed_max_modifier, ref speedMax);
-            _owner.ApplyEffectPropertyModifiers(AggregateField.effect_massivness_speed_max_modifier, ref speedMax);
-
-            if (_owner.ActualMass > 0)
-            {
-                speedMax.Multiply(_owner.Mass / _owner.ActualMass);
-            }
-
-            _owner.ApplyEffectPropertyModifiers(AggregateField.effect_speed_highway_modifier, ref speedMax);
-            return speedMax.Value;
-        }
-
-        protected override bool IsRelated(AggregateField field)
-        {
-            switch (field)
-            {
-                case AggregateField.speed_max:
-                case AggregateField.speed_max_modifier:
-                case AggregateField.drone_amplification_speed_max_modifier:
-                case AggregateField.effect_speed_max_modifier:
-                case AggregateField.effect_massivness_speed_max_modifier:
-                case AggregateField.effect_speed_highway_modifier:
-                    return true;
-            }
-
-            return false;
-        }
-    }
-
-
     public delegate void UnitEventHandler(Unit unit);
     public delegate void UnitEventHandler<in T>(Unit unit, T args);
     public delegate void UnitEventHandler<in T1, in T2>(Unit unit, T1 args1, T2 args2);
@@ -113,11 +68,11 @@ namespace Perpetuum.Units
         private ItemProperty _kersExplosive;
         private ItemProperty _kersKinetic;
         private ItemProperty _kersThermal;
-        private ItemProperty _speedMax;
+        private ItemProperty speedMax;
         private ItemProperty _criticalHitChance;
         private ItemProperty _sensorStrength;
-        private ItemProperty _detectionStrength;
-        private ItemProperty _stealthStrength;
+        private ItemProperty detectionStrength;
+        private ItemProperty stealthStrength;
         private ItemProperty _massiveness;
         private ItemProperty _reactorRadiation;
         private ItemProperty _signatureRadius;
@@ -815,7 +770,7 @@ namespace Perpetuum.Units
                 _unit.States.AppendToPacket(packet);
                 packet.AppendDouble(_unit.ArmorMax);
                 packet.AppendDouble(_unit.Armor);
-                packet.AppendDouble(_unit._speedMax.Value);
+                packet.AppendDouble(_unit.speedMax.Value);
                 packet.AppendLong(_unit.Owner);
 
                 if (!(_unit is Robot robot))
@@ -992,7 +947,7 @@ namespace Perpetuum.Units
             {
                 case AggregateField.blob_effect:
                     _sensorStrength.Update();
-                    _detectionStrength.Update();
+                    detectionStrength.Update();
 
                     break;
                 case AggregateField.drone_amplification_core_max_modifier:
@@ -1038,9 +993,9 @@ namespace Perpetuum.Units
 
         public double SensorStrength => _sensorStrength.Value;
 
-        public double DetectionStrength => _detectionStrength.Value;
+        public double DetectionStrength => detectionStrength.Value;
 
-        public virtual double StealthStrength => _stealthStrength.Value;
+        public virtual double StealthStrength => stealthStrength.Value;
 
         public double Massiveness => _massiveness.Value;
 
@@ -1052,12 +1007,12 @@ namespace Perpetuum.Units
         {
             get
             {
-                double speedMax = _speedMax.Value;
+                double speedMax = this.speedMax.Value;
                 return speedMax * _currentSpeed;
             }
         }
 
-        public double MaxSpeed => _speedMax.Value;
+        public double MaxSpeed => speedMax.Value;
 
         public TimeSpan CoreRechargeTime => TimeSpan.FromSeconds(_coreRechargeTime.Value);
 
@@ -1114,8 +1069,8 @@ namespace Perpetuum.Units
             _actualMass = new ActualMassProperty(this);
             AddProperty(_actualMass);
 
-            _speedMax = new SpeedMaxProperty(this);
-            AddProperty(_speedMax);
+            speedMax = new SpeedMaxProperty(this);
+            AddProperty(speedMax);
 
             _resistChemical = new UnitProperty(this, AggregateField.resist_chemical, AggregateField.resist_chemical_modifier, AggregateField.effect_resist_chemical);
             AddProperty(_resistChemical);
@@ -1144,19 +1099,24 @@ namespace Perpetuum.Units
             _sensorStrength = new SensorStrengthProperty(this);
             AddProperty(_sensorStrength);
 
-            _stealthStrength = new UnitProperty(this, AggregateField.stealth_strength, AggregateField.stealth_strength_modifier, AggregateField.effect_stealth_strength_modifier);
-            _stealthStrength.PropertyChanged += property =>
+            stealthStrength = new UnitProperty(
+                this,
+                AggregateField.stealth_strength,
+                AggregateField.stealth_strength_modifier,
+                AggregateField.effect_stealth_strength_modifier,
+                AggregateField.effect_dreadnought_stealth_strength_modifier);
+            stealthStrength.PropertyChanged += property =>
             {
                 UpdateTypes |= UnitUpdateTypes.Stealth;
             };
-            AddProperty(_stealthStrength);
+            AddProperty(stealthStrength);
 
-            _detectionStrength = new DetectionStrengthProperty(this);
-            _detectionStrength.PropertyChanged += property =>
+            detectionStrength = new DetectionStrengthProperty(this);
+            detectionStrength.PropertyChanged += property =>
             {
                 UpdateTypes |= UnitUpdateTypes.Detection;
             };
-            AddProperty(_detectionStrength);
+            AddProperty(detectionStrength);
 
             _kersChemical = new UnitProperty(this, AggregateField.chemical_damage_to_core_modifier);
             AddProperty(_kersChemical);
@@ -1276,24 +1236,6 @@ namespace Perpetuum.Units
                 }
 
                 return mass;
-            }
-        }
-
-        private class DetectionStrengthProperty : UnitProperty
-        {
-            public DetectionStrengthProperty(Unit owner)
-                : base(owner, AggregateField.detection_strength, AggregateField.detection_strength_modifier, AggregateField.effect_detection_strength_modifier)
-            {
-            }
-
-            protected override double CalculateValue()
-            {
-                double v = base.CalculateValue();
-
-                IBlobableUnit blobableUnit = owner as IBlobableUnit;
-                blobableUnit?.BlobHandler.ApplyBlobPenalty(ref v, 0.75);
-
-                return v;
             }
         }
 

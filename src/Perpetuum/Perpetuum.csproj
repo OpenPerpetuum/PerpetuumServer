@@ -268,11 +268,13 @@
     <Compile Include="MessageConstants.cs" />
     <Compile Include="Modules\AdaptiveAlloy\AdaptiveAlloyModule.cs" />
     <Compile Include="Modules\AssaultRemoteControllerModule.cs" />
+    <Compile Include="Modules\EffectModules\DreadnoughtModule.cs" />
     <Compile Include="Modules\EffectModules\MineDetectorModule.cs" />
     <Compile Include="Modules\EffectModules\PassiveEffectModule.cs" />
     <Compile Include="Modules\EffectModules\TargetBlinderModule.cs" />
     <Compile Include="Modules\GathererModule.cs" />
     <Compile Include="Modules\IndustrialRemoteControllerModule.cs" />
+    <Compile Include="Modules\LargeDrillerModule.cs" />
     <Compile Include="Modules\ModuleProperties\CycleTimeProperty.cs" />
     <Compile Include="Modules\ModuleProperties\FalloffProperty.cs" />
     <Compile Include="Modules\ModuleProperties\HarvestingAmountModifierProperty.cs" />
@@ -315,6 +317,7 @@
     <Compile Include="Reactive\Observable.cs" />
     <Compile Include="Reactive\ObservableExtensions.cs" />
     <Compile Include="Reactive\Observer.cs" />
+    <Compile Include="Robots\OverheatHandler.cs" />
     <Compile Include="Robots\RobotChassis.cs" />
     <Compile Include="Robots\RobotHead.cs" />
     <Compile Include="Robots\RobotHelper.cs" />
@@ -647,6 +650,8 @@
     <Compile Include="Units\CoreRecharger.cs" />
     <Compile Include="Units\ExpiringLosHolder.cs" />
     <Compile Include="Units\ICoreRecharger.cs" />
+    <Compile Include="Units\UnitProperties\DetectionStrengthProperty.cs" />
+    <Compile Include="Units\UnitProperties\SpeedMaxProperty.cs" />
     <Compile Include="Units\IUnitVisibility.cs" />
     <Compile Include="Units\INotifyOptionalPropertyChanged.cs" />
     <Compile Include="Units\IOptionalProperty.cs" />
@@ -1003,7 +1008,7 @@
     <Compile Include="Units\Unit.cs" />
     <Compile Include="Units\Unit.States.cs" />
     <Compile Include="Units\Unit.Visibility.cs" />
-    <Compile Include="Units\UnitProperty.cs" />
+    <Compile Include="Units\UnitProperties\UnitProperty.cs" />
     <Compile Include="Units\UnitStateFlags.cs" />
     <Compile Include="Units\WreckBeamBuilder.cs" />
     <Compile Include="Zones\Artifacts\Artifact.cs" />

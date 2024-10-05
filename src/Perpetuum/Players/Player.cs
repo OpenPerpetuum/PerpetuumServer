@@ -329,6 +329,7 @@ namespace Perpetuum.Players
                 HasAggressorEffect.ThrowIfTrue(ErrorCodes.NotAllowedForAggressors);
                 HasPvpEffect.ThrowIfTrue(ErrorCodes.CantDockThisState);
                 HasTeleportSicknessEffect.ThrowIfTrue(ErrorCodes.CantDockThisState);
+                EffectHandler.ContainsEffect(EffectType.effect_dreadnought);
             }
 
             IZone zone = Zone;

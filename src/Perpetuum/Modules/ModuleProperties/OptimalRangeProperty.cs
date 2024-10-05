@@ -13,6 +13,7 @@ namespace Perpetuum.Modules.ModuleProperties
             _module = module;
             AddEffectModifier(AggregateField.effect_optimal_range_modifier);
             AddEffectModifier(AggregateField.drone_amplification_long_range_modifier);
+            AddEffectModifier(AggregateField.effect_dreadnought_optimal_range_modifier);
         }
 
         protected override double CalculateValue()

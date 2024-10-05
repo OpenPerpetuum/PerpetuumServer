@@ -7,11 +7,14 @@ using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
 using Perpetuum.Items.Templates;
 using Perpetuum.Modules;
+using Perpetuum.Players;
 using Perpetuum.Services.ExtensionService;
 using Perpetuum.Services.Insurance;
+using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Zones;
 using Perpetuum.Zones.DamageProcessors;
+using Perpetuum.Zones.Effects;
 using Perpetuum.Zones.Locking;
 using Perpetuum.Zones.Locking.Locks;
 using System;
@@ -20,14 +23,27 @@ using System.Linq;
 
 namespace Perpetuum.Robots
 {
-    public abstract partial class Robot : Unit
+    public abstract partial class Robot : Unit, IUsableItem
     {
         private Lazy<IEnumerable<Module>> modules;
         private Lazy<IEnumerable<ActiveModule>> activeModules;
         private Lazy<IEnumerable<Item>> components;
         private Lazy<IEnumerable<RobotComponent>> robotComponents;
+        private readonly TimeSpan overheatCooldownPeriod = TimeSpan.FromMilliseconds(1650);
+        private readonly IntervalTimer overheatCooldownTimer;
+
+        protected Robot()
+        {
+            InitLockHander();
+            InitProperties();
+            OverheatHandler = new OverheatHandler(this);
+            overheatCooldownTimer = new IntervalTimer(overheatCooldownPeriod);
+        }
+
+        public OverheatHandler OverheatHandler { get; private set; }
 
         public RobotHelper RobotHelper { protected get; set; }
+
         public InsuranceHelper InsuranceHelper { protected get; set; }
 
         public RobotTemplate Template { get; set; }
@@ -93,10 +109,17 @@ namespace Perpetuum.Robots
 
         public bool IsTrashed => Trashcan.IsItemTrashed(this);
 
-        protected Robot()
+        private void ResetTimer()
         {
-            InitLockHander();
-            InitProperties();
+            overheatCooldownTimer.Interval = overheatCooldownPeriod;
+        }
+
+        public void IncreaseOverheat()
+        {
+            if (EffectHandler.ContainsEffect(EffectType.effect_dreadnought))
+            {
+                OverheatHandler.Increase();
+            }
         }
 
         public override void Initialize()
@@ -328,6 +351,14 @@ namespace Perpetuum.Robots
             {
                 robotComponent.Update(time);
             }
+
+            if (overheatCooldownTimer.Passed)
+            {
+                OverheatHandler.Decrease();
+                ResetTimer();
+            }
+
+            overheatCooldownTimer.Update(time);
         }
 
         protected internal override double ComputeHeight()
@@ -383,6 +414,11 @@ namespace Perpetuum.Robots
         {
             base.OnEnterZone(zone, enterType);
             CamouflageUpdate();
+        }
+
+        public void UseItem(Player player)
+        {
+            throw new NotImplementedException();
         }
     }
 }

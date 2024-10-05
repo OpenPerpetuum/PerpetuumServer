@@ -481,5 +481,17 @@ namespace Perpetuum.ExportedTypes
         cpu_usage_remote_controller_modifier = 721,
         powergrid_usage_remote_controller_modifier = 722,
         adaptive_resist_points = 723,
+        effect_dreadnought_weapon_cycle_time_modifier = 724,
+        effect_dreadnought_enhancer_weapon_cycle_time_modifier = 725,
+        effect_dreadnought_optimal_range_modifier = 726,
+        effect_dreadnought_enhancer_optimal_range_modifier = 727,
+        effect_dreadnought_weapon_damage_modifier = 728,
+        effect_dreadnought_enhancer_weapon_damage_modifier = 729,
+        effect_dreadnought_speed_max_modifier = 730,
+        effect_dreadnought_enhancer_speed_max_modifier = 731,
+        effect_dreadnought_detection_strength_modifier = 732,
+        effect_dreadnought_enhancer_detection_strength_modifier = 733,
+        effect_dreadnought_stealth_strength_modifier = 734,
+        effect_dreadnought_enhancer_stealth_strength_modifier = 735,
     }
 }

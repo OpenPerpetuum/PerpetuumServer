@@ -199,6 +199,7 @@ namespace Perpetuum.Bootstrapper.Modules
             RegisterEntity<MineralScanResultItem>(builder);
 
             RegisterModule<DrillerModule>(builder);
+            RegisterModule<LargeDrillerModule>(builder);
             RegisterModule<RemoteControlledDrillerModule>(builder);
             RegisterModule<RemoteControlledHarvesterModule>(builder);
             RegisterModule<HarvesterModule>(builder);
@@ -243,6 +244,8 @@ namespace Perpetuum.Bootstrapper.Modules
             RegisterEffectModule<NoxModule>(builder);
             RegisterEffectModule<ShieldGeneratorModule>(builder);
             RegisterEffectModule<MineDetectorModule>(builder);
+
+            RegisterEffectModule<DreadnoughtModule>(builder);
 
             RegisterEntity<SystemContainer>(builder);
             RegisterEntity<PunchBagDeployer>(builder);
@@ -459,7 +462,7 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByCategoryFlags<EnergyVampireModule>(CategoryFlags.cf_energy_vampires);
                 ByCategoryFlags<DrillerModule>(CategoryFlags.cf_small_drillers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_mining_ammo));
                 ByCategoryFlags<DrillerModule>(CategoryFlags.cf_medium_drillers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_mining_ammo));
-                ByCategoryFlags<DrillerModule>(CategoryFlags.cf_large_drillers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_deep_mining_ammo));
+                ByCategoryFlags<LargeDrillerModule>(CategoryFlags.cf_large_drillers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_deep_mining_ammo));
                 ByCategoryFlags<RemoteControlledDrillerModule>(CategoryFlags.cf_industrial_turret_drillers);
                 ByCategoryFlags<RemoteControlledHarvesterModule>(CategoryFlags.cf_industrial_turret_harvesters);
                 ByCategoryFlags<HarvesterModule>(CategoryFlags.cf_harvesters, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_harvesting_ammo));
@@ -517,6 +520,8 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByCategoryFlags<NoxModule>(CategoryFlags.cf_nox_shield_negators, new NamedParameter("effectType", EffectType.nox_effect_shield_negation), new NamedParameter("effectModifier", AggregateField.nox_shield_absorbtion_modifier));
                 ByCategoryFlags<NoxModule>(CategoryFlags.cf_nox_repair_negators, new NamedParameter("effectType", EffectType.nox_effect_repair_negation), new NamedParameter("effectModifier", AggregateField.nox_repair_amount_modifier));
                 ByCategoryFlags<NoxModule>(CategoryFlags.cf_nox_teleport_negators, new NamedParameter("effectType", EffectType.nox_effect_teleport_negation), new NamedParameter("effectModifier", AggregateField.nox_teleport_negation));
+
+                ByCategoryFlags<DreadnoughtModule>(CategoryFlags.cf_dreadnought_modules);
 
                 ByCategoryFlags<SystemContainer>(CategoryFlags.cf_logical_storage);
                 ByCategoryFlags<Item>(CategoryFlags.cf_mission_items);

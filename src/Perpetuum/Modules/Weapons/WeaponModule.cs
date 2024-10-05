@@ -15,7 +15,7 @@ namespace Perpetuum.Modules.Weapons
 {
     public class WeaponModule : ActiveModule
     {
-        private readonly ModuleAction _action;
+        private readonly ModuleAction action;
 
         public ModuleProperty DamageModifier { get; }
 
@@ -23,17 +23,21 @@ namespace Perpetuum.Modules.Weapons
 
         public WeaponModule(CategoryFlags ammoCategoryFlags) : base(ammoCategoryFlags, true)
         {
-            _action = new ModuleAction(this);
-            DamageModifier = new ModuleProperty(this, AggregateField.damage_modifier);
-            AddProperty(DamageModifier);
+            action = new ModuleAction(this);
             Accuracy = new ModuleProperty(this, AggregateField.accuracy);
             AddProperty(Accuracy);
+            Accuracy.AddEffectModifier(AggregateField.drone_amplification_accuracy_modifier);
             cycleTime
                 .AddEffectModifier(AggregateField.effect_weapon_cycle_time_modifier);
             cycleTime
                 .AddEffectModifier(AggregateField.drone_amplification_cycle_time_modifier);
+            cycleTime
+                .AddEffectModifier(AggregateField.effect_dreadnought_weapon_cycle_time_modifier);
+            DamageModifier = new ModuleProperty(this, AggregateField.damage_modifier);
+            AddProperty(DamageModifier);
             DamageModifier.AddEffectModifier(AggregateField.drone_amplification_damage_modifier);
-            Accuracy.AddEffectModifier(AggregateField.drone_amplification_accuracy_modifier);
+            DamageModifier.AddEffectModifier(AggregateField.effect_dreadnought_weapon_damage_modifier);
+
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
@@ -67,7 +71,8 @@ namespace Perpetuum.Modules.Weapons
 
         protected override void OnAction()
         {
-            _action.DoAction();
+            action.DoAction();
+            ParentRobot.IncreaseOverheat();
         }
 
         protected virtual bool CheckAccuracy(Unit victim)

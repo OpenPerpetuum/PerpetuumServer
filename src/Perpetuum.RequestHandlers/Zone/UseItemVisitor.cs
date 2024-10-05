@@ -1,13 +1,14 @@
 using Perpetuum.Accounting.Characters;
 using Perpetuum.EntityFramework;
 using Perpetuum.Players;
+using Perpetuum.Robots;
 using Perpetuum.Units;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Gates;
 
 namespace Perpetuum.RequestHandlers.Zone
 {
-    public class UseItemVisitor : IEntityVisitor<Unit>,IEntityVisitor<Gate>
+    public class UseItemVisitor : IEntityVisitor<Unit>, IEntityVisitor<Gate>, IEntityVisitor<Robot>
     {
         private readonly IZone _zone;
         private readonly Character _character;
@@ -20,14 +21,12 @@ namespace Perpetuum.RequestHandlers.Zone
 
         public void Visit(Unit unit)
         {
-            var usable = unit as IUsableItem;
-            if (usable != null)
+            if (unit is IUsableItem usable)
             {
                 //fallback, can only be used if the player is on the zone
                 //zone packet used in this case
 
-                Player player;
-                if (_zone.TryGetPlayer(_character, out player))
+                if (_zone.TryGetPlayer(_character, out Player player))
                 {
                     usable.UseItem(player);
                 }
@@ -41,6 +40,11 @@ namespace Perpetuum.RequestHandlers.Zone
         public void Visit(Gate gate)
         {
             gate.UseGateWithCharacter(_character, _character.CorporationEid);
+        }
+
+        public void Visit(Robot robot)
+        {
+            robot.Kill();
         }
     }
 }

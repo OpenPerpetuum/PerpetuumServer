@@ -280,6 +280,7 @@ namespace Perpetuum.Modules
                 case AggregateField.module_missile_range_modifier:
                 case AggregateField.effect_missile_range_modifier:
                 case AggregateField.drone_amplification_long_range_modifier:
+                case AggregateField.effect_dreadnought_optimal_range_modifier:
                     {
                         optimalRange.Update();
 

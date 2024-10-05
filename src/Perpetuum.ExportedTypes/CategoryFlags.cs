@@ -312,6 +312,8 @@ namespace Perpetuum.ExportedTypes
         cf_nox_shield_negators = 0x0000000000010B0F,
         cf_nox_repair_negators = 0x0000000000020B0F,
         cf_nox_teleport_negators = 0x0000000000030B0F,
+        cf_robot_enhancements = 0x0000000000000C0F,
+        cf_dreadnought_modules = 0x0000000000010C0F,
 
         cf_material = 0x0000000000000014,
         cf_raw_material = 0x0000000000000114,
@@ -410,6 +412,7 @@ namespace Perpetuum.ExportedTypes
         cf_mission_calibration_programs = 0x0000000000060416,
         cf_pbs_calibration_programs = 0x0000000000070416,
         cf_random_calibration_programs = 0x0000000000080416,
+        cf_robot_enhancements_calibration_programs = 0x0000000000090416,
 
         cf_logical_storage = 0x0000000000000017,
 

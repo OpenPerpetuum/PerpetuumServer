@@ -716,5 +716,6 @@ namespace Perpetuum
         TurretNotDeployableNearObject,
         NoxTeleportForbidden,
         PlasmaNotFound,
+        Overheat,
     }
 }

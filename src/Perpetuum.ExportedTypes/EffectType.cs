@@ -129,5 +129,10 @@ namespace Perpetuum.ExportedTypes
         drone_amplification = 126,
         effect_gods_bless = 127,
         effect_adaptive_alloy = 128,
+        effect_dreadnought = 129,
+        effect_overheat_buildup_low = 130,
+        effect_overheat_buildup_medium = 131,
+        effect_overheat_buildup_high = 132,
+        effect_overheat_buildup_critical = 133,
     }
 }

@@ -7,22 +7,23 @@ namespace Perpetuum.Modules.EffectModules
 {
     public class DetectionModule : EffectModule
     {
-        private readonly ItemProperty _detectionStrengthModifier;
-        private readonly ItemProperty _stealthStrengthModifier;
+        private readonly ItemProperty detectionStrengthModifier;
+        private readonly ItemProperty stealthStrengthModifier;
 
         public DetectionModule()
         {
-            _detectionStrengthModifier = new ModuleProperty(this, AggregateField.effect_detection_strength_modifier);
-            AddProperty(_detectionStrengthModifier);
-            _stealthStrengthModifier = new ModuleProperty(this,AggregateField.effect_stealth_strength_modifier);
-            AddProperty(_stealthStrengthModifier);
+            detectionStrengthModifier = new ModuleProperty(this, AggregateField.effect_detection_strength_modifier);
+            AddProperty(detectionStrengthModifier);
+            stealthStrengthModifier = new ModuleProperty(this, AggregateField.effect_stealth_strength_modifier);
+            AddProperty(stealthStrengthModifier);
         }
 
         protected override void SetupEffect(EffectBuilder effectBuilder)
         {
-            effectBuilder.SetType(EffectType.effect_detection)
-                                .WithPropertyModifier(_detectionStrengthModifier.ToPropertyModifier())
-                                .WithPropertyModifier(_stealthStrengthModifier.ToPropertyModifier());
+            effectBuilder
+                .SetType(EffectType.effect_detection)
+                .WithPropertyModifier(detectionStrengthModifier.ToPropertyModifier())
+                .WithPropertyModifier(stealthStrengthModifier.ToPropertyModifier());
         }
     }
 }
