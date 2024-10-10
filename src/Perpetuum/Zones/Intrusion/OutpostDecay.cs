@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Perpetuum.EntityFramework;
 using Perpetuum.Services.EventServices;
 using Perpetuum.Services.EventServices.EventMessages;
-using Perpetuum.EntityFramework;
+using System;
 
 namespace Perpetuum.Zones.Intrusion
 {
@@ -10,29 +10,31 @@ namespace Perpetuum.Zones.Intrusion
     /// </summary>
     public class OutpostDecay
     {
-        private readonly EventListenerService _eventChannel;
-        private readonly static TimeSpan noDecayBefore = TimeSpan.FromDays(3);
-        private readonly static TimeSpan decayRate = TimeSpan.FromDays(1);
+        private readonly EventListenerService eventChannel;
+        private static readonly TimeSpan noDecayBefore = TimeSpan.FromDays(5);
+        private static readonly TimeSpan decayRate = TimeSpan.FromDays(1);
         private TimeSpan timeSinceLastDecay = TimeSpan.Zero;
         private TimeSpan lastSuccessfulIntrusion = TimeSpan.Zero;
-        private readonly static int decayPts = -5;
-        private StabilityAffectingEvent.StabilityAffectBuilder _builder;
+        private static readonly int decayPts = -5;
+        private readonly StabilityAffectingEvent.StabilityAffectBuilder builder;
 
         public OutpostDecay(EventListenerService eventChannel, Outpost outpost)
         {
-            _eventChannel = eventChannel;
-            var def = EntityDefault.GetByName("def_outpost_decay");
-             _builder = StabilityAffectingEvent.Builder()
-                .WithOutpost(outpost)
-                .WithSapDefinition(def.Definition)
-                .WithPoints(decayPts);
+            this.eventChannel = eventChannel;
+            EntityDefault def = EntityDefault.GetByName("def_outpost_decay");
+            builder = StabilityAffectingEvent.Builder()
+               .WithOutpost(outpost)
+               .WithSapDefinition(def.Definition)
+               .WithPoints(decayPts);
         }
 
         public void OnUpdate(TimeSpan time)
         {
             lastSuccessfulIntrusion += time;
             if (lastSuccessfulIntrusion < noDecayBefore)
+            {
                 return;
+            }
 
             timeSinceLastDecay += time;
             if (timeSinceLastDecay > decayRate)
@@ -52,7 +54,7 @@ namespace Perpetuum.Zones.Intrusion
 
         private void DoDecay()
         {
-            _eventChannel.PublishMessage(_builder.Build());
+            eventChannel.PublishMessage(builder.Build());
         }
     }
 }
