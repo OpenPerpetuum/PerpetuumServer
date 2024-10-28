@@ -6,7 +6,7 @@ namespace Perpetuum.Modules.EffectModules
     public abstract class PassiveEffectModule : Module
     {
         private readonly EffectToken token = EffectToken.NewToken();
-        public const int DefaultEffectDuration = 2000;
+        private bool renewRequired = false;
 
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
@@ -18,11 +18,31 @@ namespace Perpetuum.Modules.EffectModules
 
         public void Update()
         {
+            if (renewRequired)
+            {
+                RemoveEffect();
+                renewRequired = false;
+            }
+
             if (ParentRobot.EffectHandler.GetEffectByToken(token) == null)
             {
                 ApplyEffect();
             }
         }
+
+        protected void SetRenewRequired()
+        {
+            renewRequired = true;
+        }
+
+        protected virtual bool CanApplyEffect()
+        {
+            return true;
+        }
+
+        protected virtual void OnApplyingEffect() { }
+
+        protected abstract void SetupEffect(EffectBuilder effectBuilder);
 
         private void ApplyEffect()
         {
@@ -42,13 +62,9 @@ namespace Perpetuum.Modules.EffectModules
             ParentRobot.ApplyEffect(effectBuilder);
         }
 
-        protected virtual bool CanApplyEffect()
+        private void RemoveEffect()
         {
-            return true;
+            ParentRobot.EffectHandler.RemoveEffectByToken(token);
         }
-
-        protected virtual void OnApplyingEffect() { }
-
-        protected abstract void SetupEffect(EffectBuilder effectBuilder);
     }
 }

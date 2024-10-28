@@ -269,6 +269,7 @@
     <Compile Include="Modules\AdaptiveAlloy\AdaptiveAlloyModule.cs" />
     <Compile Include="Modules\AssaultRemoteControllerModule.cs" />
     <Compile Include="Modules\EffectModules\DreadnoughtModule.cs" />
+    <Compile Include="Modules\EffectModules\ExcavatorModule.cs" />
     <Compile Include="Modules\EffectModules\MineDetectorModule.cs" />
     <Compile Include="Modules\EffectModules\PassiveEffectModule.cs" />
     <Compile Include="Modules\EffectModules\TargetBlinderModule.cs" />
@@ -648,6 +649,7 @@
     <Compile Include="TimeSpanExtensions.cs" />
     <Compile Include="Units\CombatLogType.cs" />
     <Compile Include="Units\CoreRecharger.cs" />
+    <Compile Include="Units\DockingBases\UndockSpawnPositionSelector.cs" />
     <Compile Include="Units\ExpiringLosHolder.cs" />
     <Compile Include="Units\ICoreRecharger.cs" />
     <Compile Include="Units\UnitProperties\DetectionStrengthProperty.cs" />

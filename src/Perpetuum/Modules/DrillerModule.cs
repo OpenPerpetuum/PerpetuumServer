@@ -59,6 +59,7 @@ namespace Perpetuum.Modules
                 case AggregateField.mining_amount_modifier:
                 case AggregateField.effect_mining_amount_modifier:
                 case AggregateField.drone_amplification_mining_amount_modifier:
+                case AggregateField.effect_excavator_mining_amount_modifier:
                     {
                         MiningAmountModifier.Update();
 
@@ -91,6 +92,9 @@ namespace Perpetuum.Modules
             }
 
             ConsumeAmmo();
+            ParentRobot.IncreaseOverheatByValue(
+                EffectType.effect_excavator,
+                GeneratedHeat);
         }
 
         protected override int CalculateEp(int materialType)
@@ -195,6 +199,8 @@ namespace Perpetuum.Modules
                 Transaction.Current.OnCommited(() => container.SendUpdateToOwnerAsync());
                 scope.Complete();
             }
+
+            ParentRobot.IncreaseOverheat(EffectType.effect_excavator);
         }
 
         protected void CheckEnablerEffect(MaterialInfo materialInfo, Position position)

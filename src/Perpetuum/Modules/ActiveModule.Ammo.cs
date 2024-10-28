@@ -1,17 +1,17 @@
-﻿using System.Linq;
-using Perpetuum.Containers;
+﻿using Perpetuum.Containers;
 using Perpetuum.EntityFramework;
 using Perpetuum.Items.Ammos;
 using Perpetuum.Players;
 using Perpetuum.Zones;
+using System.Linq;
 
 namespace Perpetuum.Modules
 {
-    partial class ActiveModule
+    public partial class ActiveModule
     {
-        private Ammo _ammo;
+        private Ammo ammo;
 
-        public bool IsAmmoable => _ammoCategoryFlags > 0 && AmmoCapacity > 0;
+        public bool IsAmmoable => ammoCategoryFlags > 0 && AmmoCapacity > 0;
 
         public int AmmoCapacity { get; private set; }
 
@@ -22,25 +22,24 @@ namespace Perpetuum.Modules
 
         public void VisitAmmo(IEntityVisitor visitor)
         {
-            var ammo = GetAmmo();
+            Ammo ammo = GetAmmo();
             ammo?.AcceptVisitor(visitor);
         }
 
         [CanBeNull]
         public Ammo GetAmmo()
         {
-            if (!IsAmmoable)
-                return null;
-
-            return _ammo ?? (_ammo = Children.OfType<Ammo>().FirstOrDefault());
+            return !IsAmmoable ? null : ammo ?? (ammo = Children.OfType<Ammo>().FirstOrDefault());
         }
 
         public void SetAmmo(Ammo ammo)
         {
             if (!IsAmmoable)
+            {
                 return;
+            }
 
-            _ammo = null;
+            this.ammo = null;
             ClearChildren();
 
             if (ammo != null)
@@ -56,28 +55,35 @@ namespace Perpetuum.Modules
         protected void ConsumeAmmo()
         {
             if (!IsAmmoable || !ParentIsPlayer())
+            {
                 return;
+            }
 
-            var ammo = GetAmmo();
+            Ammo ammo = GetAmmo();
             if (ammo == null)
+            {
                 return;
+            }
 
             if (ammo.Quantity > 0)
+            {
                 ammo.Quantity--;
+            }
 
             SendAmmoUpdatePacketToPlayer();
         }
 
         private void SendAmmoUpdatePacketToPlayer()
         {
-            var player = ParentRobot as Player;
-            if (player == null)
+            if (!(ParentRobot is Player player))
+            {
                 return;
+            }
 
-            var packet = new Packet(ZoneCommand.AmmoQty);
+            Packet packet = new Packet(ZoneCommand.AmmoQty);
             packet.AppendLong(Eid);
 
-            var ammo = GetAmmo();
+            Ammo ammo = GetAmmo();
             if (ammo != null)
             {
                 packet.AppendLong(ammo.Eid);
@@ -97,16 +103,19 @@ namespace Perpetuum.Modules
         public bool CheckLoadableAmmo(int ammoDefinition)
         {
             if (!IsAmmoable)
+            {
                 return false;
+            }
 
-            var ammoEntityDefault = EntityDefault.GetOrThrow(ammoDefinition);
-            return ammoEntityDefault.CategoryFlags.IsCategory(_ammoCategoryFlags);
+            EntityDefault ammoEntityDefault = EntityDefault.GetOrThrow(ammoDefinition);
+
+            return ammoEntityDefault.CategoryFlags.IsCategory(ammoCategoryFlags);
         }
 
         [CanBeNull]
         public Ammo UnequipAmmoToContainer(Container container)
         {
-            var ammo = GetAmmo();
+            Ammo ammo = GetAmmo();
             if (ammo != null)
             {
                 if (ammo.Quantity > 0)
@@ -120,6 +129,7 @@ namespace Perpetuum.Modules
             }
 
             SetAmmo(null);
+
             return ammo;
         }
     }

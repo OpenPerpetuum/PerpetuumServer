@@ -20,13 +20,38 @@ namespace Perpetuum.Modules
 {
     public abstract partial class ActiveModule : Module
     {
+        protected ActiveModule(CategoryFlags ammoCategoryFlags, bool ranged = false)
+        {
+            IsRanged = ranged;
+            coreUsage = new ModuleProperty(this, AggregateField.core_usage);
+            AddProperty(coreUsage);
+            cycleTime = new CycleTimeProperty(this);
+            AddProperty(cycleTime);
+
+            if (ranged)
+            {
+                optimalRange = new OptimalRangeProperty(this);
+                AddProperty(optimalRange);
+                falloff = new FalloffProperty(this);
+                AddProperty(falloff);
+            }
+
+            this.ammoCategoryFlags = ammoCategoryFlags;
+        }
+
+        protected ActiveModule(bool ranged) : this(CategoryFlags.undefined, ranged)
+        {
+        }
+
         private Lock _lock;
         protected readonly ModuleProperty coreUsage;
         protected readonly CycleTimeProperty cycleTime;
         protected readonly ItemProperty falloff = ItemProperty.None;
         protected readonly ModuleProperty optimalRange;
 
-        private readonly CategoryFlags _ammoCategoryFlags;
+        private readonly CategoryFlags ammoCategoryFlags;
+
+        protected virtual long GeneratedHeat => 1;
 
         public Lock Lock
         {
@@ -73,29 +98,6 @@ namespace Perpetuum.Modules
         public double OptimalRange => optimalRange.Value;
 
         public double Falloff => falloff.Value;
-
-        protected ActiveModule(CategoryFlags ammoCategoryFlags, bool ranged = false)
-        {
-            IsRanged = ranged;
-            coreUsage = new ModuleProperty(this, AggregateField.core_usage);
-            AddProperty(coreUsage);
-            cycleTime = new CycleTimeProperty(this);
-            AddProperty(cycleTime);
-
-            if (ranged)
-            {
-                optimalRange = new OptimalRangeProperty(this);
-                AddProperty(optimalRange);
-                falloff = new FalloffProperty(this);
-                AddProperty(falloff);
-            }
-
-            _ammoCategoryFlags = ammoCategoryFlags;
-        }
-
-        protected ActiveModule(bool ranged) : this(CategoryFlags.undefined, ranged)
-        {
-        }
 
         public override void Initialize()
         {
@@ -157,7 +159,7 @@ namespace Perpetuum.Modules
         {
             Dictionary<string, object> result = base.ToDictionary();
 
-            result.Add(k.ammoCategoryFlags, (long)_ammoCategoryFlags);
+            result.Add(k.ammoCategoryFlags, (long)ammoCategoryFlags);
 
             Items.Ammos.Ammo ammo = GetAmmo();
 

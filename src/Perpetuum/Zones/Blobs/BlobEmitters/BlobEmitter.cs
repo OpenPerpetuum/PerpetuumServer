@@ -6,26 +6,29 @@ namespace Perpetuum.Zones.Blobs.BlobEmitters
 {
     public class BlobEmitter : IBlobEmitter
     {
-        private readonly ItemProperty _blobEmission;
-        private readonly ItemProperty _blobEmissionRadius;
+        private readonly ItemProperty blobEmission;
+        private readonly ItemProperty blobEmissionRadius;
 
         public BlobEmitter(Unit unit)
         {
-            _blobEmission = new UnitProperty(unit, AggregateField.blob_emission, AggregateField.blob_emission_modifier, AggregateField.effect_blob_emission_modifier);
-            unit.AddProperty(_blobEmission);
+            blobEmission = new UnitProperty(
+                unit,
+                AggregateField.blob_emission,
+                AggregateField.blob_emission_modifier,
+                AggregateField.effect_blob_emission_modifier,
+                AggregateField.effect_dreadnought_blob_emission_modifier);
+            unit.AddProperty(blobEmission);
 
-            _blobEmissionRadius = new UnitProperty(unit, AggregateField.blob_emission_radius, AggregateField.blob_emission_radius_modifier, AggregateField.effect_blob_emission_radius_modifier);
-            unit.AddProperty(_blobEmissionRadius);
+            blobEmissionRadius = new UnitProperty(
+                unit,
+                AggregateField.blob_emission_radius,
+                AggregateField.blob_emission_radius_modifier,
+                AggregateField.effect_blob_emission_radius_modifier);
+            unit.AddProperty(blobEmissionRadius);
         }
 
-        public double BlobEmission
-        {
-            get { return _blobEmission.Value; }
-        }
+        public double BlobEmission => blobEmission.Value;
 
-        public double BlobEmissionRadius
-        {
-            get { return _blobEmissionRadius.Value; }
-        }
+        public double BlobEmissionRadius => blobEmissionRadius.Value;
     }
 }

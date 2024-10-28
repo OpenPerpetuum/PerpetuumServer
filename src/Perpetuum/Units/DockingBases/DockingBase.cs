@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Transactions;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Common;
 using Perpetuum.Common.Loggers.Transaction;
 using Perpetuum.Containers;
 using Perpetuum.Data;
 using Perpetuum.EntityFramework;
+using Perpetuum.Groups.Corporations;
 using Perpetuum.Items;
 using Perpetuum.Items.Templates;
 using Perpetuum.Log;
@@ -19,51 +16,29 @@ using Perpetuum.Services.MarketEngine;
 using Perpetuum.Services.ProductionEngine.Facilities;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Intrusion;
-using Perpetuum.Zones.Training;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Transactions;
 
 namespace Perpetuum.Units.DockingBases
 {
-    public class UndockSpawnPositionSelector : IEntityVisitor<DockingBase>,IEntityVisitor<TrainingDockingBase>
-    {
-        private Position _spawnPosition;
-
-        public static Position SelectSpawnPosition(DockingBase dockingBase)
-        {
-            var selector = new UndockSpawnPositionSelector();
-            dockingBase.AcceptVisitor(selector);
-            return selector._spawnPosition.Center;
-        }
-
-        public void Visit(DockingBase dockingBase)
-        {
-            var minRange = dockingBase.Size;
-            var maxRange = minRange + dockingBase.SpawnRange;
-
-            var radius = FastRandom.NextInt(minRange, maxRange);
-            var angle = FastRandom.NextDouble();
-
-            _spawnPosition = dockingBase.CurrentPosition.OffsetInDirection(angle, radius);
-        }
-
-        public void Visit(TrainingDockingBase dockingBase)
-        {
-            _spawnPosition = dockingBase.SpawnPosition.GetRandomPositionInRange2D(0, dockingBase.SpawnRange);
-        }
-    }
-
-
     public class DockingBase : Unit
     {
-        private readonly ICentralBank _centralBank;
-        private readonly IRobotTemplateRelations _robotTemplateRelations;
-        private readonly DockingBaseHelper _dockingBaseHelper;
+        private readonly ICentralBank centralBank;
+        private readonly IRobotTemplateRelations robotTemplateRelations;
+        private readonly DockingBaseHelper dockingBaseHelper;
 
-        public DockingBase(IChannelManager channelManager,ICentralBank centralBank,IRobotTemplateRelations robotTemplateRelations,DockingBaseHelper dockingBaseHelper)
+        public DockingBase(
+            IChannelManager channelManager,
+            ICentralBank centralBank,
+            IRobotTemplateRelations robotTemplateRelations,
+            DockingBaseHelper dockingBaseHelper)
         {
             ChannelManager = channelManager;
-            _centralBank = centralBank;
-            _robotTemplateRelations = robotTemplateRelations;
-            _dockingBaseHelper = dockingBaseHelper;
+            this.centralBank = centralBank;
+            this.robotTemplateRelations = robotTemplateRelations;
+            this.dockingBaseHelper = dockingBaseHelper;
         }
 
         protected IChannelManager ChannelManager { get; }
@@ -71,7 +46,9 @@ namespace Perpetuum.Units.DockingBases
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override ErrorCodes IsAttackable => ErrorCodes.TargetIsNonAttackable;
@@ -100,20 +77,20 @@ namespace Perpetuum.Units.DockingBases
 
         public override void OnDeleteFromDb()
         {
-            Zone.UnitService.RemoveDefaultUnit(this,false);
+            Zone.UnitService.RemoveDefaultUnit(this, false);
             base.OnDeleteFromDb();
         }
 
         public override Dictionary<string, object> ToDictionary()
         {
-            var baseDict = base.ToDictionary();
+            Dictionary<string, object> baseDict = base.ToDictionary();
 
             baseDict.Add(k.dockRange, DockingRange);
             baseDict.Add(k.welcome, WelcomeMessage);
 
             try
             {
-                var publicContainerInfo = GetPublicContainer().ToDictionary();
+                Dictionary<string, object> publicContainerInfo = GetPublicContainer().ToDictionary();
                 publicContainerInfo.Add(k.noItemsSent, 1);
                 baseDict.Add(k.publicContainer, publicContainerInfo);
             }
@@ -125,12 +102,13 @@ namespace Perpetuum.Units.DockingBases
             return baseDict;
         }
 
-        public Dictionary<string,object> GetDockingBaseDetails()
+        public Dictionary<string, object> GetDockingBaseDetails()
         {
-            var info = ToDictionary();
+            Dictionary<string, object> info = ToDictionary();
             info[k.px] = CurrentPosition.intX;
             info[k.py] = CurrentPosition.intY;
             info[k.zone] = Zone.Id;
+
             return info;
         }
 
@@ -141,13 +119,13 @@ namespace Perpetuum.Units.DockingBases
 
         public string ChannelName => $"base_{Eid}";
 
-        public void DockIn(Character character,TimeSpan undockDelay, ZoneExitType zoneExitType)
+        public void DockIn(Character character, TimeSpan undockDelay, ZoneExitType zoneExitType)
         {
-            DockIn(character,undockDelay);
+            DockIn(character, undockDelay);
 
             Transaction.Current.OnCommited(() =>
             {
-                var data = new Dictionary<string, object>
+                Dictionary<string, object> data = new Dictionary<string, object>
                 {
                     {k.result, new Dictionary<string, object>
                     {
@@ -159,7 +137,7 @@ namespace Perpetuum.Units.DockingBases
             });
         }
 
-        public void DockIn(Character character,TimeSpan undockDelay)
+        public void DockIn(Character character, TimeSpan undockDelay)
         {
             character.NextAvailableUndockTime = DateTime.Now + undockDelay;
             character.CurrentDockingBaseEid = Eid;
@@ -172,23 +150,25 @@ namespace Perpetuum.Units.DockingBases
 
         protected IEnumerable<Character> GetCharacters()
         {
-            return Db.Query().CommandText("select characterid from characters where baseeid=@eid and active=1")
-                           .SetParameter("@eid",Eid)
-                           .Execute()
-                           .Select(r => Character.Get(r.GetValue<int>(0)))
-                           .ToArray();
+            return Db.Query()
+                .CommandText("select characterid from characters where baseeid=@eid and active=1")
+                .SetParameter("@eid", Eid)
+                .Execute()
+                .Select(r => Character.Get(r.GetValue<int>(0)))
+                .ToArray();
         }
 
         public PublicContainer GetPublicContainerWithItems(Character character)
         {
-            var publicContainer = GetPublicContainer();
+            PublicContainer publicContainer = GetPublicContainer();
             publicContainer.ReloadItems(character);
+
             return publicContainer;
         }
 
         public PublicContainer GetPublicContainer()
         {
-            return _dockingBaseHelper.GetPublicContainer(this);
+            return dockingBaseHelper.GetPublicContainer(this);
         }
 
         [NotNull]
@@ -200,43 +180,41 @@ namespace Perpetuum.Units.DockingBases
         [CanBeNull]
         public Market GetMarket()
         {
-            return _dockingBaseHelper.GetMarket(this);
+            return dockingBaseHelper.GetMarket(this);
         }
 
         [CanBeNull]
         public ItemShop GetItemShop()
         {
-            return _dockingBaseHelper.GetItemShop(this);
+            return dockingBaseHelper.GetItemShop(this);
         }
 
-        
         public IEnumerable<ProductionFacility> GetProductionFacilities()
         {
-            return _dockingBaseHelper.GetProductionFacilities(this);
+            return dockingBaseHelper.GetProductionFacilities(this);
         }
 
         public PublicCorporationHangarStorage GetPublicCorporationHangarStorage()
         {
-            return _dockingBaseHelper.GetPublicCorporationHangarStorage(this);
+            return dockingBaseHelper.GetPublicCorporationHangarStorage(this);
         }
 
         [CanBeNull]
-        public Robot CreateStarterRobotForCharacter(Character character,bool setActive = false)
+        public Robot CreateStarterRobotForCharacter(Character character, bool setActive = false)
         {
-            var container = GetPublicContainerWithItems(character);
-
+            PublicContainer container = GetPublicContainerWithItems(character);
             // keresunk egy arkhet,ha van akkor csondben kilepunk
-            var template = _robotTemplateRelations.GetStarterMaster(CanCreateEquippedStartRobot);
-
+            RobotTemplate template = robotTemplateRelations.GetStarterMaster(CanCreateEquippedStartRobot);
             if (container.GetItems(true).Any(i => i.Definition == template.EntityDefault.Definition))
+            {
                 return null;
+            }
 
             // ha nincs akkor legyartunk egyet
-            var robot = template.Build();
+            Robot robot = template.Build();
             robot.Owner = character.Eid;
             robot.Initialize(character);
             robot.Repair();
-
             container.AddItem(robot, true);
             container.Save();
 
@@ -252,12 +230,12 @@ namespace Perpetuum.Units.DockingBases
 
         protected virtual void JoinChannel(Character character)
         {
-            ChannelManager.JoinChannel(ChannelName,character,ChannelMemberRole.Undefined,null);
+            ChannelManager.JoinChannel(ChannelName, character, ChannelMemberRole.Undefined, null);
         }
 
         public void LeaveChannel(Character character)
         {
-            ChannelManager.LeaveChannel(ChannelName,character);
+            ChannelManager.LeaveChannel(ChannelName, character);
         }
 
         /// <summary>
@@ -279,7 +257,7 @@ namespace Perpetuum.Units.DockingBases
         public static bool Exists(long baseEid)
         {
             return Db.Query().CommandText("select eid from zoneentities where eid=@baseEid").SetParameter("@baseEid", baseEid).ExecuteScalar<long>() > 0 ||
-                   Db.Query().CommandText("select eid from zoneuserentities where eid=@baseEid").SetParameter("@baseEid", baseEid).ExecuteScalar<long>() > 0;
+                Db.Query().CommandText("select eid from zoneuserentities where eid=@baseEid").SetParameter("@baseEid", baseEid).ExecuteScalar<long>() > 0;
         }
 
         public virtual bool IsOnGammaZone()
@@ -295,24 +273,21 @@ namespace Perpetuum.Units.DockingBases
         public void AddCentralBank(TransactionType transactionType, double amount)
         {
             amount = Math.Abs(amount);
-
-            var centralBankShare = amount;
-
-            var profitingOwner = ProfitingOwnerSelector.GetProfitingOwner(this);
+            double centralBankShare = amount;
+            Corporation profitingOwner = ProfitingOwnerSelector.GetProfitingOwner(this);
             if (profitingOwner != null)
             {
-                var multiplier = GetOwnerRefundMultiplier(transactionType);
+                double multiplier = GetOwnerRefundMultiplier(transactionType);
                 if (multiplier > 0.0)
                 {
-                    var shareFromOwnership = amount * multiplier;
+                    double shareFromOwnership = amount * multiplier;
                     centralBankShare = amount * (1 - multiplier);
-
                     Logger.Info("corpEID: " + profitingOwner.Eid + " adding to wallet: " + shareFromOwnership + " as docking base owner facility payback.");
                     IntrusionHelper.AddOwnerIncome(profitingOwner.Eid, shareFromOwnership);
                 }
             }
 
-            _centralBank.AddAmount(centralBankShare, transactionType);
+            centralBank.AddAmount(centralBankShare, transactionType);
         }
     }
 }

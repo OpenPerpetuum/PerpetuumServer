@@ -34,7 +34,7 @@ namespace Perpetuum.Robots
         {
             long currentOverheatValue = Interlocked.Read(ref overheatValue);
             Interlocked.Exchange(ref oldOverheatValue, currentOverheatValue);
-            Interlocked.Add(ref overheatValue, 1);
+            Interlocked.Add(ref overheatValue, value);
             ProcessOverheat();
         }
 
@@ -124,10 +124,13 @@ namespace Perpetuum.Robots
                 : 1;
             ItemPropertyModifier overHeatWeaponDamageModifier =
                 new ItemPropertyModifier(AggregateField.effect_dreadnought_weapon_damage_modifier, AggregateFormula.Modifier, bonusValue);
+            ItemPropertyModifier overHeatMiningAmountModifier =
+                new ItemPropertyModifier(AggregateField.effect_excavator_mining_amount_modifier, AggregateFormula.Modifier, bonusValue);
             EffectBuilder overheatBuildupBuilder = robot.NewEffectBuilder();
             overheatBuildupBuilder
                 .SetType(effectType)
-                .WithPropertyModifier(overHeatWeaponDamageModifier);
+                .WithPropertyModifier(overHeatWeaponDamageModifier)
+                .WithPropertyModifier(overHeatMiningAmountModifier);
             robot.ApplyEffect(overheatBuildupBuilder);
         }
     }

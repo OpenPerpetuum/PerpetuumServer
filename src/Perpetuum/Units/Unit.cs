@@ -1104,7 +1104,8 @@ namespace Perpetuum.Units
                 AggregateField.stealth_strength,
                 AggregateField.stealth_strength_modifier,
                 AggregateField.effect_stealth_strength_modifier,
-                AggregateField.effect_dreadnought_stealth_strength_modifier);
+                AggregateField.effect_dreadnought_stealth_strength_modifier,
+                AggregateField.effect_excavator_stealth_strength_modifier);
             stealthStrength.PropertyChanged += property =>
             {
                 UpdateTypes |= UnitUpdateTypes.Stealth;

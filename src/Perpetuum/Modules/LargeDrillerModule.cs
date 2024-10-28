@@ -23,8 +23,12 @@ namespace Perpetuum.Modules
         {
         }
 
+        protected override long GeneratedHeat => 5;
+
         public override void DoExtractMinerals(IZone zone)
         {
+            ParentRobot.IncreaseOverheat(EffectType.effect_excavator);
+
             Position centralTile = ParentRobot.PositionWithHeight;
             MaterialType materialType;
             if (!(GetAmmo() is MiningAmmo ammo))
@@ -59,7 +63,7 @@ namespace Perpetuum.Modules
 
                 extractedMaterials
                     .AddRange(RareMaterialHandler.GenerateRareMaterials(materialInfo.EntityDefault.Definition));
-                CreateBeam(position, BeamState.AlignToTerrain);
+                CreateBeam(position.Center, BeamState.AlignToTerrain);
                 using (TransactionScope scope = Db.CreateTransaction())
                 {
                     Debug.Assert(ParentRobot != null, "ParentRobot != null");

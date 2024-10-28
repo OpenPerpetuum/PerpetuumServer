@@ -114,11 +114,19 @@ namespace Perpetuum.Robots
             overheatCooldownTimer.Interval = overheatCooldownPeriod;
         }
 
-        public void IncreaseOverheat()
+        public void IncreaseOverheat(EffectType effectType)
         {
-            if (EffectHandler.ContainsEffect(EffectType.effect_dreadnought))
+            if (EffectHandler.ContainsEffect(effectType))
             {
                 OverheatHandler.Increase();
+            }
+        }
+
+        public void IncreaseOverheatByValue(EffectType effectType, long value)
+        {
+            if (EffectHandler.ContainsEffect(effectType))
+            {
+                OverheatHandler.Increase(value);
             }
         }
 

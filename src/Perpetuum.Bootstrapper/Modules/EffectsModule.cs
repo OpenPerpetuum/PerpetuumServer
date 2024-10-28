@@ -38,6 +38,7 @@ namespace Perpetuum.Bootstrapper.Modules
             _ = builder.RegisterType<GangEffect>().Keyed<Effect>(EffectType.effect_aura_gang_ewar_optimal);
             _ = builder.RegisterType<GangEffect>().Keyed<Effect>(EffectType.effect_aura_gang_armor_max);
             _ = builder.RegisterType<GangEffect>().Keyed<Effect>(EffectType.effect_aura_gang_shield_absorbtion_ratio);
+            _ = builder.RegisterType<GangEffect>().Keyed<Effect>(EffectType.effect_excavator);
 
             // NOX effects
 

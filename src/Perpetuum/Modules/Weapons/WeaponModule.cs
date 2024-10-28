@@ -72,7 +72,9 @@ namespace Perpetuum.Modules.Weapons
         protected override void OnAction()
         {
             action.DoAction();
-            ParentRobot.IncreaseOverheat();
+            ParentRobot.IncreaseOverheatByValue(
+                EffectType.effect_dreadnought,
+                GeneratedHeat);
         }
 
         protected virtual bool CheckAccuracy(Unit victim)

@@ -493,5 +493,11 @@ namespace Perpetuum.ExportedTypes
         effect_dreadnought_enhancer_detection_strength_modifier = 733,
         effect_dreadnought_stealth_strength_modifier = 734,
         effect_dreadnought_enhancer_stealth_strength_modifier = 735,
+        effect_dreadnought_blob_emission_modifier = 736,
+        effect_dreadnought_enhancer_blob_emission_modifier = 737,
+        effect_excavator_mining_amount_modifier = 738,
+        effect_excavator_enhancer_mining_amount_modifier = 739,
+        effect_excavator_stealth_strength_modifier = 740,
+        effect_excavator_enhancer_stealth_strength_modifier = 741,
     }
 }

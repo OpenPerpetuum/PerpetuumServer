@@ -246,6 +246,7 @@ namespace Perpetuum.Bootstrapper.Modules
             RegisterEffectModule<MineDetectorModule>(builder);
 
             RegisterEffectModule<DreadnoughtModule>(builder);
+            RegisterEffectModule<ExcavatorModule>(builder);
 
             RegisterEntity<SystemContainer>(builder);
             RegisterEntity<PunchBagDeployer>(builder);
@@ -522,6 +523,7 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByCategoryFlags<NoxModule>(CategoryFlags.cf_nox_teleport_negators, new NamedParameter("effectType", EffectType.nox_effect_teleport_negation), new NamedParameter("effectModifier", AggregateField.nox_teleport_negation));
 
                 ByCategoryFlags<DreadnoughtModule>(CategoryFlags.cf_dreadnought_modules);
+                ByCategoryFlags<ExcavatorModule>(CategoryFlags.cf_excavator_modules);
 
                 ByCategoryFlags<SystemContainer>(CategoryFlags.cf_logical_storage);
                 ByCategoryFlags<Item>(CategoryFlags.cf_mission_items);

@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Transactions;
-using Perpetuum.Accounting.Characters;
+﻿using Perpetuum.Accounting.Characters;
 using Perpetuum.Common;
 using Perpetuum.Common.Loggers.Transaction;
 using Perpetuum.Containers.SystemContainers;
 using Perpetuum.Data;
 using Perpetuum.EntityFramework;
-
 using Perpetuum.Groups.Corporations;
 using Perpetuum.Items.Templates;
 using Perpetuum.Log;
@@ -19,81 +14,104 @@ using Perpetuum.Units;
 using Perpetuum.Units.DockingBases;
 using Perpetuum.Zones.PBS.Connections;
 using Perpetuum.Zones.PBS.ControlTower;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Transactions;
 
 namespace Perpetuum.Zones.PBS.DockingBases
 {
     /// <summary>
     /// Player built docking base
     /// </summary>
-    public class PBSDockingBase : DockingBase, IPBSObject,  IStandingController
+    public class PBSDockingBase : DockingBase, IPBSObject, IStandingController
     {
-        private readonly MarketHelper _marketHelper;
-        private readonly ICorporationManager _corporationManager;
-        private readonly SparkTeleportHelper _sparkTeleportHelper;
-        private readonly PBSStandingController<PBSDockingBase> _standingController;
-        protected readonly PBSObjectHelper<PBSDockingBase> _pbsObjectHelper;
-        private readonly PBSReinforceHandler<PBSDockingBase> _pbsReinforceHandler;
-        private readonly PBSTerritorialVisibilityHelper _pbsTerritorialVisibilityHelper;
-
-        public PBSDockingBase(MarketHelper marketHelper,ICorporationManager corporationManager,IChannelManager channelManager,ICentralBank centralBank,IRobotTemplateRelations robotTemplateRelations,DockingBaseHelper dockingBaseHelper,SparkTeleportHelper sparkTeleportHelper,PBSObjectHelper<PBSDockingBase>.Factory pbsObjectHelperFactory) : base(channelManager,centralBank,robotTemplateRelations,dockingBaseHelper)
+        public PBSDockingBase(
+            MarketHelper marketHelper,
+            ICorporationManager corporationManager,
+            IChannelManager channelManager,
+            ICentralBank centralBank,
+            IRobotTemplateRelations robotTemplateRelations,
+            DockingBaseHelper dockingBaseHelper,
+            SparkTeleportHelper sparkTeleportHelper,
+            PBSObjectHelper<PBSDockingBase>.Factory pbsObjectHelperFactory)
+            : base(channelManager, centralBank, robotTemplateRelations, dockingBaseHelper)
         {
-            _marketHelper = marketHelper;
-            _corporationManager = corporationManager;
-            _sparkTeleportHelper = sparkTeleportHelper;
-            _pbsObjectHelper = pbsObjectHelperFactory(this);
-            _pbsReinforceHandler = new PBSReinforceHandler<PBSDockingBase>(this);
-            _standingController = new PBSStandingController<PBSDockingBase>(this);
-            _pbsTerritorialVisibilityHelper = new PBSTerritorialVisibilityHelper(this);
+            this.marketHelper = marketHelper;
+            this.corporationManager = corporationManager;
+            this.sparkTeleportHelper = sparkTeleportHelper;
+            pbsObjectHelper = pbsObjectHelperFactory(this);
+            pbsReinforceHandler = new PBSReinforceHandler<PBSDockingBase>(this);
+            standingController = new PBSStandingController<PBSDockingBase>(this);
+            pbsTerritorialVisibilityHelper = new PBSTerritorialVisibilityHelper(this);
         }
 
-        public IPBSReinforceHandler ReinforceHandler => _pbsReinforceHandler;
-        public IPBSConnectionHandler ConnectionHandler => _pbsObjectHelper.ConnectionHandler;
+        private readonly MarketHelper marketHelper;
+        private readonly ICorporationManager corporationManager;
+        private readonly SparkTeleportHelper sparkTeleportHelper;
+        private readonly PBSStandingController<PBSDockingBase> standingController;
+        protected readonly PBSObjectHelper<PBSDockingBase> pbsObjectHelper;
+        private readonly PBSReinforceHandler<PBSDockingBase> pbsReinforceHandler;
+        private readonly PBSTerritorialVisibilityHelper pbsTerritorialVisibilityHelper;
+        private Dictionary<string, object> cacheTerritoryDictionary;
+        private DateTime lastTDRequest;
+        private int bandwidthCapacity;
+        private bool trashWasKilled;
+
+        private bool IsFullyConstructed => pbsObjectHelper.IsFullyConstructed;
+
+        public IPBSReinforceHandler ReinforceHandler => pbsReinforceHandler;
+
+        public IPBSConnectionHandler ConnectionHandler => pbsObjectHelper.ConnectionHandler;
 
         public int ZoneIdCached { get; private set; }
 
         public ErrorCodes ModifyConstructionLevel(int amount, bool force = false)
         {
-            return _pbsObjectHelper.ModifyConstructionLevel(amount, force);
+            return pbsObjectHelper.ModifyConstructionLevel(amount, force);
         }
 
-        public int ConstructionLevelMax => _pbsObjectHelper.ConstructionLevelMax;
-        public int ConstructionLevelCurrent => _pbsObjectHelper.ConstructionLevelCurrent;
+        public int ConstructionLevelMax => pbsObjectHelper.ConstructionLevelMax;
+
+        public int ConstructionLevelCurrent => pbsObjectHelper.ConstructionLevelCurrent;
 
         public bool IsOrphaned
         {
-            get => _pbsObjectHelper.IsOrphaned;
-            set => _pbsObjectHelper.IsOrphaned = value;
+            get => pbsObjectHelper.IsOrphaned;
+            set => pbsObjectHelper.IsOrphaned = value;
         }
 
-        public event Action<Unit,bool> OrphanedStateChanged
+        public event Action<Unit, bool> OrphanedStateChanged
         {
-            add => _pbsObjectHelper.OrphanedStateChanged += value;
-            remove => _pbsObjectHelper.OrphanedStateChanged -= value;
+            add => pbsObjectHelper.OrphanedStateChanged += value;
+            remove => pbsObjectHelper.OrphanedStateChanged -= value;
         }
 
         public void SendNodeUpdate(PBSEventType eventType = PBSEventType.nodeUpdate)
         {
-            _pbsObjectHelper.SendNodeUpdate(eventType);
+            pbsObjectHelper.SendNodeUpdate(eventType);
         }
 
         public bool IsLootGenerating { get; set; }
 
         public double StandingLimit
         {
-            get { return _standingController.StandingLimit; }
-            set { _standingController.StandingLimit = value; }
+            get => standingController.StandingLimit;
+            set => standingController.StandingLimit = value;
         }
 
         public bool StandingEnabled
         {
-            get { return _standingController.Enabled; }
-            set { _standingController.Enabled = value; }
+            get => standingController.Enabled;
+            set => standingController.Enabled = value;
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public override ErrorCodes IsAttackable
@@ -101,46 +119,46 @@ namespace Perpetuum.Zones.PBS.DockingBases
             get
             {
                 //no reinforce
-                if (_pbsReinforceHandler.CurrentState.IsReinforced) 
+                if (pbsReinforceHandler.CurrentState.IsReinforced)
+                {
                     return ErrorCodes.TargetIsNonAttackable_Reinforced;
+                }
 
                 //no connections
                 //true if only production stuff is connected ONLY
                 //anything else -> false -> kill that node first
 
-                var anyControlTower = _pbsObjectHelper.ConnectionHandler.GetConnections().Any(c => c.TargetPbsObject is PBSControlTower);
+                bool anyControlTower = pbsObjectHelper.ConnectionHandler.GetConnections().Any(c => c.TargetPbsObject is PBSControlTower);
 
                 if (anyControlTower)
+                {
                     return ErrorCodes.TargetIsNonAttackable_ControlTowerConnected;
+                }
 
                 return ErrorCodes.NoError; //itt tilos a base-t meghivni, mert az mar docking base
             }
         }
 
-
-        public override bool IsLockable
-        {
-            get { return true; }
-        }
+        public override bool IsLockable => true;
 
         public PBSDockingBaseVisibility DockingBaseMapVisibility
         {
-            get { return _pbsTerritorialVisibilityHelper.DockingBaseMapVisibility(); }
-            set { _pbsTerritorialVisibilityHelper.SetDockingBaseVisibleOnMap(value); } 
+            get => pbsTerritorialVisibilityHelper.DockingBaseMapVisibility();
+            set => pbsTerritorialVisibilityHelper.SetDockingBaseVisibleOnMap(value);
         }
 
 
         public PBSDockingBaseVisibility NetworkMapVisibility
         {
-            get { return _pbsTerritorialVisibilityHelper.NetworkMapVisibility(); }
-            set { _pbsTerritorialVisibilityHelper.SetNetworkVisibleOnTerritoryMap(value); }
+            get => pbsTerritorialVisibilityHelper.NetworkMapVisibility();
+            set => pbsTerritorialVisibilityHelper.SetNetworkVisibleOnTerritoryMap(value);
         }
 
         protected override void OnEnterZone(IZone zone, ZoneEnterType enterType)
         {
-            _pbsObjectHelper.Init();
-            _pbsReinforceHandler.Init();
-            _pbsTerritorialVisibilityHelper.Init();
+            pbsObjectHelper.Init();
+            pbsReinforceHandler.Init();
+            pbsTerritorialVisibilityHelper.Init();
 
             ZoneIdCached = zone.Id; //OPP: make sure this is set!
 
@@ -153,69 +171,57 @@ namespace Perpetuum.Zones.PBS.DockingBases
         public override void OnLoadFromDb()
         {
             base.OnLoadFromDb();
-            
-            _pbsObjectHelper.Init();
-
-            _pbsTerritorialVisibilityHelper.Init();
+            pbsObjectHelper.Init();
+            pbsTerritorialVisibilityHelper.Init();
         }
-
 
         public override void OnInsertToDb()
         {
-            _pbsObjectHelper.Init();
-
-            DynamicProperties.Update(k.creation,DateTime.Now);
-            
+            pbsObjectHelper.Init();
+            DynamicProperties.Update(k.creation, DateTime.Now);
             base.OnInsertToDb();
-
-            var market = GetMarket();
-            _marketHelper.InsertGammaPlasmaOrders(market);
-            
+            Market market = GetMarket();
+            marketHelper.InsertGammaPlasmaOrders(market);
             Logger.Info("A new PBSDockingbase is created " + this);
-
         }
 
         public void OnDockingBaseDeployed()
         {
             PBSHelper.SendPBSDockingBaseCreatedToProduction(Eid);
-            ChannelManager.CreateChannel(ChannelType.Station,ChannelName);
+            ChannelManager.CreateChannel(ChannelType.Station, ChannelName);
         }
 
         public override Dictionary<string, object> ToDictionary()
         {
-            var info = base.ToDictionary();
-
-            var zone = Zone;
-
+            Dictionary<string, object> info = base.ToDictionary();
+            IZone zone = Zone;
             if (zone != null)
             {
-                _pbsObjectHelper.AddToDictionary(info);
-                _pbsReinforceHandler.AddToDictionary(info);
-                _pbsTerritorialVisibilityHelper.AddToDictionary(info);
+                pbsObjectHelper.AddToDictionary(info);
+                pbsReinforceHandler.AddToDictionary(info);
+                pbsTerritorialVisibilityHelper.AddToDictionary(info);
                 info.Add(k.bandwidthLoad, GetBandwithLoad());
             }
 
             return info;
         }
 
-
         public override IDictionary<string, object> GetDebugInfo()
         {
             //var info = base.GetDebugInfo();
-            var info = this.GetMiniDebugInfo();
-
-            _pbsObjectHelper.AddToDictionary(info);
-            _pbsReinforceHandler.AddToDictionary(info);
-            _pbsTerritorialVisibilityHelper.AddToDictionary(info);
+            IDictionary<string, object> info = this.GetMiniDebugInfo();
+            pbsObjectHelper.AddToDictionary(info);
+            pbsReinforceHandler.AddToDictionary(info);
+            pbsTerritorialVisibilityHelper.AddToDictionary(info);
 
             return info;
         }
 
         public override void OnUpdateToDb()
         {
-            _pbsReinforceHandler.OnSave();
-            _pbsObjectHelper.OnSave();
-            _pbsTerritorialVisibilityHelper.OnSave();
+            pbsReinforceHandler.OnSave();
+            pbsObjectHelper.OnSave();
+            pbsTerritorialVisibilityHelper.OnSave();
             base.OnUpdateToDb();
         }
 
@@ -230,41 +236,32 @@ namespace Perpetuum.Zones.PBS.DockingBases
         protected override void OnRemovedFromZone(IZone zone)
         {
             Logger.DebugInfo($"[{InfoString}] pbsbase remove from zone");
-
-            _pbsObjectHelper.RemoveFromZone(zone);
-
+            pbsObjectHelper.RemoveFromZone(zone);
             PBSHelper.SendPBSDockingBaseDeleteToProduction(Eid);
-
             base.OnRemovedFromZone(zone);
         }
 
         protected override void OnDead(Unit killer)
         {
             IsLootGenerating = true;
-            _trashWasKilled = true; //signal trash
+            trashWasKilled = true; //signal trash
             Logger.DebugInfo($"[{InfoString}] loot generating -> true");
-
-            var zone = Zone;
-            _pbsObjectHelper.DropLootToZoneFromBase(zone, this, killer);
-
+            IZone zone = Zone;
+            pbsObjectHelper.DropLootToZoneFromBase(zone, this, killer);
             base.OnDead(killer);
         }
 
         public override ErrorCodes IsDockingAllowed(Character issuerCharacter)
         {
-            if (!IsFullyConstructed)
-                return ErrorCodes.ObjectNotFullyConstructed;
-
-            if (!OnlineStatus)
-                return ErrorCodes.NodeOffline;
-
-            if (!StandingEnabled)
-                return ErrorCodes.NoError;
-
-            if (!_corporationManager.IsStandingMatch(Owner, issuerCharacter.CorporationEid, StandingLimit))
-                return ErrorCodes.StandingTooLowForDocking;
-
-            return ErrorCodes.NoError;
+            return !IsFullyConstructed
+                ? ErrorCodes.ObjectNotFullyConstructed
+                : !OnlineStatus
+                    ? ErrorCodes.NodeOffline
+                    : !StandingEnabled
+                        ? ErrorCodes.NoError
+                        : !corporationManager.IsStandingMatch(Owner, issuerCharacter.CorporationEid, StandingLimit)
+                            ? ErrorCodes.StandingTooLowForDocking
+                            : ErrorCodes.NoError;
         }
 
         protected override void DoExplosion()
@@ -272,60 +269,50 @@ namespace Perpetuum.Zones.PBS.DockingBases
             //NO base call!!!
         }
 
-        private bool IsFullyConstructed
-        {
-            get { return _pbsObjectHelper.IsFullyConstructed; }
-        }
-
-
         public void SetOnlineStatus(bool state, bool checkNofBase, bool forcedByServer = false)
         {
-            _pbsObjectHelper.SetOnlineStatus(state,checkNofBase,forcedByServer);
+            pbsObjectHelper.SetOnlineStatus(state, checkNofBase, forcedByServer);
         }
 
         public void TakeOver(long newOwner)
         {
-            _pbsObjectHelper.TakeOver(newOwner);
+            pbsObjectHelper.TakeOver(newOwner);
         }
 
-        public bool OnlineStatus => _pbsObjectHelper.OnlineStatus;
+        public bool OnlineStatus => pbsObjectHelper.OnlineStatus;
 
         protected override void OnUpdate(TimeSpan time)
         {
-            _pbsReinforceHandler.OnUpdate(time);
-            _pbsObjectHelper.OnUpdate(time);
-
+            pbsReinforceHandler.OnUpdate(time);
+            pbsObjectHelper.OnUpdate(time);
             base.OnUpdate(time);
         }
 
-        private Dictionary<string, object> _cacheTerritoryDictionary;
-        private DateTime _lastTDRequest;
-
         public Dictionary<string, object> GetTerritorialDictionary()
         {
-            if (_lastTDRequest == default(DateTime) || DateTime.Now.Subtract(_lastTDRequest).TotalMinutes > 60)
+            if (lastTDRequest == default || DateTime.Now.Subtract(lastTDRequest).TotalMinutes > 60)
             {
-                _lastTDRequest = DateTime.Now.AddMinutes(FastRandom.NextInt(10));
+                lastTDRequest = DateTime.Now.AddMinutes(FastRandom.NextInt(10));
 
-                var ctd = GenerateTerritoryDictionary();
-                _cacheTerritoryDictionary = ctd;
+                Dictionary<string, object> ctd = GenerateTerritoryDictionary();
+                cacheTerritoryDictionary = ctd;
             }
 
-            return _cacheTerritoryDictionary;
+            return cacheTerritoryDictionary;
         }
 
-        private Dictionary<string,object> GenerateTerritoryDictionary()
+        private Dictionary<string, object> GenerateTerritoryDictionary()
         {
-            var info = new Dictionary<string, object>
+            Dictionary<string, object> info = new Dictionary<string, object>
                            {
                                {k.corporationEID, Owner},
                                {k.x, CurrentPosition.intX},
                                {k.y, CurrentPosition.intY},
                            };
 
-            var nodes = _pbsObjectHelper.ConnectionHandler.NetworkNodes
+            Dictionary<string, object> nodes = pbsObjectHelper.ConnectionHandler.NetworkNodes
                                          .Cast<Unit>()
-                                         .ToDictionary("n", unit => 
+                                         .ToDictionary("n", unit =>
                                           new Dictionary<string, object>
                                           {
                                             {k.x, unit.CurrentPosition.intX},
@@ -340,9 +327,9 @@ namespace Perpetuum.Zones.PBS.DockingBases
         {
             this.CheckAccessAndThrowIfFailed(issuer);
 
-            var role = Corporation.GetRoleFromSql(issuer);
+            CorporationRole role = Corporation.GetRoleFromSql(issuer);
 
-            if (!role.IsAnyRole(CorporationRole.CEO,CorporationRole.DeputyCEO))
+            if (!role.IsAnyRole(CorporationRole.CEO, CorporationRole.DeputyCEO))
             {
                 return ErrorCodes.InsufficientPrivileges;
             }
@@ -351,17 +338,17 @@ namespace Perpetuum.Zones.PBS.DockingBases
             {
                 return ErrorCodes.ObjectNotFullyConstructed;
             }
-            
+
             if (state)
             {
-                DynamicProperties.Update(k.allowDeconstruction,1);
+                DynamicProperties.Update(k.allowDeconstruction, 1);
             }
             else
             {
                 DynamicProperties.Remove(k.allowDeconstruction);
             }
 
-            this.Save();
+            Save();
 
             return ErrorCodes.NoError;
         }
@@ -372,18 +359,13 @@ namespace Perpetuum.Zones.PBS.DockingBases
         /// <returns></returns>
         public virtual ErrorCodes IsDeconstructAllowed()
         {
-            
-            if (DynamicProperties.Contains(k.allowDeconstruction))
-            {
-                return ErrorCodes.NoError;
-            }
 
-            return ErrorCodes.DockingBaseNotSetToDeconstruct;
+            return DynamicProperties.Contains(k.allowDeconstruction) ? ErrorCodes.NoError : ErrorCodes.DockingBaseNotSetToDeconstruct;
         }
 
         public override double GetOwnerRefundMultiplier(TransactionType transactionType)
         {
-            var multiplier = 0.0;
+            double multiplier = 0.0;
             switch (transactionType)
             {
                 case TransactionType.hangarRent:
@@ -417,41 +399,33 @@ namespace Perpetuum.Zones.PBS.DockingBases
             return multiplier;
         }
 
-       
-        
-
-        private int _bandwidthCapacity;
-
         public int GetBandwidthCapacity
         {
             get
             {
-
-                if (_bandwidthCapacity <= 0)
+                if (bandwidthCapacity <= 0)
                 {
                     if (ED.Config.bandwidthCapacity != null)
                     {
-                        _bandwidthCapacity = (int)ED.Config.bandwidthCapacity;
+                        bandwidthCapacity = (int)ED.Config.bandwidthCapacity;
                     }
                     else
                     {
                         Logger.Error("no bandwidthCapacity defined for " + this);
-                        _bandwidthCapacity = 1000;
+                        bandwidthCapacity = 1000;
                     }
-
-                    
                 }
 
-                return _bandwidthCapacity;
-
+                return bandwidthCapacity;
             }
         }
 
         private int GetBandwithLoad()
         {
-            return _pbsObjectHelper.ConnectionHandler.NetworkNodes.Where(n => !(n is PBSDockingBase)).Sum(n => n.GetBandwidthUsage());
+            return pbsObjectHelper.ConnectionHandler.NetworkNodes
+                .Where(n => !(n is PBSDockingBase))
+                .Sum(n => n.GetBandwidthUsage());
         }
-
 
         public override bool IsOnGammaZone()
         {
@@ -461,7 +435,9 @@ namespace Perpetuum.Zones.PBS.DockingBases
         public override bool IsVisible(Character character)
         {
             if (DockingBaseMapVisibility == PBSDockingBaseVisibility.open)
+            {
                 return true;
+            }
 
             Corporation.GetCorporationEidAndRoleFromSql(character, out long corporationEid, out CorporationRole role);
             if (Owner == corporationEid)
@@ -472,107 +448,106 @@ namespace Perpetuum.Zones.PBS.DockingBases
                 }
                 else if (DockingBaseMapVisibility == PBSDockingBaseVisibility.hidden)
                 {
-                    return role.IsAnyRole(CorporationRole.CEO, CorporationRole.DeputyCEO, CorporationRole.viewPBS);
+                    return role.IsAnyRole(
+                        CorporationRole.CEO,
+                        CorporationRole.DeputyCEO,
+                        CorporationRole.viewPBS);
                 }
             }
+
             return false;
         }
 
-        private bool _trashWasKilled;
         public void TrashMe()
         {
-            var trash = SystemContainer.GetByName("pbs_trash");
-
+            SystemContainer trash = SystemContainer.GetByName("pbs_trash");
             Parent = trash.Eid;
-
-            
-
-            Db.Query().CommandText("INSERT dbo.pbstrash (baseeid, waskilled) VALUES (@baseeid, @waskilled)")
+            Db.Query()
+                .CommandText("INSERT dbo.pbstrash (baseeid, waskilled) VALUES (@baseeid, @waskilled)")
                 .SetParameter("@baseeid", Eid)
-                .SetParameter("@waskilled", _trashWasKilled)
+                .SetParameter("@waskilled", trashWasKilled)
                 .ExecuteNonQuery();
 
-            this.Save();
+            Save();
         }
 
         public int GetNetworkNodeRange()
         {
             if (ED.Config.network_node_range != null)
-                return (int) ED.Config.network_node_range;
+            {
+                return (int)ED.Config.network_node_range;
+            }
 
-            Logger.Error("no network_node_range defined for " + ED.Name );
+            Logger.Error("no network_node_range defined for " + ED.Name);
+
             return 0;
         }
 
         public ErrorCodes DoCleanUpWork(int zone)
         {
-            var ec = ErrorCodes.NoError;
+            ErrorCodes ec = ErrorCodes.NoError;
 
             Logger.Info(" >>>>>>    docking base SQL DELETE Start ");
 
             //ezeket elkeszitjuk most mert kesobb nem lesz mar kontenere a base-nek
-            var infoHomeBaseCleared = PBSHelper.GetUpdateDictionary(zone, this, PBSEventType.baseDeadHomeBaseCleared);
-            var infoBaseDeadWhileDocked = PBSHelper.GetUpdateDictionary(zone, this, PBSEventType.baseDeadWhileDocked);
-            var infoBaseDeadWhileOnZone = PBSHelper.GetUpdateDictionary(zone, this, PBSEventType.baseDeadWhileOnZone);
+            Dictionary<string, object> infoHomeBaseCleared = PBSHelper.GetUpdateDictionary(zone, this, PBSEventType.baseDeadHomeBaseCleared);
+            Dictionary<string, object> infoBaseDeadWhileDocked = PBSHelper.GetUpdateDictionary(zone, this, PBSEventType.baseDeadWhileDocked);
+            Dictionary<string, object> infoBaseDeadWhileOnZone = PBSHelper.GetUpdateDictionary(zone, this, PBSEventType.baseDeadWhileOnZone);
 
             //---market cleanup
-            var market = GetMarketOrThrow();
+            Market market = GetMarketOrThrow();
 
-            var marketOrdersDeleted = Db.Query().CommandText("delete marketitems where marketeid=@marketEID")
+            int marketOrdersDeleted = Db.Query()
+                .CommandText("delete marketitems where marketeid=@marketEID")
                 .SetParameter("@marketEID", market.Eid)
                 .ExecuteNonQuery();
 
             Logger.Info(marketOrdersDeleted + " market orders deleted from market: " + market.Eid + " base:" + Eid);
 
             //---spark teleport cleanup
-            _sparkTeleportHelper.DeleteAllSparkTeleports(this);
+            sparkTeleportHelper.DeleteAllSparkTeleports(this);
 
             //---------------------------------------------
 
             TrashMe();
-            
 
             //itt lehet pucolni vagy logolni vagy valami
-
             //itt nem zonazunk, elintezzuk a bedokkolt playereket stb, natur sql
-
             //plugineknek szolni stb
 
             //----------ezeknek van beallitva homebasenek a bazis ami meghalt
-            var charactersHomeBaseCleared = Db.Query().CommandText("select characterid from characters where homebaseeid=@eid and active=1 and inuse=1")
+            Character[] charactersHomeBaseCleared = Db.Query()
+                .CommandText("select characterid from characters where homebaseeid=@eid and active=1 and inuse=1")
                 .SetParameter("@eid", Eid)
                 .Execute()
-                .Select(r => Character.Get(r.GetValue<int>(0))).ToArray();
+                .Select(r => Character.Get(r.GetValue<int>(0)))
+                .ToArray();
 
             //clear homebase settings
-            var homeBasesCleared = Db.Query().CommandText("update characters set homebaseeid=null where homebaseeid=@eid")
+            int homeBasesCleared = Db.Query()
+                .CommandText("update characters set homebaseeid=null where homebaseeid=@eid")
                 .SetParameter("@eid", Eid)
                 .ExecuteNonQuery();
 
             Logger.Info(homeBasesCleared + " homebases cleared. for base:" + Eid);
             //------------------------------------------------------
 
-
-
             //clean up insured robots
-            var insurancesCleared = Db.Query().CommandText("cleanUpInsuranceByBaseEid")
+            int insurancesCleared = Db.Query()
+                .CommandText("cleanUpInsuranceByBaseEid")
                 .SetParameter("@baseEid", Eid)
                 .ExecuteScalar<int>();
 
             Logger.Info(insurancesCleared + " insurances clear for base: " + Eid);
 
-
             //ezek azok akik onnan jottek, vagy epp ott vannak bedokkolva
-            var affectedCharacters = GetCharacters();
-
-            var charactersToInform = new List<Tuple<Character, long, bool>>();
-
-            foreach (var affectedCharacter in affectedCharacters)
+            IEnumerable<Character> affectedCharacters = GetCharacters();
+            List<Tuple<Character, long, bool>> charactersToInform = new List<Tuple<Character, long, bool>>();
+            foreach (Character affectedCharacter in affectedCharacters)
             {
-                var character = affectedCharacter;
+                Character character = affectedCharacter;
                 long? revertedBaseEid = null;
-
-                var homeBaseEid = character.HomeBaseEid;
+                long? homeBaseEid = character.HomeBaseEid;
                 if (homeBaseEid != Eid)
                 {
                     //ezeknek volt beallitva valami homebase, rakjuk oket oda
@@ -586,12 +561,10 @@ namespace Perpetuum.Zones.PBS.DockingBases
                 }
 
                 Logger.Info("reverted base for characterID:" + character.Id + " base:" + revertedBaseEid);
-
                 //set reverted base
                 character.CurrentDockingBaseEid = (long)revertedBaseEid;
-
                 //be van dockolva, aktivchassis ugrott
-                var isDocked = character.IsDocked;
+                bool isDocked = character.IsDocked;
                 if (isDocked)
                 {
                     character.SetActiveRobot(null);
@@ -605,7 +578,6 @@ namespace Perpetuum.Zones.PBS.DockingBases
             }
 
             Logger.Info(" sql administration for docking base delete is done. " + this);
-
             Logger.Info(" >>>>>>    docking base SQL DELETE   STOP ");
 
             Transaction.Current.OnCommited(() =>
