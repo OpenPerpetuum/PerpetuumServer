@@ -4,7 +4,7 @@ using System;
 
 namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
 {
-    public class GuardCombatDroneAI : BaseAI
+    public class GuardCombatDroneAI : CombatDroneAI
     {
         private RandomMovement movement;
 

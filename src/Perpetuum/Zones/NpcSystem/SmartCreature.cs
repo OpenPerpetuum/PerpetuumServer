@@ -6,6 +6,7 @@ using Perpetuum.StateMachines;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Zones.DamageProcessors;
+using Perpetuum.Zones.Effects;
 using Perpetuum.Zones.Locking;
 using Perpetuum.Zones.Locking.Locks;
 using Perpetuum.Zones.NpcSystem.AI;
@@ -264,6 +265,11 @@ namespace Perpetuum.Zones.NpcSystem
             BodyPullThreatHelper helper = new BodyPullThreatHelper(this);
 
             enemy.AcceptVisitor(helper);
+        }
+
+        protected override void OnEffectChanged(Effect effect, bool apply)
+        {
+            base.OnEffectChanged(effect, apply);
         }
 
         private int CalculateCombatRange()

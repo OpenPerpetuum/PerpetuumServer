@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Perpetuum.ExportedTypes;
+﻿using Perpetuum.ExportedTypes;
 using Perpetuum.IDGenerators;
 using Perpetuum.Items;
 using Perpetuum.Timers;
 using Perpetuum.Units;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Perpetuum.Zones.Effects
 {
@@ -15,7 +15,6 @@ namespace Perpetuum.Zones.Effects
         private static readonly IIDGenerator<int> _idGenerator = IDGenerator.CreateIntIDGenerator();
 
         private EffectType _type;
-        private Unit _owner;
         private Unit _source;
         private TimeSpan? _duration;
         private double? _durationModifier;
@@ -30,7 +29,7 @@ namespace Perpetuum.Zones.Effects
             _effectFactory = effectFactory;
         }
 
-        public Unit Owner => _owner;
+        public Unit Owner { get; private set; }
 
         public EffectBuilder SetOwnerToSource()
         {
@@ -81,7 +80,7 @@ namespace Perpetuum.Zones.Effects
 
         public EffectBuilder WithOwner(Unit owner)
         {
-            _owner = owner;
+            Owner = owner;
             return this;
         }
 
@@ -125,7 +124,7 @@ namespace Perpetuum.Zones.Effects
 
         public EffectBuilder WithPropertyModifiers(IEnumerable<ItemPropertyModifier> propertyModifiers)
         {
-            foreach (var propertyModifier in propertyModifiers)
+            foreach (ItemPropertyModifier propertyModifier in propertyModifiers)
             {
                 WithPropertyModifier(propertyModifier);
             }
@@ -146,15 +145,17 @@ namespace Perpetuum.Zones.Effects
 
         public Effect Build()
         {
-            var effect = _effectFactory(_type);
+            Effect effect = _effectFactory(_type);
 
             if (_info == null)
+            {
                 _info = EffectHelper.GetEffectInfo(_type);
+            }
 
             effect.Display = _info.Display;
             effect.IsAura = _info.isAura;
 
-            var corporation = effect as CorporationEffect;
+            CorporationEffect corporation = effect as CorporationEffect;
             corporation?.SetCorporationEid(_corporationEid);
 
             if (effect is AuraEffect aura)
@@ -163,19 +164,19 @@ namespace Perpetuum.Zones.Effects
                 aura.TargetSelector = _targetSelector;
             }
 
-            var cot = effect as CoTEffect;
+            CoTEffect cot = effect as CoTEffect;
             cot?.SetCorePerTick(_corePerTick);
 
             effect.Id = _idGenerator.GetNextID();
             effect.Type = _type;
             effect.Category = _info.category;
             effect.Token = Token;
-            effect.Owner = _owner;
+            effect.Owner = Owner;
             effect.Source = _source;
             effect.PropertyModifiers = _propertyModifiers.ToArray();
             effect.EnableModifiers = _enableModifiers;
 
-            var duration = _duration ?? TimeSpan.FromMilliseconds(_info.duration);
+            TimeSpan duration = _duration ?? TimeSpan.FromMilliseconds(_info.duration);
 
             if (_durationModifier != null)
             {

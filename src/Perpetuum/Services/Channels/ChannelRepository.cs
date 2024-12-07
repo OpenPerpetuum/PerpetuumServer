@@ -1,6 +1,6 @@
+using Perpetuum.Data;
 using System.Collections.Generic;
 using System.Linq;
-using Perpetuum.Data;
 
 namespace Perpetuum.Services.Channels
 {
@@ -17,8 +17,8 @@ namespace Perpetuum.Services.Channels
         {
             const string cmd = "insert into channels (name,type) values (@name,@type);select id from channels where id = scope_identity()";
 
-            var id = Db.Query().CommandText(cmd)
-                .SetParameter("@name",channel.Name)
+            int id = Db.Query().CommandText(cmd)
+                .SetParameter("@name", channel.Name)
                 .SetParameter("@type", (int)channel.Type)
                 .ExecuteScalar<int>().ThrowIfEqual(0, ErrorCodes.SQLInsertError);
 
@@ -28,7 +28,7 @@ namespace Perpetuum.Services.Channels
         public void Delete(Channel channel)
         {
             Db.Query().CommandText("delete channels where id = @channelId")
-                .SetParameter("@channelId",channel.Id)
+                .SetParameter("@channelId", channel.Id)
                 .ExecuteNonQuery().ThrowIfZero(ErrorCodes.SQLDeleteError);
         }
 
@@ -38,7 +38,7 @@ namespace Perpetuum.Services.Channels
                 .SetParameter("@topic", channel.Topic)
                 .SetParameter("@password", channel.Password)
                 .SetParameter("@type", channel.Type)
-                .SetParameter("@channelid",channel.Id)                
+                .SetParameter("@channelid", channel.Id)
                 .ExecuteNonQuery().ThrowIfEqual(0, ErrorCodes.SQLUpdateError);
         }
 
@@ -46,14 +46,16 @@ namespace Perpetuum.Services.Channels
         {
             return Db.Query().CommandText("select * from channels").Execute().Select(record =>
             {
-                var id = record.GetValue<int>("id");
-                var type = (ChannelType)record.GetValue<int>("type");
-                var name = record.GetValue<string>("name");
-                var topic = record.GetValue<string>("topic");
-                var password = record.GetValue<string>("password");
+                int id = record.GetValue<int>("id");
+                ChannelType type = (ChannelType)record.GetValue<int>("type");
+                string name = record.GetValue<string>("name");
+                string topic = record.GetValue<string>("topic");
+                string password = record.GetValue<string>("password");
+                bool isForcedJoin = record.GetValueOrDefault<bool>("isForcedJoin");
 
-                var logger = _channelLoggerFactory(name);
-                return new Channel(id, type, name, topic, password,logger);
+                IChannelLogger logger = _channelLoggerFactory(name);
+
+                return new Channel(id, type, name, topic, password, isForcedJoin, logger);
             }).ToArray();
         }
     }

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Perpetuum.Accounting.Characters;
+﻿using Perpetuum.Accounting.Characters;
 using Perpetuum.Services.Sessions;
+using System.Collections.Generic;
 
 namespace Perpetuum.Services.Channels
 {
@@ -12,6 +12,9 @@ namespace Perpetuum.Services.Channels
         public string Name { get; private set; }
         public string Topic { get; private set; }
         public string Password { get; private set; }
+
+        public bool IsForcedJoin { get; private set; }
+
         public IChannelLogger Logger { get; private set; }
         private ChannelType _type;
         private ChannelType _prevType;
@@ -30,11 +33,12 @@ namespace Perpetuum.Services.Channels
 
         }
 
-        public Channel(int id, ChannelType type, string name, string topic, string password, IChannelLogger logger) : this(type, name, logger)
+        public Channel(int id, ChannelType type, string name, string topic, string password, bool isForcedJoin, IChannelLogger logger) : this(type, name, logger)
         {
             Id = id;
             Topic = topic;
             Password = password;
+            IsForcedJoin = isForcedJoin;
         }
 
         public Channel(ChannelType type, string name, IChannelLogger logger)
@@ -45,71 +49,72 @@ namespace Perpetuum.Services.Channels
             Logger = logger;
         }
 
-        public IEnumerable<ChannelMember> Members
-        {
-            get { return _members.Values; }
-        }
+        public IEnumerable<ChannelMember> Members => _members.Values;
 
         public Channel SetId(int id)
         {
-            if (id == Id)
-                return this;
-
-            return new Channel
-            {
-                Id = id,
-                Type = Type,
-                Name = Name,
-                Topic = Topic,
-                Password = Password,
-                Logger = Logger,
-                _members = new Dictionary<Character, ChannelMember>(_members)
-            };
+            return id == Id
+                ? this
+                : new Channel
+                {
+                    Id = id,
+                    Type = Type,
+                    Name = Name,
+                    Topic = Topic,
+                    Password = Password,
+                    IsForcedJoin = IsForcedJoin,
+                    Logger = Logger,
+                    _members = new Dictionary<Character, ChannelMember>(_members)
+                };
         }
 
         public Channel SetTopic(string topic)
         {
             if (!string.IsNullOrEmpty(topic) && topic.Length > 200)
-                topic = topic.Substring(0, 199);
-
-            if (topic == Topic)
-                return this;
-
-            return new Channel
             {
-                Id = Id,
-                Type = Type,
-                Name = Name,
-                Topic = topic,
-                Password = Password,
-                Logger = Logger,
-                _members = new Dictionary<Character, ChannelMember>(_members)
-            };
+                topic = topic.Substring(0, 199);
+            }
+
+            return topic == Topic
+                ? this
+                : new Channel
+                {
+                    Id = Id,
+                    Type = Type,
+                    Name = Name,
+                    Topic = topic,
+                    Password = Password,
+                    IsForcedJoin = IsForcedJoin,
+                    Logger = Logger,
+                    _members = new Dictionary<Character, ChannelMember>(_members)
+                };
         }
 
         public Channel SetPassword(string password)
         {
-            if (password == Password)
-                return this;
-
-            return new Channel
-            {
-                Id = Id,
-                Type = Type,
-                Name = Name,
-                Topic = Topic,
-                Password = password,
-                Logger = Logger,
-                _members = new Dictionary<Character, ChannelMember>(_members)
-            };
+            return password == Password
+                ? this
+                : new Channel
+                {
+                    Id = Id,
+                    Type = Type,
+                    Name = Name,
+                    Topic = Topic,
+                    Password = password,
+                    IsForcedJoin = IsForcedJoin,
+                    Logger = Logger,
+                    _members = new Dictionary<Character, ChannelMember>(_members)
+                };
         }
 
         public Channel SetMember(ChannelMember member)
         {
             if (member == null)
+            {
                 return this;
+            }
 
-            var members = new Dictionary<Character, ChannelMember>(_members) { [member.character] = member };
+            Dictionary<Character, ChannelMember> members = new Dictionary<Character, ChannelMember>(_members) { [member.character] = member };
 
             return new Channel
             {
@@ -118,6 +123,7 @@ namespace Perpetuum.Services.Channels
                 Name = Name,
                 Topic = Topic,
                 Password = Password,
+                IsForcedJoin = IsForcedJoin,
                 Logger = Logger,
                 _members = members
             };
@@ -125,54 +131,50 @@ namespace Perpetuum.Services.Channels
 
         public void SetAdmin(bool isadminchannel)
         {
-            if (isadminchannel)
-            {
-                Type = ChannelType.Admin;
-            }
-            else
-            {
-                Type = _prevType;
-            }
+            Type = isadminchannel ? ChannelType.Admin : _prevType;
         }
 
 
         public Channel RemoveMember(Character member)
         {
-            var members = new Dictionary<Character, ChannelMember>(_members);
-            if (!members.Remove(member))
-                return this;
-
-            return new Channel
-            {
-                Id = Id,
-                Type = Type,
-                Name = Name,
-                Topic = Topic,
-                Password = Password,
-                Logger = Logger,
-                _members = members
-            };
+            Dictionary<Character, ChannelMember> members = new Dictionary<Character, ChannelMember>(_members);
+            return !members.Remove(member)
+                ? this
+                : new Channel
+                {
+                    Id = Id,
+                    Type = Type,
+                    Name = Name,
+                    Topic = Topic,
+                    Password = Password,
+                    IsForcedJoin = IsForcedJoin,
+                    Logger = Logger,
+                    _members = members
+                };
         }
 
         [CanBeNull]
         public ChannelMember GetMember(Character member)
         {
-            ChannelMember channelMember;
-            return !_members.TryGetValue(member, out channelMember) ? null : channelMember;
+            return !_members.TryGetValue(member, out ChannelMember channelMember) ? null : channelMember;
         }
 
         public void CheckPasswordAndThrowIfMismatch(string password)
         {
             if (!HasPassword)
+            {
                 return;
+            }
 
-            Equals(Password, password ?? string.Empty).ThrowIfFalse(ErrorCodes.PasswordMismatch,gex => gex.SetData("channel",Name));
+            Equals(Password, password ?? string.Empty).ThrowIfFalse(ErrorCodes.PasswordMismatch, gex => gex.SetData("channel", Name));
         }
 
         public void CheckRoleAndThrowIfFailed(Character member, ChannelMemberRole role)
         {
             if (member == Character.None || Character.IsSystemCharacter(member))
+            {
                 return;
+            }
 
             GetMember(member).ThrowIfNull(ErrorCodes.NotMemberOfChannel).HasRole(role).ThrowIfFalse(ErrorCodes.InsufficientPrivileges);
         }
@@ -184,15 +186,17 @@ namespace Perpetuum.Services.Channels
 
         public IDictionary<string, object> ToDictionary(Character issuer, bool withMembers)
         {
-            var isMember = true;
+            bool isMember = true;
             if (issuer != Character.None)
+            {
                 isMember = IsOnline(issuer);
+            }
 
-            var hasPassword = HasPassword;
+            bool hasPassword = HasPassword;
 
-            var result = new Dictionary<string, object>
+            Dictionary<string, object> result = new Dictionary<string, object>
                              {
-                                 {k.name,Name}, 
+                                 {k.name,Name},
                                  {k.type, (int)Type},
                                  {k.password,hasPassword},
                              };
@@ -204,15 +208,18 @@ namespace Perpetuum.Services.Channels
             }
 
             if (withMembers)
-                result.Add(k.members, _members.Values.ToDictionary("m", m => m.ToDictionary()));
+            {
+                result.Add(
+                    k.members,
+                    _members.Values.ToDictionary(
+                        "m",
+                        m => m.ToDictionary()));
+            }
 
             return result;
         }
 
-        private bool HasPassword
-        {
-            get { return !string.IsNullOrEmpty(Password); }
-        }
+        private bool HasPassword => !string.IsNullOrEmpty(Password);
 
         public bool IsConstant
         {
@@ -230,7 +237,7 @@ namespace Perpetuum.Services.Channels
 
         public MessageBuilder CreateNotificationMessage(ChannelNotify notify, IDictionary<string, object> data)
         {
-            var dictionary = new Dictionary<string, object>
+            Dictionary<string, object> dictionary = new Dictionary<string, object>
             {
                 {k.channel,Name},
                 {k.command, (int)notify},
@@ -245,75 +252,85 @@ namespace Perpetuum.Services.Channels
             SendToAll(sessionManager, messageBuilder, Character.None);
         }
 
-        public void SendToAll(ISessionManager sessionManager,MessageBuilder messageBuilder, Character sender)
+        public void SendToAll(ISessionManager sessionManager, MessageBuilder messageBuilder, Character sender)
         {
-            if ( sessionManager == null || messageBuilder == null )
+            if (sessionManager == null || messageBuilder == null)
+            {
                 return;
+            }
 
-            var message = messageBuilder.Build();
+            IMessage message = messageBuilder.Build();
 
-            foreach (var member in _members.Keys)
+            foreach (Character member in _members.Keys)
             {
                 if (sender != Character.None)
                 {
                     if (member.IsBlocked(sender))
+                    {
                         continue;
+                    }
                 }
 
-                var session = sessionManager.GetByCharacter(member);
+                ISession session = sessionManager.GetByCharacter(member);
                 session?.SendMessage(message);
             }
         }
 
-        public void SendToOne(ISessionManager sessionManager,Character character, MessageBuilder messageBuilder)
+        public void SendToOne(ISessionManager sessionManager, Character character, MessageBuilder messageBuilder)
         {
-            var session = sessionManager?.GetByCharacter(character);
+            ISession session = sessionManager?.GetByCharacter(character);
             session?.SendMessage(messageBuilder);
         }
 
-        public void SendMessageToAll(ISessionManager sessionManager,Character sender,string message)
+        public void SendMessageToAll(ISessionManager sessionManager, Character sender, string message)
         {
-            var data = new Dictionary<string, object>
+            Dictionary<string, object> data = new Dictionary<string, object>
             {
-                { k.sender, sender.Id }, 
+                { k.sender, sender.Id },
                 { k.message, message }
             };
 
-            var n = CreateNotificationMessage(ChannelNotify.Message, data);
+            MessageBuilder n = CreateNotificationMessage(ChannelNotify.Message, data);
             SendToAll(sessionManager, n, sender);
         }
 
-        public void SendMemberOnlineStateToAll(ISessionManager sessionManager,ChannelMember member,bool isOnline)
+        public void SendMemberOnlineStateToAll(ISessionManager sessionManager, ChannelMember member, bool isOnline)
         {
-            if ( member == null )
+            if (member == null)
+            {
                 return;
+            }
 
-            var data = new Dictionary<string, object> { { k.member, member.ToDictionary() }, { k.state, isOnline } };
-            var n = CreateNotificationMessage(ChannelNotify.OnlineState, data);
+            Dictionary<string, object> data = new Dictionary<string, object> { { k.member, member.ToDictionary() }, { k.state, isOnline } };
+            MessageBuilder n = CreateNotificationMessage(ChannelNotify.OnlineState, data);
             SendToAll(sessionManager, n);
         }
 
-        public void SendAddMemberToAll(ISessionManager sessionManager,ChannelMember member)
+        public void SendAddMemberToAll(ISessionManager sessionManager, ChannelMember member)
         {
-            if ( member == null || !sessionManager.IsOnline(member.character))
+            if (member == null || !sessionManager.IsOnline(member.character))
+            {
                 return;
+            }
 
-            var n = CreateNotificationMessage(ChannelNotify.AddMember, member.ToDictionary());
+            MessageBuilder n = CreateNotificationMessage(ChannelNotify.AddMember, member.ToDictionary());
             SendToAll(sessionManager, n);
         }
 
-        public void SendJoinedToMember(ISessionManager sessionManager,ChannelMember member)
+        public void SendJoinedToMember(ISessionManager sessionManager, ChannelMember member)
         {
-            if ( member == null )
+            if (member == null)
+            {
                 return;
+            }
 
-            var d = new Dictionary<string, object>
+            Dictionary<string, object> d = new Dictionary<string, object>
                 {
-                    {k.member, member.ToDictionary()}, 
+                    {k.member, member.ToDictionary()},
                     {k.channel,ToDictionary(member.character, true)}
                 };
 
-            var n = CreateNotificationMessage(ChannelNotify.Joined, d);
+            MessageBuilder n = CreateNotificationMessage(ChannelNotify.Joined, d);
             SendToOne(sessionManager, member.character, n);
         }
     }

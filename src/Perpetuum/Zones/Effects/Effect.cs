@@ -1,22 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Perpetuum.ExportedTypes;
+﻿using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
 using Perpetuum.Timers;
 using Perpetuum.Units;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Perpetuum.Zones.Effects
 {
     public delegate void EffectEventHandler(Effect effect);
-    public delegate void EffectEventHandler<in T>(Effect effect,T arg);
+    public delegate void EffectEventHandler<in T>(Effect effect, T arg);
 
     public delegate Effect EffectFactory(EffectType effectType);
 
     /// <summary>
     /// Base class for an effect
     /// </summary>
-    public class Effect 
+    public class Effect
     {
         public int Id { get; internal set; }
         public EffectType Type { get; internal set; }
@@ -28,16 +28,13 @@ namespace Perpetuum.Zones.Effects
         public bool Display { get; set; }
         public bool IsAura { get; set; }
 
-        protected IEnumerable<ItemPropertyModifier> propertyModifiers = new ItemPropertyModifier[]{};
+        protected IEnumerable<ItemPropertyModifier> propertyModifiers = new ItemPropertyModifier[] { };
 
         public IEnumerable<ItemPropertyModifier> PropertyModifiers
         {
-            get
-            {
-                return EffectHelper.GetEffectDefaultModifiers(Type).Concat(propertyModifiers);
-            }
+            get => EffectHelper.GetEffectDefaultModifiers(Type).Concat(propertyModifiers);
 
-            set { propertyModifiers = value; }
+            set => propertyModifiers = value;
         }
 
         public IntervalTimer Timer { get; set; }
@@ -73,12 +70,14 @@ namespace Perpetuum.Zones.Effects
             _tickTimer.Update(time).IsPassed(OnTick);
         }
 
-        public void ApplyTo(ref ItemPropertyModifier propertyModifier,AggregateField modifierField)
+        public void ApplyTo(ref ItemPropertyModifier propertyModifier, AggregateField modifierField)
         {
             if (!EnableModifiers)
+            {
                 return;
+            }
 
-            foreach (var modifier in PropertyModifiers.Where(pp => pp.Field == modifierField))
+            foreach (ItemPropertyModifier modifier in PropertyModifiers.Where(pp => pp.Field == modifierField))
             {
                 modifier.Modify(ref propertyModifier);
             }
@@ -92,10 +91,10 @@ namespace Perpetuum.Zones.Effects
             stream.AppendInt((int)Type);
             stream.AppendLong(Owner.Eid);
 
-            var sourceEid = Source?.Eid ?? 0L;
+            long sourceEid = Source?.Eid ?? 0L;
             stream.AppendLong(sourceEid);
 
-            var timer = Timer;
+            IntervalTimer timer = Timer;
             if (timer != null)
             {
                 stream.AppendInt((int)timer.Interval.TotalMilliseconds);
@@ -109,7 +108,7 @@ namespace Perpetuum.Zones.Effects
 
             stream.AppendInt(PropertyModifiers.Count());
 
-            foreach (var property in PropertyModifiers)
+            foreach (ItemPropertyModifier property in PropertyModifiers)
             {
                 property.AppendToPacket(stream);
             }

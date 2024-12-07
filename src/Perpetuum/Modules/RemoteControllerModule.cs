@@ -126,6 +126,7 @@ namespace Perpetuum.Modules
             }
 
             RemoteControlledCreature remoteControlledCreature = CreateAndConfigureRcu(ammo);
+            remoteControlledCreature.FullArmorRepair();
             if (remoteControlledCreature == null)
             {
                 return;

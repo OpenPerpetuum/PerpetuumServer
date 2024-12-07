@@ -1,22 +1,14 @@
-﻿using Perpetuum.Zones.NpcSystem.TargettingStrategies;
-using System;
+﻿using System;
 
 namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
 {
-    public class AttackCombatDroneAI : CombatAI
+    public class AttackCombatDroneAI : CombatDroneAI
     {
         public AttackCombatDroneAI(SmartCreature smartCreature) : base(smartCreature) { }
 
-        protected override CombatPrimaryLockSelectionStrategySelector InitSelector()
-        {
-            return CombatPrimaryLockSelectionStrategySelector.Create()
-                .WithStrategy(CombatPrimaryLockSelectionStrategy.HostileOrClosest, 1)
-                .Build();
-        }
-
         public override void Exit()
         {
-            this.source?.Cancel();
+            source?.Cancel();
 
             base.Exit();
         }
@@ -30,7 +22,7 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
                 return;
             }
 
-            this.UpdateHostile(time, false);
+            UpdateHostile(time);
 
             base.Update(time);
         }
@@ -41,7 +33,7 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
         {
             smartCreature.AI.Pop();
             smartCreature.AI.Push(new EscortCombatDroneAI(smartCreature));
-            this.WriteLog("Returning to command robot.");
+            WriteLog("Returning to command robot.");
         }
     }
 }

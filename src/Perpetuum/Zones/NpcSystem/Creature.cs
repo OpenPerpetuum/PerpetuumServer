@@ -7,6 +7,7 @@ using Perpetuum.Zones.Eggs;
 using Perpetuum.Zones.LandMines;
 using Perpetuum.Zones.Locking;
 using Perpetuum.Zones.Locking.Locks;
+using Perpetuum.Zones.RemoteControl;
 using System.Linq;
 
 namespace Perpetuum.Zones.NpcSystem
@@ -23,7 +24,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         protected internal override void UpdatePlayerVisibility(Player player)
         {
-            if (ED.Options.Faction != Faction.Syndicate)
+            if (this is RemoteControlledCreature || ED.Options.Faction != Faction.Syndicate)
             {
                 UpdateVisibility(player);
             }

@@ -711,6 +711,7 @@
     <Compile Include="Zones\NpcSystem\AI\BodyPullThreatHelper.cs" />
     <Compile Include="Zones\NpcSystem\AI\CombatAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\CombatDrones\AttackCombatDroneAI.cs" />
+    <Compile Include="Zones\NpcSystem\AI\CombatDrones\CombatDroneAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\CombatDrones\EscortCombatDroneAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\CombatDrones\GuardCombatDroneAI.cs" />
     <Compile Include="Zones\NpcSystem\AI\HarvestingIndustrialTurretAI.cs" />

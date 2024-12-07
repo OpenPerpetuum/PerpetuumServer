@@ -1,4 +1,5 @@
 ﻿using Perpetuum.EntityFramework;
+using Perpetuum.Modules;
 using Perpetuum.Modules.Weapons;
 using Perpetuum.Players;
 using Perpetuum.Services.RiftSystem;
@@ -18,7 +19,8 @@ namespace Perpetuum.Zones.NpcSystem.AI
         IEntityVisitor<Npc>,
         IEntityVisitor<SentryTurret>,
         IEntityVisitor<CombatDrone>,
-        IEntityVisitor<Portal>
+        IEntityVisitor<Portal>,
+        IEntityVisitor<SupportDrone>
     {
         private readonly SmartCreature smartCreature;
 
@@ -125,6 +127,11 @@ namespace Perpetuum.Zones.NpcSystem.AI
             ProcessNpcThreats(teleport);
         }
 
+        public void Visit(SupportDrone supportDrone)
+        {
+            ProcessNpcThreats(supportDrone);
+        }
+
         private void ProcessNpcThreats(Unit unit)
         {
             if (smartCreature.Behavior.Type != BehaviorType.RemoteControlledTurret &&
@@ -134,7 +141,7 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 return;
             }
 
-            if (!smartCreature.ActiveModules.Any(m => m is WeaponModule))
+            if (!smartCreature.ActiveModules.Any(m => m is WeaponModule || m is RemoteArmorRepairModule))
             {
                 return;
             }

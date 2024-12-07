@@ -1142,7 +1142,8 @@ namespace Perpetuum.Units
 
         private class ArmorProperty : UnitProperty
         {
-            public ArmorProperty(Unit owner) : base(owner, AggregateField.armor_current) { }
+            public ArmorProperty(Unit owner)
+                : base(owner, AggregateField.armor_current, AggregateField.drone_amplification_armor_max_modifier) { }
 
             protected override double CalculateValue()
             {

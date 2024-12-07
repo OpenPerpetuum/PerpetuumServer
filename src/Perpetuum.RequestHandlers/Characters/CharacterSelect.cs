@@ -1,29 +1,44 @@
-using System;
-using System.Collections.Generic;
-using System.Transactions;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Data;
 using Perpetuum.Host.Requests;
+using Perpetuum.Services.Channels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Transactions;
 
 namespace Perpetuum.RequestHandlers.Characters
 {
     public class CharacterSelect : IRequestHandler
     {
+        private readonly IChannelManager _channelManager;
+
+        public CharacterSelect(IChannelManager channelManager)
+        {
+            _channelManager = channelManager;
+        }
+
         public void HandleRequest(IRequest request)
         {
-            var session = request.Session;
+            Services.Sessions.ISession session = request.Session;
             if (!session.IsAuthenticated)
+            {
                 throw new PerpetuumException(ErrorCodes.NotSignedIn);
+            }
 
-            var character = Character.Get(request.Data.GetOrDefault<int>(k.characterID));
+            Character character = Character.Get(request.Data.GetOrDefault<int>(k.characterID));
             if (character.AccountId != request.Session.AccountId)
+            {
                 throw new PerpetuumException(ErrorCodes.AccessDenied);
+            }
 
             if (character.IsOffensiveNick)
+            {
                 throw PerpetuumException.Create(ErrorCodes.OffensiveNick).SetData("characterID", character.Id);
+            }
 
-            var isDocked = character.IsDocked;
-            var zone = character.GetCurrentZone();
+            bool isDocked = character.IsDocked;
+            Zones.IZone zone = character.GetCurrentZone();
 
             if (!isDocked)
             {
@@ -33,13 +48,20 @@ namespace Perpetuum.RequestHandlers.Characters
                 }
             }
 
-            using (var scope = Db.CreateTransaction())
+            using (TransactionScope scope = Db.CreateTransaction())
             {
                 character.Nick = character.Nick.Replace("_renamed_", "");
                 character.LastUsed = DateTime.Now;
                 character.IsDocked = isDocked;
                 character.Language = request.Data.GetOrDefault<int>(k.language);
                 character.IsOnline = true;
+
+                IEnumerable<Channel> forcedChannels = _channelManager.Channels.Where(x => x.IsForcedJoin);
+
+                foreach (Channel channel in forcedChannels)
+                {
+                    _channelManager.JoinChannel(channel.Name, character);
+                }
 
                 if (isDocked)
                 {
@@ -48,8 +70,8 @@ namespace Perpetuum.RequestHandlers.Characters
                     character.GetCurrentDockingBase()?.TryJoinChannel(character);
                 }
 
-                var corporation = character.GetCorporation();
-                var alliance = character.GetAlliance();
+                Groups.Corporations.Corporation corporation = character.GetCorporation();
+                Groups.Alliances.Alliance alliance = character.GetAlliance();
 
                 Transaction.Current.OnCommited(() =>
                 {
@@ -57,7 +79,7 @@ namespace Perpetuum.RequestHandlers.Characters
 
                     if (isDocked)
                     {
-                        var result = new Dictionary<string, object>
+                        Dictionary<string, object> result = new Dictionary<string, object>
                         {
                             {k.characterID, character.Id},
                             {k.rootEID,character.Eid},
@@ -75,6 +97,16 @@ namespace Perpetuum.RequestHandlers.Characters
 
                 scope.Complete();
             }
+        }
+
+        public Dictionary<string, object> GetJoinChannelData(string channel)
+        {
+            Dictionary<string, object> result = new Dictionary<string, object>
+            {
+                { k.channel, channel },
+            };
+
+            return result;
         }
     }
 }

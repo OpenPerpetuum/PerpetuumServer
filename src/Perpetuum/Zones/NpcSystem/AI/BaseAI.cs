@@ -2,7 +2,6 @@
 using Perpetuum.StateMachines;
 using Perpetuum.Zones.Locking.Locks;
 using Perpetuum.Zones.NpcSystem.AI.Behaviors;
-using Perpetuum.Zones.NpcSystem.AI.CombatDrones;
 using Perpetuum.Zones.NpcSystem.AI.IndustrialDrones;
 using Perpetuum.Zones.RemoteControl;
 using System;
@@ -59,20 +58,10 @@ namespace Perpetuum.Zones.NpcSystem.AI
             smartCreature.AI.Push(new AggressorAI(smartCreature));
         }
 
-        protected virtual void ToAttackCombatDroneAI()
-        {
-            smartCreature.AI.Push(new AttackCombatDroneAI(smartCreature));
-        }
-
         [Conditional("DEBUG")]
         protected void WriteLog(string message)
         {
             Logger.DebugInfo($"SmartCreatureAI: {message}");
-        }
-
-        protected virtual void ToEscortCombatDroneAI()
-        {
-            smartCreature.AI.Push(new EscortCombatDroneAI(smartCreature));
         }
 
         protected virtual void ToEscortIndustrialDroneAI()

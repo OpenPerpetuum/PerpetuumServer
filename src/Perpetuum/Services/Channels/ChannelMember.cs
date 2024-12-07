@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Perpetuum.Accounting.Characters;
+﻿using Perpetuum.Accounting.Characters;
+using System.Collections.Generic;
 
 namespace Perpetuum.Services.Channels
 {
@@ -16,16 +16,10 @@ namespace Perpetuum.Services.Channels
 
         public ChannelMember WithRole(ChannelMemberRole newRole)
         {
-            if (newRole == role)
-                return this;
-
-            return new ChannelMember(character,newRole);
+            return newRole == role ? this : new ChannelMember(character, newRole);
         }
 
-        public bool CanTalk
-        {
-            get { return !character.GlobalMuted; }
-        }
+        public bool CanTalk => !character.GlobalMuted;
 
         public bool HasRole(ChannelMemberRole r)
         {

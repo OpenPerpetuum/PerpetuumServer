@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Perpetuum.ExportedTypes;
+using Perpetuum.Units;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Perpetuum.ExportedTypes;
-using Perpetuum.Units;
 
 namespace Perpetuum.Zones.Effects
 {
@@ -49,24 +49,24 @@ namespace Perpetuum.Zones.Effects
         {
             if (Interlocked.CompareExchange(ref _dirty, 0, 1) == 1)
             {
-                var effects = new List<Effect>(_effects);
-                var helper = new EffectPropertyUpdateHelper();
-                var updated = false;
+                List<Effect> effects = new List<Effect>(_effects);
+                EffectPropertyUpdateHelper helper = new EffectPropertyUpdateHelper();
+                bool updated = false;
 
                 try
                 {
-                    foreach (var removedEffect in ProcessExpiredEffects(effects))
+                    foreach (Effect removedEffect in ProcessExpiredEffects(effects))
                     {
                         updated = true;
                         helper.AddEffect(removedEffect);
-                        OnEffectChanged(removedEffect,false);
+                        OnEffectChanged(removedEffect, false);
                     }
 
-                    foreach (var newEffect in ProcessNewEffects(effects))
+                    foreach (Effect newEffect in ProcessNewEffects(effects))
                     {
                         updated = true;
                         helper.AddEffect(newEffect);
-                        OnEffectChanged(newEffect,true);
+                        OnEffectChanged(newEffect, true);
                     }
                 }
                 finally
@@ -79,7 +79,7 @@ namespace Perpetuum.Zones.Effects
                 }
             }
 
-            foreach (var effect in _effects)
+            foreach (Effect effect in _effects)
             {
                 effect.Update(time);
             }
@@ -89,15 +89,19 @@ namespace Perpetuum.Zones.Effects
         {
             while (_newEffects.TryDequeue(out EffectBuilder effectBuilder))
             {
-                var effect = GetEffectByToken(effectBuilder.Token);
+                Effect effect = GetEffectByToken(effectBuilder.Token);
                 if (effect != null)
                 {
                     if (effect.IsAura)
+                    {
                         continue;
+                    }
 
-                    var effectTimer = effect.Timer;
+                    Timers.IntervalTimer effectTimer = effect.Timer;
                     if (effectTimer == null)
+                    {
                         continue;
+                    }
 
                     effectTimer.Reset();
                     yield return effect;
@@ -107,7 +111,9 @@ namespace Perpetuum.Zones.Effects
                     effect = effectBuilder.Build();
 
                     if (!CanApplyEffect(effects, effect))
+                    {
                         continue;
+                    }
 
                     effect.Removed += Remove;
                     effects.Add(effect);
@@ -116,21 +122,23 @@ namespace Perpetuum.Zones.Effects
             }
         }
 
-        private static bool CanApplyEffect(List<Effect> effects,Effect effect)
+        private static bool CanApplyEffect(List<Effect> effects, Effect effect)
         {
-            var mask = 0x8000000000000000;
+            ulong mask = 0x8000000000000000;
             do
             {
-                var flag = (ulong)effect.Category & mask;
+                ulong flag = (ulong)effect.Category & mask;
                 if (flag > 0)
                 {
-                    var category = (EffectCategory)flag;
-                    var maxLevel = EffectHelper.EffectCategoryLevels[category];
+                    EffectCategory category = (EffectCategory)flag;
+                    int maxLevel = EffectHelper.EffectCategoryLevels[category];
                     if (maxLevel > 0)
                     {
-                        var currentLevel = effects.Count(e => e.Category.HasFlag(category));
+                        int currentLevel = effects.Count(e => e.Category.HasFlag(category));
                         if (currentLevel >= maxLevel)
+                        {
                             return false;
+                        }
                     }
                 }
 
@@ -145,7 +153,9 @@ namespace Perpetuum.Zones.Effects
             while (_expiredEffects.TryDequeue(out Effect expiredEffect))
             {
                 if (!effects.Remove(expiredEffect))
+                {
                     continue;
+                }
 
                 yield return expiredEffect;
             }
@@ -163,7 +173,7 @@ namespace Perpetuum.Zones.Effects
 
         private void RemoveEffects(IEnumerable<Effect> effects)
         {
-            foreach (var effect in effects)
+            foreach (Effect effect in effects)
             {
                 Remove(effect);
             }
@@ -171,9 +181,11 @@ namespace Perpetuum.Zones.Effects
 
         public void RemoveEffectByToken(EffectToken token)
         {
-            var effect = GetEffectByToken(token);
-            if ( effect == null )
+            Effect effect = GetEffectByToken(token);
+            if (effect == null)
+            {
                 return;
+            }
 
             Remove(effect);
         }
@@ -220,7 +232,7 @@ namespace Perpetuum.Zones.Effects
 
             public void AddEffect(Effect effect)
             {
-                foreach (var modifier in effect.PropertyModifiers)
+                foreach (Items.ItemPropertyModifier modifier in effect.PropertyModifiers)
                 {
                     _relatedFields.Add(modifier.Field);
                 }
@@ -228,10 +240,12 @@ namespace Perpetuum.Zones.Effects
 
             public void Update(Unit unit)
             {
-                if ( _relatedFields.Count == 0 )
+                if (_relatedFields.Count == 0)
+                {
                     return;
+                }
 
-                foreach (var modifier in _relatedFields)
+                foreach (AggregateField modifier in _relatedFields)
                 {
                     unit.UpdateRelatedProperties(modifier);
                 }

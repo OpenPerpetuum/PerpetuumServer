@@ -106,21 +106,14 @@ namespace Perpetuum.Units
 
         protected virtual bool IsDetected(Unit target)
         {
-            double range;
-
-            if (target is LandMine)
+            if (target is Robot robot && robot.IsLocked(this))
             {
-                range = (this as Robot).MineDetectionRange;
+                return true;
             }
-            else
-            {
-                if (target is Robot robot && robot.IsLocked(this))
-                {
-                    return true;
-                }
 
-                range = 100 / Math.Max(1, target.StealthStrength) * Math.Max(1, DetectionStrength);
-            }
+            double range = target is LandMine
+                ? (this as Robot).MineDetectionRange
+                : 100 / Math.Max(1, target.StealthStrength) * Math.Max(1, DetectionStrength);
 
             return IsInRangeOf3D(target, range);
         }
