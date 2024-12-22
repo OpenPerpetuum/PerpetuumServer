@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Perpetuum.Zones.RemoteControl;
+using System;
 
 namespace Perpetuum.Zones.NpcSystem.AI.IndustrialDrones
 {
@@ -8,6 +9,13 @@ namespace Perpetuum.Zones.NpcSystem.AI.IndustrialDrones
 
         public override void Update(TimeSpan time)
         {
+            if ((smartCreature as RemoteControlledCreature).IsReceivedRetreatCommand)
+            {
+                ToRetreatIndustrialDroneAI();
+
+                return;
+            }
+
             if (GetPrimaryTerrainLock() == null)
             {
                 ReturnToHomePosition();

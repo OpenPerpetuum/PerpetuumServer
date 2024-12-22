@@ -3,6 +3,7 @@ using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
 using Perpetuum.Modules.ModuleProperties;
 using Perpetuum.Players;
+using Perpetuum.Units;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Beams;
 using Perpetuum.Zones.Effects;
@@ -10,6 +11,7 @@ using Perpetuum.Zones.Finders;
 using Perpetuum.Zones.Finders.PositionFinders;
 using Perpetuum.Zones.RemoteControl;
 using System;
+using System.Collections.Generic;
 
 namespace Perpetuum.Modules
 {
@@ -31,6 +33,10 @@ namespace Perpetuum.Modules
         private BandwidthHandler bandwidthHandler;
 
         public double BandwidthMax => bandwidthMax.Value;
+
+        public double OperationalRange => operationalRange.Value;
+
+        public IEnumerable<Unit> ActiveDrones => bandwidthHandler.Members;
 
         public RemoteControllerModule(CategoryFlags ammoCategoryFlags) : base(ammoCategoryFlags, true)
         {

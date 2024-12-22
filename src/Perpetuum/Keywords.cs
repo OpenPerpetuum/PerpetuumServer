@@ -1223,6 +1223,7 @@ namespace Perpetuum
 
         // Definition of field turret
         public const string TurretId = "turretId";
+        public const string PackedTurretId = "packedTurretId";
 
         // Plasma-based modules
         public const string PlasmaDefinition = "plasmaDefinition";

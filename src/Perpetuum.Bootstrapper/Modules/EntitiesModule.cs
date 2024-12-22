@@ -14,6 +14,7 @@ using Perpetuum.Items.Helpers;
 using Perpetuum.Modules;
 using Perpetuum.Modules.AdaptiveAlloy;
 using Perpetuum.Modules.EffectModules;
+using Perpetuum.Modules.RemoteControl;
 using Perpetuum.Modules.Terraforming;
 using Perpetuum.Modules.Weapons;
 using Perpetuum.Players;
@@ -176,9 +177,11 @@ namespace Perpetuum.Bootstrapper.Modules
             RegisterEntity<Ice>(builder);
             RegisterEntity<RespecToken>(builder);
             RegisterEntity<SparkTeleportDevice>(builder);
+            RegisterEntity<ServerWideEpBooster>(builder);
             RegisterEntity<Ammo>(builder);
             RegisterEntity<WeaponAmmo>(builder);
             RegisterEntity<RemoteControlledUnit>(builder);
+            RegisterEntity<RemoteCommand>(builder);
             RegisterEntity<MiningAmmo>(builder);
             RegisterEntity<TileScannerAmmo>(builder);
             RegisterEntity<OneTileScannerAmmo>(builder);
@@ -247,6 +250,8 @@ namespace Perpetuum.Bootstrapper.Modules
 
             RegisterEffectModule<DreadnoughtModule>(builder);
             RegisterEffectModule<ExcavatorModule>(builder);
+
+            RegisterEffectModule<RemoteCommandTranslatorModule>(builder);
 
             RegisterEntity<SystemContainer>(builder);
             RegisterEntity<PunchBagDeployer>(builder);
@@ -381,6 +386,7 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_attack_drones_units);
                 ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_industrial_drones_units);
                 ByCategoryFlags<RemoteControlledUnit>(CategoryFlags.cf_support_drones_units);
+                ByCategoryFlags<RemoteCommand>(CategoryFlags.cf_remote_commands);
                 ByCategoryFlags<TileScannerAmmo>(CategoryFlags.cf_mining_probe_ammo_tile);
                 ByCategoryFlags<OneTileScannerAmmo>(CategoryFlags.cf_mining_probe_ammo_one_tile);
                 ByCategoryFlags<ArtifactScannerAmmo>(CategoryFlags.cf_mining_probe_ammo_artifact);
@@ -525,6 +531,10 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByCategoryFlags<DreadnoughtModule>(CategoryFlags.cf_dreadnought_modules);
                 ByCategoryFlags<ExcavatorModule>(CategoryFlags.cf_excavator_modules);
 
+                ByCategoryFlags<RemoteCommandTranslatorModule>(
+                    CategoryFlags.cf_remote_command_translators,
+                    new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_remote_commands));
+
                 ByCategoryFlags<SystemContainer>(CategoryFlags.cf_logical_storage);
                 ByCategoryFlags<Item>(CategoryFlags.cf_mission_items);
                 ByCategoryFlags<Item>(CategoryFlags.cf_robotshards);
@@ -562,6 +572,7 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByCategoryFlags<Item>(CategoryFlags.cf_datashards); // OPP datashards
                 ByCategoryFlags<RespecToken>(CategoryFlags.cf_respec_tokens); // OPP respec tokens
                 ByCategoryFlags<SparkTeleportDevice>(CategoryFlags.cf_spark_teleport_devices);
+                ByCategoryFlags<ServerWideEpBooster>(CategoryFlags.cf_server_wide_ep_boosters);
 
                 // OPP new Blinder module
                 ByNamePatternAndFlag<TargetBlinderModule>(DefinitionNames.STANDARD_BLINDER_MODULE, CategoryFlags.cf_target_painter);

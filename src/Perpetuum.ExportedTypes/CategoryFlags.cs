@@ -123,6 +123,8 @@ namespace Perpetuum.ExportedTypes
         cf_industrial_drones_units = 0x000000000005120A,
         cf_support_drones_units = 0x000000000006120A,
 
+        cf_remote_commands = 0x000000000007120A,
+
         cf_robot_equipment = 0x000000000000000F,
         cf_armor_equipment = 0x000000000000010F,
         cf_armor_plates = 0x000000000001010F,
@@ -204,6 +206,9 @@ namespace Perpetuum.ExportedTypes
         cf_assault_remote_controllers = 0x00000000020C040F,
         cf_industrial_remote_controllers = 0x00000000030C040F,
         cf_support_remote_controllers = 0x00000000040C040F,
+
+        cf_remote_command_translators = 0x00000000050C040F,
+
         cf_electronic_warfare_equipment = 0x000000000000050F,
         cf_webber = 0x000000000001050F,
         cf_shortrange_webber = 0x000000000101050F,
@@ -746,5 +751,6 @@ namespace Perpetuum.ExportedTypes
         cf_ct_capsules_misc = 0x000000000403049B,
         cf_respec_tokens = 0x000000000004049B,
         cf_spark_teleport_devices = 0x000000000005049B,
+        cf_server_wide_ep_boosters = 0x000000000006049B,
     }
 }

@@ -161,6 +161,11 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
             smartCreature.AI.Push(new EscortCombatDroneAI(smartCreature));
         }
 
+        protected virtual void ToRetreatCombatDroneAI()
+        {
+            smartCreature.AI.Push(new RetreatCombatDroneAI(smartCreature));
+        }
+
         protected Hostile GetPrimaryHostile()
         {
             return smartCreature.ThreatManager.Hostiles
@@ -185,9 +190,9 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
 
         protected void UpdateHostile(TimeSpan time)
         {
-            Hostile mostHated = GetPrimaryHostile();
+            UnitLock mainTarget = GetPrimaryUnitLock();
 
-            if (mostHated == null)
+            if (mainTarget == null)
             {
                 return;
             }
@@ -202,19 +207,19 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
                 forceCheckPrimary = movement?.Arrived ?? true;
             }
 
-            if (!mostHated.Unit.CurrentPosition.IsEqual2D(lastTargetPosition) || forceCheckPrimary)
+            if (!mainTarget.Target.CurrentPosition.IsEqual2D(lastTargetPosition) || forceCheckPrimary)
             {
-                lastTargetPosition = mostHated.Unit.CurrentPosition;
+                lastTargetPosition = mainTarget.Target.CurrentPosition;
 
                 bool findNewTargetPosition = false;
 
-                if (!smartCreature.IsInRangeOf3D(mostHated.Unit, smartCreature.BestActionRange))
+                if (!smartCreature.IsInRangeOf3D(mainTarget.Target, smartCreature.BestActionRange))
                 {
                     findNewTargetPosition = true;
                 }
                 else
                 {
-                    IUnitVisibility visibility = smartCreature.GetVisibility(mostHated.Unit);
+                    IUnitVisibility visibility = smartCreature.GetVisibility(mainTarget.Target);
 
                     if (visibility != null)
                     {
@@ -229,7 +234,7 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
 
                 if (findNewTargetPosition)
                 {
-                    _ = FindNewAttackPositionAsync(mostHated.Unit).ContinueWith(t =>
+                    _ = FindNewAttackPositionAsync(mainTarget.Target).ContinueWith(t =>
                     {
                         if (t.IsCanceled)
                         {

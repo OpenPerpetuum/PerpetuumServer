@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Perpetuum.Zones.RemoteControl;
+using System;
 
 namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
 {
@@ -15,6 +16,13 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
 
         public override void Update(TimeSpan time)
         {
+            if ((smartCreature as RemoteControlledCreature).IsReceivedRetreatCommand)
+            {
+                ToRetreatCombatDroneAI();
+
+                return;
+            }
+
             if (!smartCreature.ThreatManager.IsThreatened)
             {
                 ReturnToHomePosition();

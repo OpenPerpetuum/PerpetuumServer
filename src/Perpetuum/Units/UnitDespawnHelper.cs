@@ -1,6 +1,7 @@
 using Perpetuum.ExportedTypes;
 using Perpetuum.Timers;
 using Perpetuum.Zones.Effects;
+using Perpetuum.Zones.RemoteControl;
 using System;
 
 namespace Perpetuum.Units
@@ -52,6 +53,10 @@ namespace Perpetuum.Units
                 if (DespawnStrategy != null)
                 {
                     DespawnStrategy(unit);
+                }
+                else if (unit is RemoteControlledCreature creature)
+                {
+                    creature.Kill();
                 }
                 else
                 {

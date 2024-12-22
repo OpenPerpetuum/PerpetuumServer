@@ -12,6 +12,7 @@ namespace Perpetuum.Modules.ModuleProperties
             this.module = module;
             AddEffectModifier(AggregateField.effect_mining_amount_modifier);
             AddEffectModifier(AggregateField.drone_amplification_mining_amount_modifier);
+            AddEffectModifier(AggregateField.drone_remote_command_translation_mining_amount_modifier);
             AddEffectModifier(AggregateField.effect_excavator_mining_amount_modifier);
         }
 
@@ -28,6 +29,7 @@ namespace Perpetuum.Modules.ModuleProperties
             ammo?.ApplyMiningAmountModifier(ref m);
             base.module.ParentRobot?.ApplyEffectPropertyModifiers(AggregateField.effect_mining_amount_modifier, ref m);
             base.module.ParentRobot?.ApplyEffectPropertyModifiers(AggregateField.drone_amplification_mining_amount_modifier, ref m);
+            base.module.ParentRobot?.ApplyEffectPropertyModifiers(AggregateField.drone_remote_command_translation_mining_amount_modifier, ref m);
             base.module.ParentRobot?.ApplyEffectPropertyModifiers(AggregateField.effect_excavator_mining_amount_modifier, ref m);
 
             return m.Value;

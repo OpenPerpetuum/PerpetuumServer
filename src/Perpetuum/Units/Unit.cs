@@ -1018,25 +1018,10 @@ namespace Perpetuum.Units
 
         private void InitUnitProperties()
         {
-            _armorMax = new UnitProperty(
-                this,
-                AggregateField.armor_max,
-                AggregateField.armor_max_modifier,
-                AggregateField.effect_armor_max_modifier,
-                AggregateField.drone_amplification_armor_max_modifier);
-
-            _armorMax.PropertyChanged += property =>
-            {
-                if (Armor > property.Value)
-                {
-                    Armor = property.Value;
-                }
-            };
-
+            _armorMax = new ArmorMaxProperty(this);
             AddProperty(_armorMax);
 
             _armor = new ArmorProperty(this);
-
             AddProperty(_armor);
 
             _coreMax = new UnitProperty(
@@ -1138,64 +1123,6 @@ namespace Perpetuum.Units
                     AggregateField.reactor_radiation_modifier,
                     AggregateField.drone_amplification_reactor_radiation_modifier);
             AddProperty(_reactorRadiation);
-        }
-
-        private class ArmorProperty : UnitProperty
-        {
-            public ArmorProperty(Unit owner)
-                : base(owner, AggregateField.armor_current, AggregateField.drone_amplification_armor_max_modifier) { }
-
-            protected override double CalculateValue()
-            {
-                double armor = owner.ArmorMax;
-
-                if (owner.DynamicProperties.Contains(k.armor))
-                {
-                    double armorPercentage = owner.DynamicProperties.GetOrAdd<double>(k.armor);
-                    armor = CalculateArmorByPercentage(armorPercentage);
-                }
-
-                return armor;
-            }
-
-            protected override void OnPropertyChanging(ref double newValue)
-            {
-                base.OnPropertyChanging(ref newValue);
-
-                if (newValue < 0.0)
-                {
-                    newValue = 0.0;
-                    return;
-                }
-
-                double armorMax = owner.ArmorMax;
-                if (newValue >= armorMax)
-                {
-                    newValue = armorMax;
-                }
-            }
-
-            private double CalculateArmorByPercentage(double percent)
-            {
-                if (double.IsNaN(percent))
-                {
-                    percent = 0.0;
-                }
-
-                // 0.0 - 1.0
-                percent = percent.Clamp();
-
-                double armorMax = owner.ArmorMax;
-
-                if (double.IsNaN(armorMax))
-                {
-                    armorMax = 0.0;
-                }
-
-                double val = armorMax * percent;
-                return val;
-            }
-
         }
 
         private class CoreProperty : UnitProperty

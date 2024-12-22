@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Groups.Corporations;
@@ -14,6 +8,12 @@ using Perpetuum.Threading;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Zones.Beams;
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Perpetuum.Zones.Intrusion
 {
@@ -34,13 +34,13 @@ namespace Perpetuum.Zones.Intrusion
             Interlocked.Add(ref score, value);
         }
     }
-   
+
     /// <summary>
     /// SAP base class
     /// </summary>
     public abstract class SAP : Unit
     {
-        public struct IntrusionCorporationScore
+        public readonly struct IntrusionCorporationScore
         {
             public readonly long corporationEid;
             public readonly int score;
@@ -53,10 +53,10 @@ namespace Perpetuum.Zones.Intrusion
         }
 
         private static readonly TimeSpan _sapExpiry =
-#if (DEBUG)
+#if DEBUG
         TimeSpan.FromMinutes(5);
 #else
-        TimeSpan.FromHours(1);
+        TimeSpan.FromHours(2);
 #endif
         private static readonly TimeSpan _timerExtension = TimeSpan.FromMinutes(15);
 
@@ -86,12 +86,12 @@ namespace Perpetuum.Zones.Intrusion
             _exitBeamType = exitBeamType;
         }
 
-        public void AddToZone(IZone zone,Position spawnPosition)
+        public void AddToZone(IZone zone, Position spawnPosition)
         {
-            var builder = Beam.NewBuilder().WithType(_enterBeamType).WithPosition(spawnPosition).WithDuration(_enterBeamDuration);
+            BeamBuilder builder = Beam.NewBuilder().WithType(_enterBeamType).WithPosition(spawnPosition).WithDuration(_enterBeamDuration);
             zone.CreateBeam(builder);
 
-            Task.Delay(_enterBeamDuration).ContinueWith(t => { base.AddToZone(zone,spawnPosition); });
+            Task.Delay(_enterBeamDuration).ContinueWith(t => { base.AddToZone(zone, spawnPosition); });
         }
 
         protected override void OnUpdate(TimeSpan time)
@@ -111,7 +111,9 @@ namespace Perpetuum.Zones.Intrusion
                 _expiryTimer.Update(time);
 
                 if (!_expiryTimer.Expired)
+                {
                     return;
+                }
             }
 
             // lejart
@@ -122,11 +124,11 @@ namespace Perpetuum.Zones.Intrusion
 
         private void OnRemove()
         {
-            var exitBeamBuilder = Beam.NewBuilder().WithType(_exitBeamType).WithPosition(CurrentPosition).WithDuration(_exitBeamDuration);
+            BeamBuilder exitBeamBuilder = Beam.NewBuilder().WithType(_exitBeamType).WithPosition(CurrentPosition).WithDuration(_exitBeamDuration);
             RemoveFromZone(exitBeamBuilder);
         }
 
-        private void SendSAPPlayerInfoPacketToPlayer(Character character,int score)
+        private void SendSAPPlayerInfoPacketToPlayer(Character character, int score)
         {
             if (Zone.TryGetPlayer(character, out Player player))
             {
@@ -136,7 +138,7 @@ namespace Perpetuum.Zones.Intrusion
 
         private void SendSAPPlayerInfoPacketToPlayer(Player player, int score)
         {
-            var packet = new Packet(ZoneCommand.SAPPlayerInfo);
+            Packet packet = new Packet(ZoneCommand.SAPPlayerInfo);
             packet.AppendLong(Eid);
 
             packet.AppendInt(MaxScore);
@@ -145,12 +147,12 @@ namespace Perpetuum.Zones.Intrusion
             player.Session.SendPacket(packet);
         }
 
-        private void SendSAPPlayerInfoPacketToPlayer(Player player,SAPPlayerInfo info)
+        private void SendSAPPlayerInfoPacketToPlayer(Player player, SAPPlayerInfo info)
         {
-            SendSAPPlayerInfoPacketToPlayer(player,info.score);
+            SendSAPPlayerInfoPacketToPlayer(player, info.score);
         }
 
-        private ImmutableDictionary<Character,SAPPlayerInfo> _playerInfos = ImmutableDictionary<Character, SAPPlayerInfo>.Empty;
+        private ImmutableDictionary<Character, SAPPlayerInfo> _playerInfos = ImmutableDictionary<Character, SAPPlayerInfo>.Empty;
 
         public IEnumerable<SAPPlayerInfo> PlayerInfos => _playerInfos.Values;
 
@@ -162,16 +164,15 @@ namespace Perpetuum.Zones.Intrusion
 
         protected int GetPlayerScore(Character character)
         {
-            var info = GetPlayerInfo(character);
+            SAPPlayerInfo info = GetPlayerInfo(character);
             return info?.score ?? 0;
         }
-        
+
         protected void RemovePlayerInfo(Character character)
         {
-            SAPPlayerInfo info;
-            if (ImmutableInterlocked.TryRemove(ref _playerInfos,character,out info))
+            if (ImmutableInterlocked.TryRemove(ref _playerInfos, character, out SAPPlayerInfo info))
             {
-                SendSAPPlayerInfoPacketToPlayer(character,0);
+                SendSAPPlayerInfoPacketToPlayer(character, 0);
             }
         }
 
@@ -179,10 +180,10 @@ namespace Perpetuum.Zones.Intrusion
         {
             player.ApplyPvPEffect();
 
-            var info = ImmutableInterlocked.GetOrAdd(ref _playerInfos, player.Character, c => new SAPPlayerInfo(player));
+            SAPPlayerInfo info = ImmutableInterlocked.GetOrAdd(ref _playerInfos, player.Character, c => new SAPPlayerInfo(player));
             info.IncrementScore(score);
 
-            SendSAPPlayerInfoPacketToPlayer(player,info);
+            SendSAPPlayerInfoPacketToPlayer(player, info);
 
             if (MaxScore > 0 && info.score >= MaxScore)
             {
@@ -213,8 +214,10 @@ namespace Perpetuum.Zones.Intrusion
 
         protected void OnTakeOver()
         {
-            if ( Interlocked.CompareExchange(ref _takeOver,1,0) == 1)
+            if (Interlocked.CompareExchange(ref _takeOver, 1, 0) == 1)
+            {
                 return;
+            }
 
             OnRemove();
             TakeOver?.Invoke(this);
@@ -222,25 +225,29 @@ namespace Perpetuum.Zones.Intrusion
 
         private void BroadcastSAPInfoPacket()
         {
-            var zone = Zone;
-            if (zone == null) 
+            IZone zone = Zone;
+            if (zone == null)
+            {
                 return;
+            }
 
             Task.Run(() => SendSapInfoPacketToPlayers(zone));
         }
 
         private void SendSapInfoPacketToPlayers(IZone zone)
         {
-            var characters = _playerInfos.Values.Select(i => i.character).ToArray();
-            var playersWithScore = zone.Players.Where(player => characters.Contains(player.Character));
-            var playersInRange = zone.Players.WithinRange(CurrentPosition,BROADCAST_INFO_RANGE);
+            Character[] characters = _playerInfos.Values.Select(i => i.character).ToArray();
+            IEnumerable<Player> playersWithScore = zone.Players.Where(player => characters.Contains(player.Character));
+            IEnumerable<Player> playersInRange = zone.Players.WithinRange(CurrentPosition, BROADCAST_INFO_RANGE);
 
-            var players = playersWithScore.Concat(playersInRange).Distinct().ToArray();
+            Player[] players = playersWithScore.Concat(playersInRange).Distinct().ToArray();
 
-            if (players.Length <= 0) 
+            if (players.Length <= 0)
+            {
                 return;
+            }
 
-            var sapInfoPacket = BuildSAPInfoPacket();
+            Packet sapInfoPacket = BuildSAPInfoPacket();
             players.ForEach(player =>
             {
                 player.Session.SendPacket(sapInfoPacket);
@@ -248,11 +255,11 @@ namespace Perpetuum.Zones.Intrusion
         }
 
         protected abstract int MaxScore { get; }
-        protected abstract void AppendTopScoresToPacket(Packet packet,int count);
+        protected abstract void AppendTopScoresToPacket(Packet packet, int count);
 
         private Packet BuildSAPInfoPacket()
         {
-            var packet = new Packet(ZoneCommand.SAPInfo);
+            Packet packet = new Packet(ZoneCommand.SAPInfo);
 
             packet.AppendInt(Definition);
             packet.AppendLong(Eid);
@@ -270,14 +277,14 @@ namespace Perpetuum.Zones.Intrusion
             return packet;
         }
 
-        protected static void AppendPlayerTopScoresToPacket(SAP sap,Packet packet,int count)
+        protected static void AppendPlayerTopScoresToPacket(SAP sap, Packet packet, int count)
         {
-            var topScores = sap.GetPlayerTopScores(count);
+            SAPPlayerInfo[] topScores = sap.GetPlayerTopScores(count);
 
             packet.AppendInt(topScores.Length);
             packet.AppendByte(sizeof(int));
 
-            foreach (var score in topScores)
+            foreach (SAPPlayerInfo score in topScores)
             {
                 packet.AppendInt(score.character.Id);
                 packet.AppendInt(score.score);
@@ -288,7 +295,7 @@ namespace Perpetuum.Zones.Intrusion
         {
             get
             {
-                var change = ED.Options.Increase;
+                int change = ED.Options.Increase;
                 if (change == 0)
                 {
                     Logger.Error("consistency error, no SAP increase is defined for definition: " + Definition + " " + ED.Name);
@@ -302,18 +309,15 @@ namespace Perpetuum.Zones.Intrusion
         [CanBeNull]
         public Corporation GetWinnerCorporation()
         {
-            var winnerCorpEid = GetWinnerCorporationEid();
-            var corp = Corporation.Get(winnerCorpEid);
+            long winnerCorpEid = GetWinnerCorporationEid();
+            Corporation corp = Corporation.Get(winnerCorpEid);
             return corp;
         }
 
         public virtual long GetWinnerCorporationEid()
         {
-            var scores = GetPlayerTopScores(1);
-            if (scores.Length > 0)
-                return scores[0].corporationEid;
-
-            return 0L;
+            SAPPlayerInfo[] scores = GetPlayerTopScores(1);
+            return scores.Length > 0 ? scores[0].corporationEid : 0L;
         }
 
         public IEnumerable<SAPPlayerInfo> GetPlayersWithScore()
@@ -328,20 +332,20 @@ namespace Perpetuum.Zones.Intrusion
 
         public IList<IntrusionCorporationScore> GetCorporationTopScores(int count)
         {
-            var corporationScores = GetCorporationScores();
-            var topScores = corporationScores.OrderByDescending(cs => cs.score).Take(count).ToArray();
+            IEnumerable<IntrusionCorporationScore> corporationScores = GetCorporationScores();
+            IntrusionCorporationScore[] topScores = corporationScores.OrderByDescending(cs => cs.score).Take(count).ToArray();
             return topScores;
         }
 
         private IEnumerable<IntrusionCorporationScore> GetCorporationScores()
         {
-            var corporationGroup = PlayerInfos.GroupBy(playerInfo => playerInfo.corporationEid);
+            IEnumerable<IGrouping<long, SAPPlayerInfo>> corporationGroup = PlayerInfos.GroupBy(playerInfo => playerInfo.corporationEid);
 
-            var result = new List<IntrusionCorporationScore>();
+            List<IntrusionCorporationScore> result = new List<IntrusionCorporationScore>();
 
-            foreach (var group in corporationGroup)
+            foreach (IGrouping<long, SAPPlayerInfo> group in corporationGroup)
             {
-                var sumScore = @group.Sum(playerInfo => playerInfo.score);
+                int sumScore = @group.Sum(playerInfo => playerInfo.score);
                 result.Add(new IntrusionCorporationScore(@group.Key, sumScore));
             }
 
@@ -355,11 +359,11 @@ namespace Perpetuum.Zones.Intrusion
         public StabilityAffectingEvent ToStabilityAffectingEvent()
         {
             List<Player> players = new List<Player>();
-            foreach(var player in this.PlayerInfos)
+            foreach (SAPPlayerInfo player in PlayerInfos)
             {
                 players.Add(player.character.GetPlayerRobotFromZone());
             }
-            var builder = StabilityAffectingEvent.Builder()
+            StabilityAffectingEvent.StabilityAffectBuilder builder = StabilityAffectingEvent.Builder()
                 .WithOutpost(Site)
                 .WithSapDefinition(Definition)
                 .WithSapEntityID(Eid)

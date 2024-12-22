@@ -4,6 +4,7 @@ using Perpetuum.IO;
 using Perpetuum.Log;
 using Perpetuum.Modules.Weapons;
 using Perpetuum.Units;
+using Perpetuum.Zones.RemoteControl;
 using Perpetuum.Zones.Terrains;
 using System;
 using System.Collections.Generic;
@@ -228,6 +229,11 @@ namespace Perpetuum.Zones
 
             foreach (Unit unit in units)
             {
+                if (unit is RemoteControlledCreature)
+                {
+                    continue;
+                }
+
                 LOSResult losResult = zone.IsInLineOfSight(damageInfo.attacker, unit, false);
                 if (losResult.hit)
                 {

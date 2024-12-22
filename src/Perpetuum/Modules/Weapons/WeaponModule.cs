@@ -36,6 +36,7 @@ namespace Perpetuum.Modules.Weapons
             DamageModifier = new ModuleProperty(this, AggregateField.damage_modifier);
             AddProperty(DamageModifier);
             DamageModifier.AddEffectModifier(AggregateField.drone_amplification_damage_modifier);
+            DamageModifier.AddEffectModifier(AggregateField.drone_remote_command_translation_damage_modifier);
             DamageModifier.AddEffectModifier(AggregateField.effect_dreadnought_weapon_damage_modifier);
 
         }
@@ -53,6 +54,7 @@ namespace Perpetuum.Modules.Weapons
             switch (field)
             {
                 case AggregateField.drone_amplification_damage_modifier:
+                case AggregateField.drone_remote_command_translation_damage_modifier:
                     {
                         DamageModifier.Update();
 

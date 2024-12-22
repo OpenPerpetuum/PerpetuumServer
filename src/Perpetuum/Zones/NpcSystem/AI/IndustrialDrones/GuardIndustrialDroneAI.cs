@@ -4,7 +4,7 @@ using System;
 
 namespace Perpetuum.Zones.NpcSystem.AI.IndustrialDrones
 {
-    public class GuardIndustrialDroneAI : BaseAI
+    public class GuardIndustrialDroneAI : IndustrialAI
     {
         private RandomMovement movement;
 
@@ -24,6 +24,13 @@ namespace Perpetuum.Zones.NpcSystem.AI.IndustrialDrones
 
         public override void Update(TimeSpan time)
         {
+            if ((smartCreature as RemoteControlledCreature).IsReceivedRetreatCommand)
+            {
+                ToRetreatIndustrialDroneAI();
+
+                return;
+            }
+
             if (!(smartCreature as IndustrialDrone).IsInGuardRange)
             {
                 ToEscortIndustrialDroneAI();

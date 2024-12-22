@@ -1,8 +1,8 @@
+using Perpetuum.ExportedTypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Perpetuum.ExportedTypes;
 
 namespace Perpetuum.Items
 {
@@ -22,23 +22,31 @@ namespace Perpetuum.Items
         {
             OnPropertyChanging(ref value);
 
+            double oldValue = Value;
+
             if (Math.Abs(Value - value) < double.Epsilon)
+            {
                 return;
+            }
 
             Value = value;
 
             OnPropertyChanged();
+
+            OnAfterPropertyChanging(value, oldValue);
         }
 
         public void UpdateIfRelated(AggregateField field)
         {
             if (IsRelated(field))
+            {
                 Update();
+            }
         }
 
         public void Update()
         {
-            var v = CalculateValue();
+            double v = CalculateValue();
             SetValue(v);
         }
 
@@ -55,6 +63,10 @@ namespace Perpetuum.Items
         }
 
         protected virtual void OnPropertyChanging(ref double newValue)
+        {
+        }
+
+        protected virtual void OnAfterPropertyChanging(double newValue, double oldValue)
         {
         }
 
@@ -78,7 +90,9 @@ namespace Perpetuum.Items
         public void AddToDictionary(IDictionary<string, object> dictionary)
         {
             if (dictionary == null || !HasValue)
+            {
                 return;
+            }
 
             dictionary["a" + (int)Field] = ToDictionary();
         }
@@ -91,9 +105,9 @@ namespace Perpetuum.Items
             binaryStream.AppendDouble(Value);
         }
 
-        public ItemPropertyModifier ToPropertyModifier()
+        public ItemPropertyModifier ToPropertyModifier(bool forceHasValue = false)
         {
-            return ItemPropertyModifier.Create(Field, Value);
+            return ItemPropertyModifier.Create(Field, Value, forceHasValue);
         }
 
         private class NullProperty : ItemProperty
@@ -110,17 +124,17 @@ namespace Perpetuum.Items
 
         public static string ToDebugString(IEnumerable<ItemProperty> properties)
         {
-            var enumerable = properties as ItemProperty[] ?? properties.ToArray();
+            ItemProperty[] enumerable = properties as ItemProperty[] ?? properties.ToArray();
             if (enumerable.Length == 0)
             {
                 return string.Empty;
             }
 
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.AppendLine();
             sb.AppendLine("=============");
 
-            foreach (var property in enumerable)
+            foreach (ItemProperty property in enumerable)
             {
                 sb.AppendLine($"{property.Field} = {property.Value}");
             }

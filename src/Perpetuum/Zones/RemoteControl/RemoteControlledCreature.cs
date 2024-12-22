@@ -1,10 +1,14 @@
-﻿using Perpetuum.Players;
+﻿using Perpetuum.EntityFramework;
+using Perpetuum.ExportedTypes;
+using Perpetuum.Items;
+using Perpetuum.Players;
 using Perpetuum.Robots;
 using Perpetuum.Services.Standing;
 using Perpetuum.Units;
 using Perpetuum.Zones.NpcSystem;
 using Perpetuum.Zones.NpcSystem.ThreatManaging;
 using System;
+using System.Linq;
 
 namespace Perpetuum.Zones.RemoteControl
 {
@@ -27,6 +31,19 @@ namespace Perpetuum.Zones.RemoteControl
         }
 
         public bool IsInOperationalRange => CurrentPosition.IsInRangeOf2D(CommandRobot.CurrentPosition, HomeRange);
+
+        public bool IsReceivedRetreatCommand
+        {
+            get
+            {
+                Effects.Effect translatedCommand =
+                    EffectHandler.GetEffectsByType(EffectType.remote_command_translation).FirstOrDefault();
+
+                return translatedCommand != null &&
+                    translatedCommand.PropertyModifiers
+                        .Any(x => x.Field == AggregateField.drone_remote_command_translation_retreat && x.Value >= 1);
+            }
+        }
 
         public override bool IsStationary => true;
 
@@ -55,6 +72,28 @@ namespace Perpetuum.Zones.RemoteControl
             }
 
             base.AddThreat(hostile, threat, spreadToGroup);
+        }
+
+        public void Scoop()
+        {
+            RobotInventory cargo = CommandRobot.GetContainer();
+
+            if (cargo != null)
+            {
+                Item packedDrone = null;
+                if (ED.Options.PackedTurretId != 0)
+                {
+                    packedDrone = (Item)Factory.CreateWithRandomEID(ED.Options.PackedTurretId);
+                    packedDrone.Quantity = 1;
+
+                    if (cargo.IsEnoughCapacity(packedDrone))
+                    {
+                        cargo.AddItem(packedDrone, true);
+                        States.Teleport = true;
+                        RemoveFromZone();
+                    }
+                }
+            }
         }
 
         protected override void OnUpdate(TimeSpan time)

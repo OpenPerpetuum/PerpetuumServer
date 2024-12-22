@@ -4,6 +4,7 @@ using Perpetuum.Timers;
 using Perpetuum.Zones.Locking;
 using Perpetuum.Zones.Locking.Locks;
 using Perpetuum.Zones.Movements;
+using Perpetuum.Zones.NpcSystem.AI.IndustrialDrones;
 using Perpetuum.Zones.RemoteControl;
 using System;
 using System.Collections.Generic;
@@ -55,6 +56,11 @@ namespace Perpetuum.Zones.NpcSystem.AI
             UpdatePrimaryTarget(time);
             RunModules(time);
             EjectCargo(time);
+        }
+
+        protected virtual void ToRetreatIndustrialDroneAI()
+        {
+            smartCreature.AI.Push(new RetreatIndustrialDroneAI(smartCreature));
         }
 
         protected void UpdatePrimaryTarget(TimeSpan time)
@@ -152,7 +158,7 @@ namespace Perpetuum.Zones.NpcSystem.AI
             movement?.Update(smartCreature, time);
         }
 
-        protected void RunModules(TimeSpan time)
+        protected new void RunModules(TimeSpan time)
         {
             foreach (ModuleActivator activator in moduleActivators)
             {

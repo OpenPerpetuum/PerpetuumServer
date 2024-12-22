@@ -1,39 +1,27 @@
+using Perpetuum.ExportedTypes;
 using System;
 using System.Collections.Generic;
-using Perpetuum.ExportedTypes;
 
 namespace Perpetuum.Items
 {
     public struct ItemPropertyModifier
     {
-        private readonly AggregateField _field;
-        private readonly AggregateFormula _formula;
-        private double _value;
+        private readonly AggregateFormula formula;
+        private readonly bool forceHasValue;
 
-        public ItemPropertyModifier(AggregateField field, AggregateFormula formula, double value) : this()
+        public ItemPropertyModifier(AggregateField field, AggregateFormula formula, double value, bool forceHasValue = false) : this()
         {
-            _field = field;
-            _formula = formula;
-            _value = value;
+            Field = field;
+            this.formula = formula;
+            Value = value;
+            this.forceHasValue = forceHasValue;
         }
 
-        public AggregateField Field
-        {
-            get { return _field; }
-        }
+        public AggregateField Field { get; }
 
-        public double Value
-        {
-            get { return _value; }
-        }
+        public double Value { get; private set; }
 
-        public bool HasValue
-        {
-            get
-            {
-                return Math.Abs(_field.GetDefaultValue() - _value) > double.Epsilon;
-            }
-        }
+        public bool HasValue => forceHasValue || Math.Abs(Field.GetDefaultValue() - Value) > double.Epsilon;
 
         public Dictionary<string, object> ToDictionary()
         {
@@ -47,15 +35,18 @@ namespace Perpetuum.Items
         public void AddToDictionary(IDictionary<string, object> dictionary)
         {
             if (dictionary == null || !HasValue)
+            {
                 return;
+            }
 
             dictionary["a" + (int)Field] = ToDictionary();
         }
 
-        public static ItemPropertyModifier Create(string fieldName,string value)
+        public static ItemPropertyModifier Create(string fieldName, string value)
         {
-            var f = (AggregateField) Enum.Parse(typeof (AggregateField), fieldName);
-            var v = double.Parse(value);
+            AggregateField f = (AggregateField)Enum.Parse(typeof(AggregateField), fieldName);
+            double v = double.Parse(value);
+
             return Create(f, v);
         }
 
@@ -64,28 +55,33 @@ namespace Perpetuum.Items
             return Create(field, field.GetDefaultValue());
         }
 
-        public static ItemPropertyModifier Create(AggregateField field, double value)
+        public static ItemPropertyModifier Create(AggregateField field, double value, bool forceHasValue = false)
         {
-            var formula = field.GetFormula();
-            return new ItemPropertyModifier(field,formula,value);
+            AggregateFormula formula = field.GetFormula();
+
+            return new ItemPropertyModifier(field, formula, value, forceHasValue);
         }
 
         public void NormalizeExtensionBonus()
         {
-            switch (_formula)
+            switch (formula)
             {
                 case AggregateFormula.Modifier:
-                {
-                    _value += 1.0;
-                    break;
-                }
+                    {
+                        Value += 1.0;
+
+                        break;
+                    }
                 case AggregateFormula.Inverse:
-                {
-                    _value = 1 / (_value + 1);
-                    if (_value < 0.1)
-                        _value = 0.1;
-                    break;
-                }
+                    {
+                        Value = 1 / (Value + 1);
+                        if (Value < 0.1)
+                        {
+                            Value = 0.1;
+                        }
+
+                        break;
+                    }
             }
         }
 
@@ -97,28 +93,30 @@ namespace Perpetuum.Items
 
         public void ResetToDefaultValue()
         {
-            _value = _field.GetDefaultValue();
+            Value = Field.GetDefaultValue();
         }
 
         public void Add(double value)
         {
-            _value += value;
+            Value += value;
         }
 
         public void Multiply(double mul)
         {
             if (mul > 0)
-                _value *= mul;
+            {
+                Value *= mul;
+            }
         }
 
         public void Modify(ref ItemPropertyModifier targetModifier)
         {
-            Modify(this,ref targetModifier);
+            Modify(this, ref targetModifier);
         }
 
         public void Modify(ref double targetValue)
         {
-            Modify(this,ref targetValue);
+            Modify(this, ref targetValue);
         }
 
         public static void Modify(ItemPropertyModifier source, ref ItemPropertyModifier targetModifier)
@@ -129,34 +127,41 @@ namespace Perpetuum.Items
         public static ItemPropertyModifier Modify(ItemPropertyModifier source, ItemPropertyModifier target)
         {
             if (!source.HasValue)
+            {
                 return target;
+            }
 
-            var v = target.Value;
+            double v = target.Value;
             Modify(source, ref v);
-            return new ItemPropertyModifier(target.Field,target._formula, v);
+
+            return new ItemPropertyModifier(target.Field, target.formula, v);
         }
 
         public static void Modify(ItemPropertyModifier source, ref double targetValue)
         {
             if (!source.HasValue)
+            {
                 return;
+            }
 
-            switch (source._formula)
+            switch (source.formula)
             {
                 // mod & inverse
                 case AggregateFormula.Modifier:
                 case AggregateFormula.Inverse:
-                {
-                    targetValue *= source.Value;
-                    break;
-                }
+                    {
+                        targetValue *= source.Value;
+
+                        break;
+                    }
 
                 // add
                 case AggregateFormula.Add:
-                {
-                    targetValue += source.Value;
-                    break;
-                }
+                    {
+                        targetValue += source.Value;
+
+                        break;
+                    }
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -164,7 +169,7 @@ namespace Perpetuum.Items
 
         public override string ToString()
         {
-            return $"Field: {_field}, Formula: {_formula}, Value: {_value}";
+            return $"Field: {Field}, Formula: {formula}, Value: {Value}";
         }
     }
 }

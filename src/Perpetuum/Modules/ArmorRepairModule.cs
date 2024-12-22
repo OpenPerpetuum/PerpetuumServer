@@ -17,6 +17,7 @@ namespace Perpetuum.Modules
             armorRepairAmount = new ModuleProperty(this, AggregateField.armor_repair_amount);
             armorRepairAmount.AddEffectModifier(AggregateField.effect_repair_amount_modifier);
             armorRepairAmount.AddEffectModifier(AggregateField.drone_amplification_remote_repair_amount_modifier);
+            armorRepairAmount.AddEffectModifier(AggregateField.drone_remote_command_translation_remote_repair_amount_modifier);
             armorRepairAmount.AddEffectModifier(AggregateField.nox_repair_amount_modifier);
             AddProperty(armorRepairAmount);
 
@@ -33,6 +34,7 @@ namespace Perpetuum.Modules
                 case AggregateField.effect_repair_amount_modifier:
                 case AggregateField.nox_repair_amount_modifier:
                 case AggregateField.drone_amplification_remote_repair_amount_modifier:
+                case AggregateField.drone_remote_command_translation_remote_repair_amount_modifier:
                     {
                         armorRepairAmount.Update();
 

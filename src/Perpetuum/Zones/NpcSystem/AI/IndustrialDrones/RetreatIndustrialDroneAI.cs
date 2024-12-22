@@ -5,28 +5,29 @@ using System;
 
 namespace Perpetuum.Zones.NpcSystem.AI.IndustrialDrones
 {
-    public class EscortIndustrialDroneAI : IndustrialAI
+    public class RetreatIndustrialDroneAI : IndustrialAI
     {
         private PathMovement movement;
-        private readonly double maxReturnGuardRadius;
         private readonly PathFinder pathFinder;
 
-        public EscortIndustrialDroneAI(SmartCreature smartCreature) : base(smartCreature)
+        public RetreatIndustrialDroneAI(SmartCreature smartCreature) : base(smartCreature)
         {
-            maxReturnGuardRadius = ((this.smartCreature as IndustrialDrone).GuardRange * 0.4).Clamp(3, 20);
             pathFinder = new AStarFinder(Heuristic.Manhattan, smartCreature.IsWalkable);
         }
 
         public override void Enter()
         {
-            Position randomHome = smartCreature.Zone.FindPassablePointInRadius(smartCreature.HomePosition, (int)maxReturnGuardRadius);
+            smartCreature.StopAllModules();
+            smartCreature.ResetLocks();
+
+            Position randomHome = smartCreature.Zone.FindPassablePointInRadius(smartCreature.HomePosition, (int)(smartCreature as IndustrialDrone).GuardRange);
 
             if (randomHome == default)
             {
                 randomHome = smartCreature.HomePosition;
             }
 
-            _ = pathFinder
+            pathFinder
                 .FindPathAsync(smartCreature.CurrentPosition, randomHome)
                 .ContinueWith(t =>
                 {
@@ -55,16 +56,11 @@ namespace Perpetuum.Zones.NpcSystem.AI.IndustrialDrones
 
         public override void Update(TimeSpan time)
         {
-            if ((smartCreature as RemoteControlledCreature).IsReceivedRetreatCommand)
-            {
-                ToRetreatIndustrialDroneAI();
+            IndustrialDrone drone = smartCreature as IndustrialDrone;
 
-                return;
-            }
-
-            if (GetPrimaryTerrainLock() != null)
+            if (!drone.IsReceivedRetreatCommand)
             {
-                ToGatheringIndustrialDroneAI();
+                ToEscortIndustrialDroneAI();
 
                 return;
             }
@@ -75,9 +71,19 @@ namespace Perpetuum.Zones.NpcSystem.AI.IndustrialDrones
 
                 if (movement.Arrived)
                 {
-                    _ = smartCreature.AI.Pop();
+                    if (movement.Arrived)
+                    {
+                        if (!(smartCreature as IndustrialDrone).IsInGuardRange)
+                        {
+                            ToRetreatIndustrialDroneAI();
 
-                    return;
+                            return;
+                        }
+
+                        drone.Scoop();
+
+                        return;
+                    }
                 }
             }
         }

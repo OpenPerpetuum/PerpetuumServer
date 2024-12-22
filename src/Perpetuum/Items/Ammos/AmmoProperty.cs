@@ -14,7 +14,7 @@ namespace Perpetuum.Items.Ammos
 
         protected override double CalculateValue()
         {
-            var mod = ammo.GetPropertyModifier(Field);
+            ItemPropertyModifier mod = ammo.GetPropertyModifier(Field);
             return mod.Value;
         }
     }

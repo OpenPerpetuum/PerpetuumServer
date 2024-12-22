@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Transactions;
 using Perpetuum.Accounting;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Common.Loggers.Transaction;
@@ -11,12 +6,12 @@ using Perpetuum.Data;
 using Perpetuum.EntityFramework;
 using Perpetuum.Host.Requests;
 using Perpetuum.Items;
-using Perpetuum.Players;
-using Perpetuum.RequestHandlers.Extensions;
 using Perpetuum.Robots;
-using Perpetuum.Services.ExtensionService;
 using Perpetuum.Services.Sparks.Teleports;
-using Perpetuum.Zones;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Transactions;
 
 namespace Perpetuum.RequestHandlers
 {
@@ -41,8 +36,8 @@ namespace Perpetuum.RequestHandlers
 
         public void HandleRequest(IRequest request)
         {
-            var itemEid = request.Data.GetOrDefault<long>(k.itemEID);
-            var item = entityServices.Repository.Load(itemEid);
+            long itemEid = request.Data.GetOrDefault<long>(k.itemEID);
+            Entity item = entityServices.Repository.Load(itemEid);
 
             if (item is LotteryItem)
             {
@@ -68,21 +63,25 @@ namespace Perpetuum.RequestHandlers
             {
                 HandleSparkTeleportDevice(request, itemEid);
             }
+            else if (item is ServerWideEpBooster)
+            {
+                HandleServerWideEpBooster(request, itemEid);
+            }
         }
 
         private void HandleLottery(IRequest request)
         {
-            using (var scope = Db.CreateTransaction())
+            using (TransactionScope scope = Db.CreateTransaction())
             {
-                var itemEid = request.Data.GetOrDefault<long>(k.itemEID);
-                var containerEid = request.Data.GetOrDefault<long>(k.containerEID);
-                var character = request.Session.Character;
+                long itemEid = request.Data.GetOrDefault<long>(k.itemEID);
+                long containerEid = request.Data.GetOrDefault<long>(k.containerEID);
+                Character character = request.Session.Character;
 
-                var container = Container.GetWithItems(containerEid, character);
-                var lotteryItem = (LotteryItem)container.GetItemOrThrow(itemEid, true).Unstack(1);
+                Container container = Container.GetWithItems(containerEid, character);
+                LotteryItem lotteryItem = (LotteryItem)container.GetItemOrThrow(itemEid, true).Unstack(1);
 
-                var randomEd = lotteryItem.PickRandomItem();
-                var randomItem = (Item)entityServices.Factory.CreateWithRandomEID(randomEd);
+                EntityDefault randomEd = lotteryItem.PickRandomItem();
+                Item randomItem = (Item)entityServices.Factory.CreateWithRandomEID(randomEd);
                 randomItem.Owner = character.Eid;
 
                 container.AddItem(randomItem, true);
@@ -94,7 +93,7 @@ namespace Perpetuum.RequestHandlers
 
                 Transaction.Current.OnCommited(() =>
                 {
-                    var result = new Dictionary<string, object>
+                    Dictionary<string, object> result = new Dictionary<string, object>
                     {
                         {k.container,container.ToDictionary()},
                         {k.item,randomItem.ToDictionary()}
@@ -109,17 +108,17 @@ namespace Perpetuum.RequestHandlers
 
         private void HandleEPBoost(IRequest request, long itemEid)
         {
-            using (var scope = Db.CreateTransaction())
+            using (TransactionScope scope = Db.CreateTransaction())
             {
-                var containerEid = request.Data.GetOrDefault<long>(k.containerEID);
-                var character = request.Session.Character;
-                var account = accountManager.Repository
+                long containerEid = request.Data.GetOrDefault<long>(k.containerEID);
+                Character character = request.Session.Character;
+                Account account = accountManager.Repository
                     .Get(request.Session.AccountId)
                     .ThrowIfNull(ErrorCodes.AccountNotFound);
 
-                var container = Container.GetWithItems(containerEid, character);
+                Container container = Container.GetWithItems(containerEid, character);
 
-                var containerItem = (EPBoost)container.GetItemOrThrow(itemEid, true).Unstack(1);
+                EPBoost containerItem = (EPBoost)container.GetItemOrThrow(itemEid, true).Unstack(1);
 
                 containerItem.Activate(accountManager, account);
 
@@ -130,9 +129,9 @@ namespace Perpetuum.RequestHandlers
                 Transaction.Current.OnCommited(() =>
                 {
                     //Send custom message back in "Redeemables" dialog
-                    var boostDict = containerItem.ToDictionary();
+                    Dictionary<string, object> boostDict = containerItem.ToDictionary();
                     boostDict[k.quantity] = -1;  //Indicate the consumption of item from stack
-                    var result = new Dictionary<string, object>
+                    Dictionary<string, object> result = new Dictionary<string, object>
                     {
                         { k.container, container.ToDictionary() },
                         { k.item, boostDict }
@@ -146,19 +145,19 @@ namespace Perpetuum.RequestHandlers
 
         private void HandleCalibrationTemplateItem(IRequest request, long itemEid)
         {
-            using (var scope = Db.CreateTransaction())
+            using (TransactionScope scope = Db.CreateTransaction())
             {
-                var containerEid = request.Data.GetOrDefault<long>(k.containerEID);
-                var character = request.Session.Character;
+                long containerEid = request.Data.GetOrDefault<long>(k.containerEID);
+                Character character = request.Session.Character;
                 character.IsDocked.ThrowIfFalse(ErrorCodes.CharacterHasToBeDocked);
 
-                var container = Container.GetWithItems(containerEid, character);
+                Container container = Container.GetWithItems(containerEid, character);
                 container.ThrowIfNotType<PublicContainer>(ErrorCodes.ContainerHasToBeOnADockingBase); //Error for unpacking elsewhere
 
-                var ctCapsule = (CalibrationProgramCapsule)container.GetItemOrThrow(itemEid, true).Unstack(1);
-                var ctDef = ctCapsule.Activate();
+                CalibrationProgramCapsule ctCapsule = (CalibrationProgramCapsule)container.GetItemOrThrow(itemEid, true).Unstack(1);
+                EntityDefault ctDef = ctCapsule.Activate();
 
-                var ctItem = (Item)entityServices.Factory.CreateWithRandomEID(ctDef);
+                Item ctItem = (Item)entityServices.Factory.CreateWithRandomEID(ctDef);
                 ctItem.Owner = character.Eid;
 
                 container.AddItem(ctItem, false); // CTs dont stack
@@ -167,7 +166,7 @@ namespace Perpetuum.RequestHandlers
 
                 Transaction.Current.OnCommited(() =>
                 {
-                    var result = new Dictionary<string, object>
+                    Dictionary<string, object> result = new Dictionary<string, object>
                     {
                         { k.container, container.ToDictionary() },
                         { k.item, ctItem.ToDictionary() }
@@ -181,7 +180,7 @@ namespace Perpetuum.RequestHandlers
 
         private static void LogOpen(Character character, Container container, LotteryItem lotteryItem)
         {
-            var b = TransactionLogEvent.Builder()
+            TransactionLogEventBuilder b = TransactionLogEvent.Builder()
                 .SetTransactionType(TransactionType.LotteryOpen)
                 .SetCharacter(character)
                 .SetContainer(container)
@@ -192,7 +191,7 @@ namespace Perpetuum.RequestHandlers
 
         private static void LogActivation(Character character, Container container, Item item)
         {
-            var b = TransactionLogEvent.Builder()
+            TransactionLogEventBuilder b = TransactionLogEvent.Builder()
                 .SetTransactionType(TransactionType.ItemRedeem)
                 .SetCharacter(character)
                 .SetContainer(container)
@@ -203,7 +202,7 @@ namespace Perpetuum.RequestHandlers
 
         private static void LogRandomItemCreated(Character character, Container container, Item randomItem)
         {
-            var b = TransactionLogEvent.Builder()
+            TransactionLogEventBuilder b = TransactionLogEvent.Builder()
                 .SetTransactionType(TransactionType.LotteryRandomItemCreated)
                 .SetCharacter(character)
                 .SetContainer(container)
@@ -214,16 +213,16 @@ namespace Perpetuum.RequestHandlers
 
         private void HandlePaint(IRequest request, long paintEid)
         {
-            using (var scope = Db.CreateTransaction())
+            using (TransactionScope scope = Db.CreateTransaction())
             {
-                var containerEid = request.Data.GetOrDefault<long>(k.containerEID);
-                var character = request.Session.Character;
+                long containerEid = request.Data.GetOrDefault<long>(k.containerEID);
+                Character character = request.Session.Character;
                 character.IsDocked.ThrowIfFalse(ErrorCodes.CharacterHasToBeDocked);
 
-                var container = Container.GetWithItems(containerEid, character);
+                Container container = Container.GetWithItems(containerEid, character);
                 container.ThrowIfNotType<RobotInventory>(ErrorCodes.RobotMustBeSelected); //TODO better error to indicate item not being activated in robot cargo
 
-                var paintItem = (Paint)container.GetItemOrThrow(paintEid, true).Unstack(1);
+                Paint paintItem = (Paint)container.GetItemOrThrow(paintEid, true).Unstack(1);
                 paintItem.Activate(container as RobotInventory, character);
                 entityServices.Repository.Delete(paintItem);
                 container.Save();
@@ -231,9 +230,9 @@ namespace Perpetuum.RequestHandlers
                 Transaction.Current.OnCommited(() =>
                 {
                     //Send custom message back in "Redeemables" dialog
-                    var paintDict = paintItem.ToDictionary();
+                    Dictionary<string, object> paintDict = paintItem.ToDictionary();
                     paintDict[k.quantity] = -1;  //Indicate the consumption of item from stack
-                    var result = new Dictionary<string, object>
+                    Dictionary<string, object> result = new Dictionary<string, object>
                     {
                         { k.container, container.ToDictionary() },
                         { k.item, paintDict}
@@ -247,18 +246,18 @@ namespace Perpetuum.RequestHandlers
 
         private void HandleRespecToken(IRequest request, long itemEid)
         {
-            using (var scope = Db.CreateTransaction())
+            using (TransactionScope scope = Db.CreateTransaction())
             {
-                var containerEid = request.Data.GetOrDefault<long>(k.containerEID);
-                var character = request.Session.Character;
-                var account = accountManager.Repository
+                long containerEid = request.Data.GetOrDefault<long>(k.containerEID);
+                Character character = request.Session.Character;
+                Account account = accountManager.Repository
                     .Get(request.Session.AccountId)
                     .ThrowIfNull(ErrorCodes.AccountNotFound);
 
-                (character.IsDocked).ThrowIfFalse(ErrorCodes.CharacterHasToBeDocked);
+                character.IsDocked.ThrowIfFalse(ErrorCodes.CharacterHasToBeDocked);
 
-                var container = Container.GetWithItems(containerEid, character);
-                var containerItem = (RespecToken)container
+                Container container = Container.GetWithItems(containerEid, character);
+                RespecToken containerItem = (RespecToken)container
                     .GetItemOrThrow(itemEid, true)
                     .Unstack(1);
 
@@ -276,7 +275,7 @@ namespace Perpetuum.RequestHandlers
                 scope.Complete();
             }
 
-            var relogMessage = new Dictionary<string, object>
+            Dictionary<string, object> relogMessage = new Dictionary<string, object>
             {
                 { k.message, "You will be automatically relogged in 5 seconds" },
                 { k.translate, "relog_in_5_seconds" },
@@ -288,13 +287,13 @@ namespace Perpetuum.RequestHandlers
                 .ToCharacter(request.Session.Character)
                 .Send();
 
-            var delay = TimeSpan.FromSeconds(5);
+            TimeSpan delay = TimeSpan.FromSeconds(5);
 
             Task.Delay(delay).ContinueWith(t =>
             {
-                using (var scope = Db.CreateTransaction())
+                using (TransactionScope scope = Db.CreateTransaction())
                 {
-                    var session = request.Session;
+                    Services.Sessions.ISession session = request.Session;
                     session.DeselectCharacter();
                     scope.Complete();
                 }
@@ -303,19 +302,19 @@ namespace Perpetuum.RequestHandlers
 
         private void HandleSparkTeleportDevice(IRequest request, long itemEid)
         {
-            var baseId = 0;
-            using (var scope = Db.CreateTransaction())
+            int baseId = 0;
+            using (TransactionScope scope = Db.CreateTransaction())
             {
-                var containerEid = request.Data.GetOrDefault<long>(k.containerEID);
-                var character = request.Session.Character;
-                var account = accountManager.Repository
+                long containerEid = request.Data.GetOrDefault<long>(k.containerEID);
+                Character character = request.Session.Character;
+                Account account = accountManager.Repository
                     .Get(request.Session.AccountId)
                     .ThrowIfNull(ErrorCodes.AccountNotFound);
 
-                (character.IsDocked).ThrowIfFalse(ErrorCodes.CharacterHasToBeDocked);
+                character.IsDocked.ThrowIfFalse(ErrorCodes.CharacterHasToBeDocked);
 
-                var container = Container.GetWithItems(containerEid, character);
-                var containerItem = (SparkTeleportDevice)container
+                Container container = Container.GetWithItems(containerEid, character);
+                SparkTeleportDevice containerItem = (SparkTeleportDevice)container
                     .GetItemOrThrow(itemEid, true)
                     .Unstack(1);
 
@@ -333,17 +332,51 @@ namespace Perpetuum.RequestHandlers
                 scope.Complete();
             }
 
-            var sparkTeleportData = new Dictionary<string, object>
+            Dictionary<string, object> sparkTeleportData = new Dictionary<string, object>
             {
                 { k.ID, baseId },
             };
 
-            var sparkTeleportRequest = new Request();
-            sparkTeleportRequest.Command = Commands.SparkTeleportUse;
-            sparkTeleportRequest.Session = request.Session;
-            sparkTeleportRequest.Data = sparkTeleportData;
+            Request sparkTeleportRequest = new Request
+            {
+                Command = Commands.SparkTeleportUse,
+                Session = request.Session,
+                Data = sparkTeleportData
+            };
 
             request.Session.HandleLocalRequest(sparkTeleportRequest);
+        }
+
+        private void HandleServerWideEpBooster(IRequest request, long itemEid)
+        {
+            using (TransactionScope scope = Db.CreateTransaction())
+            {
+                long containerEid = request.Data.GetOrDefault<long>(k.containerEID);
+                Character character = request.Session.Character;
+                Account account = accountManager.Repository
+                    .Get(request.Session.AccountId)
+                    .ThrowIfNull(ErrorCodes.AccountNotFound);
+
+                character.IsDocked.ThrowIfFalse(ErrorCodes.CharacterHasToBeDocked);
+
+                Container container = Container.GetWithItems(containerEid, character);
+                ServerWideEpBooster containerItem = (ServerWideEpBooster)container
+                    .GetItemOrThrow(itemEid, true)
+                    .Unstack(1);
+
+                containerItem.Activate(request.Session);
+
+                entityServices.Repository.Delete(containerItem);
+                container.Save();
+                LogActivation(character, container, containerItem);
+
+                Transaction.Current.OnCommited(() =>
+                {
+                    accountRepository.Update(account);
+                });
+
+                scope.Complete();
+            }
         }
     }
 }

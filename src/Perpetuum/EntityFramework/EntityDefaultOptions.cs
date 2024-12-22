@@ -129,6 +129,17 @@ namespace Perpetuum.EntityFramework
             }
         }
 
+        public int PackedTurretId
+        {
+            get
+            {
+                int id = _dictionary.GetOrDefault(k.PackedTurretId, 0);
+                Debug.Assert(id > 0);
+
+                return id;
+            }
+        }
+
         public TurretType TurretType
         {
             get

@@ -1,4 +1,5 @@
 ﻿using Perpetuum.EntityFramework;
+using Perpetuum.ExportedTypes;
 using Perpetuum.StateMachines;
 using Perpetuum.Units;
 using Perpetuum.Zones.Effects;
@@ -8,9 +9,12 @@ namespace Perpetuum.Modules.EffectModules
 {
     public abstract class EffectModule : ActiveModule
     {
-        private readonly EffectToken token = EffectToken.NewToken();
-
         protected EffectModule() : this(false)
+        {
+
+        }
+
+        protected EffectModule(CategoryFlags ammoCategoryFlags) : base(ammoCategoryFlags, false)
         {
 
         }
@@ -18,6 +22,8 @@ namespace Perpetuum.Modules.EffectModules
         protected EffectModule(bool ranged) : base(ranged)
         {
         }
+
+        public EffectToken Token { get; } = EffectToken.NewToken();
 
         protected override void OnStateChanged(IState state)
         {
@@ -27,7 +33,7 @@ namespace Perpetuum.Modules.EffectModules
             {
                 if (ED.AttributeFlags.SelfEffect)
                 {
-                    ParentRobot?.EffectHandler.RemoveEffectByToken(token);
+                    ParentRobot?.EffectHandler.RemoveEffectByToken(Token);
                 }
             }
 
@@ -60,7 +66,7 @@ namespace Perpetuum.Modules.EffectModules
 
             EffectBuilder effectBuilder = target.NewEffectBuilder();
             SetupEffect(effectBuilder);
-            effectBuilder.WithToken(token);
+            effectBuilder.WithToken(Token);
             target.ApplyEffect(effectBuilder);
         }
 
