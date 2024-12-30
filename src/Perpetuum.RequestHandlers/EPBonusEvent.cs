@@ -1,8 +1,7 @@
-﻿using System;
-using Perpetuum.Accounting;
-using Perpetuum.Data;
+﻿using Perpetuum.Data;
 using Perpetuum.Host.Requests;
 using Perpetuum.Services.EventServices;
+using System;
 
 namespace Perpetuum.RequestHandlers.Extensions
 {
@@ -20,16 +19,21 @@ namespace Perpetuum.RequestHandlers.Extensions
 
         public void HandleRequest(IRequest request)
         {
-            using (var scope = Db.CreateTransaction())
+            using (System.Transactions.TransactionScope scope = Db.CreateTransaction())
             {
-                var bonusAmount = request.Data.GetOrDefault<int>(k.bonus);
-                var durationHours = request.Data.GetOrDefault<int>(k.duration);
+                int existingBonus = _eventService.GetBonus();
+                int bonusAmount = request.Data.GetOrDefault<int>(k.bonus);
+                int resultingBonus = existingBonus + bonusAmount;
 
-                var checkArgs = bonusAmount >= MIN_BONUS && bonusAmount <= MAX_BONUS;
-                checkArgs = checkArgs && durationHours <= MAX_DURATION.TotalHours;
+                int timeRemained = _eventService.GetTimeRemained().Hours;
+                int durationHours = request.Data.GetOrDefault<int>(k.duration);
+                int resultingTime = timeRemained + durationHours;
+
+                bool checkArgs = resultingBonus >= MIN_BONUS && resultingBonus <= MAX_BONUS;
+                checkArgs = checkArgs && resultingTime <= MAX_DURATION.TotalHours;
                 checkArgs.ThrowIfFalse(ErrorCodes.InputTooHigh);
 
-                _eventService.SetEvent(bonusAmount, TimeSpan.FromHours(durationHours));
+                _eventService.SetEvent(resultingBonus, TimeSpan.FromHours(resultingTime));
 
                 scope.Complete();
             }

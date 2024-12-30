@@ -69,29 +69,36 @@ namespace Perpetuum.Modules
                     .WithState(BeamState.Hit)
                     .WithDuration(TimeSpan.FromSeconds(5));
                 Zone.CreateBeam(deployBeamBuilder);
-                double coreNeutralized = electricDamage.Value * chainedDamageModifier;
-                double coreNeutralizedDone = 0.0;
-                ModifyValueByReactorRadiation(target, ref coreNeutralized);
-                coreNeutralized = ModifyValueByOptimalRange(chainedRobot, target, coreNeutralized);
-                if (coreNeutralized > 0.0)
+
+                if (!target.IsPlayer() || !Zone.Configuration.IsAlpha || target.HasPvpEffect)
                 {
-                    double core = target.Core;
+                    double coreNeutralized = electricDamage.Value * chainedDamageModifier;
+                    double coreNeutralizedDone = 0.0;
+                    ModifyValueByReactorRadiation(target, ref coreNeutralized);
+                    coreNeutralized = ModifyValueByOptimalRange(chainedRobot, target, coreNeutralized);
+                    if (coreNeutralized > 0.0)
+                    {
+                        double core = target.Core;
 
-                    target.Core -= coreNeutralized;
-                    coreNeutralizedDone = Math.Abs(core - target.Core);
-                    target.OnCombatEvent(ParentRobot, new EnergyDispersionEventArgs(coreNeutralizedDone));
+                        target.Core -= coreNeutralized;
+                        coreNeutralizedDone = Math.Abs(core - target.Core);
+                        target.OnCombatEvent(ParentRobot, new EnergyDispersionEventArgs(coreNeutralizedDone));
 
-                    double threatValue = (coreNeutralizedDone / 2) + 1;
+                        double threatValue = (coreNeutralizedDone / 2) + 1;
 
-                    target.AddThreat(ParentRobot, new Threat(ThreatType.EnWar, threatValue));
+                        target.AddThreat(ParentRobot, new Threat(ThreatType.EnWar, threatValue));
+                    }
+
+                    IDamageBuilder builder = GetDamageBuilder(coreNeutralizedDone);
+                    _ = Task.Delay(TimeSpan.FromSeconds(1)).ContinueWith(t => target.TakeDamage(builder.Build()));
+                    CombatLogPacket packet = new CombatLogPacket(CombatLogType.EnergyNeutralize, target, ParentRobot, this);
+                    packet.AppendDouble(coreNeutralized);
+                    packet.AppendDouble(coreNeutralizedDone);
+                    packet.Send(target, ParentRobot);
+
+                    ParentRobot.OnAggression(target);
                 }
 
-                IDamageBuilder builder = GetDamageBuilder(coreNeutralizedDone);
-                _ = Task.Delay(TimeSpan.FromSeconds(1)).ContinueWith(t => target.TakeDamage(builder.Build()));
-                CombatLogPacket packet = new CombatLogPacket(CombatLogType.EnergyNeutralize, target, ParentRobot, this);
-                packet.AppendDouble(coreNeutralized);
-                packet.AppendDouble(coreNeutralizedDone);
-                packet.Send(target, ParentRobot);
                 chainedRobot = (Robot)target;
                 chainedDamageModifier -= 0.15;
             }
