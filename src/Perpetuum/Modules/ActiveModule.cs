@@ -43,15 +43,13 @@ namespace Perpetuum.Modules
         {
         }
 
+        private const double heatCoefficient = 0.242;
         private Lock _lock;
         protected readonly ModuleProperty coreUsage;
         protected readonly CycleTimeProperty cycleTime;
         protected readonly ItemProperty falloff = ItemProperty.None;
         protected readonly ModuleProperty optimalRange;
-
         private readonly CategoryFlags ammoCategoryFlags;
-
-        protected virtual long GeneratedHeat => 1;
 
         public Lock Lock
         {
@@ -172,6 +170,14 @@ namespace Perpetuum.Modules
             result.Add(k.ammoQuantity, ammo.Quantity);
 
             return result;
+        }
+
+        public void GenerateHeat(EffectType effectType, double weaponCount = 1)
+        {
+            double heatValue = cycleTime.Value / 1000 / heatCoefficient * weaponCount;
+            ParentRobot.IncreaseHeatLevelByValue(
+                effectType,
+                heatValue);
         }
 
         protected abstract void OnAction();

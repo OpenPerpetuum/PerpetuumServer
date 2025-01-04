@@ -206,6 +206,7 @@ namespace Perpetuum.Bootstrapper.Modules
             RegisterModule<RemoteControlledDrillerModule>(builder);
             RegisterModule<RemoteControlledHarvesterModule>(builder);
             RegisterModule<HarvesterModule>(builder);
+            RegisterModule<LargeHarvesterModule>(builder);
             RegisterModule<Perpetuum.Modules.Module>(builder);
             RegisterModule<WeaponModule>(builder);
             RegisterModule<FirearmWeaponModule>(builder); // OPP: new subclass for firearms
@@ -472,7 +473,9 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByCategoryFlags<LargeDrillerModule>(CategoryFlags.cf_large_drillers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_deep_mining_ammo));
                 ByCategoryFlags<RemoteControlledDrillerModule>(CategoryFlags.cf_industrial_turret_drillers);
                 ByCategoryFlags<RemoteControlledHarvesterModule>(CategoryFlags.cf_industrial_turret_harvesters);
-                ByCategoryFlags<HarvesterModule>(CategoryFlags.cf_harvesters, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_harvesting_ammo));
+                ByCategoryFlags<HarvesterModule>(CategoryFlags.cf_small_harvesters, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_harvesting_ammo));
+                ByCategoryFlags<HarvesterModule>(CategoryFlags.cf_medium_harvesters, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_harvesting_ammo));
+                ByCategoryFlags<LargeHarvesterModule>(CategoryFlags.cf_large_harvesters, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_mass_harvesting_ammo));
                 ByCategoryFlags<GeoScannerModule>(CategoryFlags.cf_mining_probes, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_mining_probe_ammo));
                 ByCategoryFlags<UnitScannerModule>(CategoryFlags.cf_chassis_scanner);
                 ByCategoryFlags<ContainerScannerModule>(CategoryFlags.cf_cargo_scanner);

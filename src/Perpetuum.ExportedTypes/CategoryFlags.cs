@@ -117,6 +117,7 @@ namespace Perpetuum.ExportedTypes
         cf_nuimqol_combat_drones_units = 0x000000000202120A,
         cf_thelodica_combat_drones_units = 0x000000000302120A,
         cf_deep_mining_ammo = 0x000000000000130A,
+        cf_mass_harvesting_ammo = 0x000000000000140A,
 
         cf_attack_drones_units = 0x000000000003120A,
         cf_assault_drones_units = 0x000000000004120A,
@@ -233,6 +234,7 @@ namespace Perpetuum.ExportedTypes
         cf_harvesters = 0x000000000006060F,
         cf_small_harvesters = 0x000000000106060F,
         cf_medium_harvesters = 0x000000000206060F,
+        cf_large_harvesters = 0x000000000306060F,
         cf_medium_harvesters_old = 0x000000000007060F,
         cf_industrial_turret_harvesters = 0x000000000008060F,
         cf_construction_modules = 0x000000000009060F,

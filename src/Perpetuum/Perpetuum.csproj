@@ -270,6 +270,7 @@
     <Compile Include="MathHelper.cs" />
     <Compile Include="MessageConstants.cs" />
     <Compile Include="Modules\AdaptiveAlloy\AdaptiveAlloyModule.cs" />
+    <Compile Include="Modules\LargeHarvesterModule.cs" />
     <Compile Include="Modules\ModuleProperties\RemoteCommandTranslatorArmorMaxProperty.cs" />
     <Compile Include="Modules\ModuleProperties\RemoteCommandTranslatorDamageProperty.cs" />
     <Compile Include="Modules\ModuleProperties\RemoteCommandTranslatorHarvestingAmountProperty.cs" />

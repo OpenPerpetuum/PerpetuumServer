@@ -23,12 +23,8 @@ namespace Perpetuum.Modules
         {
         }
 
-        protected override long GeneratedHeat => 5;
-
         public override void DoExtractMinerals(IZone zone)
         {
-            ParentRobot.IncreaseOverheat(EffectType.effect_excavator);
-
             Position centralTile = ParentRobot.PositionWithHeight;
             MaterialType materialType;
             if (!(GetAmmo() is MiningAmmo ammo))
@@ -96,6 +92,7 @@ namespace Perpetuum.Modules
                     Transaction.Current.OnCommited(() => container.SendUpdateToOwnerAsync());
                     scope.Complete();
                 }
+                GenerateHeat(EffectType.effect_excavator, 6);
             }
         }
     }

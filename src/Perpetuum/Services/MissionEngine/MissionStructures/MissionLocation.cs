@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using Perpetuum.Containers;
+﻿using Perpetuum.Containers;
 using Perpetuum.Data;
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
@@ -12,27 +9,21 @@ using Perpetuum.Services.MissionEngine.Missions;
 using Perpetuum.Units.DockingBases;
 using Perpetuum.Units.FieldTerminals;
 using Perpetuum.Zones;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 
 namespace Perpetuum.Services.MissionEngine.MissionStructures
 {
     public class MissionLocation
     {
         public readonly int id;
-        
-        public long LocationEid
-        {
-            get { return _locationEntity.Eid; }
-        }
 
-        public  double X
-        {
-            get { return MyPosition.X; }
-        }
+        public long LocationEid => _locationEntity.Eid;
 
-        public double Y
-        {
-            get { return MyPosition.Y; }
-        }
+        public double X => MyPosition.X;
+
+        public double Y => MyPosition.Y;
 
         public readonly int maxMissionLevel;
 
@@ -55,7 +46,7 @@ namespace Perpetuum.Services.MissionEngine.MissionStructures
 
         public Dictionary<string, object> ToDictionary()
         {
-            var result = new Dictionary<string, object>
+            Dictionary<string, object> result = new Dictionary<string, object>
             {
                 {k.ID, id},
                 {k.agentID, Agent.id},
@@ -69,21 +60,21 @@ namespace Perpetuum.Services.MissionEngine.MissionStructures
 
             return result;
         }
-       
-        public static MissionLocation  FromRecord(IDataRecord record)
-        {
-            var id = record.GetValue<int>("id");
-            var agentId = record.GetValue<int>("agentid");
-            var locationEid = record.GetValue<long>("locationeid");
-            var zoneId = record.GetValue<int>("zoneid");
-            var x = record.GetValue<double>("x");
-            var y = record.GetValue<double>("y");
-            var maxMissionLevel = record.GetValue<int>("maxmissionlevel");
 
-            var location = new MissionLocation(id, maxMissionLevel)
+        public static MissionLocation FromRecord(IDataRecord record)
+        {
+            int id = record.GetValue<int>("id");
+            int agentId = record.GetValue<int>("agentid");
+            long locationEid = record.GetValue<long>("locationeid");
+            int zoneId = record.GetValue<int>("zoneid");
+            double x = record.GetValue<double>("x");
+            double y = record.GetValue<double>("y");
+            int maxMissionLevel = record.GetValue<int>("maxmissionlevel");
+
+            MissionLocation location = new MissionLocation(id, maxMissionLevel)
             {
-                Agent = _missionDataCache.GetAgent(agentId), 
-                MyPosition = new Position(x,y),
+                Agent = _missionDataCache.GetAgent(agentId),
+                MyPosition = new Position(x, y),
                 _locationEntity = Entity.Repository.Load(locationEid),
                 zoneId = zoneId
             };
@@ -92,11 +83,11 @@ namespace Perpetuum.Services.MissionEngine.MissionStructures
         }
 
 
-        private MissionLocation(int id,  int maxMissionLevel)
+        private MissionLocation(int id, int maxMissionLevel)
         {
             this.id = id;
             this.maxMissionLevel = maxMissionLevel;
-            
+
         }
 
         public override string ToString()
@@ -108,13 +99,13 @@ namespace Perpetuum.Services.MissionEngine.MissionStructures
         {
             get
             {
-                var containerLocator = new ContainerLocator();
+                ContainerLocator containerLocator = new ContainerLocator();
                 _locationEntity.AcceptVisitor(containerLocator);
                 return containerLocator.container;
             }
         }
 
-        private class ContainerLocator : IEntityVisitor<DockingBase>,IEntityVisitor<FieldTerminal>
+        private class ContainerLocator : IEntityVisitor<DockingBase>, IEntityVisitor<FieldTerminal>
         {
             public Container container;
 
@@ -151,7 +142,7 @@ VALUES  ( @agentId,
         )
 ";
 
-            var res =
+            int res =
             Db.Query().CommandText(query)
                 .SetParameter("@agentId", agentId)
                 .SetParameter("@locationEid", locationEid)
@@ -161,7 +152,7 @@ VALUES  ( @agentId,
                 .SetParameter("@missionLevel", missionLevel)
                 .ExecuteNonQuery();
 
-            (res  == 0).ThrowIfTrue(ErrorCodes.SQLInsertError);
+            (res == 0).ThrowIfTrue(ErrorCodes.SQLInsertError);
 
         }
 
@@ -169,14 +160,13 @@ VALUES  ( @agentId,
         public List<Mission> GetSolvableRandomMissionsAtLocation()
         {
 
-            int[] missionIdsByAgent;
-            if (!_missionDataCache.GetMissionIdsByAgent(Agent, out missionIdsByAgent))
+            if (!_missionDataCache.GetMissionIdsByAgent(Agent, out int[] missionIdsByAgent))
             {
                 //no random mission defined for this agent
                 return new List<Mission>();
             }
 
-            var safeToResolveIds = _missionDataCache.GetAllResolveInfos.Where(i => i.locationId == id && i.IsSafeToResolve).Select(m => m.missionId).ToList();
+            List<int> safeToResolveIds = _missionDataCache.GetAllResolveInfos.Where(i => i.locationId == id && i.IsSafeToResolve).Select(m => m.missionId).ToList();
 
             return _missionDataCache.GetAllMissions
                 .Where(m =>
@@ -197,18 +187,21 @@ VALUES  ( @agentId,
         {
             issuerAllianceEid = Agent.OwnerAlliance.Eid;
 
-            var corpNamePostFix = MissionDataCache.GetCorporationPostFixByMissionCategory(missionCategory);
+            string corpNamePostFix = MissionDataCache.GetCorporationPostFixByMissionCategory(missionCategory);
 
-            var corporationEid =
+            long corporationEid =
             DefaultCorporationDataCache.GetPureCorporationFromAllianceByPostFix(issuerAllianceEid, corpNamePostFix);
 
             issuerCorporationEid = corporationEid;
 
 #if DEBUG
-            if (MissionResolveTester.isTestMode) return;
+            if (MissionResolveTester.isTestMode)
+            {
+                return;
+            }
 
-            var allianceName = DefaultCorporationDataCache.GetAllianceName(issuerAllianceEid);
-            var corporationName = DefaultCorporationDataCache.GetCorporationName(issuerCorporationEid);
+            string allianceName = DefaultCorporationDataCache.GetAllianceName(issuerAllianceEid);
+            string corporationName = DefaultCorporationDataCache.GetCorporationName(issuerCorporationEid);
 
             Logger.Info(missionCategory + " " + allianceName + " mapped to " + corporationName);
 
@@ -226,7 +219,7 @@ VALUES  ( @agentId,
         public int GetRaceSpecificCoinDefinition()
         {
             //TODO: Fixme: I am a hack for Syndicatification
-            if(this.zoneId==0 || this.zoneId == 8) //For New Virginia and Hershfield
+            if (zoneId == 0 || zoneId == 2 || zoneId == 8) //For New Virginia, Daoden and Hershfield
             {
                 return EntityDefault.GetByName(DefinitionNames.UNIVERSAL_MISSION_COIN).Definition;
             }
@@ -244,7 +237,7 @@ VALUES  ( @agentId,
 
                 default:
                     throw new PerpetuumException(ErrorCodes.ConsistencyError);
-                    
+
             }
 
         }
@@ -252,7 +245,7 @@ VALUES  ( @agentId,
         public void DeleteFromDb()
         {
             //related mission data cleanup
-            var missionsHere =
+            int missionsHere =
             Db.Query().CommandText("DELETE dbo.missiontolocation WHERE locationid=@locationId")
                 .SetParameter("@locationId", id)
                 .ExecuteNonQuery();
@@ -269,9 +262,9 @@ VALUES  ( @agentId,
 
         public void UpdatePositionById(Position position)
         {
-            var qs = "update missionlocations set x=@x,y=@y  where id=@id";
+            string qs = "update missionlocations set x=@x,y=@y  where id=@id";
 
-            var res=
+            int res =
             Db.Query().CommandText(qs)
                 .SetParameter("@x", position.X)
                 .SetParameter("@y", position.Y)
@@ -283,5 +276,5 @@ VALUES  ( @agentId,
         }
     }
 
-    
+
 }

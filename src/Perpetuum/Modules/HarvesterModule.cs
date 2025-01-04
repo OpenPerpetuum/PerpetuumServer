@@ -22,9 +22,9 @@ namespace Perpetuum.Modules
 {
     public class HarvesterModule : GathererModule
     {
-        private const int MAX_EP_PER_DAY = 1440;
-        private readonly PlantHarvester.Factory _plantHarvesterFactory;
-        private readonly HarvestingAmountModifierProperty _harverstingAmountModifier;
+        protected const int MAX_EP_PER_DAY = 1440;
+        protected readonly PlantHarvester.Factory _plantHarvesterFactory;
+        protected readonly HarvestingAmountModifierProperty _harverstingAmountModifier;
 
         public HarvesterModule(CategoryFlags ammoCategoryFlags, PlantHarvester.Factory plantHarvesterFactory) : base(ammoCategoryFlags, true)
         {
@@ -51,6 +51,7 @@ namespace Perpetuum.Modules
                 case AggregateField.effect_harvesting_amount_modifier:
                 case AggregateField.drone_amplification_harvesting_amount_modifier:
                 case AggregateField.drone_remote_command_translation_harvesting_amount_modifier:
+                case AggregateField.effect_excavator_mining_amount_modifier:
                     {
                         _harverstingAmountModifier.Update();
 
@@ -99,7 +100,7 @@ namespace Perpetuum.Modules
             ConsumeAmmo();
         }
 
-        public void DoHarvesting(IZone zone)
+        public virtual void DoHarvesting(IZone zone)
         {
             TerrainLock terrainLock = GetLock().ThrowIfNotType<TerrainLock>(ErrorCodes.InvalidLockType);
             CreateBeam(terrainLock.Location, BeamState.AlignToTerrain);

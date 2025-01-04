@@ -31,6 +31,7 @@ namespace Perpetuum.Robots
         private Lazy<IEnumerable<RobotComponent>> robotComponents;
         private readonly TimeSpan overheatCooldownPeriod = TimeSpan.FromMilliseconds(1650);
         private readonly IntervalTimer overheatCooldownTimer;
+        private const double HeatDissipation = 2;
 
         protected Robot()
         {
@@ -114,7 +115,7 @@ namespace Perpetuum.Robots
             overheatCooldownTimer.Interval = overheatCooldownPeriod;
         }
 
-        public void IncreaseOverheat(EffectType effectType)
+        public void IncreaseHeatLevel(EffectType effectType)
         {
             if (EffectHandler.ContainsEffect(effectType))
             {
@@ -122,7 +123,7 @@ namespace Perpetuum.Robots
             }
         }
 
-        public void IncreaseOverheatByValue(EffectType effectType, long value)
+        public void IncreaseHeatLevelByValue(EffectType effectType, double value)
         {
             if (EffectHandler.ContainsEffect(effectType))
             {
@@ -362,7 +363,7 @@ namespace Perpetuum.Robots
 
             if (overheatCooldownTimer.Passed)
             {
-                OverheatHandler.Decrease();
+                OverheatHandler.Decrease(HeatDissipation);
                 ResetTimer();
             }
 

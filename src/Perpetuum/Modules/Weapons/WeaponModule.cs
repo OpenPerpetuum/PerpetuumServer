@@ -38,7 +38,6 @@ namespace Perpetuum.Modules.Weapons
             DamageModifier.AddEffectModifier(AggregateField.drone_amplification_damage_modifier);
             DamageModifier.AddEffectModifier(AggregateField.drone_remote_command_translation_damage_modifier);
             DamageModifier.AddEffectModifier(AggregateField.effect_dreadnought_weapon_damage_modifier);
-
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
@@ -74,9 +73,7 @@ namespace Perpetuum.Modules.Weapons
         protected override void OnAction()
         {
             action.DoAction();
-            ParentRobot.IncreaseOverheatByValue(
-                EffectType.effect_dreadnought,
-                GeneratedHeat);
+            GenerateHeat(EffectType.effect_dreadnought);
         }
 
         protected virtual bool CheckAccuracy(Unit victim)

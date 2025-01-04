@@ -55,14 +55,15 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
 
         public override void Update(TimeSpan time)
         {
-            if ((smartCreature as RemoteControlledCreature).IsReceivedRetreatCommand)
+            CombatDrone drone = smartCreature as CombatDrone;
+            if (drone.IsReceivedRetreatCommand)
             {
                 ToRetreatCombatDroneAI();
 
                 return;
             }
 
-            if (smartCreature.ThreatManager.IsThreatened)
+            if (drone.GetPrimaryLock() != null)
             {
                 ToAttackCombatDroneAI();
 
@@ -75,7 +76,7 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
 
                 if (movement.Arrived)
                 {
-                    smartCreature.AI.Pop();
+                    ToGuardCombatDroneAI();
 
                     return;
                 }

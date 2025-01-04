@@ -63,7 +63,7 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
 
         public override void Update(TimeSpan time)
         {
-            UpdateHostiles(time);
+            //UpdateHostiles(time);
             UpdatePrimaryTarget(time);
             base.Update(time);
         }
@@ -161,21 +161,25 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
             smartCreature.AI.Push(new EscortCombatDroneAI(smartCreature));
         }
 
+        protected virtual void ToGuardCombatDroneAI()
+        {
+            smartCreature.AI.Push(new GuardCombatDroneAI(smartCreature));
+        }
+
         protected virtual void ToRetreatCombatDroneAI()
         {
             smartCreature.AI.Push(new RetreatCombatDroneAI(smartCreature));
         }
 
-        protected Hostile GetPrimaryHostile()
-        {
-            return smartCreature.ThreatManager.Hostiles
-                .Where(h => h.Unit == (smartCreature.GetPrimaryLock() as UnitLock)?.Target)
-                .FirstOrDefault();
-        }
+        //protected Hostile GetPrimaryHostile()
+        //{
+        //    return smartCreature.ThreatManager.Hostiles
+        //        .Where(h => h.Unit == (smartCreature.GetPrimaryLock() as UnitLock)?.Target)
+        //        .FirstOrDefault();
+        //}
 
         protected virtual void ReturnToHomePosition()
         {
-            _ = smartCreature.AI.Pop();
             smartCreature.AI.Push(new HomingAI(smartCreature));
             WriteLog("Enter evade mode.");
         }
@@ -296,7 +300,7 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
                 isNewLock = true;
 
                 smartCreature.AddLock(unitLock.Target, true);
-                smartCreature.AddDirectThreat(unitLock.Target, 100);
+                //smartCreature.AddDirectThreat(unitLock.Target, 100);
                 unitLock.Target.UpdateVisibilityOf(smartCreature);
             }
 

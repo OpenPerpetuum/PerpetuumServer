@@ -513,5 +513,7 @@ namespace Perpetuum.ExportedTypes
         drone_remote_command_translation_retreat_confirmation = 753,
         server_wide_ep_bonus = 754,
         server_wide_ep_bonus_duration = 755,
+        effect_excavator_harvesting_amount_modifier = 756,
+        effect_excavator_enhancer_harvesting_amount_modifier = 757,
     }
 }

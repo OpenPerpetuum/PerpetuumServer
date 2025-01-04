@@ -10,6 +10,7 @@ namespace Perpetuum.Modules.ModuleProperties
             AddEffectModifier(AggregateField.effect_harvesting_amount_modifier);
             AddEffectModifier(AggregateField.drone_amplification_harvesting_amount_modifier);
             AddEffectModifier(AggregateField.drone_remote_command_translation_harvesting_amount_modifier);
+            AddEffectModifier(AggregateField.effect_excavator_harvesting_amount_modifier);
         }
 
         public double GetValueByPlantType(PlantType plantType)
@@ -68,6 +69,7 @@ namespace Perpetuum.Modules.ModuleProperties
             ApplyEffectModifiers(ref p);
             module.ParentRobot?.ApplyEffectPropertyModifiers(AggregateField.drone_amplification_harvesting_amount_modifier, ref p);
             module.ParentRobot?.ApplyEffectPropertyModifiers(AggregateField.drone_remote_command_translation_harvesting_amount_modifier, ref p);
+            module.ParentRobot?.ApplyEffectPropertyModifiers(AggregateField.effect_excavator_harvesting_amount_modifier, ref p);
 
             return p.Value;
         }
