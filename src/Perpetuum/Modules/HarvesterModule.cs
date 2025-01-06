@@ -145,6 +145,8 @@ namespace Perpetuum.Modules
                     scope.Complete();
                 }
             }
+
+            GenerateHeat(EffectType.effect_excavator);
         }
     }
 }

@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Sockets;
-using System.Threading.Tasks;
-using System.Transactions;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Builders;
 using Perpetuum.Common.Loggers;
@@ -32,6 +24,14 @@ using Perpetuum.Zones.Locking.Locks;
 using Perpetuum.Zones.Terrains;
 using Perpetuum.Zones.Terrains.Materials;
 using Perpetuum.Zones.Terrains.Terraforming;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+using System.Transactions;
 
 namespace Perpetuum.Zones
 {
@@ -53,9 +53,9 @@ namespace Perpetuum.Zones
 
         private TerrainUpdateNotifier _terrainUpdateNotifier;
 
-        public delegate ZoneSession Factory(IZone zone,Socket socket);
+        public delegate ZoneSession Factory(IZone zone, Socket socket);
 
-        public ZoneSession(IZone zone,Socket socket,ISessionManager sessionManager)
+        public ZoneSession(IZone zone, Socket socket, ISessionManager sessionManager)
         {
             Id = _idGenerator.GetNextID();
             _zone = zone;
@@ -102,9 +102,11 @@ namespace Perpetuum.Zones
         public void SendPacket(IBuilder<Packet> packetBuilder)
         {
             if (packetBuilder == null)
+            {
                 return;
+            }
 
-            var packet = packetBuilder.Build();
+            Packet packet = packetBuilder.Build();
             SendPacket(packet);
         }
 
@@ -112,7 +114,7 @@ namespace Perpetuum.Zones
 
         private void OnDisconnected(ITcpConnection connection)
         {
-            var player = _player;
+            Player player = _player;
             if (player == null)
             {
                 OnStopped();
@@ -129,35 +131,45 @@ namespace Perpetuum.Zones
         private void OnReceived(ITcpConnection connection, byte[] packetData)
         {
             _lastReceivedPacketTime = DateTime.Now;
-            var executeTime = GlobalTimer.Elapsed;
-            var cancelLogout = true;
+            TimeSpan executeTime = GlobalTimer.Elapsed;
+            bool cancelLogout = true;
 
-            var packet = new Packet(packetData);
+            Packet packet = new Packet(packetData);
 
             try
             {
                 switch (packet.Command)
                 {
                     case ZoneCommand.AuthUnit:
-                    {
-                        HandleAuth(packet);
-                        break;
-                    }
-                    case ZoneCommand.ClientUpdate: { HandleClientUpdate(packet); break; }
-                    case ZoneCommand.MoveForward: { HandleMoveForward(packet); break; }
+                        {
+                            HandleAuth(packet);
+                            break;
+                        }
+                    case ZoneCommand.ClientUpdate:
+                        {
+                            HandleClientUpdate(packet);
+
+                            break;
+                        }
+                    case ZoneCommand.MoveForward:
+                        {
+                            HandleMoveForward(packet);
+
+                            break;
+                        }
                     case ZoneCommand.Ping: { HandlePing(packet); break; }
                     case ZoneCommand.ClosingSocket:
-                    {
-                        cancelLogout = false;
-                        HandleClosingSocket(packet);
-                        break;
-                    }
+                        {
+                            cancelLogout = false;
+                            HandleClosingSocket(packet);
+                            break;
+                        }
                     case ZoneCommand.ControlCommand: { HandleControlCommand(packet); break; }
                     case ZoneCommand.DeployItem: { HandleDeployItem(packet); break; }
                     case ZoneCommand.EnablePVP: { HandleEnablePvp(packet); break; }
                     case ZoneCommand.GangDoodle: { HandleGangDoodle(packet); break; }
                     case ZoneCommand.GetLayer: { HandleGetLayer(packet); break; }
-                    case ZoneCommand.SetLayer: { HandleSetLayer(packet); break; } 
+                    case ZoneCommand.SetLayer: { HandleSetLayer(packet); break; }
                     case ZoneCommand.GetLootList: { HandleGetLootList(packet); break; }
                     case ZoneCommand.TakeLoot: { HandleTakeLoot(packet); break; }
                     case ZoneCommand.PutLoot: { HandlePutLoot(packet); break; }
@@ -174,11 +186,11 @@ namespace Perpetuum.Zones
 
 
                     case ZoneCommand.Logout:
-                    {
-                        cancelLogout = false;
-                        HandleLogout(packet);
-                        break;
-                    }
+                        {
+                            cancelLogout = false;
+                            HandleLogout(packet);
+                            break;
+                        }
                     case ZoneCommand.GetModuleInfo: { HandleGetModuleInfo(packet); break; }
                     case ZoneCommand.ModuleUse: { HandleModuleUse(packet); break; }
                     case ZoneCommand.ModuleUseByCategoryFlag: { HandleModuleUseByCategoryFlags(packet); break; }
@@ -192,7 +204,7 @@ namespace Perpetuum.Zones
                 if (ex is PerpetuumException gex)
                 {
                     packet.Error = gex.error;
-                    LogGenxyException(packet,gex);
+                    LogGenxyException(packet, gex);
                 }
                 else
                 {
@@ -200,23 +212,27 @@ namespace Perpetuum.Zones
                 }
             }
 
-            var workTime = GlobalTimer.Elapsed - executeTime;
+            TimeSpan workTime = GlobalTimer.Elapsed - executeTime;
             packet.WorkTime = (int)workTime.TotalMilliseconds;
             SendPacket(packet);
 
             if (cancelLogout)
+            {
                 CancelLogout(true);
+            }
         }
 
         private void WriteFQLog(string message)
         {
-            var info = string.Empty;
+            string info = string.Empty;
 
-            var player = _player;
+            Player player = _player;
             if (player != null)
+            {
                 info = player.InfoString;
+            }
 
-            var e = new LogEvent
+            LogEvent e = new LogEvent
             {
                 LogType = LogType.Info,
                 Tag = "FQ",
@@ -228,15 +244,15 @@ namespace Perpetuum.Zones
 
         private void WritePacketLog(Packet packet, string message = null)
         {
-            var player = _player;
+            Player player = _player;
             player?.WriteFQLog($"({packet.Command}) {message}");
         }
 
         [Conditional("DEBUG")]
         private void LogGenxyException(Packet packet, PerpetuumException gex)
         {
-            var playerInfo = _player != null ? _player.InfoString : null;
-            var e = new LogEvent
+            string playerInfo = _player?.InfoString;
+            LogEvent e = new LogEvent
             {
                 LogType = LogType.Error,
                 Tag = "ZPACKET",
@@ -252,16 +268,17 @@ namespace Perpetuum.Zones
         private void HandleAuth(Packet packet)
         {
             packet.ReadInt(); // mar nem kell
-            var count = (int)(packet.Length - packet.Position) - sizeof(long);
-            var encrypted = packet.ReadBytes(count);
+            int count = (int)(packet.Length - packet.Position) - sizeof(long);
+            byte[] encrypted = packet.ReadBytes(count);
 
-            var character = ZoneTicket.GetCharacterFromEncryptedTicket(encrypted);
+            Character character = ZoneTicket.GetCharacterFromEncryptedTicket(encrypted);
             character.ThrowIfEqual(null, ErrorCodes.WTFErrorMedicalAttentionSuggested);
 
-            var characterSession = _sessionManager.GetByCharacter(character);
+            ISession characterSession = _sessionManager.GetByCharacter(character);
 
             if (characterSession == null || !characterSession.IsAuthenticated ||
-                !characterSession.RemoteEndPoint.Address.Equals(_connection.RemoteEndPoint.Address)) {
+                !characterSession.RemoteEndPoint.Address.Equals(_connection.RemoteEndPoint.Address))
+            {
                 throw new PerpetuumException(ErrorCodes.WTFErrorMedicalAttentionSuggested);
             }
 
@@ -275,7 +292,7 @@ namespace Perpetuum.Zones
                 player = Player.LoadPlayerAndAddToZone(_zone, character);
             }
 
-            var session = player.Session as ZoneSession;
+            ZoneSession session = player.Session as ZoneSession;
             session?.OnStopped();
 
             _beamsMonitor = new BeamsMonitor(this);
@@ -283,7 +300,7 @@ namespace Perpetuum.Zones
 
             _weatherMonitor = new WeatherMonitor(OnWeatherUpdated);
             _weatherMonitor.Subscribe(_zone.Weather);
-            
+
             _terrainUpdateNotifier = CreateTerrainNotifier(player);
 
             player.SetSession(this);
@@ -301,25 +318,29 @@ namespace Perpetuum.Zones
 
         private TerrainUpdateNotifier CreateTerrainNotifier(Player player)
         {
-            var layerTypes = _zone.Configuration.Terraformable ? new[] { LayerType.Altitude, LayerType.Blocks, LayerType.Control, LayerType.Plants } : 
+            LayerType[] layerTypes = _zone.Configuration.Terraformable ? new[] { LayerType.Altitude, LayerType.Blocks, LayerType.Control, LayerType.Plants } :
                                                                  new[] { LayerType.Blocks, LayerType.Plants, LayerType.Control };
 
-            return new TerrainUpdateNotifier(_zone,player,layerTypes);
+            return new TerrainUpdateNotifier(_zone, player, layerTypes);
         }
 
         private void HandleClientUpdate(Packet packet)
         {
-            var player = _player;
+            Player player = _player;
             if (player == null)
+            {
                 return;
+            }
 
             player.States.InMoveable.ThrowIfTrue(ErrorCodes.InvalidMovement);
-            var position = packet.ReadPosition();
-            var speed = (float)packet.ReadByte() / 255;
-            var direction = (float)packet.ReadByte() / 255;
+            Position position = packet.ReadPosition();
+            float speed = (float)packet.ReadByte() / 255;
+            float direction = (float)packet.ReadByte() / 255;
 
             if (!player.TryMove(position))
+            {
                 throw new PerpetuumException(ErrorCodes.InvalidMovement);
+            }
 
             player.CurrentSpeed = speed;
             player.Direction = direction;
@@ -327,8 +348,8 @@ namespace Perpetuum.Zones
 
         private void HandleMoveForward(Packet packet)
         {
-            var direction = (double)packet.ReadUShort() / ushort.MaxValue;
-            var speed = (double)packet.ReadUShort() / ushort.MaxValue;
+            double direction = (double)packet.ReadUShort() / ushort.MaxValue;
+            double speed = (double)packet.ReadUShort() / ushort.MaxValue;
 
             _player.Direction = direction;
             _player.CurrentSpeed = speed;
@@ -337,7 +358,7 @@ namespace Perpetuum.Zones
         private static void HandlePing(Packet packet)
         {
             packet.PeekLong(5);
-            packet.PutLong(13, (long) GlobalTimer.Elapsed.TotalMilliseconds);
+            packet.PutLong(13, (long)GlobalTimer.Elapsed.TotalMilliseconds);
         }
 
         private void HandleClosingSocket(Packet packet)
@@ -352,8 +373,8 @@ namespace Perpetuum.Zones
 
         private void HandleLockUnit(Packet packet)
         {
-            var targetEid = packet.ReadLong();
-            var isPrimary = packet.ReadByte() != 0;
+            long targetEid = packet.ReadLong();
+            bool isPrimary = packet.ReadByte() != 0;
 
             WritePacketLog(packet, $"target = {targetEid} primary = {isPrimary}");
             _player.AddLock(targetEid, isPrimary);
@@ -361,73 +382,75 @@ namespace Perpetuum.Zones
 
         private void HandleLockTerrain(Packet packet)
         {
-            var x = packet.ReadInt();
-            var y = packet.ReadInt();
+            int x = packet.ReadInt();
+            int y = packet.ReadInt();
             packet.ReadInt(); // z
-            var z = _zone.GetZ(x, y);
-            var location = new Position(x + 0.5, y + 0.5, z);
+            double z = _zone.GetZ(x, y);
+            Position location = new Position(x + 0.5, y + 0.5, z);
 
-            var isPrimary = packet.ReadByte() != 0;
+            bool isPrimary = packet.ReadByte() != 0;
 
             WritePacketLog(packet, $"target = {location} primary = {isPrimary}");
-            var terrainLock = new TerrainLock(_player, location) { Primary = isPrimary };
+            TerrainLock terrainLock = new TerrainLock(_player, location) { Primary = isPrimary };
 
             _player.AddLock(terrainLock);
         }
 
         private void HandleGetTerrainLockParameters(Packet packet)
         {
-            var id = packet.ReadLong();
+            long id = packet.ReadLong();
 
-            var terrainLock = _player.GetLock(id).ThrowIfNotType<TerrainLock>(ErrorCodes.InvalidLock);
-            var builder = new TerrainLockParametersPacketBuilder(terrainLock);
+            TerrainLock terrainLock = _player.GetLock(id).ThrowIfNotType<TerrainLock>(ErrorCodes.InvalidLock);
+            TerrainLockParametersPacketBuilder builder = new TerrainLockParametersPacketBuilder(terrainLock);
             _player.Session.SendPacket(builder);
         }
 
         private void HandleSetTerrainLockParameters(Packet packet)
         {
-            var id = packet.ReadLong();
-            var terraformType = (TerraformType)packet.ReadByte();
-            var terraformDirection = (TerraformDirection)packet.ReadByte();
-            var radius = packet.ReadByte();
-            var falloff = packet.ReadByte();
+            long id = packet.ReadLong();
+            TerraformType terraformType = (TerraformType)packet.ReadByte();
+            TerraformDirection terraformDirection = (TerraformDirection)packet.ReadByte();
+            int radius = packet.ReadByte();
+            int falloff = packet.ReadByte();
 
-            var terrainLock = _player.GetLock(id).ThrowIfNotType<TerrainLock>(ErrorCodes.InvalidLock);
+            TerrainLock terrainLock = _player.GetLock(id).ThrowIfNotType<TerrainLock>(ErrorCodes.InvalidLock);
 
             terrainLock.TerraformType = terraformType;
             terrainLock.TerraformDirection = terraformDirection;
             terrainLock.Radius = radius;
             terrainLock.Falloff = falloff;
 
-            var builder = new TerrainLockParametersPacketBuilder(terrainLock);
+            TerrainLockParametersPacketBuilder builder = new TerrainLockParametersPacketBuilder(terrainLock);
             _player.Session.SendPacket(builder);
         }
 
         private void HandleDeployItem(Packet packet)
         {
-            var itemEid = packet.ReadLong();
-            var argsCount = packet.ReadInt();
-            var binaryStream = new BinaryStream(packet.ReadBytes(argsCount));
+            long itemEid = packet.ReadLong();
+            int argsCount = packet.ReadInt();
+            BinaryStream binaryStream = new BinaryStream(packet.ReadBytes(argsCount));
 
             _player.HasTeleportSicknessEffect.ThrowIfTrue(ErrorCodes.CantBeUsedInTeleportSickness);
 
-            using (var scope = Db.CreateTransaction())
+            using (TransactionScope scope = Db.CreateTransaction())
             {
-                var container = _player.GetContainer();
+                RobotInventory container = _player.GetContainer();
                 Debug.Assert(container != null, "container != null");
                 container.EnlistTransaction();
 
-                var item = container.GetItemOrThrow(itemEid);
+                Item item = container.GetItemOrThrow(itemEid);
 
-                var itemDeployer = item.ThrowIfNotType<ItemDeployerBase>(ErrorCodes.DefinitionNotSupported);
+                ItemDeployerBase itemDeployer = item.ThrowIfNotType<ItemDeployerBase>(ErrorCodes.DefinitionNotSupported);
                 if (itemDeployer is FieldContainerCapsule capsule)
+                {
                     capsule.PinCode = binaryStream.ReadInt();
+                }
 
                 itemDeployer.Deploy(_zone, _player);
 
                 if (item.ED.AttributeFlags.Consumable)
                 {
-                    var tmpItem = container.RemoveItem(item, 1).ThrowIfNull(ErrorCodes.ItemNotFound);
+                    Item tmpItem = container.RemoveItem(item, 1).ThrowIfNull(ErrorCodes.ItemNotFound);
                     Entity.Repository.Delete(tmpItem);
                     container.Save();
                 }
@@ -448,14 +471,16 @@ namespace Perpetuum.Zones
 
         private void HandleGangDoodle(Packet packet)
         {
-            var gang = _player.Gang;
+            Groups.Gangs.Gang gang = _player.Gang;
             if (gang == null)
+            {
                 return;
+            }
 
             packet.ReadLong();
-            var doodleData = packet.ReadBytes(8);
+            byte[] doodleData = packet.ReadBytes(8);
 
-            using (var doodlePacket = new Packet(ZoneCommand.GangDoodle))
+            using (Packet doodlePacket = new Packet(ZoneCommand.GangDoodle))
             {
                 doodlePacket.AppendLong(_player.Eid);
                 doodlePacket.AppendByteArray(doodleData);
@@ -465,20 +490,20 @@ namespace Perpetuum.Zones
 
         private void HandleGetLayer(Packet packet)
         {
-           
+
             _player.Session.AccessLevel.IsAdminOrGm().ThrowIfFalse(ErrorCodes.AccessDenied);
 
-            var layerType = (LayerType)packet.ReadByte();
-            var materialType = (MaterialType)packet.ReadByte();
-            var x1 = packet.ReadInt();
-            var y1 = packet.ReadInt();
-            var x2 = packet.ReadInt();
-            var y2 = packet.ReadInt();
-            var area = new Area(x1, y1, x2, y2);
+            LayerType layerType = (LayerType)packet.ReadByte();
+            MaterialType materialType = (MaterialType)packet.ReadByte();
+            int x1 = packet.ReadInt();
+            int y1 = packet.ReadInt();
+            int x2 = packet.ReadInt();
+            int y2 = packet.ReadInt();
+            Area area = new Area(x1, y1, x2, y2);
 
             WritePacketLog(packet, $"type = {layerType} mtype = {materialType} area = {area}");
 
-            var p = _zone.Terrain.BuildLayerUpdatePacket(layerType, area);
+            Packet p = _zone.Terrain.BuildLayerUpdatePacket(layerType, area);
             if (p != null)
             {
                 _player.Session.SendPacket(p);
@@ -487,26 +512,26 @@ namespace Perpetuum.Zones
 
         private void HandleGetLootList(Packet packet)
         {
-            var pinCode = packet.ReadInt();
-            var containerEid = packet.ReadLong();
+            int pinCode = packet.ReadInt();
+            long containerEid = packet.ReadLong();
 
             WritePacketLog(packet, $"pin = {LootHelper.PinToString(pinCode)} guid = {containerEid}");
 
-            var container = _zone.GetUnit(containerEid) as LootContainer;
+            LootContainer container = _zone.GetUnit(containerEid) as LootContainer;
             container?.SendLootListToPlayer(_player, pinCode);
         }
 
         private void HandleGetModuleInfo(Packet packet)
         {
-            var robotComponentType = (RobotComponentType)packet.ReadByte();
-            var slot = packet.ReadByte();
+            RobotComponentType robotComponentType = (RobotComponentType)packet.ReadByte();
+            int slot = packet.ReadByte();
 
             WritePacketLog(packet, $"rc = {robotComponentType} s = {slot}");
 
-            var robotComponent = _player.GetRobotComponent(robotComponentType).ThrowIfNull(ErrorCodes.RobotComponentNotSupplied);
-            var module = robotComponent.GetModule(slot);
+            RobotComponent robotComponent = _player.GetRobotComponent(robotComponentType).ThrowIfNull(ErrorCodes.RobotComponentNotSupplied);
+            Module module = robotComponent.GetModule(slot);
 
-            using (var infoPacket = module.BuildModuleInfoPacket())
+            using (Packet infoPacket = module.BuildModuleInfoPacket())
             {
                 _player.Session.SendPacket(infoPacket);
             }
@@ -514,35 +539,41 @@ namespace Perpetuum.Zones
 
         private void HandleLoadAmmo(Packet packet)
         {
-            var ammoDefinition = packet.ReadInt();
-            var robotComponentType = (RobotComponentType)packet.ReadByte();
-            var slot = packet.ReadByte();
+            int ammoDefinition = packet.ReadInt();
+            RobotComponentType robotComponentType = (RobotComponentType)packet.ReadByte();
+            int slot = packet.ReadByte();
 
             WritePacketLog(packet, $"d = {ammoDefinition} rc = {robotComponentType} s = {slot}");
 
-            var component = _player.GetRobotComponent(robotComponentType).ThrowIfNull(ErrorCodes.RobotComponentNotSupplied);
-            var module = component.GetModule(slot).ThrowIfNotType<ActiveModule>(ErrorCodes.ModuleNotFound);
+            RobotComponent component = _player.GetRobotComponent(robotComponentType).ThrowIfNull(ErrorCodes.RobotComponentNotSupplied);
+            ActiveModule module = component.GetModule(slot).ThrowIfNotType<ActiveModule>(ErrorCodes.ModuleNotFound);
 
             if (!module.IsAmmoable)
+            {
                 return;
+            }
 
-            var ammo = module.GetAmmo();
+            Ammo ammo = module.GetAmmo();
 
             if (ammoDefinition == 0)
             {
                 if (ammo != null)
+                {
                     module.State.UnloadAmmo();
+                }
             }
             else
             {
                 if (ammo?.Definition == ammoDefinition && ammo.Quantity == module.AmmoCapacity)
+                {
                     return;
+                }
 
                 module.CheckLoadableAmmo(ammoDefinition).ThrowIfFalse(ErrorCodes.InvalidAmmoDefinition);
 
                 if (module.ParentRobot is Player player)
                 {
-                    var tmpAmmo = (Ammo)Entity.Factory.CreateWithRandomEID(ammoDefinition);
+                    Ammo tmpAmmo = (Ammo)Entity.Factory.CreateWithRandomEID(ammoDefinition);
                     tmpAmmo.CheckEnablerExtensionsAndThrowIfFailed(player.Character, ErrorCodes.ExtensionLevelMismatchTerrain);
                 }
 
@@ -558,7 +589,7 @@ namespace Perpetuum.Zones
 
             packet.Skip(4);
 
-            var message = packet.ReadUtf8String();
+            string message = packet.ReadUtf8String();
 
             WriteLocalChatLog(_player, message);
 
@@ -567,7 +598,7 @@ namespace Perpetuum.Zones
                 message = message.Substring(0, MAX_MESSAGE_LENGTH);
             }
 
-            using (var chatPacket = new Packet(ZoneCommand.LocalChat))
+            using (Packet chatPacket = new Packet(ZoneCommand.LocalChat))
             {
                 chatPacket.AppendInt(_player.Character.Id);
                 chatPacket.AppendUtf8String(message);
@@ -578,7 +609,7 @@ namespace Perpetuum.Zones
 
         private void WriteLocalChatLog(Player sender, string message)
         {
-            var cell = sender.CurrentPosition.ToCellCoord();
+            Collections.Spatial.CellCoord cell = sender.CurrentPosition.ToCellCoord();
             _zone.ChatLogger.LogMessage(sender.Character, $"[{cell}] {message}");
         }
 
@@ -594,19 +625,19 @@ namespace Perpetuum.Zones
 
         private void HandleModuleUse(Packet packet)
         {
-            var lockId = packet.ReadLong();
-            var robotComponentType = (RobotComponentType)packet.ReadByte();
-            var slot = packet.ReadByte();
-            var moduleState = (ModuleStateType)packet.ReadByte();
+            long lockId = packet.ReadLong();
+            RobotComponentType robotComponentType = (RobotComponentType)packet.ReadByte();
+            int slot = packet.ReadByte();
+            ModuleStateType moduleState = (ModuleStateType)packet.ReadByte();
 
             WritePacketLog(packet, $"lockId = {lockId} rc = {robotComponentType} s = {slot} state = {moduleState}");
 
-            var component = _player.GetRobotComponent(robotComponentType).ThrowIfNull(ErrorCodes.RobotComponentNotSupplied);
-            var module = component.GetModule(slot).ThrowIfNotType<ActiveModule>(ErrorCodes.ModuleNotFound);
+            RobotComponent component = _player.GetRobotComponent(robotComponentType).ThrowIfNull(ErrorCodes.RobotComponentNotSupplied);
+            ActiveModule module = component.GetModule(slot).ThrowIfNotType<ActiveModule>(ErrorCodes.ModuleNotFound);
 
             if (module.IsAmmoable)
             {
-                var ammo = module.GetAmmo();
+                Ammo ammo = module.GetAmmo();
                 if (ammo == null || ammo.Definition == 0)
                 {
                     _player.SendModuleProcessError(module, ErrorCodes.AmmoNotFound);
@@ -620,25 +651,29 @@ namespace Perpetuum.Zones
 
         private void HandleModuleUseByCategoryFlags(Packet packet)
         {
-            var lockId = packet.ReadLong();
-            var cf = (CategoryFlags)packet.ReadLong();
-            var moduleState = (ModuleStateType)packet.ReadByte();
+            long lockId = packet.ReadLong();
+            CategoryFlags cf = (CategoryFlags)packet.ReadLong();
+            ModuleStateType moduleState = (ModuleStateType)packet.ReadByte();
 
             WritePacketLog(packet, $"lockId = {lockId} cf = {cf} state = {moduleState}");
 
-            foreach (var module in _player.ActiveModules)
+            foreach (ActiveModule module in _player.ActiveModules)
             {
                 if (!module.IsCategory(cf))
+                {
                     continue;
+                }
 
                 if (module.IsAmmoable)
                 {
-                    var ammo = module.GetAmmo();
+                    Ammo ammo = module.GetAmmo();
                     if (ammo == null || ammo.Quantity == 0)
+                    {
                         continue;
+                    }
                 }
 
-                var lockTarget = module.ED.AttributeFlags.PrimaryLockedTarget ? _player.GetPrimaryLock().ThrowIfNull(ErrorCodes.PrimaryLockTargetNotFound) :
+                Lock lockTarget = module.ED.AttributeFlags.PrimaryLockedTarget ? _player.GetPrimaryLock().ThrowIfNull(ErrorCodes.PrimaryLockTargetNotFound) :
                     _player.GetLock(lockId).ThrowIfNull(ErrorCodes.LockTargetNotFound);
 
                 module.Lock = lockTarget;
@@ -656,38 +691,38 @@ namespace Perpetuum.Zones
 
         private void HandlePutLoot(Packet packet)
         {
-            var pinCode = packet.ReadInt();
-            var containerEid = packet.ReadLong();
-            var count = packet.ReadInt();
+            int pinCode = packet.ReadInt();
+            long containerEid = packet.ReadLong();
+            int count = packet.ReadInt();
 
             WritePacketLog(packet, $"pin = {LootHelper.PinToString(pinCode)} guid = {containerEid} count = {count}");
 
-            var items = new List<KeyValuePair<long, int>>();
+            List<KeyValuePair<long, int>> items = new List<KeyValuePair<long, int>>();
 
-            for (var i = 0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
-                var itemEid = packet.ReadLong();
-                var qty = packet.ReadInt();
+                long itemEid = packet.ReadLong();
+                int qty = packet.ReadInt();
                 items.Add(new KeyValuePair<long, int>(itemEid, qty));
             }
 
-            var container = _zone.GetUnit(containerEid) as FieldContainer;
+            FieldContainer container = _zone.GetUnit(containerEid) as FieldContainer;
             container?.PutLoots(_player, pinCode, items);
         }
 
         private void HandleReleaseLoot(Packet packet)
         {
-            var pinCode = packet.ReadInt();
-            var containerEid = packet.ReadLong();
+            int pinCode = packet.ReadInt();
+            long containerEid = packet.ReadLong();
             WritePacketLog(packet, $"pin = {LootHelper.PinToString(pinCode)} guid = {containerEid}");
 
-            var container = _zone.GetUnit(containerEid) as LootContainer;
+            LootContainer container = _zone.GetUnit(containerEid) as LootContainer;
             container?.ReleaseLootContainer(_player);
         }
 
         private void HandleRemoveLock(Packet packet)
         {
-            var lockId = packet.ReadLong();
+            long lockId = packet.ReadLong();
             WritePacketLog(packet, $"lockId = {lockId}");
             _player.CancelLock(lockId);
         }
@@ -705,46 +740,47 @@ namespace Perpetuum.Zones
 
         private void HandleSetPrimaryLock(Packet packet)
         {
-            var lockId = packet.ReadLong();
+            long lockId = packet.ReadLong();
             WritePacketLog(packet, $"lockId = {lockId}");
             _player.SetPrimaryLock(lockId);
         }
 
         private void HandleTakeLoot(Packet packet)
         {
-            var pinCode = packet.ReadInt();
-            var containerEid = packet.ReadLong();
+            int pinCode = packet.ReadInt();
+            long containerEid = packet.ReadLong();
 
             WritePacketLog(packet, $"pin = {LootHelper.PinToString(pinCode)} guid = {containerEid}");
 
-            var items = new List<KeyValuePair<Guid, int>>();
+            List<KeyValuePair<Guid, int>> items = new List<KeyValuePair<Guid, int>>();
 
             while (!packet.AtEnd())
             {
-                var lootId = packet.ReadGuid();
-                var count = packet.ReadInt();
+                Guid lootId = packet.ReadGuid();
+                int count = packet.ReadInt();
                 items.Add(new KeyValuePair<Guid, int>(lootId, count));
             }
 
-            var container = _zone.GetUnit(containerEid) as LootContainer;
+            LootContainer container = _zone.GetUnit(containerEid) as LootContainer;
             container?.TakeLoots(_player, pinCode, items);
         }
 
         private void HandleUnloadAmmo(Packet packet)
         {
-            var robotComponent = (RobotComponentType)packet.ReadByte();
-            var slot = packet.ReadByte();
+            RobotComponentType robotComponent = (RobotComponentType)packet.ReadByte();
+            int slot = packet.ReadByte();
 
             WritePacketLog(packet, $"rc = {robotComponent} s = {slot}");
 
-            var component = _player.GetRobotComponent(robotComponent);
-            var module = component?.GetModule(slot) as ActiveModule;
-            if (module == null)
-                return;
-
-            using (var scope = Db.CreateTransaction())
+            RobotComponent component = _player.GetRobotComponent(robotComponent);
+            if (!(component?.GetModule(slot) is ActiveModule module))
             {
-                var container = _player.GetContainer();
+                return;
+            }
+
+            using (TransactionScope scope = Db.CreateTransaction())
+            {
+                RobotInventory container = _player.GetContainer();
                 Debug.Assert(container != null, "container != null");
                 container.EnlistTransaction();
                 module.UnequipAmmoToContainer(container);
@@ -763,15 +799,15 @@ namespace Perpetuum.Zones
 
         private void HandleUseItem(Packet packet)
         {
-            var itemEid = packet.ReadLong();
+            long itemEid = packet.ReadLong();
 
-            var usableItem = _zone.GetUnit(itemEid) as IUsableItem;
+            IUsableItem usableItem = _zone.GetUnit(itemEid) as IUsableItem;
             usableItem?.UseItem(_player);
         }
 
         private void HandleGetMyRobotInfo(Packet packet)
         {
-            var builder = new RobotInfoPacketBuilder(_player);
+            RobotInfoPacketBuilder builder = new RobotInfoPacketBuilder(_player);
             _player.Session.SendPacket(builder);
         }
 
@@ -785,26 +821,34 @@ namespace Perpetuum.Zones
 
         private void LogoutRequest(bool safeLogout)
         {
-            var player = _player;
+            Player player = _player;
             if (player == null)
+            {
                 return;
+            }
 
             lock (_logoutSync)
             {
                 if (_logoutTimer != null)
+                {
                     return;
+                }
 
                 _safeLogout = safeLogout;
 
                 if (player.HasPvpEffect)
+                {
                     player.StopAllModules();
+                }
 
-                var logoutTime = player.IsInSafeArea ? _pveLogoutTime : _pvpLogoutTime;
+                TimeSpan logoutTime = player.IsInSafeArea ? _pveLogoutTime : _pvpLogoutTime;
 
-                var pvpEffect = player.EffectHandler.GetEffectsByType(EffectType.effect_pvp).FirstOrDefault();
-                var effectTimer = pvpEffect?.Timer;
+                Effects.Effect pvpEffect = player.EffectHandler.GetEffectsByType(EffectType.effect_pvp).FirstOrDefault();
+                IntervalTimer effectTimer = pvpEffect?.Timer;
                 if (effectTimer != null)
+                {
                     logoutTime = logoutTime.Max(effectTimer.Remaining);
+                }
 
                 _logoutTimer = new IntervalTimer(logoutTime);
 
@@ -813,16 +857,16 @@ namespace Perpetuum.Zones
             }
         }
 
-        private void SendStartLogoutPacket([NotNull]IntervalTimer logoutTimer)
+        private void SendStartLogoutPacket([NotNull] IntervalTimer logoutTimer)
         {
-            var packet = new Packet(ZoneCommand.StartLogout);
+            Packet packet = new Packet(ZoneCommand.StartLogout);
             packet.AppendInt((int)logoutTimer.Interval.TotalMilliseconds);
             SendPacket(packet);
         }
 
         private void SendCancelLogoutPacket()
         {
-            var packet = new Packet(ZoneCommand.CancelLogout);
+            Packet packet = new Packet(ZoneCommand.CancelLogout);
             SendPacket(packet);
         }
 
@@ -834,13 +878,17 @@ namespace Perpetuum.Zones
         private void CancelLogout(bool force, bool sendPacket = true)
         {
             if (_logoutTimer == null || (!force && !_safeLogout))
+            {
                 return;
+            }
 
             _safeLogout = false;
             _logoutTimer = null;
 
             if (!sendPacket)
+            {
                 return;
+            }
             // itt is kuldunk packetet,h megszakadt
             SendCancelLogoutPacket();
         }
@@ -848,7 +896,9 @@ namespace Perpetuum.Zones
         public void ResetLogoutTimer()
         {
             if (_logoutTimer == null)
+            {
                 return;
+            }
 
             _logoutTimer.Reset();
             SendStartLogoutPacket(_logoutTimer);
@@ -867,7 +917,9 @@ namespace Perpetuum.Zones
         public void SendBeam(Beam beam)
         {
             if (beam.Type == BeamType.undefined)
+            {
                 return;
+            }
 
             SendPacket(new BeamPacketBuilder(beam));
         }
@@ -882,17 +934,23 @@ namespace Perpetuum.Zones
         private void UpdateLogout(TimeSpan time)
         {
             if (_logoutTimer == null)
+            {
                 return;
+            }
 
             _logoutTimer.Update(time);
 
             if (!_logoutTimer.Passed)
+            {
                 return;
+            }
 
             _logoutTimer = null;
 
             if (_isInLogout)
+            {
                 return;
+            }
 
             _isInLogout = true;
 
@@ -901,9 +959,9 @@ namespace Perpetuum.Zones
 
         private void LogoutPlayer()
         {
-            var character = Character;
+            Character character = Character;
 
-            using (var scope = Db.CreateTransaction())
+            using (TransactionScope scope = Db.CreateTransaction())
             {
                 _player.Save();
                 character.ZoneId = _zone.Id;
@@ -926,10 +984,7 @@ namespace Perpetuum.Zones
             _connection?.Disconnect();
         }
 
-        public TimeSpan InactiveTime
-        {
-            get { return DateTime.Now.Subtract(_lastReceivedPacketTime); }
-        }
+        public TimeSpan InactiveTime => DateTime.Now.Subtract(_lastReceivedPacketTime);
 
         public void Update(TimeSpan time)
         {
@@ -956,9 +1011,11 @@ namespace Perpetuum.Zones
 
             public void Update()
             {
-                var player = _session._player;
+                Player player = _session._player;
                 if (player == null)
+                {
                     return;
+                }
 
                 while (_beams.TryDequeue(out Beam beam))
                 {
@@ -975,9 +1032,11 @@ namespace Perpetuum.Zones
 
         public void SendBeamIfVisible(Beam beam)
         {
-            var player = _player;
+            Player player = _player;
             if (player == null)
+            {
                 return;
+            }
 
             if (player.IsInRangeOf3D(beam.SourcePosition, beam.Visibility) || player.IsInRangeOf3D(beam.TargetPosition, beam.Visibility))
             {

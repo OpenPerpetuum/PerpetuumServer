@@ -92,7 +92,6 @@ namespace Perpetuum.Modules
             }
 
             ConsumeAmmo();
-            GenerateHeat(EffectType.effect_excavator);
         }
 
         protected override int CalculateEp(int materialType)
@@ -198,7 +197,7 @@ namespace Perpetuum.Modules
                 scope.Complete();
             }
 
-            ParentRobot.IncreaseHeatLevel(EffectType.effect_excavator);
+            GenerateHeat(EffectType.effect_excavator);
         }
 
         protected void CheckEnablerEffect(MaterialInfo materialInfo, Position position)

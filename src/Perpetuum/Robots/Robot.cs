@@ -115,14 +115,6 @@ namespace Perpetuum.Robots
             overheatCooldownTimer.Interval = overheatCooldownPeriod;
         }
 
-        public void IncreaseHeatLevel(EffectType effectType)
-        {
-            if (EffectHandler.ContainsEffect(effectType))
-            {
-                OverheatHandler.Increase();
-            }
-        }
-
         public void IncreaseHeatLevelByValue(EffectType effectType, double value)
         {
             if (EffectHandler.ContainsEffect(effectType))

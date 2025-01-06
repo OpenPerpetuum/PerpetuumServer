@@ -174,7 +174,7 @@ namespace Perpetuum.Modules
 
         public void GenerateHeat(EffectType effectType, double weaponCount = 1)
         {
-            double heatValue = cycleTime.Value / 1000 / heatCoefficient * weaponCount;
+            double heatValue = cycleTime.Value / 1000 * heatCoefficient * weaponCount;
             ParentRobot.IncreaseHeatLevelByValue(
                 effectType,
                 heatValue);

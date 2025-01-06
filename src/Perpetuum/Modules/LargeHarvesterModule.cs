@@ -86,9 +86,9 @@ namespace Perpetuum.Modules
                         scope.Complete();
                     }
                 }
-
-                GenerateHeat(EffectType.effect_excavator, 6);
             }
+
+            GenerateHeat(EffectType.effect_excavator, 6);
         }
     }
 }

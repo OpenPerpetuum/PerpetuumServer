@@ -98,10 +98,7 @@ namespace Perpetuum.Robots
 
                         break;
                     case double x when x >= 120:
-                        robot.Kill(
-                            robot.IsPlayer()
-                                ? robot as Player
-                                : null);
+                        robot.Core = 0;
 
                         break;
                 }
