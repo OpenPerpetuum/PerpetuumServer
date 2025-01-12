@@ -43,6 +43,11 @@ namespace Perpetuum.Zones.RemoteControl
             CommandRobot.OnAggression(victim);
         }
 
+        public bool HasCommandBotPrimaryLock()
+        {
+            return CommandRobot.GetPrimaryLock() != null;
+        }
+
         protected override bool IsHostileFor(Unit unit)
         {
             return unit.IsHostile(this);

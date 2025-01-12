@@ -31,7 +31,7 @@ namespace Perpetuum.Robots
         private Lazy<IEnumerable<RobotComponent>> robotComponents;
         private readonly TimeSpan overheatCooldownPeriod = TimeSpan.FromMilliseconds(1650);
         private readonly IntervalTimer overheatCooldownTimer;
-        private const double HeatDissipation = 2;
+        private const double HeatDissipation = 1.75;
 
         protected Robot()
         {

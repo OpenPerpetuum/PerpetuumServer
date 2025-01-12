@@ -37,6 +37,7 @@ using Perpetuum.Units.FieldTerminals;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Blobs.BlobEmitters;
 using Perpetuum.Zones.Eggs;
+using Perpetuum.Zones.FieldEffectGenerators;
 using Perpetuum.Zones.Gates;
 using Perpetuum.Zones.Intrusion;
 using Perpetuum.Zones.LandMines;
@@ -173,6 +174,8 @@ namespace Perpetuum.Bootstrapper.Modules
             RegisterUnit<MobileTeleport>(builder);
             RegisterUnit<NpcEgg>(builder);
 
+            RegisterUnit<FieldEffectGenerator>(builder);
+
             RegisterEntity<FieldContainerCapsule>(builder);
             RegisterEntity<Ice>(builder);
             RegisterEntity<RespecToken>(builder);
@@ -200,6 +203,8 @@ namespace Perpetuum.Bootstrapper.Modules
             RegisterEntity<PlantSeedDeployer>(builder);
             RegisterEntity<RiftActivator>(builder);
             RegisterEntity<MineralScanResultItem>(builder);
+
+            RegisterEntity<FieldEffectGeneratorDeployer>(builder);
 
             RegisterModule<DrillerModule>(builder);
             RegisterModule<LargeDrillerModule>(builder);
@@ -576,6 +581,9 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByCategoryFlags<RespecToken>(CategoryFlags.cf_respec_tokens); // OPP respec tokens
                 ByCategoryFlags<SparkTeleportDevice>(CategoryFlags.cf_spark_teleport_devices);
                 ByCategoryFlags<ServerWideEpBooster>(CategoryFlags.cf_server_wide_ep_boosters);
+
+                ByCategoryFlags<FieldEffectGeneratorDeployer>(CategoryFlags.cf_mobile_field_masker_capsule);
+                ByCategoryFlags<FieldEffectGenerator>(CategoryFlags.cf_mobile_field_masker, new NamedParameter("effectType", EffectType.effect_field_stealth));
 
                 // OPP new Blinder module
                 ByNamePatternAndFlag<TargetBlinderModule>(DefinitionNames.STANDARD_BLINDER_MODULE, CategoryFlags.cf_target_painter);

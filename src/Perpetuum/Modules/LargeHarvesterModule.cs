@@ -26,8 +26,8 @@ namespace Perpetuum.Modules
 
         public override void DoHarvesting(IZone zone)
         {
-            Position centralTile = ParentRobot.PositionWithHeight.OffsetInDirection(ParentRobot.Direction, 2);
-            List<Position> mineralPositions = centralTile.GetEightNeighbours(ParentRobot.Zone.Size).ToList();
+            Position centralTile = ParentRobot.PositionWithHeight.OffsetInDirection(ParentRobot.Direction, 3);
+            List<Position> mineralPositions = centralTile.GetTwentyFourNeighbours(ParentRobot.Zone.Size).ToList();
             mineralPositions.Add(centralTile);
 
             int emptyTilesCounter = 0;
@@ -46,7 +46,7 @@ namespace Perpetuum.Modules
                         {
                             emptyTilesCounter++;
                             _ = emptyTilesCounter
-                                .ThrowIfEqual(9, ErrorCodes.NoPlantOnTile);
+                                .ThrowIfEqual(25, ErrorCodes.NoPlantOnTile);
 
                             continue;
                         }

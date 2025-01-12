@@ -1147,6 +1147,12 @@ namespace Perpetuum.Players
                     Repository.Delete(item);
                 }
 
+                foreach (Module module in Modules.Where(m => LootHelper.Roll(0.1)))
+                {
+                    module.Parent = robotInventory.Eid;
+                    Repository.Delete(module);
+                }
+
                 // Calculate and add tokens here
                 ItemInfo tokens = CalculateTokensDrop();
                 lootItems.Add(LootItemBuilder.Create(tokens).Build());

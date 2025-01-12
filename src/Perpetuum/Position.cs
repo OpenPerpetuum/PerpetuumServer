@@ -1,14 +1,14 @@
+using Perpetuum.Collections.Spatial;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
-using Perpetuum.Collections.Spatial;
 
 namespace Perpetuum
 {
     [Serializable]
-    public struct Position : IEquatable<Position>,IComparable<Position>
+    public struct Position : IEquatable<Position>, IComparable<Position>
     {
         public static readonly Position Empty = new Position();
 
@@ -16,9 +16,9 @@ namespace Perpetuum
         private double _y;
         private double _z;
 
-        public double X { get { return _x; } }
-        public double Y { get { return _y; } }
-        public double Z { get { return _z; } }
+        public double X => _x;
+        public double Y => _y;
+        public double Z => _z;
 
         public Position(double x, double y, double z = 0.0)
         {
@@ -27,25 +27,13 @@ namespace Perpetuum
             _z = z;
         }
 
-        public int intX
-        {
-            get { return (int)_x;}
-        }
+        public int intX => (int)_x;
 
-        public int intY
-        {
-            get { return (int)_y;}
-        }
+        public int intY => (int)_y;
 
-        public int intZ
-        {
-            get { return (int)_z;}
-        }
+        public int intZ => (int)_z;
 
-        public Position Center
-        {
-            get { return new Position(intX + 0.5, intY + 0.5, _z); }
-        }
+        public Position Center => new Position(intX + 0.5, intY + 0.5, _z);
 
         public bool IsValid(Size size)
         {
@@ -54,45 +42,32 @@ namespace Perpetuum
 
         public void Normalize()
         {
-            var m = Length;
-            if ( m <= 0.0 )
+            double m = Length;
+            if (m <= 0.0)
+            {
                 return;
+            }
 
             _x /= m;
             _y /= m;
             _z /= m;
         }
 
-        public double Length
-        {
-            get
-            {
-                return Math.Sqrt(_x * _x + _y * _y + _z * _z);
-            }
-        }
+        public double Length => Math.Sqrt((_x * _x) + (_y * _y) + (_z * _z));
 
-        public double lengthDouble2D
-        {
-            get
-            {
-                return Math.Sqrt(_x * _x + _y * _y );
-            }
-        }
+        public double lengthDouble2D => Math.Sqrt((_x * _x) + (_y * _y));
 
         public bool IsNeighbouring2DInt(Position p)
         {
-            var dx = Math.Abs(p.intX - intX);
-            var dy = Math.Abs(p.intY - intY);
+            int dx = Math.Abs(p.intX - intX);
+            int dy = Math.Abs(p.intY - intY);
 
-            if (dx == 1 && dy == 1)
-                return true;
-
-            return (dx + dy) <= 1;
+            return (dx == 1 && dy == 1) || (dx + dy) <= 1;
         }
 
         public bool IsTileChange(Position p)
         {
-            return (Math.Abs(p.intX - intX) > 0 || Math.Abs(p.intY - intY) > 0);
+            return Math.Abs(p.intX - intX) > 0 || Math.Abs(p.intY - intY) > 0;
         }
 
         public double TotalDistance3D(Position p)
@@ -102,16 +77,16 @@ namespace Perpetuum
 
         public double SqrDistance3D(Position p)
         {
-            var ax = p._x - _x;
-            var ay = p._y - _y;
-            var az = (p._z - _z)/4.0;
-            return ax*ax + ay*ay + az*az;
+            double ax = p._x - _x;
+            double ay = p._y - _y;
+            double az = (p._z - _z) / 4.0;
+            return (ax * ax) + (ay * ay) + (az * az);
         }
-        
+
         [System.Diagnostics.Contracts.Pure]
         public double TotalDistance2D(Position p)
         {
-            return TotalDistance2D((int) p.X, (int) p.Y);
+            return TotalDistance2D((int)p.X, (int)p.Y);
         }
 
         [System.Diagnostics.Contracts.Pure]
@@ -123,24 +98,19 @@ namespace Perpetuum
         [System.Diagnostics.Contracts.Pure]
         public double TotalDistance2D(int x, int y)
         {
-            var ax = x - _x;
-            var ay = y - _y;
-            return Math.Sqrt(ax * ax + ay * ay);
+            double ax = x - _x;
+            double ay = y - _y;
+            return Math.Sqrt((ax * ax) + (ay * ay));
         }
 
         public bool IsEqual2D(Position tPos)
         {
-            return (tPos.intX == intX && tPos.intY == intY);
+            return tPos.intX == intX && tPos.intY == intY;
         }
-        
+
         public int CompareTo(Position other)
         {
-            if ( intX == other.intX )
-            {
-                return intY - other.intY;
-            }
-
-            return intX - other.intX;
+            return intX == other.intX ? intY - other.intY : intX - other.intX;
         }
 
         public override string ToString()
@@ -156,8 +126,8 @@ namespace Perpetuum
         public double DirectionTo(Position targetPosition)
         {
             double direction;
-            var dx = targetPosition._x - _x;
-            var dy = targetPosition._y - _y;
+            double dx = targetPosition._x - _x;
+            double dy = targetPosition._y - _y;
 
             if (dx.IsZero())
             {
@@ -172,38 +142,44 @@ namespace Perpetuum
             }
 
             // - PI/2 ... + PI/2
-            var angle = Math.Atan(dy / dx);
+            double angle = Math.Atan(dy / dx);
 
             //0 ... PI
-            var radians = (angle + Math.PI / 2);
+            double radians = angle + (Math.PI / 2);
 
             //0 ... PI      =>     0 ... 128
-            direction = (radians / Math.PI * 0.5);
+            direction = radians / Math.PI * 0.5;
 
             if (dx < 0)
             {
-                direction = (0.5 + direction);
+                direction = 0.5 + direction;
             }
-           
+
             MathHelper.NormalizeDirection(ref direction);
             return direction;
         }
 
         public static double GetAngle(Position p)
         {
-            var x = p.X;
-            var y = p.Y;
+            double x = p.X;
+            double y = p.Y;
 
             if (Math.Abs(x) < double.Epsilon)
+            {
                 return y > 0 ? 0.5 : 0;
+            }
 
             if (Math.Abs(y) < double.Epsilon)
+            {
                 return x > 0 ? 0.25 : 0.75;
+            }
 
-            var direction = (Math.Atan(y / x) + Math.PI / 2) / Math.PI * 0.5;
+            double direction = (Math.Atan(y / x) + (Math.PI / 2)) / Math.PI * 0.5;
 
             if (x < 0)
+            {
                 direction += 0.5;
+            }
 
             MathHelper.NormalizeDirection(ref direction);
             return direction;
@@ -213,10 +189,10 @@ namespace Perpetuum
 
         public Position OffsetInDirection(double direction, double distance)
         {
-            var angleRadians = direction * PI2;
+            double angleRadians = direction * PI2;
 
-            var deltaX = Math.Sin(angleRadians) * distance;
-            var deltaY = Math.Cos(angleRadians) * distance;
+            double deltaX = Math.Sin(angleRadians) * distance;
+            double deltaY = Math.Cos(angleRadians) * distance;
 
             return new Position(_x + deltaX, _y - deltaY, _z);
         }
@@ -229,26 +205,28 @@ namespace Perpetuum
         [System.Diagnostics.Contracts.Pure]
         public Position GetRandomPositionInRange2D(double minRange, double maxRange)
         {
-            var randomAngleRadians = FastRandom.NextDouble() * Math.PI * 2;
+            double randomAngleRadians = FastRandom.NextDouble() * Math.PI * 2;
 
-            var offSetX = Math.Sin(randomAngleRadians);
-            var offSetY = Math.Cos(randomAngleRadians);
-            var distance = FastRandom.NextDouble(minRange,maxRange);
+            double offSetX = Math.Sin(randomAngleRadians);
+            double offSetY = Math.Cos(randomAngleRadians);
+            double distance = FastRandom.NextDouble(minRange, maxRange);
             return new Position(_x + (offSetX * distance), _y + (offSetY * distance), _z);
         }
 
         public Position GetPositionTowards2D(Position position, double distance)
         {
-            var xDiff = position._x - _x;
-            var yDiff = position._y - _y;
-            var totalDistance = TotalDistance2D(position);
+            double xDiff = position._x - _x;
+            double yDiff = position._y - _y;
+            double totalDistance = TotalDistance2D(position);
 
-            if (totalDistance.IsZero()) 
+            if (totalDistance.IsZero())
+            {
                 return position;
+            }
 
-            var xNorm = xDiff/totalDistance;
-            var yNorm = yDiff/totalDistance;
-            return new Position(_x + (xNorm*distance), _y + (yNorm*distance), _z);
+            double xNorm = xDiff / totalDistance;
+            double yNorm = yDiff / totalDistance;
+            return new Position(_x + (xNorm * distance), _y + (yNorm * distance), _z);
         }
 
         public bool IsWithinRangeOf2D(Position sourcePosition, double range)
@@ -258,18 +236,18 @@ namespace Perpetuum
 
         public bool IsWithinRangeOf2D(double cX, double cY, double range)
         {
-            var ax = cX - _x;
-            var ay = cY - _y;
-            var dist = (ax * ax) + (ay * ay);
-            return (range * range > dist);
+            double ax = cX - _x;
+            double ay = cY - _y;
+            double dist = (ax * ax) + (ay * ay);
+            return range * range > dist;
         }
 
         public bool IsWithinOrEqualRange(double cX, double cY, double range)
         {
-            var ax = cX - _x;
-            var ay = cY - _y;
-            var dist = (ax * ax) + (ay * ay);
-            return (range * range >= dist);
+            double ax = cX - _x;
+            double ay = cY - _y;
+            double dist = (ax * ax) + (ay * ay);
+            return range * range >= dist;
         }
 
         [System.Diagnostics.Contracts.Pure]
@@ -280,33 +258,36 @@ namespace Perpetuum
 
         public bool IsInRangeOf2D(double cX, double cY, double range)
         {
-            var ax = cX - _x;
-            var ay = cY - _y;
-            var dist = (ax * ax) + (ay * ay);
-            return (range * range >= dist);
+            double ax = cX - _x;
+            double ay = cY - _y;
+            double dist = (ax * ax) + (ay * ay);
+            return range * range >= dist;
         }
 
         public bool IsInRangeOf3D(Position sourcePosition, double range)
         {
-            var dx = sourcePosition._x - _x;
-            var dy = sourcePosition._y - _y;
-            var dz = (sourcePosition._z - _z)/4.0;
-            var dist = (dx*dx) + (dy*dy) + (dz*dz);
-            return (range * range >= dist);
+            double dx = sourcePosition._x - _x;
+            double dy = sourcePosition._y - _y;
+            double dz = (sourcePosition._z - _z) / 4.0;
+            double dist = (dx * dx) + (dy * dy) + (dz * dz);
+            return range * range >= dist;
         }
 
         public Position RotateAroundOrigo(double radians)
         {
-            var xRotated = Math.Cos(radians) * _x - Math.Sin(radians) * _y;
-            var yRotated = Math.Sin(radians) * _x + Math.Cos(radians) * _y;
+            double xRotated = (Math.Cos(radians) * _x) - (Math.Sin(radians) * _y);
+            double yRotated = (Math.Sin(radians) * _x) + (Math.Cos(radians) * _y);
 
-            return new Position(xRotated , yRotated , _z);
+            return new Position(xRotated, yRotated, _z);
         }
 
         public static Position RotateCWWithTurns(Position sourcePosition, int rotationTurns)
         {
-            if (rotationTurns == 0) return sourcePosition;
-            
+            if (rotationTurns == 0)
+            {
+                return sourcePosition;
+            }
+
             while (rotationTurns > 0)
             {
                 sourcePosition = sourcePosition.Rotate90CW();
@@ -323,7 +304,10 @@ namespace Perpetuum
 
         public static Position RotateCCWWithTurns(Position sourcePosition, int rotationTurns)
         {
-            if (rotationTurns == 0) return sourcePosition;
+            if (rotationTurns == 0)
+            {
+                return sourcePosition;
+            }
 
             while (rotationTurns > 0)
             {
@@ -346,7 +330,7 @@ namespace Perpetuum
 
         #region Operators
 
-        public static Position operator +(Position p,double d)
+        public static Position operator +(Position p, double d)
         {
             return new Position(p._x + d, p._y + d, p._z + d);
         }
@@ -356,14 +340,14 @@ namespace Perpetuum
             return new Position(p._x - d, p._y - d, p._z - d);
         }
 
-        public static Position operator +(Position a,Position b)
+        public static Position operator +(Position a, Position b)
         {
             return new Position(a._x + b._x, a._y + b._y, a._z + b._z);
         }
 
-        public static Position operator +(Position a,Vector2 v)
+        public static Position operator +(Position a, Vector2 v)
         {
-            return new Position(a._x + v.X, a._y + v.Y,a.Z);
+            return new Position(a._x + v.X, a._y + v.Y, a.Z);
         }
 
         public static Position operator -(Position a, Position b)
@@ -381,7 +365,7 @@ namespace Perpetuum
             return new Position(p._x / num, p._y / num, p._z / num);
         }
 
-        public static Position operator *(Position p, double  num)
+        public static Position operator *(Position p, double num)
         {
             return new Position(p._x * num, p._y * num, p._z * num);
         }
@@ -398,12 +382,12 @@ namespace Perpetuum
 
         public static implicit operator Position(Vector2 v)
         {
-            return new Position(v.X,v.Y);
+            return new Position(v.X, v.Y);
         }
 
         public static explicit operator Position(Vector3 v)
         {
-            return new Position(v.X,v.Y,v.Z);
+            return new Position(v.X, v.Y, v.Z);
         }
 
         public static bool operator ==(Position p1, Position p2)
@@ -425,9 +409,7 @@ namespace Perpetuum
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (obj.GetType() != typeof (Position)) return false;
-            return Equals((Position) obj);
+            return !(obj is null) && obj.GetType() == typeof(Position) && Equals((Position)obj);
         }
 
         public override int GetHashCode()
@@ -437,32 +419,32 @@ namespace Perpetuum
 
         public Vector2 ToVector2()
         {
-            return new Vector2((float) _x,(float) _y);
+            return new Vector2((float)_x, (float)_y);
         }
 
         public Vector3 ToVector3()
         {
-            return new Vector3((float) _x,(float) _y,(float) _z);
+            return new Vector3((float)_x, (float)_y, (float)_z);
         }
 
         public Point ToPoint()
         {
-            return new Point((int) _x,(int) _y);
+            return new Point((int)_x, (int)_y);
         }
 
         public PointF ToPointF()
         {
-            return new PointF((float) _x,(float) _y);
+            return new PointF((float)_x, (float)_y);
         }
 
         public ulong GetUlongHashCode()
         {
             unchecked
             {
-                var hx = (ulong)intX & 0x7fff;
-                var hy = (ulong)intY & 0x7fff;
-                var hz = (ulong)intZ & 0x7fff;
-                return hx << 40 | hy << 16 | hz;
+                ulong hx = (ulong)intX & 0x7fff;
+                ulong hy = (ulong)intY & 0x7fff;
+                ulong hz = (ulong)intZ & 0x7fff;
+                return (hx << 40) | (hy << 16) | hz;
             }
         }
 
@@ -472,16 +454,25 @@ namespace Perpetuum
         {
             get
             {
-                for (var i = 0; i < 4; i++)
+                for (int i = 0; i < 4; i++)
                 {
-                    var nx = intX + _nonDiagonalNeighbours[i, 0];
-                    var ny = intY + _nonDiagonalNeighbours[i, 1];
+                    int nx = intX + _nonDiagonalNeighbours[i, 0];
+                    int ny = intY + _nonDiagonalNeighbours[i, 1];
 
                     yield return new Position(nx, ny);
                 }
             }
         }
         private static readonly int[,] _neighbours = { { -1, -1 }, { 0, -1 }, { 1, -1 }, { -1, 0 }, { 1, 0 }, { -1, 1 }, { 0, 1 }, { 1, 1 } };
+
+        private static readonly int[,] _bigNeighbours =
+        {
+            { -2, -2}, { -1, -2}, { 0, -2 }, { 1, -2 }, { 2, -2 },
+            { -2, -1}, { -1, -1 }, { 0, -1 }, { 1, -1 }, { 2, -1},
+            { -2, 0 }, { -1, 0 }, { 1, 0 }, { 2, 0},
+            { -2, 1}, { -1, 1 }, { 0, 1 }, { 1, 1 }, { 2, 1},
+            { -2, 2}, { -1, 2}, { 0, 2 }, { 1, 2 }, { 2, 2 },
+        };
 
         public IEnumerable<Position> GetEightNeighbours(Size size)
         {
@@ -492,19 +483,38 @@ namespace Perpetuum
         {
             get
             {
-                for (var i = 0; i < 8; i++)
+                for (int i = 0; i < 8; i++)
                 {
-                    var nx = _x + _neighbours[i, 0];
-                    var ny = _y + _neighbours[i, 1];
+                    double nx = _x + _neighbours[i, 0];
+                    double ny = _y + _neighbours[i, 1];
 
-                    yield return new Position(nx,ny);
+                    yield return new Position(nx, ny);
+                }
+            }
+        }
+
+        public IEnumerable<Position> GetTwentyFourNeighbours(Size size)
+        {
+            return TwentyFourNeighbours.Where(np => np.IsValid(size));
+        }
+
+        public IEnumerable<Position> TwentyFourNeighbours
+        {
+            get
+            {
+                for (int i = 0; i < 24; i++)
+                {
+                    double nx = _x + _bigNeighbours[i, 0];
+                    double ny = _y + _bigNeighbours[i, 1];
+
+                    yield return new Position(nx, ny);
                 }
             }
         }
 
         public Position AddToZ(double offset)
         {
-            return new Position(X,Y,Z + offset);
+            return new Position(X, Y, Z + offset);
         }
 
         public double DirectionTo(Vector2 v)
@@ -514,19 +524,19 @@ namespace Perpetuum
 
         public static Position Abs(Position p)
         {
-            return new Position(Math.Abs(p.X),Math.Abs(p.Y),Math.Abs(p.Z));
+            return new Position(Math.Abs(p.X), Math.Abs(p.Y), Math.Abs(p.Z));
         }
 
-        public Position GetWorldPosition(double zoneX,double zoneY)
+        public Position GetWorldPosition(double zoneX, double zoneY)
         {
-            var wx = zoneX + X;
-            var wy = zoneY + Y;
-            return new Position(wx,wy);
+            double wx = zoneX + X;
+            double wy = zoneY + Y;
+            return new Position(wx, wy);
         }
 
         public CellCoord ToCellCoord()
         {
-            return CellCoord.FromXY((int)X,(int)Y);
+            return CellCoord.FromXY((int)X, (int)Y);
         }
 
         public double DirectionTo(Point point)
@@ -534,9 +544,9 @@ namespace Perpetuum
             return DirectionTo(point.ToPosition());
         }
 
-        public bool IsInRangeOf2D(Point point,double range)
+        public bool IsInRangeOf2D(Point point, double range)
         {
-            return IsInRangeOf2D(point.ToPosition(),range);
+            return IsInRangeOf2D(point.ToPosition(), range);
         }
 
 

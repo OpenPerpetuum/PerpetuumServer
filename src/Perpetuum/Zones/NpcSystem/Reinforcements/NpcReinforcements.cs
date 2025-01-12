@@ -7,6 +7,8 @@ namespace Perpetuum.Zones.NpcSystem.Reinforcements
 {
     public class NpcReinforcements : INpcReinforcements
     {
+        private const double ThresholdDelta = 0.1;
+
         // Sorted array of OreNpcData by threshold
         private readonly INpcReinforcementWave[] _presences;
 
@@ -22,9 +24,9 @@ namespace Perpetuum.Zones.NpcSystem.Reinforcements
         /// <returns>INpcReinforcementWave or null</returns>
         public INpcReinforcementWave GetNextPresence(double threshold)
         {
-            for (var i = _presences.Length - 1; i >= 0; i--)
+            for (int i = _presences.Length - 1; i >= 0; i--)
             {
-                if (_presences[i].Threshold < threshold)
+                if (threshold - _presences[i].Threshold < ThresholdDelta && _presences[i].Threshold - threshold > ThresholdDelta)
                 {
                     return _presences[i].Spawned ? null : _presences[i];
                 }
@@ -49,9 +51,9 @@ namespace Perpetuum.Zones.NpcSystem.Reinforcements
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             sb.AppendLine("ReinforceSpawn {");
-            for (var i = 0; i < _presences.Length; i++)
+            for (int i = 0; i < _presences.Length; i++)
             {
                 sb.AppendLine(_presences[i].ToString());
             }

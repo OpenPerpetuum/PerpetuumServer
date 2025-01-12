@@ -104,6 +104,8 @@ namespace Perpetuum.Bootstrapper.Modules
             _ = builder.RegisterType<AuraEffect>().Keyed<Effect>(EffectType.effect_alpha_bonus);
             _ = builder.RegisterType<AuraEffect>().Keyed<Effect>(EffectType.effect_alpha2_bonus);
 
+            _ = builder.RegisterType<AuraEffect>().Keyed<Effect>(EffectType.effect_field_stealth);
+
             _ = builder.Register<EffectFactory>(x =>
             {
                 IComponentContext ctx = x.Resolve<IComponentContext>();

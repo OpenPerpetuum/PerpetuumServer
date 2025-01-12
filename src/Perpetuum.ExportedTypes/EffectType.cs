@@ -136,5 +136,6 @@ namespace Perpetuum.ExportedTypes
         effect_overheat_buildup_critical = 133,
         effect_excavator = 134,
         remote_command_translation = 135,
+        effect_field_stealth = 136,
     }
 }

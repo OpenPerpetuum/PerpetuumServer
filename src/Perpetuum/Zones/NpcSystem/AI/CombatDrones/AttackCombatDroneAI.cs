@@ -25,7 +25,7 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
                 return;
             }
 
-            if (drone.GetPrimaryLock() == null)
+            if (!drone.HasCommandBotPrimaryLock())
             {
                 ReturnToHomePosition();
 

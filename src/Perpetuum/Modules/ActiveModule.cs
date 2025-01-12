@@ -184,13 +184,8 @@ namespace Perpetuum.Modules
 
         protected virtual void HandleOffensivePVPCheck(Player parentPlayer, UnitLock unitLockTarget)
         {
-            Player targetPlayer = unitLockTarget.Target as Player;
-            if (targetPlayer is null &&
-                ParentRobot is RemoteControlledCreature remoteControlledCreature &&
-                remoteControlledCreature.CommandRobot is Player player)
-            {
-                parentPlayer = player;
-            }
+            Player targetPlayer = unitLockTarget.Target as Player ??
+                (unitLockTarget.Target as RemoteControlledCreature)?.CommandRobot as Player;
 
             if (parentPlayer != null && targetPlayer != null)
             {

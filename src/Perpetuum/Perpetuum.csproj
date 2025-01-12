@@ -709,6 +709,8 @@
     <Compile Include="Zones\Effects\ZoneEffects\ZoneEffect.cs" />
     <Compile Include="Zones\Effects\ZoneEffects\ZoneEffectHandler.cs" />
     <Compile Include="Zones\Effects\ZoneEffects\ZoneEffectReader.cs" />
+    <Compile Include="Zones\FieldEffectGenerators\FieldEffectGenerator.cs" />
+    <Compile Include="Zones\FieldEffectGenerators\FieldEffectGeneratorDeployer.cs" />
     <Compile Include="Zones\Locking\Locks\TerraformDirection.cs" />
     <Compile Include="Zones\Locking\Locks\TerrainLockParametersPacketBuilder.cs" />
     <Compile Include="Zones\Locking\UnitProperties\LockingTimeProperty.cs" />

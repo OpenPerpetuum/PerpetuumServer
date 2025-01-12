@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using Perpetuum.ExportedTypes;
+﻿using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
 using Perpetuum.Modules;
 using Perpetuum.Units;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 
 namespace Perpetuum.Robots
 {
-    partial class Robot
+    public partial class Robot
     {
         private UnitOptionalProperty<int> decay;
         private UnitOptionalProperty<Color> tint;
@@ -33,7 +33,7 @@ namespace Perpetuum.Robots
             };
             OptionalProperties.Add(decay);
 
-            tint = new UnitOptionalProperty<Color>(this,UnitDataType.Tint,k.tint,() => ED.Config.Tint);
+            tint = new UnitOptionalProperty<Color>(this, UnitDataType.Tint, k.tint, () => ED.Config.Tint);
             OptionalProperties.Add(tint);
 
             powerGridMax = new UnitProperty(this, AggregateField.powergrid_max, AggregateField.powergrid_max_modifier);
@@ -70,58 +70,37 @@ namespace Perpetuum.Robots
             AddProperty(camouflage);
         }
 
-        private double PowerGridMax
-        {
-            get { return powerGridMax.Value; }
-        }
+        private double PowerGridMax => powerGridMax.Value;
 
-        public double PowerGrid
-        {
-            get { return powerGrid.Value; }
-        }
+        public double PowerGrid => powerGrid.Value;
 
-        private double CpuMax
-        {
-            get { return cpuMax.Value; }
-        }
+        private double CpuMax => cpuMax.Value;
 
-        public double Cpu
-        {
-            get { return cpu.Value; }
-        }
+        public double Cpu => cpu.Value;
 
-        public TimeSpan AmmoReloadTime
-        {
-            get { return TimeSpan.FromMilliseconds(ammoReloadTime.Value); }
-        }
+        public TimeSpan AmmoReloadTime => TimeSpan.FromMilliseconds(ammoReloadTime.Value);
 
-        public double MissileHitChance
-        {
-            get { return missileHitChance.Value; }
-        }
+        public double MissileHitChance => missileHitChance.Value;
 
         public int Decay
         {
-            private get { return decay.Value; }
-            set { decay.Value = value & 255; }
+            private get => decay.Value;
+            set => decay.Value = value & 255;
         }
 
         public Color Tint
         {
-            get { return tint.Value; }
-            set { tint.Value = value; }
+            get => tint.Value;
+            set => tint.Value = value;
         }
 
-        public double MineDetectionRange
-        {
-            get { return mineDetectionRange.Value; }
-        }
+        public double MineDetectionRange => mineDetectionRange.Value;
 
         public override double StealthStrength => base.StealthStrength + camouflage.Value;
 
         public override void UpdateRelatedProperties(AggregateField field)
         {
-            foreach (var component in RobotComponents)
+            foreach (RobotComponent component in RobotComponents)
             {
                 component.UpdateRelatedProperties(field);
             }
@@ -131,11 +110,11 @@ namespace Perpetuum.Robots
 
         public override Dictionary<string, object> BuildPropertiesDictionary()
         {
-            var result = new Dictionary<string,object>();
+            Dictionary<string, object> result = new Dictionary<string, object>();
 
-            foreach (var component in RobotComponents)
+            foreach (RobotComponent component in RobotComponents)
             {
-                var d = component.BuildPropertiesDictionary();
+                Dictionary<string, object> d = component.BuildPropertiesDictionary();
                 result.AddRange(d);
             }
 
@@ -147,18 +126,18 @@ namespace Perpetuum.Robots
 
         public override ItemPropertyModifier GetPropertyModifier(AggregateField field)
         {
-            var modifier = base.GetPropertyModifier(field);
+            ItemPropertyModifier modifier = base.GetPropertyModifier(field);
 
-            foreach (var component in RobotComponents)
+            foreach (RobotComponent component in RobotComponents)
             {
-                var m = component.GetPropertyModifier(field);
+                ItemPropertyModifier m = component.GetPropertyModifier(field);
                 m.Modify(ref modifier);
             }
 
             return modifier;
         }
 
-        public bool CheckPowerGridForModule(Module module, bool removing=false)
+        public bool CheckPowerGridForModule(Module module, bool removing = false)
         {
             return SimulateFitting(module, removing, PowerGridMax, TotalPowerGridUsage, AggregateField.powergrid_usage, AggregateField.powergrid_max_modifier);
         }
@@ -171,27 +150,21 @@ namespace Perpetuum.Robots
         private bool SimulateFitting(Module module, bool removing, double max, double current, AggregateField usageField, AggregateField maxModField)
         {
             double moduleUsageEstimate = 0;
-            var itemMod = module.BasePropertyModifiers.GetPropertyModifier(usageField);
+            ItemPropertyModifier itemMod = module.BasePropertyModifiers.GetPropertyModifier(usageField);
             module.SimulateRobotPropertyModifiers(this, ref itemMod);
             itemMod.Modify(ref moduleUsageEstimate);
             moduleUsageEstimate = removing ? -moduleUsageEstimate : moduleUsageEstimate;
             if (removing && module.BasePropertyModifiers.GetPropertyModifier(maxModField).HasValue)
             {
-                var mod = module.BasePropertyModifiers.GetPropertyModifier(maxModField).Value;
+                double mod = module.BasePropertyModifiers.GetPropertyModifier(maxModField).Value;
                 max /= Math.Max(mod, 1);
             }
             return current + moduleUsageEstimate <= max;
         }
 
-        public double TotalPowerGridUsage
-        {
-            get { return Modules.Sum(m => m.PowerGridUsage); }
-        }
+        public double TotalPowerGridUsage => Modules.Sum(m => m.PowerGridUsage);
 
-        public double TotalCpuUsage
-        {
-            get { return Modules.Sum(m => m.CpuUsage); }
-        }
+        public double TotalCpuUsage => Modules.Sum(m => m.CpuUsage);
 
         private class DecayChanceProperty : UnitProperty
         {
@@ -199,7 +172,7 @@ namespace Perpetuum.Robots
 
             protected override double CalculateValue()
             {
-                var v = 20 / owner.SignatureRadius * 0.01;
+                double v = 20 / owner.SignatureRadius * 0.01;
                 return v;
             }
         }
@@ -242,6 +215,11 @@ namespace Perpetuum.Robots
             double average = (Tint.R + Tint.G + Tint.B) / 3.0;
             // Faction island color.
             double oneColor;
+
+            if (Zone == null)
+            {
+                return 0;
+            }
 
             // Bonus depending on the faction of the island.
             switch (Zone.Configuration.RaceId)

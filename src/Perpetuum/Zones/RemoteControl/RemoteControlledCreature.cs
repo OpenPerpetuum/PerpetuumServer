@@ -66,14 +66,6 @@ namespace Perpetuum.Zones.RemoteControl
 
         public override void AddThreat(Unit hostile, Threat threat, bool spreadToGroup)
         {
-            /*
-            if (hostile.IsPlayer() && CommandRobot == (hostile as Player))
-            {
-                return;
-            }
-
-            base.AddThreat(hostile, threat, spreadToGroup);
-            */
         }
 
         public void Scoop()
