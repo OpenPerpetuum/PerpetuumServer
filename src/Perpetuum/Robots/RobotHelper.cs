@@ -16,7 +16,7 @@ namespace Perpetuum.Robots
 
         public Robot GetOrLoadRobotForCharacter(long robotEid, Character character)
         {
-            var robot = GetRobot(robotEid);
+            Robot robot = GetRobot(robotEid);
             if (robot == null)
             {
                 robot = LoadRobotForCharacter(robotEid, character);
@@ -32,9 +32,11 @@ namespace Perpetuum.Robots
 
         public Robot LoadRobotForCharacter(long robotEid, Character character, bool checkOwner = false)
         {
-            var robot = LoadRobot(robotEid);
+            Robot robot = LoadRobot(robotEid);
             if (robot == null)
+            {
                 return null;
+            }
 
             if (checkOwner)
             {
@@ -47,14 +49,14 @@ namespace Perpetuum.Robots
 
         public Robot LoadRobot(long robotEid)
         {
-            var robot = (Robot) _unitHelper.LoadUnit(robotEid);
+            Robot robot = (Robot)_unitHelper.LoadUnit(robotEid);
             robot?.Initialize();
             return robot;
         }
 
         public Robot LoadRobotOrThrow(long robotEid)
         {
-            var robot = (Robot) _unitHelper.LoadUnitOrThrow(robotEid);
+            Robot robot = (Robot)_unitHelper.LoadUnitOrThrow(robotEid);
             robot.Initialize();
             return robot;
         }

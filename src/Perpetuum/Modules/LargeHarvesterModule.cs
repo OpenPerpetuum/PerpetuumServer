@@ -17,7 +17,7 @@ using System.Transactions;
 
 namespace Perpetuum.Modules
 {
-    public class LargeHarvesterModule : HarvesterModule
+    public sealed class LargeHarvesterModule : HarvesterModule
     {
         public LargeHarvesterModule(CategoryFlags ammoCategoryFlags, PlantHarvester.Factory plantHarvesterFactory)
             : base(ammoCategoryFlags, plantHarvesterFactory)

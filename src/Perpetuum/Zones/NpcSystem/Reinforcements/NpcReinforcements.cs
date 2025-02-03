@@ -26,7 +26,7 @@ namespace Perpetuum.Zones.NpcSystem.Reinforcements
         {
             for (int i = _presences.Length - 1; i >= 0; i--)
             {
-                if (threshold - _presences[i].Threshold < ThresholdDelta && _presences[i].Threshold - threshold > ThresholdDelta)
+                if (threshold - _presences[i].Threshold < ThresholdDelta && _presences[i].Threshold - threshold < ThresholdDelta)
                 {
                     return _presences[i].Spawned ? null : _presences[i];
                 }

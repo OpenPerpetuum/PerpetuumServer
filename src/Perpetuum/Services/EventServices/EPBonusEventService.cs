@@ -48,7 +48,7 @@ namespace Perpetuum.Services.EventServices
         {
             using (_lock.Read(THREAD_TIMEOUT))
             {
-                return _duration - _elapsed;
+                return !_eventStarted ? TimeSpan.Zero : _duration - _elapsed;
             }
         }
 

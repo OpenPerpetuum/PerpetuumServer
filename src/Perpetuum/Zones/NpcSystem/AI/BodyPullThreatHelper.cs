@@ -31,19 +31,26 @@ namespace Perpetuum.Zones.NpcSystem.AI
 
         public void Visit(Player player)
         {
-            if (smartCreature.Behavior.Type != BehaviorType.Aggressive &&
+            if (smartCreature is RemoteControlledCreature &&
+                smartCreature.Behavior.Type != BehaviorType.RemoteControlledTurret)
+            {
+                return;
+            }
+
+            if (smartCreature.Behavior.Type != BehaviorType.Aggressive/* &&
                 smartCreature.Behavior.Type != BehaviorType.RemoteControlledTurret &&
-                smartCreature.Behavior.Type != BehaviorType.RemoteControlledDrone)
+                smartCreature.Behavior.Type != BehaviorType.RemoteControlledDrone*/)
             {
                 return;
             }
 
-            if (player.HasTeleportSicknessEffect &&
-                !(smartCreature is RemoteControlledCreature))
+            if (player.HasTeleportSicknessEffect/* &&
+                !(smartCreature is RemoteControlledCreature)*/)
             {
                 return;
             }
 
+            /*
             if (smartCreature is RemoteControlledCreature remoteControlledCreature &&
                 (remoteControlledCreature.CommandRobot is Player) &&
                 player.Zone.Configuration.IsAlpha &&
@@ -52,6 +59,7 @@ namespace Perpetuum.Zones.NpcSystem.AI
             {
                 return;
             }
+            */
 
             if (smartCreature.ThreatManager.Hostiles.Any(h => h.Unit.Eid == player.Eid))
             {
@@ -135,7 +143,7 @@ namespace Perpetuum.Zones.NpcSystem.AI
         private void ProcessNpcThreats(Unit unit)
         {
             if (smartCreature.Behavior.Type != BehaviorType.RemoteControlledTurret &&
-                smartCreature.Behavior.Type != BehaviorType.RemoteControlledDrone &&
+                //smartCreature.Behavior.Type != BehaviorType.RemoteControlledDrone &&
                 smartCreature.ED.Options.Faction == unit.ED.Options.Faction)
             {
                 return;

@@ -29,6 +29,7 @@ using Perpetuum.Services.ProductionEngine.CalibrationPrograms;
 using Perpetuum.Services.ProductionEngine.Facilities;
 using Perpetuum.Services.ProductionEngine.ResearchKits;
 using Perpetuum.Services.Relics;
+using Perpetuum.Services.Relics.Relics;
 using Perpetuum.Services.RiftSystem;
 using Perpetuum.Services.TechTree;
 using Perpetuum.Units;
@@ -322,6 +323,7 @@ namespace Perpetuum.Bootstrapper.Modules
             RegisterEntity<EPBoost>(builder);
             RegisterEntity<Relic>(builder);
             RegisterEntity<SAPRelic>(builder);
+            RegisterEntity<ArenaRelic>(builder);
 
             builder.Register<Func<EntityDefault, Entity>>(x =>
             {
@@ -653,6 +655,7 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByName<StrongholdEntryRift>(DefinitionNames.TARGETTED_RIFT); //OPP targetted rift
                 ByName<Relic>(DefinitionNames.RELIC); //OPP Relic
                 ByName<SAPRelic>(DefinitionNames.RELIC_SAP); //OPP outpost Relic
+                ByName<ArenaRelic>(DefinitionNames.RelicArenaRobot); //OPP Arena Relic
 
                 IContainer c = b.Build();
 

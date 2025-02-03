@@ -66,6 +66,10 @@ namespace Perpetuum.ExportedTypes
         cf_small_projectile_ammo = 0x000000000001030A,
         cf_medium_projectile_ammo = 0x000000000002030A,
         cf_large_projectile_ammo = 0x000000000003030A,
+
+        cf_hell_cannon_ammo = 0x000000000103030A,
+        cf_raven_cannon_ammo = 0x000000000203030A,
+
         cf_missile_ammo = 0x000000000000040A,
         cf_small_missile_ammo = 0x000000000001040A,
         cf_medium_missile_ammo = 0x000000000002040A,
@@ -249,6 +253,10 @@ namespace Perpetuum.ExportedTypes
         cf_small_single_projectile = 0x000000010402070F,
         cf_medium_single_projectile = 0x000000020402070F,
         cf_large_single_projectile = 0x000000030402070F,
+
+        cf_hell_cannons = 0x000001030402070F,
+        cf_raven_cannons = 0x000002030402070F,
+
         cf_aoe_projectile = 0x000000000502070F,
         cf_aoe_projectile_tile = 0x000000010502070F,
         cf_small_aoe_projectile_tile = 0x000001010502070F,

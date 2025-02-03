@@ -25,9 +25,9 @@ namespace Perpetuum.RequestHandlers.Extensions
                 int bonusAmount = request.Data.GetOrDefault<int>(k.bonus);
                 int resultingBonus = existingBonus + bonusAmount;
 
-                int timeRemained = _eventService.GetTimeRemained().Hours;
-                int durationHours = request.Data.GetOrDefault<int>(k.duration);
-                int resultingTime = timeRemained + durationHours;
+                double timeRemained = _eventService.GetTimeRemained().TotalHours;
+                double durationHours = request.Data.GetOrDefault<double>(k.duration);
+                double resultingTime = timeRemained + durationHours;
 
                 bool checkArgs = resultingBonus >= MIN_BONUS && resultingBonus <= MAX_BONUS;
                 checkArgs = checkArgs && resultingTime <= MAX_DURATION.TotalHours;

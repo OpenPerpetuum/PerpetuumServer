@@ -45,7 +45,9 @@ namespace Perpetuum.Zones.RemoteControl
 
         public bool HasCommandBotPrimaryLock()
         {
-            return CommandRobot.GetPrimaryLock() != null;
+            Lock primary = CommandRobot.GetPrimaryLock();
+
+            return primary != null && primary.State == Locking.LockState.Locked;
         }
 
         protected override bool IsHostileFor(Unit unit)

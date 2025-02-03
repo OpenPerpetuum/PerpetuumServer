@@ -51,7 +51,7 @@ namespace Perpetuum.Modules
                 case AggregateField.effect_harvesting_amount_modifier:
                 case AggregateField.drone_amplification_harvesting_amount_modifier:
                 case AggregateField.drone_remote_command_translation_harvesting_amount_modifier:
-                case AggregateField.effect_excavator_mining_amount_modifier:
+                case AggregateField.effect_excavator_harvesting_amount_modifier:
                     {
                         _harverstingAmountModifier.Update();
 

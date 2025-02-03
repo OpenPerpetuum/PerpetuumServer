@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="GameRoot" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">C:\PerpetuumServer\data\</Value>
+      <Value Profile="(Default)">H:\PerpetuumServer\data\</Value>
     </Setting>
   </Settings>
 </SettingsFile>

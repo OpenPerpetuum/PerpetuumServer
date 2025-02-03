@@ -34,6 +34,7 @@ namespace Perpetuum.Modules.EffectModules
                 .SetOwnerToSource()
                 .WithPropertyModifier(stealthStrengthModifier.ToPropertyModifier())
                 .WithPropertyModifier(miningAmountModifier.ToPropertyModifier())
+                .WithPropertyModifier(harvestingAmountModifier.ToPropertyModifier())
                 .WithRadiusModifier(effectEnhancerAuraRadiusModifier.Value);
         }
     }

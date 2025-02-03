@@ -223,7 +223,7 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
         {
             return (smartCreature as RemoteControlledCreature).CommandRobot
                 .GetLocks()
-                .Where(x => x is UnitLock && x.Primary)
+                .Where(x => x is UnitLock && x.Primary && x.State == Locking.LockState.Locked)
                 .FirstOrDefault() as UnitLock;
         }
 

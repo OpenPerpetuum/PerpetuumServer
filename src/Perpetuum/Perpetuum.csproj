@@ -384,6 +384,7 @@
     <Compile Include="Services\Relics\RelicManagers\IRelicManager.cs" />
     <Compile Include="Services\Relics\RelicManagers\OutpostRelicManager.cs" />
     <Compile Include="Services\Relics\Relics\AbstractRelic.cs" />
+    <Compile Include="Services\Relics\Relics\ArenaRelic.cs" />
     <Compile Include="Services\Relics\Relics\IRelic.cs" />
     <Compile Include="Services\Relics\Relics\Relic.cs" />
     <Compile Include="Services\Relics\RelicInfo.cs" />

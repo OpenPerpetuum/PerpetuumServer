@@ -40,9 +40,6 @@ namespace Perpetuum.Zones.NpcSystem
         private Lazy<int> optimalActionRange;
         private TimeSpan lastHelpCalled;
 
-        [CanBeNull]
-        private ISmartCreatureGroup group;
-
         public StackFSM AI { get; private set; }
 
         public Behavior Behavior { get; set; }
@@ -63,7 +60,8 @@ namespace Perpetuum.Zones.NpcSystem
 
         public bool IsInHomeRange => CurrentPosition.IsInRangeOf2D(HomePosition, HomeRange);
 
-        public ISmartCreatureGroup Group => group;
+        [field: CanBeNull]
+        public ISmartCreatureGroup Group { get; private set; }
 
         public virtual bool IsStationary => MaxSpeed.IsZero();
 
@@ -176,7 +174,7 @@ namespace Perpetuum.Zones.NpcSystem
 
         public void SetGroup(ISmartCreatureGroup group)
         {
-            this.group = group;
+            this.Group = group;
         }
 
         public void RecalculateOptimalCombatRange()
@@ -303,10 +301,12 @@ namespace Perpetuum.Zones.NpcSystem
 
         public virtual void AddThreat(Unit hostile, Threat threat, bool spreadToGroup)
         {
+            /*
             if (hostile is RemoteControlledCreature)
             {
                 threat = Threat.Multiply(threat, 100);
             }
+            */
 
             if (hostile.IsPlayer())
             {
