@@ -461,7 +461,8 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByCategoryFlags<WeaponModule>(CategoryFlags.cf_large_railguns, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_large_railgun_ammo));
                 ByCategoryFlags<FirearmWeaponModule>(CategoryFlags.cf_small_single_projectile, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_small_projectile_ammo));
                 ByCategoryFlags<FirearmWeaponModule>(CategoryFlags.cf_medium_single_projectile, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_medium_projectile_ammo));
-                ByCategoryFlags<FirearmWeaponModule>(CategoryFlags.cf_large_single_projectile, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_large_projectile_ammo));
+                ByCategoryFlags<FirearmWeaponModule>(CategoryFlags.cf_hell_cannons, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_hell_cannon_ammo));
+                ByCategoryFlags<FirearmWeaponModule>(CategoryFlags.cf_raven_cannons, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_raven_cannon_ammo));
                 ByCategoryFlags<FirearmWeaponModule>(CategoryFlags.cf_sentry_turret_guns, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_large_projectile_ammo));
                 ByCategoryFlags<MissileWeaponModule>(CategoryFlags.cf_small_missile_launchers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_small_missile_ammo));
                 ByCategoryFlags<MissileWeaponModule>(CategoryFlags.cf_medium_missile_launchers, new NamedParameter("ammoCategoryFlags", CategoryFlags.cf_medium_missile_ammo));

@@ -54,6 +54,7 @@ namespace Perpetuum.Modules.Weapons
             {
                 case AggregateField.drone_amplification_damage_modifier:
                 case AggregateField.drone_remote_command_translation_damage_modifier:
+                case AggregateField.effect_dreadnought_weapon_damage_modifier:
                     {
                         DamageModifier.Update();
 
