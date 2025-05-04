@@ -57,5 +57,6 @@ namespace Perpetuum.ExportedTypes
         effcat_mine_detection = 0x0000400000000000, // OPP: Mine detection
         effcat_drones_amplification = 0x0000800000000000, // OPP: Drone amplification
         effcat_drone_remote_command_translation = 0x0001000000000000, // OPP: Remote command translation
+        effcat_field_effect_generators = 0x0002000000000000, // OPP: Field effect generators
     }
 }

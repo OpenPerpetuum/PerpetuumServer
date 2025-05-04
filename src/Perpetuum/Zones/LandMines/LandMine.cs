@@ -2,11 +2,14 @@
 using Perpetuum.ExportedTypes;
 using Perpetuum.Modules.Weapons;
 using Perpetuum.Players;
+using Perpetuum.Robots;
 using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Units.DockingBases;
 using Perpetuum.Zones.Beams;
+using Perpetuum.Zones.NpcSystem;
 using Perpetuum.Zones.ProximityProbes;
+using Perpetuum.Zones.RemoteControl;
 using Perpetuum.Zones.Teleporting;
 using System;
 using System.Collections.Generic;
@@ -33,7 +36,7 @@ namespace Perpetuum.Zones.LandMines
             base.OnUpdate(time);
         }
 
-        public override void OnUnitsFound(List<Player> unitsFound)
+        public override void OnUnitsFound(List<Robot> unitsFound)
         {
             if (unitsFound.Exists(x => x.ActualMass > TriggerMass))
             {
@@ -61,12 +64,31 @@ namespace Perpetuum.Zones.LandMines
             }
         }
 
+        protected override void UpdateUnitVisibility(Unit target)
+        {
+            UpdateVisibility(target);
+        }
+
         #region probe functions
 
         [CanBeNull]
-        public override List<Player> GetNoticedUnits()
+        public override List<Robot> GetNoticedUnits()
         {
-            return GetVisibleUnits().Select(v => v.Target).OfType<Player>().ToList();
+            List<Robot> noticedRobots = new List<Robot>();
+
+            List<Npc> noticedNpcs = GetVisibleUnits().Select(v => v.Target).OfType<Npc>().ToList();
+            noticedRobots.AddRange(noticedNpcs);
+
+            if (!Zone.Configuration.IsAlpha)
+            {
+                List<Player> noticedPlayers = GetVisibleUnits().Select(v => v.Target).OfType<Player>().ToList();
+                noticedRobots.AddRange(noticedPlayers);
+
+                List<RemoteControlledCreature> noticedDrones = GetVisibleUnits().Select(v => v.Target).OfType<RemoteControlledCreature>().ToList();
+                noticedRobots.AddRange(noticedDrones);
+            }
+
+            return noticedRobots;
         }
 
         protected override bool IsDetected(Unit target)
@@ -91,6 +113,10 @@ namespace Perpetuum.Zones.LandMines
             }
         }
 
+        public override void OnUnitsFound(List<Player> unitsFound)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
     }
 }

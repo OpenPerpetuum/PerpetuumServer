@@ -137,5 +137,7 @@ namespace Perpetuum.ExportedTypes
         effect_excavator = 134,
         remote_command_translation = 135,
         effect_field_stealth = 136,
+        effect_field_eccm = 137,
+        effect_field_reactor_stabilizer = 138,
     }
 }

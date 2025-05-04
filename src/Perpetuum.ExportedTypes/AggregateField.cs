@@ -515,5 +515,7 @@ namespace Perpetuum.ExportedTypes
         server_wide_ep_bonus_duration = 755,
         effect_excavator_harvesting_amount_modifier = 756,
         effect_excavator_enhancer_harvesting_amount_modifier = 757,
+        effect_field_sensor_strength_modifier = 758,
+        effect_field_reactor_radiation_modifier = 759,
     }
 }

@@ -7,15 +7,15 @@ using System;
 
 namespace Perpetuum.Zones.FieldEffectGenerators
 {
-    public class FieldEffectGeneratorDeployer : ItemDeployer
+    public class FieldEccmEffectGeneratorDeployer : ItemDeployer
     {
-        public FieldEffectGeneratorDeployer(IEntityServices entityServices) : base(entityServices)
+        public FieldEccmEffectGeneratorDeployer(IEntityServices entityServices) : base(entityServices)
         {
         }
 
         protected override Unit CreateDeployableItem(IZone zone, Position spawnPosition, Player player)
         {
-            FieldEffectGenerator fieldEffectGenerator = (FieldEffectGenerator)base.CreateDeployableItem(zone, spawnPosition, player);
+            FieldEccmEffectGenerator fieldEffectGenerator = (FieldEccmEffectGenerator)base.CreateDeployableItem(zone, spawnPosition, player);
             fieldEffectGenerator.CheckDeploymentAndThrow(zone, spawnPosition);
             fieldEffectGenerator.SetDespawnTime(FieldEffectGeneratorDespawnTime);
 

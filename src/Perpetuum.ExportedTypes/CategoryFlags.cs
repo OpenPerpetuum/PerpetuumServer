@@ -520,6 +520,8 @@ namespace Perpetuum.ExportedTypes
         cf_teleport_back_home = 0x0000000004060278,
         cf_training_exit_teleport = 0x0000000000070278,
         cf_mobile_field_masker = 0x0000000000080278,
+        cf_mobile_field_eccm = 0x0000000000090278,
+        cf_mobile_field_reactor_stabilizer = 0x00000000000A0278,
 
         cf_groups = 0x0000000000000082,
         cf_corporation = 0x0000000000000182,
@@ -673,6 +675,8 @@ namespace Perpetuum.ExportedTypes
         cf_terraform_buoy_capsule = 0x0000000000000C98,
         cf_landmine_deployer = 0x0000000000000D98,
         cf_mobile_field_masker_capsule = 0x0000000000000E98,
+        cf_mobile_field_eccm_capsule = 0x0000000000000F98,
+        cf_mobile_field_reactor_stabilizer_capsule = 0x0000000000001098,
 
         cf_dynamic_cprg = 0x0000000000000099,
 

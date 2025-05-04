@@ -1121,7 +1121,8 @@ namespace Perpetuum.Units
                     this,
                     AggregateField.reactor_radiation,
                     AggregateField.reactor_radiation_modifier,
-                    AggregateField.drone_amplification_reactor_radiation_modifier);
+                    AggregateField.drone_amplification_reactor_radiation_modifier,
+                    AggregateField.effect_field_reactor_radiation_modifier);
             AddProperty(_reactorRadiation);
         }
 
@@ -1171,7 +1172,12 @@ namespace Perpetuum.Units
         private class SensorStrengthProperty : UnitProperty
         {
             public SensorStrengthProperty(Unit owner)
-                : base(owner, AggregateField.sensor_strength, AggregateField.sensor_strength_modifier, AggregateField.effect_sensor_strength_modifier)
+                : base(
+                      owner,
+                      AggregateField.sensor_strength,
+                      AggregateField.sensor_strength_modifier,
+                      AggregateField.effect_sensor_strength_modifier,
+                      AggregateField.effect_field_sensor_strength_modifier)
             {
             }
 

@@ -6,18 +6,18 @@ namespace Perpetuum.Items
 {
     public struct ItemPropertyModifier
     {
-        private readonly AggregateFormula formula;
         private readonly bool forceHasValue;
 
         public ItemPropertyModifier(AggregateField field, AggregateFormula formula, double value, bool forceHasValue = false) : this()
         {
             Field = field;
-            this.formula = formula;
+            Formula = formula;
             Value = value;
             this.forceHasValue = forceHasValue;
         }
 
         public AggregateField Field { get; }
+        public AggregateFormula Formula { get; }
 
         public double Value { get; private set; }
 
@@ -64,7 +64,7 @@ namespace Perpetuum.Items
 
         public void NormalizeExtensionBonus()
         {
-            switch (formula)
+            switch (Formula)
             {
                 case AggregateFormula.Modifier:
                     {
@@ -134,7 +134,7 @@ namespace Perpetuum.Items
             double v = target.Value;
             Modify(source, ref v);
 
-            return new ItemPropertyModifier(target.Field, target.formula, v);
+            return new ItemPropertyModifier(target.Field, target.Formula, v);
         }
 
         public static void Modify(ItemPropertyModifier source, ref double targetValue)
@@ -144,7 +144,7 @@ namespace Perpetuum.Items
                 return;
             }
 
-            switch (source.formula)
+            switch (source.Formula)
             {
                 // mod & inverse
                 case AggregateFormula.Modifier:
@@ -169,7 +169,7 @@ namespace Perpetuum.Items
 
         public override string ToString()
         {
-            return $"Field: {Field}, Formula: {formula}, Value: {Value}";
+            return $"Field: {Field}, Formula: {Formula}, Value: {Value}";
         }
     }
 }

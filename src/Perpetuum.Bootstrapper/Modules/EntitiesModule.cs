@@ -175,7 +175,9 @@ namespace Perpetuum.Bootstrapper.Modules
             RegisterUnit<MobileTeleport>(builder);
             RegisterUnit<NpcEgg>(builder);
 
-            RegisterUnit<FieldEffectGenerator>(builder);
+            RegisterUnit<FieldStealthEffectGenerator>(builder);
+            RegisterUnit<FieldEccmEffectGenerator>(builder);
+            RegisterUnit<FieldReactorStabilizerEffectGenerator>(builder);
 
             RegisterEntity<FieldContainerCapsule>(builder);
             RegisterEntity<Ice>(builder);
@@ -205,7 +207,9 @@ namespace Perpetuum.Bootstrapper.Modules
             RegisterEntity<RiftActivator>(builder);
             RegisterEntity<MineralScanResultItem>(builder);
 
-            RegisterEntity<FieldEffectGeneratorDeployer>(builder);
+            RegisterEntity<FieldStealthEffectGeneratorDeployer>(builder);
+            RegisterEntity<FieldEccmEffectGeneratorDeployer>(builder);
+            RegisterEntity<FieldReactorStabilizerEffectGeneratorDeployer>(builder);
 
             RegisterModule<DrillerModule>(builder);
             RegisterModule<LargeDrillerModule>(builder);
@@ -585,8 +589,14 @@ namespace Perpetuum.Bootstrapper.Modules
                 ByCategoryFlags<SparkTeleportDevice>(CategoryFlags.cf_spark_teleport_devices);
                 ByCategoryFlags<ServerWideEpBooster>(CategoryFlags.cf_server_wide_ep_boosters);
 
-                ByCategoryFlags<FieldEffectGeneratorDeployer>(CategoryFlags.cf_mobile_field_masker_capsule);
-                ByCategoryFlags<FieldEffectGenerator>(CategoryFlags.cf_mobile_field_masker, new NamedParameter("effectType", EffectType.effect_field_stealth));
+                ByCategoryFlags<FieldStealthEffectGeneratorDeployer>(CategoryFlags.cf_mobile_field_masker_capsule);
+                ByCategoryFlags<FieldStealthEffectGenerator>(CategoryFlags.cf_mobile_field_masker, new NamedParameter("effectType", EffectType.effect_field_stealth));
+
+                ByCategoryFlags<FieldEccmEffectGeneratorDeployer>(CategoryFlags.cf_mobile_field_eccm_capsule);
+                ByCategoryFlags<FieldEccmEffectGenerator>(CategoryFlags.cf_mobile_field_eccm, new NamedParameter("effectType", EffectType.effect_field_eccm));
+
+                ByCategoryFlags<FieldReactorStabilizerEffectGeneratorDeployer>(CategoryFlags.cf_mobile_field_reactor_stabilizer_capsule);
+                ByCategoryFlags<FieldReactorStabilizerEffectGenerator>(CategoryFlags.cf_mobile_field_reactor_stabilizer, new NamedParameter("effectType", EffectType.effect_field_reactor_stabilizer));
 
                 // OPP new Blinder module
                 ByNamePatternAndFlag<TargetBlinderModule>(DefinitionNames.STANDARD_BLINDER_MODULE, CategoryFlags.cf_target_painter);

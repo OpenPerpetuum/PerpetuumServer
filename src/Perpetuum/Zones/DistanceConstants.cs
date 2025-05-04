@@ -29,8 +29,8 @@ namespace Perpetuum.Zones
         public const double PLANT_MIN_DISTANCE_FROM_BASE = 100.0;
         public const double PLANT_MAX_DISTANCE_FROM_OUTPOST = 300.0;
 
-        public const double LANDMINE_DEPLOY_RANGE_FROM_BASE = 100.0;
-        public const double LANDMINE_DEPLOY_RANGE_FROM_TELEPORT = 100.0;
+        public const double LANDMINE_DEPLOY_RANGE_FROM_BASE = 50.0;
+        public const double LANDMINE_DEPLOY_RANGE_FROM_TELEPORT = 50.0;
         public const double LANDMINE_DEPLOY_RANGE_FROM_LANDMINE = 5.0;
 
         public const double PLANT_MIN_DISTANCE_FROM_PBS = 5.0;

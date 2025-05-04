@@ -710,8 +710,12 @@
     <Compile Include="Zones\Effects\ZoneEffects\ZoneEffect.cs" />
     <Compile Include="Zones\Effects\ZoneEffects\ZoneEffectHandler.cs" />
     <Compile Include="Zones\Effects\ZoneEffects\ZoneEffectReader.cs" />
-    <Compile Include="Zones\FieldEffectGenerators\FieldEffectGenerator.cs" />
-    <Compile Include="Zones\FieldEffectGenerators\FieldEffectGeneratorDeployer.cs" />
+    <Compile Include="Zones\FieldEffectGenerators\FieldEccmEffectGenerator.cs" />
+    <Compile Include="Zones\FieldEffectGenerators\FieldEccmEffectGeneratorDeployer.cs" />
+    <Compile Include="Zones\FieldEffectGenerators\FieldReactorStabilizerEffectGenerator.cs" />
+    <Compile Include="Zones\FieldEffectGenerators\FieldReactorStabilizerEffectGeneratorDeployer.cs" />
+    <Compile Include="Zones\FieldEffectGenerators\FieldStealthEffectGenerator.cs" />
+    <Compile Include="Zones\FieldEffectGenerators\FieldStealthEffectGeneratorDeployer.cs" />
     <Compile Include="Zones\Locking\Locks\TerraformDirection.cs" />
     <Compile Include="Zones\Locking\Locks\TerrainLockParametersPacketBuilder.cs" />
     <Compile Include="Zones\Locking\UnitProperties\LockingTimeProperty.cs" />

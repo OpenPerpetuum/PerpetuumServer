@@ -141,6 +141,12 @@ namespace Perpetuum.Zones.NpcSystem.AI
                 return false;
             }
 
+            // Fix NPC aggro while having teleport sickness
+            if (hostile.Unit.HasTeleportSicknessEffect)
+            {
+                return false;
+            }
+
             if (smartCreature.Behavior.Type == BehaviorType.Neutral && hostile.IsExpired)
             {
                 return false;

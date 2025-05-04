@@ -293,14 +293,9 @@ namespace Perpetuum.Containers
             {
                 TransactionLogEventBuilder b = TransactionLogEvent.Builder();
 
-                if (IsPersonalContainer)
-                {
-                    _ = b.SetTransactionType(TransactionType.ItemDonate).SetContainer(targetContainer);
-                }
-                else
-                {
-                    _ = b.SetTransactionType(TransactionType.ItemObtain).SetContainer(this);
-                }
+                _ = IsPersonalContainer
+                    ? b.SetTransactionType(TransactionType.ItemDonate).SetContainer(targetContainer)
+                    : b.SetTransactionType(TransactionType.ItemObtain).SetContainer(this);
 
                 character.LogTransaction(b);
             }
@@ -476,7 +471,8 @@ namespace Perpetuum.Containers
 
         public override void OnDeleteFromDb()
         {
-            HasChildren.ThrowIfTrue(ErrorCodes.ContainerHasToBeEmpty);
+            //Ghost Bases thee be gone
+            //HasChildren.ThrowIfTrue(ErrorCodes.ContainerHasToBeEmpty);
             ContainerLogger.ClearLog(null);
             base.OnDeleteFromDb();
         }

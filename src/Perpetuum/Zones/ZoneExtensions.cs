@@ -3,6 +3,7 @@ using Perpetuum.Groups.Corporations;
 using Perpetuum.IO;
 using Perpetuum.Log;
 using Perpetuum.Modules.Weapons;
+using Perpetuum.Players;
 using Perpetuum.Units;
 using Perpetuum.Zones.RemoteControl;
 using Perpetuum.Zones.Terrains;
@@ -230,6 +231,11 @@ namespace Perpetuum.Zones
             foreach (Unit unit in units)
             {
                 if (unit is RemoteControlledCreature)
+                {
+                    continue;
+                }
+
+                if (unit is Player player && zone.Configuration.IsAlpha && !player.HasPvpEffect)
                 {
                     continue;
                 }
