@@ -115,7 +115,11 @@ namespace Perpetuum.Zones.LandMines
 
         public override void OnUnitsFound(List<Player> unitsFound)
         {
-            throw new NotImplementedException();
+        }
+
+        protected override ProximityDeviceBase GetThis()
+        {
+            return this;
         }
         #endregion
     }

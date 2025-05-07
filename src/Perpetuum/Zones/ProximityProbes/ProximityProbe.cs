@@ -102,7 +102,11 @@ namespace Perpetuum.Zones.ProximityProbes
 
         public override void OnUnitsFound(List<Robot> unitsFound)
         {
-            throw new System.NotImplementedException();
+        }
+
+        protected override ProximityDeviceBase GetThis()
+        {
+            return this;
         }
     }
 }

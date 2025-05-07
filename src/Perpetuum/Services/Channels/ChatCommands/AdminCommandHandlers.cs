@@ -72,6 +72,7 @@ namespace Perpetuum.Services.Channels.ChatCommands
             }
             SendMessageToAll(data, string.Format("Altered state of control layer on {0} Tiles ({1}: set to {2})", lockedtiles.Count, flag, adddelete));
         }
+
         private static void LockOrUnlockZoneLayers(AdminCommandData data, bool toLock)
         {
             if (!IsDevModeEnabled(data))
@@ -102,6 +103,39 @@ namespace Perpetuum.Services.Channels.ChatCommands
             zone.IsLayerEditLocked = toLock;
             SendMessageToAll(data, $"All layers on zone {zoneId} {(toLock ? "LOCKED" : "UNLOCKED")}!");
         }
+
+        private static void SwitchZoneDegrade(AdminCommandData data, bool state)
+        {
+            if (!IsDevModeEnabled(data))
+            {
+                return;
+            }
+
+            bool err = false;
+            int zoneId = -1;
+            if (data.Command.Args.IsNullOrEmpty())
+            {
+                Character character = data.Request.Session.Character;
+                zoneId = character.ZoneId ?? -1;
+            }
+            else if (data.Command.Args.Length >= 1)
+            {
+                err = !int.TryParse(data.Command.Args[0], out int id);
+                zoneId = id;
+            }
+
+            if (err)
+            {
+                SendMessageToAll(data, "Error parsing args");
+                throw PerpetuumException.Create(ErrorCodes.RequiredArgumentIsNotSpecified);
+            }
+
+            CheckZoneId(data, zoneId);
+            IZone zone = data.Request.Session.ZoneMgr.GetZone(zoneId);
+            zone.TerraformHandler.Degrade = state;
+            SendMessageToAll(data, $"Zone {zoneId} degrade {(state ? "ENABLED" : "DISABLED")}!");
+        }
+
         public static void CheckZoneId(AdminCommandData data, int zoneId)
         {
             if (!data.Request.Session.ZoneMgr.ContainsZone(zoneId))
@@ -1507,11 +1541,25 @@ namespace Perpetuum.Services.Channels.ChatCommands
         {
             LockOrUnlockZoneLayers(data, true);
         }
+
         [ChatCommand("ZoneUnlockLayers")]
         public static void ZoneUnlockLayers(AdminCommandData data)
         {
             LockOrUnlockZoneLayers(data, false);
         }
+
+        [ChatCommand("ZoneDisableDegrade")]
+        public static void ZoneDisableDegrade(AdminCommandData data)
+        {
+            SwitchZoneDegrade(data, false);
+        }
+
+        [ChatCommand("ZoneEnableDegrade")]
+        public static void ZoneEnableDegrade(AdminCommandData data)
+        {
+            SwitchZoneDegrade(data, true);
+        }
+
         [ChatCommand("TestMissions")]
         public static void TestMissions(AdminCommandData data)
         {

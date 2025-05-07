@@ -44,9 +44,11 @@ namespace Perpetuum.Zones.ProximityProbes
             zone.Units.OfType<ProximityDeviceBase>().WithinRange(spawnPosition, DistanceConstants.PROXIMITY_PROBE_DEPLOY_RANGE_FROM_PROBE).Any().ThrowIfTrue(ErrorCodes.TooCloseToOtherDevice);
         }
 
+        protected abstract ProximityDeviceBase GetThis();
+
         public void SetDespawnTime(TimeSpan despawnTime)
         {
-            _despawnHelper = UnitDespawnHelper.Create(this, despawnTime);
+            _despawnHelper = UnitDespawnHelper.Create(GetThis(), despawnTime);
             _despawnHelper.DespawnStrategy = Kill;
         }
 

@@ -54,6 +54,7 @@ namespace Perpetuum.Zones.FieldEffectGenerators
         public void SetDespawnTime(TimeSpan despawnTime)
         {
             _despawnHelper = UnitDespawnHelper.Create(this, despawnTime);
+            _despawnHelper.DespawnStrategy = Kill;
         }
 
         public void ApplyFieldEffect()
