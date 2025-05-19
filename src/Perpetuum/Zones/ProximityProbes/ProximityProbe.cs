@@ -79,11 +79,11 @@ namespace Perpetuum.Zones.ProximityProbes
             return infoDict;
         }
 
-        public override void OnUnitsFound(List<Player> unitsFound)
+        public override void OnUnitsFound(List<Robot> unitsFound)
         {
-            //itt lehet mindenfele, pl most kuldunk egy kommandot amire a kliens terkepet frissit
+            List<Player> playersFound = unitsFound.Cast<Player>().ToList();
 
-            if (unitsFound.Count <= 0)
+            if (playersFound.Count <= 0)
             {
                 return;
             }
@@ -95,13 +95,9 @@ namespace Perpetuum.Zones.ProximityProbes
                 return;
             }
 
-            Dictionary<string, object> infoDict = CreateInfoDictionaryForProximityProbe(unitsFound);
+            Dictionary<string, object> infoDict = CreateInfoDictionaryForProximityProbe(playersFound);
 
             Message.Builder.SetCommand(Commands.ProximityProbeInfo).WithData(infoDict).ToCharacters(registerdCharacters).Send();
-        }
-
-        public override void OnUnitsFound(List<Robot> unitsFound)
-        {
         }
 
         protected override ProximityDeviceBase GetThis()

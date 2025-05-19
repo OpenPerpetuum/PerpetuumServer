@@ -113,10 +113,6 @@ namespace Perpetuum.Zones.LandMines
             }
         }
 
-        public override void OnUnitsFound(List<Player> unitsFound)
-        {
-        }
-
         protected override ProximityDeviceBase GetThis()
         {
             return this;

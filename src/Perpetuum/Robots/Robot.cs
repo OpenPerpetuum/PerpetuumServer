@@ -403,12 +403,25 @@ namespace Perpetuum.Robots
             base.OnBeforeRemovedFromZone(zone);
         }
 
+        //TODO: review if it's still has to be Lazy
         private void InitComponents()
         {
+            //Peanuts Plague
             components = new Lazy<IEnumerable<Item>>(() => Children.OfType<Item>().ToArray());
+            _ = components.Value; // force evaluation
             robotComponents = new Lazy<IEnumerable<RobotComponent>>(() => Components.OfType<RobotComponent>().ToArray());
-            modules = new Lazy<IEnumerable<Module>>(() => RobotComponents.SelectMany(c => c.Modules).ToArray());
+            _ = robotComponents.Value; // force evaluation
+            modules = new Lazy<IEnumerable<Module>>(() => RobotComponents
+                .SelectMany(c =>
+                {
+                    c.Initialize();
+
+                    return c.Modules;
+                })
+                .ToArray());
+            _ = modules.Value; // force evaluation
             activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().ToArray());
+            _ = activeModules.Value; // force evaluation
         }
 
         protected override void OnEnterZone(IZone zone, ZoneEnterType enterType)

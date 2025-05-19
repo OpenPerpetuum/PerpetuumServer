@@ -158,8 +158,6 @@ namespace Perpetuum.Zones.ProximityProbes
 
 
         public abstract void OnUnitsFound(List<Robot> unitsFound);
-
-        public abstract void OnUnitsFound(List<Player> unitsFound);
         #endregion
 
         protected override void OnDead(Unit killer)

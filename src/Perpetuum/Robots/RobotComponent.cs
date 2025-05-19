@@ -45,8 +45,10 @@ namespace Perpetuum.Robots
 
         private void InitModules()
         {
-            modules = new Lazy<IEnumerable<Module>>(() => Children.OfType<Module>().ToArray());
-            activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().ToArray());
+            modules = new Lazy<IEnumerable<Module>>(() => Children.OfType<Module>().ToArray(), isThreadSafe: true);
+            _ = modules.Value;
+            activeModules = new Lazy<IEnumerable<ActiveModule>>(() => Modules.OfType<ActiveModule>().ToArray(), isThreadSafe: true);
+            _ = activeModules.Value;
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
@@ -129,24 +131,31 @@ namespace Perpetuum.Robots
                 (!specializedSlot || specializedModule);
         }
 
-        public ErrorCodes CanEquipModule(Module module, int slot)
+        public ErrorCodes CanEquipModule(Module module, int slot, int robotDefinition = 0)
         {
-            return IsUsedSlot(slot)
-                ? ErrorCodes.UsedSlot
-                : !IsValidSlotTo(module, slot)
-                    ? ErrorCodes.InvalidSlot
-                    : module.Quantity <= 0
-                        ? ErrorCodes.WTFErrorMedicalAttentionSuggested
-                        : module.IsDamaged
-                            ? ErrorCodes.ItemHasToBeRepaired
-                            : !CheckUniqueModule(module)
-                                ? ErrorCodes.OnlyOnePerCategoryPerRobotAllowed
-                                : ErrorCodes.NoError;
+            return IsRobotAllowed(module, robotDefinition)
+                ? ErrorCodes.NotAllowedOnThisBot
+                : IsUsedSlot(slot)
+                    ? ErrorCodes.UsedSlot
+                    : !IsValidSlotTo(module, slot)
+                        ? ErrorCodes.InvalidSlot
+                        : module.Quantity <= 0
+                            ? ErrorCodes.WTFErrorMedicalAttentionSuggested
+                            : module.IsDamaged
+                                ? ErrorCodes.ItemHasToBeRepaired
+                                : !CheckUniqueModule(module)
+                                    ? ErrorCodes.OnlyOnePerCategoryPerRobotAllowed
+                                    : ErrorCodes.NoError;
         }
 
-        public void EquipModuleOrThrow(Module module, int slot)
+        private bool IsRobotAllowed(Module module, int robotDefinition = 0)
         {
-            _ = CanEquipModule(module, slot).ThrowIfError();
+            return module.ED.Options.AllowedBots.Length > 0 && !module.ED.Options.AllowedBots.Contains(robotDefinition);
+        }
+
+        public void EquipModuleOrThrow(Module module, int slot, int robotDefinition = 0)
+        {
+            _ = CanEquipModule(module, slot, robotDefinition).ThrowIfError();
             EquipModule(module, slot);
         }
 

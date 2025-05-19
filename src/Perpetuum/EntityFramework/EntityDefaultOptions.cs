@@ -162,6 +162,17 @@ namespace Perpetuum.EntityFramework
             }
         }
 
+        public int[] AllowedBots
+        {
+            get
+            {
+                int[] ids = _dictionary.GetOrDefault(k.AllowedBots, Array.Empty<int>());
+                Debug.Assert(ids.Length > 0);
+
+                return ids;
+            }
+        }
+
         public int PlasmaDefinition => _dictionary.GetOrDefault<int>(k.PlasmaDefinition);
 
         public int PlasmaConsumption => _dictionary.GetOrDefault<int>(k.PlasmaConsumption);

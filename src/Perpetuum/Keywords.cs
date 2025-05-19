@@ -1228,5 +1228,8 @@ namespace Perpetuum
         // Plasma-based modules
         public const string PlasmaDefinition = "plasmaDefinition";
         public const string PlasmaConsumption = "plasmaConsumption";
+
+        // Allowed bots for this equipment
+        public const string AllowedBots = "allowedBots";
     }
 }

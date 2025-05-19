@@ -717,5 +717,6 @@ namespace Perpetuum
         NoxTeleportForbidden,
         PlasmaNotFound,
         Overheat,
+        NotAllowedOnThisBot,
     }
 }
