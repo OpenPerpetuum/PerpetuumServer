@@ -1,7 +1,7 @@
-using System.Linq;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Units;
 using Perpetuum.Zones.DamageProcessors;
+using System.Linq;
 
 namespace Perpetuum.Zones.Intrusion
 {
@@ -18,9 +18,11 @@ namespace Perpetuum.Zones.Intrusion
         {
             base.OnDamageTaken(source, e);
 
-            var player = Zone.ToPlayerOrGetOwnerPlayer(source);
+            Players.Player player = Zone.ToPlayerOrGetOwnerPlayer(source);
             if (player == null)
+            {
                 return;
+            }
 
             IncrementPlayerScore(player, (int)e.TotalDamage);
         }
@@ -33,14 +35,14 @@ namespace Perpetuum.Zones.Intrusion
 
         protected override int MaxScore => 0;
 
-        protected override void AppendTopScoresToPacket(Packet packet,int count)
+        protected override void AppendTopScoresToPacket(Packet packet, int count)
         {
-            var topScores = GetCorporationTopScores(count);
+            System.Collections.Generic.IList<IntrusionCorporationScore> topScores = GetCorporationTopScores(count);
 
             packet.AppendInt(topScores.Count);
             packet.AppendByte(sizeof(long));
 
-            foreach (var topScore in topScores)
+            foreach (IntrusionCorporationScore topScore in topScores)
             {
                 packet.AppendLong(topScore.corporationEid);
                 packet.AppendInt(topScore.score);
@@ -49,7 +51,8 @@ namespace Perpetuum.Zones.Intrusion
 
         public override long GetWinnerCorporationEid()
         {
-            var score = GetCorporationTopScores(1).FirstOrDefault();
+            IntrusionCorporationScore score = GetCorporationTopScores(1).FirstOrDefault();
+
             return score.corporationEid;
         }
     }
