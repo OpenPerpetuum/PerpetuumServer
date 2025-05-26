@@ -1,4 +1,5 @@
 using Perpetuum.Accounting.Characters;
+using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Groups.Corporations;
 using Perpetuum.Log;
@@ -27,6 +28,12 @@ namespace Perpetuum.Zones.Intrusion
         {
             character = player.Character;
             corporationEid = player.CorporationEid;
+        }
+
+        public SAPPlayerInfo(Character character, long corporationEid)
+        {
+            this.character = character;
+            this.corporationEid = corporationEid;
         }
 
         public void IncrementScore(int value)
@@ -65,8 +72,13 @@ namespace Perpetuum.Zones.Intrusion
 
         private static readonly TimeSpan _broadcastInfoInterval = TimeSpan.FromSeconds(2);
 
+        private readonly Character _npcAttackerCharacter;
+
         private const int BROADCAST_INFO_TOP_SCORE_COUNT = 10;
         private const int BROADCAST_INFO_RANGE = 100;
+
+        private const string NianiCultistNick = "Niani Cultist";
+        private const long NianiCorpEid = 666;
 
         private readonly BeamType _enterBeamType;
         private readonly BeamType _exitBeamType;
@@ -84,6 +96,7 @@ namespace Perpetuum.Zones.Intrusion
         {
             _enterBeamType = enterBeamType;
             _exitBeamType = exitBeamType;
+            _npcAttackerCharacter = Character.GetByNick(NianiCultistNick);
         }
 
         public void AddToZone(IZone zone, Position spawnPosition)
@@ -184,6 +197,21 @@ namespace Perpetuum.Zones.Intrusion
             info.IncrementScore(score);
 
             SendSAPPlayerInfoPacketToPlayer(player, info);
+
+            if (MaxScore > 0 && info.score >= MaxScore)
+            {
+                OnTakeOver();
+            }
+
+            ExtendTimerOnce();
+
+            Logger.Info($"Intrusion SAP score updated. sap = {Eid} ({ED.Name}) player = {info.character.Id} score = {info.score}");
+        }
+
+        protected void IncrementNpcScore(int score)
+        {
+            SAPPlayerInfo info = ImmutableInterlocked.GetOrAdd(ref _playerInfos, _npcAttackerCharacter, c => new SAPPlayerInfo(_npcAttackerCharacter, NianiCorpEid));
+            info.IncrementScore(score);
 
             if (MaxScore > 0 && info.score >= MaxScore)
             {
@@ -363,14 +391,30 @@ namespace Perpetuum.Zones.Intrusion
             {
                 players.Add(player.character.GetPlayerRobotFromZone());
             }
+
+            long winnerCorporationEid = GetWinnerCorporationEid();
             StabilityAffectingEvent.StabilityAffectBuilder builder = StabilityAffectingEvent.Builder()
                 .WithOutpost(Site)
                 .WithSapDefinition(Definition)
                 .WithSapEntityID(Eid)
                 .WithPoints(StabilityChange)
                 .AddParticipants(players)
-                .WithWinnerCorp(GetWinnerCorporationEid());
+                .WithWinnerCorp(winnerCorporationEid);
+
             return builder.Build();
+        }
+
+        protected override bool IsHostileFor(Unit unit)
+        {
+            return unit.ED.Options.Faction == NpcSystem.Faction.Cultist;
+        }
+
+        public override void AcceptVisitor(IEntityVisitor visitor)
+        {
+            if (!TryAcceptVisitor(this, visitor))
+            {
+                base.AcceptVisitor(visitor);
+            }
         }
     }
 }

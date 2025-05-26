@@ -2,8 +2,10 @@
 using Perpetuum.Log;
 using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Zones;
+using Perpetuum.Zones.NpcSystem;
 using Perpetuum.Zones.NpcSystem.Presences;
 using Perpetuum.Zones.NpcSystem.Reinforcements;
+using Perpetuum.Zones.NpcSystem.SapAttackers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -22,13 +24,15 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
         protected readonly IZone _zone;
 
         protected readonly INpcReinforcementsRepository _npcReinforcementsRepo;
-        public NpcSpawnEventHandler(IZone zone, INpcReinforcementsRepository reinforcementsRepo)
+        protected readonly ISapAttackersRepository _npcSapAttackersRepo;
+        public NpcSpawnEventHandler(IZone zone, INpcReinforcementsRepository reinforcementsRepo, ISapAttackersRepository sapAttackersRepository)
         {
             _zone = zone;
             _npcReinforcementsRepo = reinforcementsRepo;
+            _npcSapAttackersRepo = sapAttackersRepository;
         }
 
-        protected abstract IEnumerable<INpcReinforcements> GetActiveReinforcments(Presence presence);
+        protected abstract IEnumerable<Zones.NpcSystem.INpcPresences> GetActiveReinforcments(Presence presence);
 
         protected abstract bool CheckMessage(IEventMessage inMsg, out T msg);
 
@@ -36,11 +40,11 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
 
         protected abstract bool CheckState(T msg);
 
-        protected abstract void CleanupAllReinforcements(T msg);
+        protected abstract void CleanupAllAttackers(T msg);
 
         protected abstract Position FindSpawnPosition(T msg, int maxRange);
 
-        protected abstract INpcReinforcementWave GetNextWave(T msg);
+        protected abstract INpcPresence GetNextWave(T msg);
 
         protected virtual void OnSpawning(Presence pres, T msg) { }
 
@@ -55,9 +59,9 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
             _zone.CreateBeam(BeamType.teleport_storm, b => b.WithPosition(beamLocation).WithDuration(SPAWN_DELAY));
         }
 
-        protected void DoSpawning(INpcReinforcementWave wave, Position homePosition, Position spawnPosition, T msg)
+        protected void DoSpawning(INpcPresence wave, Position homePosition, Position spawnPosition, T msg)
         {
-            var pres = _zone.AddDynamicPresenceToPosition(wave.PresenceId, homePosition, spawnPosition, SPAWN_LIFETIME);
+            DynamicPresenceExtended pres = _zone.AddDynamicPresenceToPosition(wave.PresenceId, homePosition, spawnPosition, SPAWN_LIFETIME);
             OnSpawning(pres, msg);
             pres.PresenceExpired += OnPresenceExpired;
             wave.SetActivePresence(pres);
@@ -65,15 +69,15 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
 
         protected void OnPresenceExpired(Presence presence)
         {
-            var activeReinforcements = GetActiveReinforcments(presence);
-            foreach (var reinforcements in activeReinforcements)
+            IEnumerable<Zones.NpcSystem.INpcPresences> activeReinforcements = GetActiveReinforcments(presence);
+            foreach (Zones.NpcSystem.INpcPresences reinforcements in activeReinforcements)
             {
-                var wave = reinforcements.GetActiveWaveOfPresence(presence);
+                INpcPresence wave = reinforcements.GetActivePresence(presence);
                 ExpireWave(wave);
             }
         }
 
-        protected void ExpireWave(INpcReinforcementWave wave)
+        protected void ExpireWave(INpcPresence wave)
         {
             wave.ActivePresence.PresenceExpired -= OnPresenceExpired;
             wave.DeactivatePresence();
@@ -86,22 +90,30 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
             if (CheckMessage(value, out T msg))
             {
                 if (CheckState(msg))
+                {
                     return;
+                }
 
                 if (_spawning)
+                {
                     return;
+                }
 
                 CheckReinforcements(msg);
 
-                var wave = GetNextWave(msg);
+                INpcPresence wave = GetNextWave(msg);
                 if (wave == null)
+                {
                     return; // Presence not found for this message state or already spawned
+                }
 
-                var spawnPos = FindSpawnPosition(msg, MAX_SPAWN_DIST);
+                Position spawnPos = FindSpawnPosition(msg, MAX_SPAWN_DIST);
                 if (spawnPos == Position.Empty)
+                {
                     return; // Failed to find valid spawn location, try again on next cycle
+                }
 
-                var homePos = GetHomePos(msg, spawnPos);
+                Position homePos = GetHomePos(msg, spawnPos);
 
                 DoBeams(homePos);
 

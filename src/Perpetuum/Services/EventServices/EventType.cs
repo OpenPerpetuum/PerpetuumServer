@@ -12,5 +12,6 @@
         NpcReinforce,
         Environmental,
         PortalSpawn,
+        NpcSapAttackers,
     }
 }

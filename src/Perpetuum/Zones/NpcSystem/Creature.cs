@@ -4,6 +4,7 @@ using Perpetuum.Robots;
 using Perpetuum.Units;
 using Perpetuum.Zones.Effects;
 using Perpetuum.Zones.Eggs;
+using Perpetuum.Zones.Intrusion;
 using Perpetuum.Zones.LandMines;
 using Perpetuum.Zones.Locking;
 using Perpetuum.Zones.Locking.Locks;
@@ -16,7 +17,7 @@ namespace Perpetuum.Zones.NpcSystem
     {
         protected override void UpdateUnitVisibility(Unit target)
         {
-            if (target is AreaBomb || target is LandMine)
+            if (target is AreaBomb || target is LandMine || target is SAP)
             {
                 UpdateVisibility(target);
             }

@@ -6,6 +6,7 @@ using Perpetuum.Zones.NpcSystem;
 using Perpetuum.Zones.NpcSystem.Flocks;
 using Perpetuum.Zones.NpcSystem.Presences;
 using Perpetuum.Zones.NpcSystem.Reinforcements;
+using Perpetuum.Zones.NpcSystem.SapAttackers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,16 +15,19 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
 {
     public class NpcReinforcementSpawner : NpcSpawnEventHandler<NpcReinforcementsMessage>
     {
-        protected override TimeSpan SPAWN_DELAY { get { return TimeSpan.FromSeconds(5); } }
-        protected override TimeSpan SPAWN_LIFETIME { get { return TimeSpan.FromMinutes(30); } }
-        protected override int MAX_SPAWN_DIST { get { return 15; } }
+        protected override TimeSpan SPAWN_DELAY => TimeSpan.FromSeconds(5);
+        protected override TimeSpan SPAWN_LIFETIME => TimeSpan.FromMinutes(30);
+        protected override int MAX_SPAWN_DIST => 15;
 
         public override EventType Type => EventType.NpcReinforce;
 
-        private readonly IDictionary<NpcBossInfo, INpcReinforcements> _reinforcementsByNpc = new Dictionary<NpcBossInfo, INpcReinforcements>();
-        public NpcReinforcementSpawner(IZone zone, INpcReinforcementsRepository reinforcementsRepo) : base(zone, reinforcementsRepo) { }
+        private readonly IDictionary<NpcBossInfo, INpcPresences> _reinforcementsByNpc = new Dictionary<NpcBossInfo, INpcPresences>();
+        public NpcReinforcementSpawner(
+            IZone zone,
+            INpcReinforcementsRepository reinforcementsRepo,
+            ISapAttackersRepository sapAttackersRepository) : base(zone, reinforcementsRepo, sapAttackersRepository) { }
 
-        protected override IEnumerable<INpcReinforcements> GetActiveReinforcments(Presence presence)
+        protected override IEnumerable<INpcPresences> GetActiveReinforcments(Presence presence)
         {
             return _reinforcementsByNpc.Where(p => p.Value.HasActivePresence(presence)).Select(p => p.Value);
         }
@@ -33,21 +37,23 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
             if (inMsg is NpcReinforcementsMessage message && _zone.Id == message.ZoneId)
             {
                 msg = message;
+
                 return true;
             }
             else
             {
                 msg = null;
+
                 return false;
             }
         }
 
         protected override void CheckReinforcements(NpcReinforcementsMessage msg)
         {
-            var info = msg.SmartCreature.BossInfo;
+            NpcBossInfo info = msg.SmartCreature.BossInfo;
             if (!_reinforcementsByNpc.ContainsKey(info))
             {
-                var reinforcements = _npcReinforcementsRepo.CreateNpcBossAddSpawn(info, msg.ZoneId);
+                INpcPresences reinforcements = _npcReinforcementsRepo.CreateNpcBossAddSpawn(info, msg.ZoneId);
                 _reinforcementsByNpc.Add(info, reinforcements);
             }
         }
@@ -56,54 +62,55 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
         {
             if (msg.SmartCreature.BossInfo.IsDead)
             {
-                CleanupAllReinforcements(msg);
+                CleanupAllAttackers(msg);
+
                 return true;
             }
             UpdateAggro(msg);
+
             return false;
         }
 
         private void UpdateAggro(NpcReinforcementsMessage msg)
         {
-            var info = msg.SmartCreature.BossInfo;
+            NpcBossInfo info = msg.SmartCreature.BossInfo;
             if (_reinforcementsByNpc.ContainsKey(info))
             {
-                var activeWaves = _reinforcementsByNpc[info].GetAllActiveWaves().Where(w => w.ActivePresence != null);
-                foreach (var wave in activeWaves)
+                IEnumerable<INpcPresence> activeWaves = _reinforcementsByNpc[info].GetAllActivePresences().Where(w => w.ActivePresence != null);
+                foreach (INpcPresence wave in activeWaves)
                 {
                     SpreadAggro(wave.ActivePresence, msg.SmartCreature);
                 }
             }
         }
 
-        protected override void CleanupAllReinforcements(NpcReinforcementsMessage msg)
+        protected override void CleanupAllAttackers(NpcReinforcementsMessage msg)
         {
-            var info = msg.SmartCreature.BossInfo;
+            NpcBossInfo info = msg.SmartCreature.BossInfo;
             if (_reinforcementsByNpc.ContainsKey(info))
             {
-                var activeWaves = _reinforcementsByNpc[info].GetAllActiveWaves();
-                foreach (var wave in activeWaves)
+                INpcPresence[] activeWaves = _reinforcementsByNpc[info].GetAllActivePresences();
+                foreach (INpcPresence wave in activeWaves)
                 {
                     ExpireWave(wave);
                 }
+
                 _reinforcementsByNpc.Remove(info);
             }
         }
 
         protected override Position FindSpawnPosition(NpcReinforcementsMessage msg, int maxRange)
         {
-            var finder = new RandomWalkableAroundPositionFinder(_zone, msg.SmartCreature.CurrentPosition, maxRange);
-            if (finder.Find(out Position result))
-            {
-                return result;
-            }
-            return msg.SmartCreature.CurrentPosition;
+            RandomWalkableAroundPositionFinder finder = new RandomWalkableAroundPositionFinder(_zone, msg.SmartCreature.CurrentPosition, maxRange);
+
+            return finder.Find(out Position result) ? result : msg.SmartCreature.CurrentPosition;
         }
 
-        protected override INpcReinforcementWave GetNextWave(NpcReinforcementsMessage msg)
+        protected override INpcPresence GetNextWave(NpcReinforcementsMessage msg)
         {
-            var npc = msg.SmartCreature;
-            var percent = 1.0 - npc.ArmorPercentage;
+            SmartCreature npc = msg.SmartCreature;
+            double percent = 1.0 - npc.ArmorPercentage;
+
             return _reinforcementsByNpc[npc.BossInfo].GetNextPresence(percent);
         }
 
@@ -114,9 +121,9 @@ namespace Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers
 
         private void SpreadAggro(Presence presenceToAggro, SmartCreature smartCreatureWithAggro)
         {
-            foreach (var npc in presenceToAggro.Flocks.GetMembers())
+            foreach (Npc npc in presenceToAggro.Flocks.GetMembers())
             {
-                foreach (var threat in smartCreatureWithAggro.ThreatManager.Hostiles)
+                foreach (Zones.NpcSystem.ThreatManaging.Hostile threat in smartCreatureWithAggro.ThreatManager.Hostiles)
                 {
                     npc.AddDirectThreat(threat.Unit, threat.Threat + FastRandom.NextDouble(5, 10));
                 }

@@ -4,5 +4,6 @@
     {
         Niani,
         Syndicate,
+        Cultist,
     }
 }

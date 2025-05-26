@@ -4,6 +4,7 @@ using Perpetuum.Services.EventServices.EventProcessors.NpcSpawnEventHandlers;
 using Perpetuum.Threading.Process;
 using Perpetuum.Zones;
 using Perpetuum.Zones.NpcSystem.Reinforcements;
+using Perpetuum.Zones.NpcSystem.SapAttackers;
 using Perpetuum.Zones.Scanning.Scanners;
 using Perpetuum.Zones.Terrains;
 using Perpetuum.Zones.Terrains.Materials;
@@ -26,9 +27,11 @@ namespace Perpetuum.Bootstrapper.Modules
                 return zone =>
                 {
                     IMineralConfigurationReader reader = ctx.Resolve<IMineralConfigurationReader>();
-                    OreNpcSpawner listener = new OreNpcSpawner(zone, ctx.Resolve<INpcReinforcementsRepository>(), reader);
+                    OreNpcSpawner oreNpcSpawnlistener = new OreNpcSpawner(zone, ctx.Resolve<INpcReinforcementsRepository>(), ctx.Resolve<ISapAttackersRepository>(), reader);
+                    SapAttackerSpawner sapAttackerSpawnlistener = new SapAttackerSpawner(zone, ctx.Resolve<INpcReinforcementsRepository>(), ctx.Resolve<ISapAttackersRepository>());
                     EventListenerService eventListenerService = ctx.Resolve<EventListenerService>();
-                    eventListenerService.AttachListener(listener);
+                    eventListenerService.AttachListener(oreNpcSpawnlistener);
+                    eventListenerService.AttachListener(sapAttackerSpawnlistener);
                     if (zone is TrainingZone)
                     {
                         GravelRepository repo = ctx.Resolve<GravelRepository>();

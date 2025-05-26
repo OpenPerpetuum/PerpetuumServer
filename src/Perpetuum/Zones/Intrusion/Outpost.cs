@@ -35,6 +35,8 @@ namespace Perpetuum.Zones.Intrusion
         private const int PRODUCTION_BONUS_THRESHOLD = 100;
         private const int MinAnnouncementDelay = 10;
         private const int MaxAnnouncementDelay = 30;
+        private const int TimeUntilCultistsAttack = 1;
+        private const long NianiCorporationEid = 666;
 
         private TimeRange _intrusionWaitTime => IntrusionWaitTime;
         private readonly IEntityServices _entityServices;
@@ -43,6 +45,9 @@ namespace Perpetuum.Zones.Intrusion
         private static readonly ILookup<long, SAPInfo> _sapInfos;
         private readonly EventListenerService _eventChannel;
         private readonly OutpostDecay _decay;
+        private IntervalTimer _cultistsAttackTimer = null;
+
+        private SAP CurrentSap = null;
 
         public static StabilityBonusThreshold[] StabilityBonusThresholds { get; private set; }
         public static int DefenseNodesStabilityLimit { get; private set; }
@@ -164,6 +169,16 @@ namespace Perpetuum.Zones.Intrusion
             base.OnUpdate(time);
             _decay.OnUpdate(time);
 
+            if (CurrentSap != null && _cultistsAttackTimer != null)
+            {
+                _cultistsAttackTimer.Update(time);
+                if (_cultistsAttackTimer.Passed)
+                {
+                    _cultistsAttackTimer = null;
+                    _eventChannel.PublishMessage(new SapAttackersSpawnMessage(CurrentSap, SapState.Opened, Zone.Id, GetIntrusionSiteStability()));
+                }
+            }
+
             if (!Enabled || IntrusionInProgress)
             {
                 return;
@@ -284,6 +299,8 @@ namespace Perpetuum.Zones.Intrusion
             sap.TakeOver += OnSAPTakeOver;
             sap.TimeOut += OnSAPTimeOut;
             sap.AddToZone(Zone, sapInfo.Position);
+            CurrentSap = sap;
+            _cultistsAttackTimer = new IntervalTimer(TimeSpan.FromMinutes(TimeUntilCultistsAttack));
 
             const string insertCmd = "insert into intrusionsapdeploylog (siteeid,sapdefinition) values (@siteEid,@sapDefinition)";
             Db.Query().CommandText(insertCmd).SetParameter("@siteEid", Eid).SetParameter("@sapDefinition", sap.Definition).ExecuteNonQuery();
@@ -371,6 +388,8 @@ namespace Perpetuum.Zones.Intrusion
             Task.Run(() => HandleTakeOver(sap)).ContinueWith(t => IntrusionInProgress = false);
             TimeSpan randomDelay = FastRandom.NextTimeSpan(TimeSpan.FromMinutes(MinAnnouncementDelay), TimeSpan.FromMinutes(MaxAnnouncementDelay));
             DateTime timeStamp = DateTime.UtcNow;
+
+            _eventChannel.PublishMessage(new SapAttackersSpawnMessage(CurrentSap, SapState.Completed, Zone.Id, GetIntrusionSiteStability()));
 
             _ = Task.Delay(randomDelay).ContinueWith((t) =>
             {
@@ -565,6 +584,9 @@ namespace Perpetuum.Zones.Intrusion
 
             TimeSpan randomDelay = FastRandom.NextTimeSpan(TimeSpan.FromMinutes(MinAnnouncementDelay), TimeSpan.FromMinutes(MaxAnnouncementDelay));
             DateTime timeStamp = DateTime.UtcNow;
+
+            _eventChannel.PublishMessage(new SapAttackersSpawnMessage(CurrentSap, SapState.Closed, Zone.Id, GetIntrusionSiteStability()));
+            CurrentSap = null;
 
             _ = Task.Delay(randomDelay).ContinueWith((t) =>
             {

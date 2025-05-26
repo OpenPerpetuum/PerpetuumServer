@@ -19,6 +19,7 @@ using Perpetuum.Zones.DamageProcessors;
 using Perpetuum.Zones.Effects;
 using Perpetuum.Zones.Eggs;
 using Perpetuum.Zones.Gates;
+using Perpetuum.Zones.Intrusion;
 using Perpetuum.Zones.Locking;
 using Perpetuum.Zones.NpcSystem;
 using Perpetuum.Zones.PBS;
@@ -921,6 +922,11 @@ namespace Perpetuum.Units
         }
 
         internal virtual bool IsHostile(MobileTeleport teleport)
+        {
+            return false;
+        }
+
+        internal virtual bool IsHostile(SAP sap)
         {
             return false;
         }

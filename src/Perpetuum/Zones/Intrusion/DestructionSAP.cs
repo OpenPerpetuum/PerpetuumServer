@@ -1,6 +1,7 @@
 using Perpetuum.ExportedTypes;
 using Perpetuum.Units;
 using Perpetuum.Zones.DamageProcessors;
+using Perpetuum.Zones.NpcSystem;
 using System.Linq;
 
 namespace Perpetuum.Zones.Intrusion
@@ -17,6 +18,13 @@ namespace Perpetuum.Zones.Intrusion
         protected override void OnDamageTaken(Unit source, DamageTakenEventArgs e)
         {
             base.OnDamageTaken(source, e);
+
+            if (source is Npc)
+            {
+                IncrementNpcScore((int)e.TotalDamage);
+
+                return;
+            }
 
             Players.Player player = Zone.ToPlayerOrGetOwnerPlayer(source);
             if (player == null)

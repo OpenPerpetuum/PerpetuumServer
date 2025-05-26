@@ -3,30 +3,22 @@ using System;
 using System.Linq;
 using System.Text;
 
-namespace Perpetuum.Zones.NpcSystem.Reinforcements
+namespace Perpetuum.Zones.NpcSystem.SapAttackers
 {
-    public class NpcReinforcements : INpcPresences
+    public class SapAttackers : INpcPresences
     {
-        private const double ThresholdDelta = 0.1;
-
-        // Sorted array of OreNpcData by threshold
         private readonly INpcPresence[] _presences;
 
-        public NpcReinforcements(INpcPresence[] presences)
+        public SapAttackers(INpcPresence[] presences)
         {
-            _presences = presences.OrderBy(s => Array.IndexOf(presences, s.Threshold)).ToArray();
+            _presences = presences.OrderBy(s => Array.IndexOf(presences, s.MinStability)).ToArray();
         }
 
-        /// <summary>
-        /// Get the next unspawned presence in the list with the next greatest threshold
-        /// </summary>
-        /// <param name="threshold">percentage expressed as [0.0-1.0]</param>
-        /// <returns>INpcReinforcementWave or null</returns>
-        public INpcPresence GetNextPresence(double threshold)
+        public INpcPresence GetNextPresence(int stability)
         {
             for (int i = _presences.Length - 1; i >= 0; i--)
             {
-                if (threshold - _presences[i].Threshold < ThresholdDelta && _presences[i].Threshold - threshold < ThresholdDelta)
+                if (stability - _presences[i].MinStability < stability)
                 {
                     return _presences[i].Spawned ? null : _presences[i];
                 }
@@ -52,16 +44,17 @@ namespace Perpetuum.Zones.NpcSystem.Reinforcements
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("ReinforceSpawn {");
+            sb.AppendLine("SapAttackerSpawn {");
             for (int i = 0; i < _presences.Length; i++)
             {
                 sb.AppendLine(_presences[i].ToString());
             }
             sb.AppendLine("}");
+
             return sb.ToString();
         }
 
-        public INpcPresence GetNextPresence(int minStability)
+        public INpcPresence GetNextPresence(double threshold)
         {
             throw new NotImplementedException();
         }

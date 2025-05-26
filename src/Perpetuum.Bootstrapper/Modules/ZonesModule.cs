@@ -22,6 +22,7 @@ using Perpetuum.Zones.Environments;
 using Perpetuum.Zones.NpcSystem.Presences;
 using Perpetuum.Zones.NpcSystem.Reinforcements;
 using Perpetuum.Zones.NpcSystem.SafeSpawnPoints;
+using Perpetuum.Zones.NpcSystem.SapAttackers;
 using Perpetuum.Zones.PBS;
 using Perpetuum.Zones.Scanning.Results;
 using Perpetuum.Zones.Teleporting;
@@ -172,7 +173,7 @@ namespace Perpetuum.Bootstrapper.Modules
                         zone.PlayerStateManager = ctx.Resolve<Func<IZone, IStrongholdPlayerStateManager>>().Invoke(zone);
                     }
 
-                    ctx.Resolve<EventListenerService>().AttachListener(new NpcReinforcementSpawner(zone, ctx.Resolve<INpcReinforcementsRepository>()));
+                    ctx.Resolve<EventListenerService>().AttachListener(new NpcReinforcementSpawner(zone, ctx.Resolve<INpcReinforcementsRepository>(), ctx.Resolve<ISapAttackersRepository>()));
                     WeatherEventListener listener = ctx.Resolve<Func<IZone, WeatherEventListener>>().Invoke(zone);
                     listener.Subscribe(zone.Weather);
 

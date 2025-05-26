@@ -40,7 +40,7 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
                 return;
             }
 
-            if (drone.HasCommandBotPrimaryLock() != null)
+            if (drone.HasCommandBotPrimaryLock())
             {
                 ToAttackCombatDroneAI();
 
