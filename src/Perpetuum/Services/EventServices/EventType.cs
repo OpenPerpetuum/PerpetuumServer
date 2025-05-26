@@ -13,5 +13,6 @@
         Environmental,
         PortalSpawn,
         NpcSapAttackers,
+        DiscordIntegration,
     }
 }

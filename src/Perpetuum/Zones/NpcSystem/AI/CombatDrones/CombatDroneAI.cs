@@ -5,7 +5,6 @@ using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Zones.Locking.Locks;
 using Perpetuum.Zones.Movements;
-using Perpetuum.Zones.NpcSystem.TargettingStrategies;
 using Perpetuum.Zones.RemoteControl;
 using System;
 using System.Collections.Generic;
@@ -26,7 +25,7 @@ namespace Perpetuum.Zones.NpcSystem.AI.CombatDrones
         private readonly IntervalTimer primarySelectTimer = new IntervalTimer(UpdateFrequency);
         private List<ModuleActivator> moduleActivators;
         private TimeSpan hostilesUpdateFrequency = TimeSpan.FromMilliseconds(UpdateFrequency);
-        private readonly CombatPrimaryLockSelectionStrategySelector stratSelector;
+        //private readonly CombatPrimaryLockSelectionStrategySelector stratSelector;
         private Position lastTargetPosition;
         private PathMovement movement;
         private PathMovement nextMovement;

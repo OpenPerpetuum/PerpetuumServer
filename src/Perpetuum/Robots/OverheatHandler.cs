@@ -29,7 +29,7 @@ namespace Perpetuum.Robots
         private double oldOverheatValue;
         private readonly object @lock = new object();
 
-        public event EffectEventHandler<bool> EffectChanged;
+        //public event EffectEventHandler<bool> EffectChanged;
 
         public void Increase(double value = 1)
         {

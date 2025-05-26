@@ -1,9 +1,9 @@
+using Perpetuum.Log;
+using Perpetuum.Timers;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
-using Perpetuum.Log;
-using Perpetuum.Timers;
 
 namespace Perpetuum.Threading.Process
 {
@@ -23,7 +23,7 @@ namespace Perpetuum.Threading.Process
 
         public void AddProcess(IProcess process)
         {
-            ImmutableInterlocked.Update(ref _processes,p => p.Add(process));
+            ImmutableInterlocked.Update(ref _processes, p => p.Add(process));
         }
 
         public void RemoveProcess(IProcess process)
@@ -37,11 +37,13 @@ namespace Perpetuum.Threading.Process
         public void Start()
         {
             if (_isRunning)
+            {
                 return;
+            }
 
             _isRunning = true;
 
-            foreach (var process in _processes)
+            foreach (IProcess process in _processes)
             {
                 process.Start();
             }
@@ -68,7 +70,7 @@ namespace Perpetuum.Threading.Process
                 }
             }
 
-            foreach (var process in _processes)
+            foreach (IProcess process in _processes)
             {
                 StopProcess(process);
             }
@@ -88,18 +90,18 @@ namespace Perpetuum.Threading.Process
 
         private void UpdateLoop()
         {
-            var last = GlobalTimer.Elapsed;
-            var prevSleepTime = TimeSpan.Zero;
+            TimeSpan last = GlobalTimer.Elapsed;
+            TimeSpan prevSleepTime = TimeSpan.Zero;
 
             while (_isRunning)
             {
-                var now = GlobalTimer.Elapsed;
-                var elapsed = now - last;
+                TimeSpan now = GlobalTimer.Elapsed;
+                TimeSpan elapsed = now - last;
                 last = now;
 
                 try
                 {
-                    foreach (var process in _processes)
+                    foreach (IProcess process in _processes)
                     {
                         process.Update(elapsed);
                     }
@@ -121,7 +123,9 @@ namespace Perpetuum.Threading.Process
                     Thread.Sleep(prevSleepTime);
                 }
                 else
+                {
                     prevSleepTime = TimeSpan.Zero;
+                }
             }
         }
     }

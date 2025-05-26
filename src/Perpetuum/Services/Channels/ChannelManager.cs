@@ -1,4 +1,5 @@
-﻿using Perpetuum.Accounting.Characters;
+﻿using Newtonsoft.Json;
+using Perpetuum.Accounting.Characters;
 using Perpetuum.Common.Loggers;
 using Perpetuum.Host.Requests;
 using Perpetuum.Services.Channels.ChatCommands;
@@ -7,12 +8,17 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Perpetuum.Services.Channels
 {
     public class ChannelManager : IChannelManager
     {
+        private const string HelpChat = "regchannel_help";
+
         private readonly ISessionManager _sessionManager;
         private readonly IChannelRepository _channelRepository;
         private readonly IChannelMemberRepository _memberRepository;
@@ -20,8 +26,16 @@ namespace Perpetuum.Services.Channels
         private readonly ChannelLoggerFactory _channelLoggerFactory;
         private readonly ConcurrentDictionary<string, Channel> _channels = new ConcurrentDictionary<string, Channel>();
         private readonly AdminCommandRouter _adminCommand;
+        private readonly GlobalConfiguration _globalConfiguration;
 
-        public ChannelManager(ISessionManager sessionManager, IChannelRepository channelRepository, IChannelMemberRepository memberRepository, IChannelBanRepository banRepository, ChannelLoggerFactory channelLoggerFactory, AdminCommandRouter adminCommand)
+        public ChannelManager(
+            ISessionManager sessionManager,
+            IChannelRepository channelRepository,
+            IChannelMemberRepository memberRepository,
+            IChannelBanRepository banRepository,
+            ChannelLoggerFactory channelLoggerFactory,
+            AdminCommandRouter adminCommand,
+            GlobalConfiguration globalConfiguration)
         {
             _sessionManager = sessionManager;
             _sessionManager.SessionAdded += OnSessionAdded;
@@ -36,6 +50,8 @@ namespace Perpetuum.Services.Channels
             {
                 _channels[channel.Name] = channel;
             }
+
+            _globalConfiguration = globalConfiguration;
         }
 
         private void OnSessionAdded(ISession session)
@@ -296,8 +312,35 @@ namespace Perpetuum.Services.Channels
             else
             {
                 channel.SendMessageToAll(_sessionManager, sender, message);
-            }
 
+                if (channel.Name == HelpChat)
+                {
+                    // Sending message to discord
+
+                    string webhookId = _globalConfiguration.WebHookId;
+                    string webhookOAuth = _globalConfiguration.WebHookOAuth;
+
+                    if (string.IsNullOrEmpty(webhookId) || string.IsNullOrEmpty(webhookOAuth))
+                    {
+                        return;
+                    }
+
+                    string url = $"https://discord.com/api/webhooks/{webhookId}/{webhookOAuth}";
+                    HttpClient httpClient = new HttpClient();
+                    DiscordPayload payload = new DiscordPayload
+                    {
+                        content = $"**<{sender.Nick}>**: {message}",
+                    };
+
+                    string json = JsonConvert.SerializeObject(payload);
+                    StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    Task.Run(async () =>
+                    {
+                        HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                    });
+                }
+            }
         }
 
         public void Announcement(string channelName, Character sender, string message)
@@ -418,5 +461,11 @@ namespace Perpetuum.Services.Channels
         {
             return _channels.Values;
         }
+    }
+
+    internal class DiscordPayload
+    {
+        public DateTime Timestamp { get; set; }
+        public string content { get; set; }
     }
 }

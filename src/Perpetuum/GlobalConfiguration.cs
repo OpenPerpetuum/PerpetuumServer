@@ -42,5 +42,13 @@ namespace Perpetuum
         // Default camouflage bonus value.
         [DefaultValue(5), JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public int CamouflageBonus { get; set; }
+
+        public string WebHookId { get; set; }
+
+        public string WebHookOAuth { get; set; }
+
+        public string DiscordBotToken { get; set; }
+
+        public string OpHelpChannelId { get; set; }
     }
 }

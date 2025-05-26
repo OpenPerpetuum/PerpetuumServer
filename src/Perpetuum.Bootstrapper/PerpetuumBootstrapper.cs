@@ -440,7 +440,6 @@ namespace Perpetuum.Bootstrapper
             _ = _builder.RegisterType<ServerInfo>();
             _ = _builder.RegisterType<ServerInfoManager>().As<IServerInfoManager>();
 
-
             _ = _builder.Register(x =>
             {
                 GlobalConfiguration cfg = x.Resolve<GlobalConfiguration>();
@@ -557,6 +556,8 @@ namespace Perpetuum.Bootstrapper
             _ = _builder.RegisterType<OreNpcSpawner>().As<NpcSpawnEventHandler<OreNpcSpawnMessage>>();
             _ = _builder.RegisterType<NpcReinforcementSpawner>().As<NpcSpawnEventHandler<NpcReinforcementsMessage>>();
             _ = _builder.RegisterType<SapAttackerSpawner>().As<NpcSpawnEventHandler<SapAttackersSpawnMessage>>();
+            _ = _builder.RegisterType<DiscordIntegrationHandler>();
+
             _ = _builder.RegisterType<EventListenerService>().SingleInstance().OnActivated(e =>
             {
                 e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromSeconds(0.75)));
@@ -566,6 +567,7 @@ namespace Perpetuum.Bootstrapper
                 e.Instance.AttachListener(e.Context.Resolve<PortalSpawner>());
                 e.Instance.AttachListener(e.Context.Resolve<NpcStateAnnouncer>());
                 e.Instance.AttachListener(e.Context.Resolve<SapStateAnnouncer>());
+                e.Instance.AttachListener(e.Context.Resolve<DiscordIntegrationHandler>());
                 GameTimeObserver obs = new GameTimeObserver(e.Instance);
                 obs.Subscribe(e.Context.Resolve<IGameTimeService>());
             });
