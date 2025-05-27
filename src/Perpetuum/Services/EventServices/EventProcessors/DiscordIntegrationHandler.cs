@@ -11,23 +11,27 @@ namespace Perpetuum.Services.EventServices.EventProcessors
     {
         private readonly IChannelManager _channelManager;
         private const string SENDER_CHARACTER_NICKNAME = "Discord";
-        private const string HelpChat = "regchannel_help";
-        private readonly Character _announcer;
+        private readonly Character _discordIntegrationCharacter;
 
         public DiscordIntegrationHandler(IChannelManager channelManager)
         {
-            _announcer = Character.GetByNick(SENDER_CHARACTER_NICKNAME);
+            _discordIntegrationCharacter = Character.GetByNick(SENDER_CHARACTER_NICKNAME);
             _channelManager = channelManager;
         }
 
-        public override EventType Type => EventType.DiscordIntegration;
+        public override EventType Type => EventType.DiscordToPerpetuum;
         public override void HandleMessage(IEventMessage message)
         {
             if (message is DiscordIntegrationMessage discordMessage)
             {
-                string chatMessage = $"{discordMessage.Nick}: {discordMessage.Message}";
+                string channelName = _channelManager.GetChannelNameByDiscordId(discordMessage.ChannelDiscordId);
 
-                _channelManager.Announcement(HelpChat, _announcer, chatMessage);
+                if (!string.IsNullOrEmpty(channelName))
+                {
+                    string chatMessage = $"{discordMessage.Nick}: {discordMessage.Message}";
+
+                    _channelManager.Announcement(channelName, _discordIntegrationCharacter, chatMessage);
+                }
             }
         }
     }

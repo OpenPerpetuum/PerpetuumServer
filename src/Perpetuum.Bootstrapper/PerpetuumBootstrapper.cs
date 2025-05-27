@@ -301,6 +301,17 @@ namespace Perpetuum.Bootstrapper
 
         private void InitContainer(string gameRoot)
         {
+            _ = _builder.Register(c => new FileSystem(gameRoot)).As<IFileSystem>();
+            _ = _builder.Register(c =>
+            {
+                IFileSystem fileManager = c.Resolve<IFileSystem>();
+                string settingsFile = fileManager.ReadAllText("perpetuum.ini");
+                GlobalConfiguration configuration = JsonConvert.DeserializeObject<GlobalConfiguration>(settingsFile);
+                configuration.GameRoot = gameRoot;
+
+                return configuration;
+            }).SingleInstance();
+
             _builder.RegisterModule(new CommandsModule());
             _builder.RegisterModule(new RequestHandlersModule());
             _builder.RegisterModule(new ZoneRequestHandlersModule());
@@ -355,16 +366,6 @@ namespace Perpetuum.Bootstrapper
             _ = _builder.RegisterType<SessionManager>().As<ISessionManager>().SingleInstance();
 
             InitRelayManager();
-
-            _ = _builder.Register(c => new FileSystem(gameRoot)).As<IFileSystem>();
-            _ = _builder.Register(c =>
-            {
-                IFileSystem fileManager = c.Resolve<IFileSystem>();
-                string settingsFile = fileManager.ReadAllText("perpetuum.ini");
-                GlobalConfiguration configuration = JsonConvert.DeserializeObject<GlobalConfiguration>(settingsFile);
-                configuration.GameRoot = gameRoot;
-                return configuration;
-            }).SingleInstance();
 
             _ = _builder.RegisterType<AdminCommandRouter>().SingleInstance();
 

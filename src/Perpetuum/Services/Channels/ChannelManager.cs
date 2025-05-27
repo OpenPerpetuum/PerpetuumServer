@@ -1,17 +1,15 @@
-﻿using Newtonsoft.Json;
-using Perpetuum.Accounting.Characters;
+﻿using Perpetuum.Accounting.Characters;
 using Perpetuum.Common.Loggers;
 using Perpetuum.Host.Requests;
 using Perpetuum.Services.Channels.ChatCommands;
+using Perpetuum.Services.EventServices;
+using Perpetuum.Services.EventServices.EventMessages;
 using Perpetuum.Services.Sessions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Perpetuum.Services.Channels
 {
@@ -27,6 +25,7 @@ namespace Perpetuum.Services.Channels
         private readonly ConcurrentDictionary<string, Channel> _channels = new ConcurrentDictionary<string, Channel>();
         private readonly AdminCommandRouter _adminCommand;
         private readonly GlobalConfiguration _globalConfiguration;
+        private readonly EventListenerService _eventChannel;
 
         public ChannelManager(
             ISessionManager sessionManager,
@@ -35,6 +34,7 @@ namespace Perpetuum.Services.Channels
             IChannelBanRepository banRepository,
             ChannelLoggerFactory channelLoggerFactory,
             AdminCommandRouter adminCommand,
+            EventListenerService eventListener,
             GlobalConfiguration globalConfiguration)
         {
             _sessionManager = sessionManager;
@@ -51,6 +51,7 @@ namespace Perpetuum.Services.Channels
                 _channels[channel.Name] = channel;
             }
 
+            _eventChannel = eventListener;
             _globalConfiguration = globalConfiguration;
         }
 
@@ -313,6 +314,17 @@ namespace Perpetuum.Services.Channels
             {
                 channel.SendMessageToAll(_sessionManager, sender, message);
 
+                if (channel.DiscordId != null)
+                {
+                    _eventChannel.PublishMessage(
+                        new DiscordIntegrationMessage(
+                            EventType.PerpetuumToDiscord,
+                            channel.DiscordId.Value,
+                            sender.Nick,
+                            message));
+                }
+
+                /*
                 if (channel.Name == HelpChat)
                 {
                     // Sending message to discord
@@ -340,6 +352,7 @@ namespace Perpetuum.Services.Channels
                         HttpResponseMessage response = await httpClient.PostAsync(url, content);
                     });
                 }
+                */
             }
         }
 
@@ -461,11 +474,17 @@ namespace Perpetuum.Services.Channels
         {
             return _channels.Values;
         }
+
+        public string GetChannelNameByDiscordId(ulong discordId)
+        {
+            return _channels.FirstOrDefault(x => x.Value.DiscordId.GetValueOrDefault() == discordId).Key;
+        }
     }
 
     internal class DiscordPayload
     {
-        public DateTime Timestamp { get; set; }
         public string content { get; set; }
+
+        public object allowed_mentions { get; } = new { parse = new[] { "users" } };
     }
 }

@@ -52,10 +52,14 @@ namespace Perpetuum.Services.Channels
                 string topic = record.GetValue<string>("topic");
                 string password = record.GetValue<string>("password");
                 bool isForcedJoin = record.GetValueOrDefault<bool>("isForcedJoin");
+                string discordIdString = record.GetValueOrDefault<string>("DiscordId");
+                ulong? discordId = ulong.TryParse(discordIdString, out ulong parsedId)
+                    ? parsedId
+                    : (ulong?)null;
 
                 IChannelLogger logger = _channelLoggerFactory(name);
 
-                return new Channel(id, type, name, topic, password, isForcedJoin, logger);
+                return new Channel(id, type, name, topic, password, isForcedJoin, discordId, logger);
             }).ToArray();
         }
     }

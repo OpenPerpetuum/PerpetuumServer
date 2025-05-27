@@ -5,11 +5,14 @@
     /// </summary>
     public class DiscordIntegrationMessage : IEventMessage
     {
-        public EventType Type => EventType.DiscordIntegration;
+        public EventType Type { get; private set; }
+        public ulong ChannelDiscordId { get; private set; }
         public string Nick { get; private set; }
         public string Message { get; private set; }
-        public DiscordIntegrationMessage(string nick, string message)
+        public DiscordIntegrationMessage(EventType type, ulong channelDiscordId, string nick, string message)
         {
+            Type = type;
+            ChannelDiscordId = channelDiscordId;
             Nick = nick;
             Message = message;
         }

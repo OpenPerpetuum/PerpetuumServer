@@ -41,7 +41,21 @@ namespace Perpetuum.Services.EventServices
         /// <param name="message">EventMessage of the type</param>
         public void PublishMessage(IEventMessage message)
         {
-            _queue.Enqueue(message);
+            if (message is DiscordIntegrationMessage discordMessage &&
+                discordMessage.Type == EventType.PerpetuumToDiscord)
+            {
+                if (_client.GetChannel(discordMessage.ChannelDiscordId) is IMessageChannel discordChannel)
+                {
+                    string messageToSend = $"**<{discordMessage.Nick}>**: {discordMessage.Message}";
+                    discordChannel.SendMessageAsync(
+                        messageToSend,
+                        allowedMentions: new AllowedMentions { AllowedTypes = AllowedMentionTypes.Users });
+                }
+            }
+            else
+            {
+                _queue.Enqueue(message);
+            }
         }
 
         public void NotifyListeners(IEventMessage message)
@@ -127,17 +141,20 @@ namespace Perpetuum.Services.EventServices
         {
             ulong.TryParse(_globalConfiguration.OpHelpChannelId, out ulong channelId);
 
-            if (!message.Author.IsBot && message.Channel.Id == channelId && !string.IsNullOrEmpty(message.Content))
+            if (!message.Author.IsBot && /*message.Channel.Id == channelId &&*/ !string.IsNullOrEmpty(message.CleanContent))
             {
                 string nick = message.Author.GlobalName;
 
+                // No more imposting until we find a better approach
+                /*
                 if (message.Author is SocketGuildUser guildUser &&
                     !string.IsNullOrEmpty(guildUser.DisplayName))
                 {
                     nick = guildUser.DisplayName;
                 }
+                */
 
-                PublishMessage(new DiscordIntegrationMessage(nick, message.Content));
+                PublishMessage(new DiscordIntegrationMessage(EventType.DiscordToPerpetuum, message.Channel.Id, nick, message.CleanContent));
             }
 
             return Task.CompletedTask;

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Perpetuum.Accounting.Characters;
+﻿using Perpetuum.Accounting.Characters;
 using Perpetuum.Host.Requests;
+using System.Collections.Generic;
 
 namespace Perpetuum.Services.Channels
 {
@@ -10,6 +10,8 @@ namespace Perpetuum.Services.Channels
 
         [CanBeNull]
         Channel GetChannelByName(string name);
+
+        string GetChannelNameByDiscordId(ulong discordId);
 
         void CreateChannel(ChannelType type, string name);
         void DeleteChannel(string channelName);
