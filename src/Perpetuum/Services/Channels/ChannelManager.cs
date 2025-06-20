@@ -323,36 +323,6 @@ namespace Perpetuum.Services.Channels
                             sender.Nick,
                             message));
                 }
-
-                /*
-                if (channel.Name == HelpChat)
-                {
-                    // Sending message to discord
-
-                    string webhookId = _globalConfiguration.WebHookId;
-                    string webhookOAuth = _globalConfiguration.WebHookOAuth;
-
-                    if (string.IsNullOrEmpty(webhookId) || string.IsNullOrEmpty(webhookOAuth))
-                    {
-                        return;
-                    }
-
-                    string url = $"https://discord.com/api/webhooks/{webhookId}/{webhookOAuth}";
-                    HttpClient httpClient = new HttpClient();
-                    DiscordPayload payload = new DiscordPayload
-                    {
-                        content = $"**<{sender.Nick}>**: {message}",
-                    };
-
-                    string json = JsonConvert.SerializeObject(payload);
-                    StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                    Task.Run(async () =>
-                    {
-                        HttpResponseMessage response = await httpClient.PostAsync(url, content);
-                    });
-                }
-                */
             }
         }
 

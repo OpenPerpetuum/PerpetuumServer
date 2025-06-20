@@ -192,8 +192,8 @@ namespace Perpetuum.Zones.NpcSystem
 
         internal override bool IsHostile(Npc npc)
         {
-            return (npc.ED.Options.Faction == Faction.Syndicate && npc.ED.Options.Faction != Faction.Syndicate) ||
-                (npc.ED.Options.Faction != Faction.Syndicate && npc.ED.Options.Faction == Faction.Syndicate);
+            return (ED.Options.Faction == Faction.Syndicate && npc.ED.Options.Faction != Faction.Syndicate) ||
+                (ED.Options.Faction != Faction.Syndicate && npc.ED.Options.Faction == Faction.Syndicate);
         }
 
         internal override bool IsHostile(SAP sap)

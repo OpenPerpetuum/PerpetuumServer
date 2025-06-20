@@ -169,6 +169,7 @@ namespace Perpetuum.Zones.Intrusion
             base.OnUpdate(time);
             _decay.OnUpdate(time);
 
+            /*
             if (CurrentSap != null && _cultistsAttackTimer != null)
             {
                 _cultistsAttackTimer.Update(time);
@@ -178,6 +179,7 @@ namespace Perpetuum.Zones.Intrusion
                     _eventChannel.PublishMessage(new SapAttackersSpawnMessage(CurrentSap, SapState.Opened, Zone.Id, GetIntrusionSiteStability()));
                 }
             }
+            */
 
             if (!Enabled || IntrusionInProgress)
             {
@@ -389,7 +391,7 @@ namespace Perpetuum.Zones.Intrusion
             TimeSpan randomDelay = FastRandom.NextTimeSpan(TimeSpan.FromMinutes(MinAnnouncementDelay), TimeSpan.FromMinutes(MaxAnnouncementDelay));
             DateTime timeStamp = DateTime.UtcNow;
 
-            _eventChannel.PublishMessage(new SapAttackersSpawnMessage(CurrentSap, SapState.Completed, Zone.Id, GetIntrusionSiteStability()));
+            //_eventChannel.PublishMessage(new SapAttackersSpawnMessage(CurrentSap, SapState.Completed, Zone.Id, GetIntrusionSiteStability()));
 
             _ = Task.Delay(randomDelay).ContinueWith((t) =>
             {
@@ -585,7 +587,7 @@ namespace Perpetuum.Zones.Intrusion
             TimeSpan randomDelay = FastRandom.NextTimeSpan(TimeSpan.FromMinutes(MinAnnouncementDelay), TimeSpan.FromMinutes(MaxAnnouncementDelay));
             DateTime timeStamp = DateTime.UtcNow;
 
-            _eventChannel.PublishMessage(new SapAttackersSpawnMessage(CurrentSap, SapState.Closed, Zone.Id, GetIntrusionSiteStability()));
+            //_eventChannel.PublishMessage(new SapAttackersSpawnMessage(CurrentSap, SapState.Closed, Zone.Id, GetIntrusionSiteStability()));
             CurrentSap = null;
 
             _ = Task.Delay(randomDelay).ContinueWith((t) =>

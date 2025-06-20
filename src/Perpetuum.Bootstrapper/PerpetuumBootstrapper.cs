@@ -556,7 +556,7 @@ namespace Perpetuum.Bootstrapper
             _ = _builder.RegisterType<SapStateAnnouncer>();
             _ = _builder.RegisterType<OreNpcSpawner>().As<NpcSpawnEventHandler<OreNpcSpawnMessage>>();
             _ = _builder.RegisterType<NpcReinforcementSpawner>().As<NpcSpawnEventHandler<NpcReinforcementsMessage>>();
-            _ = _builder.RegisterType<SapAttackerSpawner>().As<NpcSpawnEventHandler<SapAttackersSpawnMessage>>();
+            //_ = _builder.RegisterType<SapAttackerSpawner>().As<NpcSpawnEventHandler<SapAttackersSpawnMessage>>();
             _ = _builder.RegisterType<DiscordIntegrationHandler>();
 
             _ = _builder.RegisterType<EventListenerService>().SingleInstance().OnActivated(e =>

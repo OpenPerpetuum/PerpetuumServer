@@ -28,10 +28,10 @@ namespace Perpetuum.Bootstrapper.Modules
                 {
                     IMineralConfigurationReader reader = ctx.Resolve<IMineralConfigurationReader>();
                     OreNpcSpawner oreNpcSpawnlistener = new OreNpcSpawner(zone, ctx.Resolve<INpcReinforcementsRepository>(), ctx.Resolve<ISapAttackersRepository>(), reader);
-                    SapAttackerSpawner sapAttackerSpawnlistener = new SapAttackerSpawner(zone, ctx.Resolve<INpcReinforcementsRepository>(), ctx.Resolve<ISapAttackersRepository>());
+                    //SapAttackerSpawner sapAttackerSpawnlistener = new SapAttackerSpawner(zone, ctx.Resolve<INpcReinforcementsRepository>(), ctx.Resolve<ISapAttackersRepository>());
                     EventListenerService eventListenerService = ctx.Resolve<EventListenerService>();
                     eventListenerService.AttachListener(oreNpcSpawnlistener);
-                    eventListenerService.AttachListener(sapAttackerSpawnlistener);
+                    //eventListenerService.AttachListener(sapAttackerSpawnlistener);
                     if (zone is TrainingZone)
                     {
                         GravelRepository repo = ctx.Resolve<GravelRepository>();

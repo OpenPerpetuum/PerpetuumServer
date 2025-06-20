@@ -19,8 +19,9 @@ namespace Perpetuum.Services.EventServices
         private readonly object _lock = new object();
         private readonly IDictionary<EventType, IList<IEventProcessor>> _observers;
         private readonly ConcurrentQueue<IEventMessage> _queue;
-
         private readonly DiscordSocketClient _client;
+
+        //private readonly DiscordSocketClient _client;
         private readonly GlobalConfiguration _globalConfiguration;
 
         public EventListenerService(GlobalConfiguration globalConfiguration)
@@ -32,6 +33,7 @@ namespace Perpetuum.Services.EventServices
             {
                 GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
             });
+
             _globalConfiguration = globalConfiguration;
         }
 
