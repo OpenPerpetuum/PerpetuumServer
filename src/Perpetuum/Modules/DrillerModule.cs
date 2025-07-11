@@ -173,6 +173,13 @@ namespace Perpetuum.Modules
                 Debug.Assert(player != null, "player != null");
                 foreach (ItemInfo material in extractedMaterials)
                 {
+                    Db.Query()
+                        .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
+                        .SetParameter("@gathered_on", DateTime.UtcNow)
+                        .SetParameter("@resource_name", material.EntityDefault.Name)
+                        .SetParameter("@quantity", material.Quantity)
+                        .ExecuteNonQuery();
+
                     Item item = (Item)Factory.CreateWithRandomEID(material.Definition);
 
                     item.Owner = Owner;

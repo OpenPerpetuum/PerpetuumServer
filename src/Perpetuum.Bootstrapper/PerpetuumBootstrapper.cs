@@ -596,6 +596,11 @@ namespace Perpetuum.Bootstrapper
             });
             _ = _builder.RegisterType<AccountTransactionLogger>();
             _ = _builder.RegisterType<EpForActivityLogger>();
+
+            _ = _builder.RegisterType<MarketAutoOrdersManager>().SingleInstance().AutoActivate().OnActivated(e =>
+            {
+                e.Context.Resolve<IProcessManager>().AddProcess(e.Instance.ToAsync().AsTimed(TimeSpan.FromMinutes(1)));
+            });
         }
 
         private IRegistrationBuilder<TRequestHandler, ConcreteReflectionActivatorData, SingleRegistrationStyle>

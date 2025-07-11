@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Transactions;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Common;
 using Perpetuum.Common.Loggers.Transaction;
@@ -10,7 +5,6 @@ using Perpetuum.Containers;
 using Perpetuum.Data;
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
-
 using Perpetuum.Groups.Corporations;
 using Perpetuum.Items;
 using Perpetuum.Log;
@@ -18,6 +12,11 @@ using Perpetuum.Robots;
 using Perpetuum.Units.DockingBases;
 using Perpetuum.Zones;
 using Perpetuum.Zones.PBS.DockingBases;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Transactions;
 
 namespace Perpetuum.Services.MarketEngine
 {
@@ -34,7 +33,7 @@ namespace Perpetuum.Services.MarketEngine
         private readonly ICentralBank _centralBank;
         private readonly DockingBaseHelper _dockingBaseHelper;
 
-        public Market(MarketHelper marketHelper,IMarketOrderRepository orderRepository,MarketHandler marketHandler,MarketOrder.Factory marketOrderFactory,IEntityServices entityServices,ICentralBank centralBank,DockingBaseHelper dockingBaseHelper)
+        public Market(MarketHelper marketHelper, IMarketOrderRepository orderRepository, MarketHandler marketHandler, MarketOrder.Factory marketOrderFactory, IEntityServices entityServices, ICentralBank centralBank, DockingBaseHelper dockingBaseHelper)
         {
             _marketHelper = marketHelper;
             _orderRepository = orderRepository;
@@ -48,12 +47,12 @@ namespace Perpetuum.Services.MarketEngine
         [NotNull]
         public Item GetItemByMarketOrder(MarketOrder marketOrder)
         {
-            if ( marketOrder.itemEid == null)
+            if (marketOrder.itemEid == null)
                 throw new PerpetuumException(ErrorCodes.ServerError);
 
             // load market entity
-            var itemOnMarket = Item.GetOrThrow((long) marketOrder.itemEid);
-            itemOnMarket.Parent.ThrowIfNotEqual(Eid,ErrorCodes.AccessDenied);
+            var itemOnMarket = Item.GetOrThrow((long)marketOrder.itemEid);
+            itemOnMarket.Parent.ThrowIfNotEqual(Eid, ErrorCodes.AccessDenied);
             return itemOnMarket;
         }
 
@@ -66,7 +65,7 @@ namespace Perpetuum.Services.MarketEngine
         [NotNull]
         public static Market GetOrThrow(long marketEid)
         {
-            return (Market) Repository.Load(marketEid).ThrowIfNull(ErrorCodes.MarketNotFound);
+            return (Market)Repository.Load(marketEid).ThrowIfNull(ErrorCodes.MarketNotFound);
         }
 
         public int GetItemsCount()
@@ -206,8 +205,8 @@ namespace Perpetuum.Services.MarketEngine
 
         private double Tax
         {
-            get { return GetTax();  }
-            set { StoreTax(value);  }
+            get { return GetTax(); }
+            set { StoreTax(value); }
         }
 
         private double GetTax()
@@ -242,9 +241,9 @@ namespace Perpetuum.Services.MarketEngine
             IsPlayerControlledMarketTax().ThrowIfFalse(ErrorCodes.AccessDenied);
 
             var oldTax = Tax;
-                 
+
             newTax = newTax.Clamp();
-            
+
             var coporationEid = character.CorporationEid;
 
             ProfitingOwnerSelector.GetProfitingOwner(GetDockingBase()).ThrowIfNull(ErrorCodes.AccessDenied);
@@ -252,8 +251,8 @@ namespace Perpetuum.Services.MarketEngine
             var corporation = PrivateCorporation.GetOrThrow(coporationEid);
             var role = corporation.GetMemberRole(character);
 
-            role.IsAnyRole(CorporationRole.CEO, CorporationRole.DeputyCEO, CorporationRole.Accountant ).ThrowIfFalse(ErrorCodes.InsufficientPrivileges);
-            
+            role.IsAnyRole(CorporationRole.CEO, CorporationRole.DeputyCEO, CorporationRole.Accountant).ThrowIfFalse(ErrorCodes.InsufficientPrivileges);
+
             //write log
             var e = new MarketTaxChangeLogEvent
             {
@@ -265,7 +264,7 @@ namespace Perpetuum.Services.MarketEngine
             };
 
             GetTaxChangeLogger().Log(e);
-            
+
             //set value
             Tax = newTax;
         }
@@ -288,7 +287,7 @@ namespace Perpetuum.Services.MarketEngine
             if (IsOnTrainingZone())
                 return;
 
-            _centralBank.AddAmount(amount,transactionType);
+            _centralBank.AddAmount(amount, transactionType);
         }
 
         public void ForceInsertAveragePrice(int itemDefinition, double price, int quantity, DateTime dateTime)
@@ -316,7 +315,7 @@ namespace Perpetuum.Services.MarketEngine
 
         public Dictionary<string, object> GetAverageHistory(int day, int itemDefinition)
         {
-            var startDate = DateTime.Today.AddDays(-1*day);
+            var startDate = DateTime.Today.AddDays(-1 * day);
 
             var count = 0;
             var prices = Db.Query().CommandText(@"select totalprice / quantity as price,date,dailyhighest,dailylowest,quantity from 
@@ -328,7 +327,7 @@ namespace Perpetuum.Services.MarketEngine
                 .SetParameter("@itemDefinition", itemDefinition)
                 .SetParameter("@day", day)
                 .SetParameter("@startDate", startDate)
-                .Execute().Select(r => (object) new Dictionary<string, object>
+                .Execute().Select(r => (object)new Dictionary<string, object>
                 {
                     {k.price, r.GetValue<double>(0)},
                     {k.date, r.GetValue<DateTime>(1)},
@@ -416,7 +415,7 @@ namespace Perpetuum.Services.MarketEngine
                     _marketHelper.CashIn(buyer, useBuyerCorporationWallet, marketSellOrder.price, marketSellOrder.itemDefinition, quantity, TransactionType.marketBuy);
 
                     //pay out
-                    this.PayOutToSeller(seller,marketSellOrder.useCorporationWallet,itemOnMarket.Definition,marketSellOrder.price,quantity,TransactionType.marketSell,marketSellOrder.IsAffectsAverage(),forCorporation);
+                    this.PayOutToSeller(seller, marketSellOrder.useCorporationWallet, itemOnMarket.Definition, marketSellOrder.price, quantity, TransactionType.marketSell, marketSellOrder.IsAffectsAverage(), forCorporation);
                 }
                 else if (itemOnMarket.Quantity == quantity)
                 {
@@ -433,7 +432,7 @@ namespace Perpetuum.Services.MarketEngine
                     _marketHelper.CashIn(buyer, useBuyerCorporationWallet, marketSellOrder.price, marketSellOrder.itemDefinition, quantity, TransactionType.marketBuy);
 
                     //pay out
-                    this.PayOutToSeller(seller,marketSellOrder.useCorporationWallet,itemOnMarket.Definition,marketSellOrder.price,quantity,TransactionType.marketSell,marketSellOrder.IsAffectsAverage(),forCorporation);
+                    this.PayOutToSeller(seller, marketSellOrder.useCorporationWallet, itemOnMarket.Definition, marketSellOrder.price, quantity, TransactionType.marketSell, marketSellOrder.IsAffectsAverage(), forCorporation);
 
                     marketSellOrder.quantity = 0; //signal the sell order delete to the client
                 }
@@ -459,7 +458,7 @@ namespace Perpetuum.Services.MarketEngine
                     AddCentralBank(TransactionType.buyOrderDeposit, pricePerPiece * (quantity - itemOnMarket.Quantity));
 
                     //pay out for the current market item
-                    this.PayOutToSeller(seller,marketSellOrder.useCorporationWallet,itemOnMarket.Definition,marketSellOrder.price,itemOnMarket.Quantity,TransactionType.marketSell,marketSellOrder.IsAffectsAverage(),forCorporation);
+                    this.PayOutToSeller(seller, marketSellOrder.useCorporationWallet, itemOnMarket.Definition, marketSellOrder.price, itemOnMarket.Quantity, TransactionType.marketSell, marketSellOrder.IsAffectsAverage(), forCorporation);
 
                     marketSellOrder.quantity = 0; //signal to the client
 
@@ -472,7 +471,7 @@ namespace Perpetuum.Services.MarketEngine
                         .Send();
                 }
 
-                Market.SendMarketItemBoughtMessage(buyer,itemOnMarket);
+                Market.SendMarketItemBoughtMessage(buyer, itemOnMarket);
 
                 Message.Builder.SetCommand(Commands.MarketSellOrderUpdate)
                     .WithData(new Dictionary<string, object> { { k.sellOrder, marketSellOrder.ToDictionary() } })
@@ -535,7 +534,7 @@ namespace Perpetuum.Services.MarketEngine
                     item.Quantity = boughtQuantity;
                 });
 
-                Market.SendMarketItemBoughtMessage(buyer,itemOnMarket);
+                Market.SendMarketItemBoughtMessage(buyer, itemOnMarket);
 
                 //average price
                 _marketHandler.InsertAveragePrice(this, marketSellOrder.itemDefinition, boughtQuantity * marketSellOrder.price, boughtQuantity);
@@ -553,7 +552,7 @@ namespace Perpetuum.Services.MarketEngine
                 item.Quantity = quantity;
             });
 
-            Market.SendMarketItemBoughtMessage(buyer,itemOnMarket);
+            Market.SendMarketItemBoughtMessage(buyer, itemOnMarket);
 
             //average price
             _marketHandler.InsertAveragePrice(this, marketSellOrder.itemDefinition, quantity * marketSellOrder.price, quantity);
@@ -637,14 +636,14 @@ namespace Perpetuum.Services.MarketEngine
             }
 
             //pay out the fulfilled amount immediately using the price of the found buyorder to the seller
-            PayOutToSeller(seller,useSellersCorporationWallet,boughtItem.Definition,buyOrder.price,boughtItem.Quantity,TransactionType.marketSell,buyOrder.IsAffectsAverage(),forCorporation);
+            PayOutToSeller(seller, useSellersCorporationWallet, boughtItem.Definition, buyOrder.price, boughtItem.Quantity, TransactionType.marketSell, buyOrder.IsAffectsAverage(), forCorporation);
 
-            _centralBank.SubAmount(buyOrder.price*boughtItem.Quantity,TransactionType.marketSell);
+            _centralBank.SubAmount(buyOrder.price * boughtItem.Quantity, TransactionType.marketSell);
 
-            Market.SendMarketItemBoughtMessage(buyer,boughtItem);
+            Market.SendMarketItemBoughtMessage(buyer, boughtItem);
 
             Message.Builder.SetCommand(Commands.MarketBuyOrderUpdate)
-                .WithData(new Dictionary<string, object> {{k.buyOrder, buyOrder.ToDictionary()}})
+                .WithData(new Dictionary<string, object> { { k.buyOrder, buyOrder.ToDictionary() } })
                 .ToCharacters(seller, buyer)
                 .Send();
         }
@@ -665,19 +664,18 @@ namespace Perpetuum.Services.MarketEngine
             }
 
             //do payout
-            PayOutToSeller(seller,useSellerCorporationWallet,boughtItem.Definition,vendorBuyOrder.price,boughtItem.Quantity,TransactionType.marketSell,true,false);
+            PayOutToSeller(seller, useSellerCorporationWallet, boughtItem.Definition, vendorBuyOrder.price, boughtItem.Quantity, TransactionType.marketSell, true, false);
 
-            _centralBank.SubAmount(vendorBuyOrder.price*boughtItem.Quantity,TransactionType.marketSell);
+            _centralBank.SubAmount(vendorBuyOrder.price * boughtItem.Quantity, TransactionType.marketSell);
 
             Message.Builder.SetCommand(Commands.MarketBuyOrderUpdate)
-                .WithData(new Dictionary<string, object> {{k.buyOrder, vendorBuyOrder.ToDictionary()}})
+                .WithData(new Dictionary<string, object> { { k.buyOrder, vendorBuyOrder.ToDictionary() } })
                 .ToCharacter(seller)
                 .Send();
         }
 
         public void FulfillSellOrderInstantly(Character seller, bool useSellerCorporationWallet, MarketOrder buyOrder, Item itemToSell, Container container)
         {
-			
             if (!buyOrder.isVendorItem)
             {
                 var buyer = Character.GetByEid(buyOrder.submitterEID);
@@ -698,13 +696,15 @@ namespace Perpetuum.Services.MarketEngine
                     BuyOrderFulfilledToCharacter(seller, useSellerCorporationWallet, buyOrder, itemToSell.Quantity, container, itemToSell, buyer);
 
                     Message.Builder.SetCommand(Commands.MarketItemSold)
-                        .WithData(new Dictionary<string, object> {{k.item, itemToSell.BaseInfoToDictionary()}})
+                        .WithData(new Dictionary<string, object> { { k.item, itemToSell.BaseInfoToDictionary() } })
                         .ToCharacter(seller)
                         .Send();
                 }
 
                 return;
             }
+
+            int quantity = 0;
 
             // a vendor wants to buy this item
             if (buyOrder.quantity > 0)
@@ -716,9 +716,10 @@ namespace Perpetuum.Services.MarketEngine
                     FiniteVendorBuyOrderTakesTheItem(useSellerCorporationWallet, buyOrder, itemToSell, seller);
 
                     Message.Builder.SetCommand(Commands.MarketItemSold)
-                        .WithData(new Dictionary<string, object> {{k.item, itemToSell.BaseInfoToDictionary()}})
+                        .WithData(new Dictionary<string, object> { { k.item, itemToSell.BaseInfoToDictionary() } })
                         .ToCharacter(seller)
                         .Send();
+                    quantity = itemToSell.Quantity;
                 }
                 else if (buyOrder.quantity < itemToSell.Quantity)
                 {
@@ -726,19 +727,52 @@ namespace Perpetuum.Services.MarketEngine
                     itemToSell.Quantity = itemToSell.Quantity - buyOrder.quantity;
 
                     //do payout
-                    PayOutToSeller(seller,useSellerCorporationWallet,itemToSell.Definition,buyOrder.price,buyOrder.quantity,TransactionType.marketSell,true,false);
+                    PayOutToSeller(seller, useSellerCorporationWallet, itemToSell.Definition, buyOrder.price, buyOrder.quantity, TransactionType.marketSell, true, false);
 
                     //average price
-                    _marketHandler.InsertAveragePrice(this, itemToSell.Definition, buyOrder.quantity*buyOrder.price, buyOrder.quantity);
+                    _marketHandler.InsertAveragePrice(this, itemToSell.Definition, buyOrder.quantity * buyOrder.price, buyOrder.quantity);
 
-                    _centralBank.SubAmount(buyOrder.quantity*buyOrder.price,TransactionType.marketSell);
+                    _centralBank.SubAmount(buyOrder.quantity * buyOrder.price, TransactionType.marketSell);
 
+                    // Log plasma sold and income earned
+                    if (itemToSell.ED.CategoryFlags.IsCategory(CategoryFlags.cf_reactor_plasma))
+                    {
+                        using (TransactionScope scope = Db.CreateTransaction())
+                        {
+                            _ = Db.Query()
+                                .CommandText("exec sp_RecordPlasmaSold @sold_on, @plasma_type, @quantity, @income")
+                                .SetParameter("@sold_on", DateTime.UtcNow)
+                                .SetParameter("@plasma_type", itemToSell.ED.Name)
+                                .SetParameter("@quantity", quantity)
+                                .SetParameter("@income", buyOrder.price * quantity)
+                                .ExecuteNonQuery();
+                            scope.Complete();
+                        }
+                    }
+
+                    quantity = buyOrder.quantity;
                     buyOrder.quantity = 0; //signal to client
 
                     Message.Builder.SetCommand(Commands.MarketBuyOrderUpdate)
-                        .WithData(new Dictionary<string, object> {{k.buyOrder, buyOrder.ToDictionary()}})
+                        .WithData(new Dictionary<string, object> { { k.buyOrder, buyOrder.ToDictionary() } })
                         .ToCharacter(seller)
                         .Send();
+                }
+
+                // Log plasma sold and income earned
+                if (itemToSell.ED.CategoryFlags.IsCategory(CategoryFlags.cf_reactor_plasma))
+                {
+                    using (TransactionScope scope = Db.CreateTransaction())
+                    {
+                        _ = Db.Query()
+                            .CommandText("exec sp_RecordPlasmaSold @sold_on, @plasma_type, @quantity, @income")
+                            .SetParameter("@sold_on", DateTime.UtcNow)
+                            .SetParameter("@plasma_type", itemToSell.ED.Name)
+                            .SetParameter("@quantity", quantity)
+                            .SetParameter("@income", buyOrder.price * quantity)
+                            .ExecuteNonQuery();
+                        scope.Complete();
+                    }
                 }
 
                 return;
@@ -748,14 +782,30 @@ namespace Perpetuum.Services.MarketEngine
             Repository.Delete(itemToSell);
 
             //do payout
-            PayOutToSeller(seller,useSellerCorporationWallet,itemToSell.Definition,buyOrder.price,itemToSell.Quantity,TransactionType.marketSell,true,false);
+            PayOutToSeller(seller, useSellerCorporationWallet, itemToSell.Definition, buyOrder.price, itemToSell.Quantity, TransactionType.marketSell, true, false);
 
-            _centralBank.SubAmount(buyOrder.price*itemToSell.Quantity,TransactionType.marketSell);
+            _centralBank.SubAmount(buyOrder.price * itemToSell.Quantity, TransactionType.marketSell);
 
             Message.Builder.SetCommand(Commands.MarketItemSold)
-                .WithData(new Dictionary<string, object> {{k.item, itemToSell.BaseInfoToDictionary()}})
+                .WithData(new Dictionary<string, object> { { k.item, itemToSell.BaseInfoToDictionary() } })
                 .ToCharacter(seller)
                 .Send();
+
+            // Log plasma sold and income earned
+            if (itemToSell.ED.CategoryFlags.IsCategory(CategoryFlags.cf_reactor_plasma))
+            {
+                using (TransactionScope scope = Db.CreateTransaction())
+                {
+                    _ = Db.Query()
+                        .CommandText("exec sp_RecordPlasmaSold @sold_on, @plasma_type, @quantity, @income")
+                        .SetParameter("@sold_on", DateTime.UtcNow)
+                        .SetParameter("@plasma_type", itemToSell.ED.Name)
+                        .SetParameter("@quantity", itemToSell.Quantity)
+                        .SetParameter("@income", buyOrder.price * itemToSell.Quantity)
+                        .ExecuteNonQuery();
+                    scope.Complete();
+                }
+            }
         }
 
         /// <summary>
@@ -828,7 +878,7 @@ namespace Perpetuum.Services.MarketEngine
         public void AddOtherStuffToGammaMarket()
         {
             //229 898 899 900 901 902 5844 5375 5134 5137 tile charges      
-            InsertVendorSellOrder(229,90);
+            InsertVendorSellOrder(229, 90);
             InsertVendorSellOrder(898, 90);
             InsertVendorSellOrder(899, 90);
             InsertVendorSellOrder(900, 90);
@@ -891,7 +941,7 @@ namespace Perpetuum.Services.MarketEngine
             foreach (var ed in _entityServices.Defaults.GetAll().GetByCategoryFlags(cf))
             {
                 if (!ed.IsSellable) continue;
-                
+
                 if (!addNamed && ed.Name.Contains("named"))
                     continue;
 
@@ -899,12 +949,12 @@ namespace Perpetuum.Services.MarketEngine
                 {
                     if (!ed.Name.Contains(nameFilter)) continue;
                 }
-                
+
                 const string insertCmdText = @"insert marketitems (marketeid, itemdefinition, submittereid, duration, isSell, price, quantity, isvendoritem) values
                                                           (@marketeid, @itemdefinition, @submittereid, @duration, @isSell, @price, @quantity, @isvendoritem)";
                 Db.Query().CommandText(insertCmdText)
                     .SetParameter("@marketeid", Eid)
-                    .SetParameter("@itemdefinition",ed.Definition)
+                    .SetParameter("@itemdefinition", ed.Definition)
                     .SetParameter("@submittereid", vendorEID)
                     .SetParameter("@duration", duration)
                     .SetParameter("@isSell", isSell)
@@ -936,15 +986,15 @@ namespace Perpetuum.Services.MarketEngine
             if (sellOrder.itemEid == null)
                 return; //wtf
 
-            var itemToSell = Item.GetOrThrow((long) sellOrder.itemEid);
+            var itemToSell = Item.GetOrThrow((long)sellOrder.itemEid);
             var buyer = Character.GetByEid(buyOrder.submitterEID);
-			
+
             if (itemToSell.Quantity > buyOrder.quantity)
             {
                 //az item tobb darabbol all, kistackolunk belole
                 var boughtItem = itemToSell.Unstack(buyOrder.quantity);
                 market.BuyOrderFulfilledToCharacter(seller, useSellerCorporationWallet, buyOrder, buyOrder.quantity, null, boughtItem, buyer);
-				
+
                 //elmentjuk, o marad fent a marketen
                 itemToSell.Save();
 
@@ -965,10 +1015,10 @@ namespace Perpetuum.Services.MarketEngine
             }
         }
 
-        public static void SendMarketItemBoughtMessage(Character character,Item item)
+        public static void SendMarketItemBoughtMessage(Character character, Item item)
         {
             Message.Builder.SetCommand(Commands.MarketItemBought)
-                .WithData(new Dictionary<string,object> { { k.item,item.BaseInfoToDictionary() } })
+                .WithData(new Dictionary<string, object> { { k.item, item.BaseInfoToDictionary() } })
                 .ToCharacter(character)
                 .Send();
         }
@@ -983,7 +1033,7 @@ namespace Perpetuum.Services.MarketEngine
             return (TaxMultiplier + character.GetExtensionsBonusSummary(ExtensionNames.MARKET_TRANSACTION_TAX)).Clamp();
         }
 
-        public static double GetRealMarketFee(Character character,int duration)
+        public static double GetRealMarketFee(Character character, int duration)
         {
             var realMarketFee = MARKET_FEE * GetMarketFeeRate(character) * duration;
             return realMarketFee;

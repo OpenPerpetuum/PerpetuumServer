@@ -425,6 +425,7 @@
     <Compile Include="Services\EventServices\EventProcessors\EventProcessor.cs" />
     <Compile Include="Services\EventServices\EventProcessors\NpcSpawnEventHandlers\OreNPCSpawner.cs" />
     <Compile Include="Services\Mail\PreMadeMailNames.cs" />
+    <Compile Include="Services\MarketEngine\MarketAutoOrdersManager.cs" />
     <Compile Include="Services\MissionEngine\DisplayMissionSpotsProcess.cs" />
     <Compile Include="Services\MissionEngine\MissionResolveTester.cs" />
     <Compile Include="Services\MissionEngine\OneLocationTest.cs" />

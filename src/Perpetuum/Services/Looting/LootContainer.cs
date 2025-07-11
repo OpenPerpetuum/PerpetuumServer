@@ -1,19 +1,11 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Transactions;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Builders;
 using Perpetuum.Common.Loggers.Transaction;
 using Perpetuum.Data;
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
-
 using Perpetuum.Groups.Gangs;
 using Perpetuum.Items;
-using Perpetuum.Log;
 using Perpetuum.Players;
 using Perpetuum.Players.ExtensionMethods;
 using Perpetuum.Robots;
@@ -22,6 +14,12 @@ using Perpetuum.Timers;
 using Perpetuum.Units;
 using Perpetuum.Zones;
 using Perpetuum.Zones.Beams;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Transactions;
 
 namespace Perpetuum.Services.Looting
 {
@@ -29,7 +27,7 @@ namespace Perpetuum.Services.Looting
     {
         public static readonly TimeSpan DespawnTime = TimeSpan.FromMinutes(15);
 
-        private readonly ConcurrentDictionary<Character,int> _pinTryCounts = new ConcurrentDictionary<Character, int>();
+        private readonly ConcurrentDictionary<Character, int> _pinTryCounts = new ConcurrentDictionary<Character, int>();
 
         private const int LOOT_RANGE = 10;
         private UnitDespawnHelper _despawnHelper;
@@ -54,26 +52,24 @@ namespace Perpetuum.Services.Looting
 
         public void SetDespawnTime(TimeSpan despawnTime)
         {
-            _despawnHelper = UnitDespawnHelper.Create(this,despawnTime);
+            _despawnHelper = UnitDespawnHelper.Create(this, despawnTime);
             _despawnHelper.CanApplyDespawnEffect = OnCanApplyDespawnEffect;
         }
 
         public override void AcceptVisitor(IEntityVisitor visitor)
         {
             if (!TryAcceptVisitor(this, visitor))
+            {
                 base.AcceptVisitor(visitor);
+            }
         }
 
         public int PinCode
         {
-            protected get { return _pinCode.Value;}
-            set { _pinCode.Value = value; }
+            protected get => _pinCode.Value; set => _pinCode.Value = value;
         }
 
-        public override ErrorCodes IsAttackable
-        {
-            get { return ErrorCodes.TargetIsNonAttackable; }
-        }
+        public override ErrorCodes IsAttackable => ErrorCodes.TargetIsNonAttackable;
 
         private bool OnCanApplyDespawnEffect(Unit unit)
         {
@@ -87,7 +83,7 @@ namespace Perpetuum.Services.Looting
 
         public void AddLoots(IEnumerable<LootItem> items)
         {
-            foreach (var item in items)
+            foreach (LootItem item in items)
             {
                 AddLoot(item);
             }
@@ -95,17 +91,19 @@ namespace Perpetuum.Services.Looting
 
         protected void AddLoot(LootItem item)
         {
-            if ( item.Quantity == 0 )
+            if (item.Quantity == 0)
+            {
                 return;
+            }
 
-            _itemRepository.AddWithStack(this,item);
+            _itemRepository.AddWithStack(this, item);
         }
 
         public void SendLootListToPlayer(Player player, int pinCode)
         {
-            HasAccess(player,pinCode);
+            HasAccess(player, pinCode);
 
-            Zone.CreateBeam(BeamType.loot_bolt,b => b.WithSource(player)
+            Zone.CreateBeam(BeamType.loot_bolt, b => b.WithSource(player)
                 .WithTarget(this)
                 .WithState(BeamState.Hit).WithDuration(1000));
             player.Session.SendPacket(_lootListPacketBuilder);
@@ -117,26 +115,30 @@ namespace Perpetuum.Services.Looting
         {
             IsInLootRange(looter).ThrowIfFalse(ErrorCodes.LootContainerOutOfRange);
 
-            var owner = this.GetOwnerAsCharacter();
-            
+            Character owner = this.GetOwnerAsCharacter();
+
             if (owner == Character.None || // van owner?
                  owner == looter.Character || // ugyanaz akar-e lootolni aki a gazdi
                  Gang.CompareGang(looter.Character, owner) // ugyanabban a gangben vannak-e
                 )
+            {
                 return;
+            }
 
             if (!IsFieldContainer() && !looter.IsInDefaultCorporation())
             {
                 if (looter.CorporationEid == owner.CorporationEid)
+                {
                     return;
+                }
             }
 
-            CheckPinCode(looter.Character,pinCode);
+            CheckPinCode(looter.Character, pinCode);
         }
 
         private bool IsInLootRange(Player player) { return IsInRangeOf3D(player, LOOT_RANGE); }
 
-        private void CheckPinCode(Character looter,int pinCode)
+        private void CheckPinCode(Character looter, int pinCode)
         {
             _pinTryCounts.GetOrDefault(looter).ThrowIfGreaterOrEqual(3, ErrorCodes.AccessDenied);
 
@@ -172,7 +174,7 @@ namespace Perpetuum.Services.Looting
 
             lock (syncObject)
             {
-                var takeLootBeamBuilder = Beam.NewBuilder().WithType(BeamType.loot_bolt)
+                BeamBuilder takeLootBeamBuilder = Beam.NewBuilder().WithType(BeamType.loot_bolt)
                                                            .WithSource(player)
                                                            .WithTarget(this)
                                                            .WithState(BeamState.Hit)
@@ -180,38 +182,42 @@ namespace Perpetuum.Services.Looting
 
                 Zone.CreateBeam(takeLootBeamBuilder);
 
-                using (var scope = Db.CreateTransaction())
+                using (TransactionScope scope = Db.CreateTransaction())
                 {
-                    var container = player.GetContainer();
+                    RobotInventory container = player.GetContainer();
                     Debug.Assert(container != null, "container != null");
                     container.EnlistTransaction();
-                    var lootedItems = new List<Item>();
+                    List<Item> lootedItems = new List<Item>();
 
-                    var progressPacketBuilder = new LootContainerProgressInfoPacketBuilder(container, this, items.Count);
+                    LootContainerProgressInfoPacketBuilder progressPacketBuilder = new LootContainerProgressInfoPacketBuilder(container, this, items.Count);
 
-                    foreach (var kvp in items)
+                    foreach (KeyValuePair<Guid, int> kvp in items)
                     {
                         try
                         {
-                            var lootId = kvp.Key;
-                            var reqQty = kvp.Value;
+                            Guid lootId = kvp.Key;
+                            int reqQty = kvp.Value;
 
-                            var lootItem = _itemRepository.Get(this, lootId);
+                            LootItem lootItem = _itemRepository.Get(this, lootId);
                             if (lootItem == null)
+                            {
                                 continue;
+                            }
 
                             if (lootItem.Quantity < reqQty)
                             {
                                 reqQty = lootItem.Quantity;
                             }
 
-                            var item = CreateWithRandomEid(lootItem.ItemInfo);
+                            Item item = CreateWithRandomEid(lootItem.ItemInfo);
                             item.Owner = player.Owner;
                             item.Quantity = reqQty;
                             item.IsRepackaged = lootItem.ItemInfo.IsRepackaged;
 
                             if (!container.IsEnoughCapacity(item))
+                            {
                                 continue;
+                            }
 
                             //ha serult akkor legyen serult
                             item.Health = lootItem.ItemInfo.Health;
@@ -224,9 +230,13 @@ namespace Perpetuum.Services.Looting
                             lootItem.Quantity -= reqQty;
 
                             if (lootItem.Quantity <= 0)
-                                _itemRepository.Delete(this,lootItem);
+                            {
+                                _itemRepository.Delete(this, lootItem);
+                            }
                             else
-                                _itemRepository.Update(this,lootItem);
+                            {
+                                _itemRepository.Update(this, lootItem);
+                            }
 
                             lootedItems.Add(item);
                         }
@@ -264,25 +274,27 @@ namespace Perpetuum.Services.Looting
 
         private void OnTakeLoots(Player player, IEnumerable<Item> lootedItems)
         {
-            var b = TransactionLogEvent.Builder().SetTransactionType(TransactionType.TakeLoot).SetCharacter(player.Character).SetContainer(Eid);
+            TransactionLogEventBuilder b = TransactionLogEvent.Builder().SetTransactionType(TransactionType.TakeLoot).SetCharacter(player.Character).SetContainer(Eid);
 
-            var displayOrder = GetMissionDisplayOrder();
-            var missionGuid = GetMissionGuid();
+            int displayOrder = GetMissionDisplayOrder();
+            Guid missionGuid = GetMissionGuid();
 
-            foreach (var item in lootedItems)
+            foreach (Item item in lootedItems)
             {
                 b.SetItem(item);
                 player.Character.LogTransaction(b);
 
                 if (this is FieldContainer)
+                {
                     continue;
+                }
 
-#if DEBUG
-                Logger.Info(">>>>> ENQUEUE LOOTING >>>>> " + player.Character.Id + " " + item.ED.Name + " qty:" + item.Quantity);
-#endif
+                //#if DEBUG
+                //                Logger.Info(">>>>> ENQUEUE LOOTING >>>>> " + player.Character.Id + " " + item.ED.Name + " qty:" + item.Quantity);
+                //#endif
 
-                player.MissionHandler.EnqueueMissionEventInfo(new LootMissionEventInfo(player,item,CurrentPosition,missionGuid,displayOrder));
-                
+                player.MissionHandler.EnqueueMissionEventInfo(new LootMissionEventInfo(player, item, CurrentPosition, missionGuid, displayOrder));
+
             }
         }
 
@@ -299,23 +311,29 @@ namespace Perpetuum.Services.Looting
             _despawnHelper.Update(time, this);
 
             if (IsFieldContainer())
+            {
                 return;
+            }
 
             _timerResetOwner.Update(time);
 
             if (_timerResetOwner.Passed)
+            {
                 ResetOwner();
+            }
         }
 
         private void ResetOwner()
         {
-            if ( Owner == 0L )
+            if (Owner == 0L)
+            {
                 return;
+            }
 
             Db.CreateTransactionAsync(scope =>
             {
                 Owner = 0;
-                this.Save();
+                Save();
             });
         }
 
@@ -325,7 +343,8 @@ namespace Perpetuum.Services.Looting
             {
                 _itemRepository.DeleteAll(this);
                 zone.UnitService.RemoveUserUnit(this);
-            }).ContinueWith(t => {
+            }).ContinueWith(t =>
+            {
                 base.OnRemovedFromZone(zone);
             });
         }
@@ -346,7 +365,7 @@ namespace Perpetuum.Services.Looting
 
             public Packet Build()
             {
-                var packet = new Packet(ZoneCommand.LootContainerProgressInfo);
+                Packet packet = new Packet(ZoneCommand.LootContainerProgressInfo);
 
                 packet.AppendLong(_robotInventory.Eid);
                 packet.AppendLong(_container.Eid);
@@ -375,14 +394,14 @@ namespace Perpetuum.Services.Looting
 
             public Packet Build()
             {
-                var packet = new Packet(ZoneCommand.LootList);
+                Packet packet = new Packet(ZoneCommand.LootList);
 
                 packet.AppendLong(_container.Eid);
 
-                var loots = _itemRepository.GetAll(_container).ToList();
+                List<LootItem> loots = _itemRepository.GetAll(_container).ToList();
                 packet.AppendInt(loots.Count);
 
-                foreach (var lootItem in loots)
+                foreach (LootItem lootItem in loots)
                 {
                     lootItem.AppendToPacket(packet);
                 }
@@ -400,13 +419,10 @@ namespace Perpetuum.Services.Looting
             public Looters(LootContainer lootContainer)
             {
                 _lootContainer = lootContainer;
-                _action = new TimerAction(CleanUpLooters,TimeSpan.FromSeconds(1000));
+                _action = new TimerAction(CleanUpLooters, TimeSpan.FromSeconds(1000));
             }
 
-            public int Count
-            {
-                get { return _looters.Count; }
-            }
+            public int Count => _looters.Count;
 
             public IEnumerable<Player> GetLooters()
             {
@@ -430,14 +446,16 @@ namespace Perpetuum.Services.Looting
 
             private void CleanUpLooters()
             {
-                foreach (var kvp in _looters)
+                foreach (KeyValuePair<long, Player> kvp in _looters)
                 {
-                    var player = kvp.Value;
-                    var isInZone = player.InZone;
-                    var isInLootRange = _lootContainer.IsInLootRange(player);
+                    Player player = kvp.Value;
+                    bool isInZone = player.InZone;
+                    bool isInLootRange = _lootContainer.IsInLootRange(player);
 
                     if (isInZone && isInLootRange)
+                    {
                         continue;
+                    }
 
                     _looters.Remove(kvp.Key);
                 }
@@ -529,20 +547,24 @@ namespace Perpetuum.Services.Looting
             public LootContainer BuildAndAddToZone(IZone zone, Position position)
             {
                 if (_lootItems.Count == 0)
+                {
                     return null;
+                }
 
-                var container = Build(zone, position);
+                LootContainer container = Build(zone, position);
                 if (container == null)
+                {
                     return null;
+                }
 
                 Transaction.Current.OnCommited(() =>
                 {
-                    var beamBuilder = Beam.NewBuilder().WithType(_enterBeamType).WithSource(_ownerPlayer)
+                    BeamBuilder beamBuilder = Beam.NewBuilder().WithType(_enterBeamType).WithSource(_ownerPlayer)
                         .WithTarget(container)
                         .WithState(BeamState.Hit)
                         .WithDuration(TimeSpan.FromSeconds(5));
 
-                    container.AddToZone(zone,position,ZoneEnterType.Default, beamBuilder);
+                    container.AddToZone(zone, position, ZoneEnterType.Default, beamBuilder);
                 });
 
                 return container;
@@ -551,26 +573,69 @@ namespace Perpetuum.Services.Looting
             [CanBeNull]
             public LootContainer Build(IZone zone, Position position)
             {
-                var definitionName = _containerTypeToName.GetOrDefault(_containerType);
-                var container = (LootContainer)CreateUnitWithRandomEID(definitionName);
+                string definitionName = _containerTypeToName.GetOrDefault(_containerType);
+                LootContainer container = (LootContainer)CreateUnitWithRandomEID(definitionName);
                 if (container == null)
+                {
                     return null;
+                }
 
                 container.PinCode = _pinCode;
 
                 if (_ownerPlayer != null)
+                {
                     container.Owner = _ownerPlayer.Owner;
+                }
 
                 container.Initialize();
 
                 container.AddLoots(_lootItems.Where(l => !l.ItemInfo.IsRepackaged));
 
-                var stackedLoots = _lootItems.Where(l => l.ItemInfo.IsRepackaged)
+                IEnumerable<LootItem> stackedLoots = _lootItems.Where(l => l.ItemInfo.IsRepackaged)
                                         .GroupBy(l => l.ItemInfo.Definition)
                                         .Select(grp => LootItemBuilder.Create(grp.Key).AsRepackaged().SetQuantity(grp.Sum(l => l.Quantity)).Build());
 
                 container.AddLoots(stackedLoots);
-                zone.UnitService.AddUserUnit(container,position);
+
+                IEnumerable<IGrouping<string, LootItem>> plasmaByType = container
+                    .GetLootItems()
+                    .Where(x => x.ItemInfo.EntityDefault.CategoryFlags.IsCategory(CategoryFlags.cf_reactor_plasma))
+                    .GroupBy(x => x.ItemInfo.EntityDefault.Name);
+
+                foreach (IGrouping<string, LootItem> plasma in plasmaByType)
+                {
+                    using (TransactionScope scope = Db.CreateTransaction())
+                    {
+                        Db.Query()
+                            .CommandText("exec sp_RecordPlasmaGathered @gathered_on, @plasma_type, @quantity")
+                            .SetParameter("@gathered_on", DateTime.UtcNow)
+                            .SetParameter("@plasma_type", plasma.Key)
+                            .SetParameter("@quantity", plasma.Sum(x => x.ItemInfo.Quantity))
+                            .ExecuteNonQuery();
+                        scope.Complete();
+                    }
+                }
+
+                IEnumerable<IGrouping<string, LootItem>> fragmentsByType = container
+                    .GetLootItems()
+                    .Where(x => x.ItemInfo.EntityDefault.CategoryFlags.IsAny(new CategoryFlags[] { CategoryFlags.cf_robotshards, CategoryFlags.cf_research_kits, CategoryFlags.cf_reactor_cores }))
+                    .GroupBy(x => x.ItemInfo.EntityDefault.Name);
+
+                foreach (IGrouping<string, LootItem> fragment in fragmentsByType)
+                {
+                    using (TransactionScope scope = Db.CreateTransaction())
+                    {
+                        Db.Query()
+                            .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
+                            .SetParameter("@gathered_on", DateTime.UtcNow)
+                            .SetParameter("@resource_name", fragment.Key)
+                            .SetParameter("@quantity", fragment.Sum(x => x.ItemInfo.Quantity))
+                            .ExecuteNonQuery();
+                        scope.Complete();
+                    }
+                }
+
+                zone.UnitService.AddUserUnit(container, position);
                 return container;
             }
         }

@@ -127,8 +127,16 @@ namespace Perpetuum.Modules
                         : ParentRobot as Player;
 
                     Debug.Assert(player != null, "player != null");
+
                     foreach (ItemInfo extractedMaterial in harvestedPlants)
                     {
+                        Db.Query()
+                            .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
+                            .SetParameter("@gathered_on", DateTime.UtcNow)
+                            .SetParameter("@resource_name", extractedMaterial.EntityDefault.Name)
+                            .SetParameter("@quantity", extractedMaterial.Quantity)
+                            .ExecuteNonQuery();
+
                         Item item = (Item)Factory.CreateWithRandomEID(extractedMaterial.Definition);
                         item.Owner = Owner;
                         item.Quantity = extractedMaterial.Quantity;

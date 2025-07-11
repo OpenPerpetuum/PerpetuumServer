@@ -9,6 +9,7 @@ using Perpetuum.Zones.Beams;
 using Perpetuum.Zones.Terrains;
 using Perpetuum.Zones.Terrains.Materials;
 using Perpetuum.Zones.Terrains.Materials.Minerals;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -59,6 +60,7 @@ namespace Perpetuum.Modules
 
                 extractedMaterials
                     .AddRange(RareMaterialHandler.GenerateRareMaterials(materialInfo.EntityDefault.Definition));
+
                 CreateBeam(position.Center, BeamState.AlignToTerrain);
                 using (TransactionScope scope = Db.CreateTransaction())
                 {
@@ -70,6 +72,13 @@ namespace Perpetuum.Modules
                     Debug.Assert(player != null, "player != null");
                     foreach (ItemInfo material in extractedMaterials)
                     {
+                        Db.Query()
+                            .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
+                            .SetParameter("@gathered_on", DateTime.UtcNow)
+                            .SetParameter("@resource_name", material.EntityDefault.Name)
+                            .SetParameter("@quantity", material.Quantity)
+                            .ExecuteNonQuery();
+
                         Item item = (Item)Factory.CreateWithRandomEID(material.Definition);
                         item.Owner = Owner;
                         item.Quantity = material.Quantity;

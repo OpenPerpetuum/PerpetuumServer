@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Caching;
-using Perpetuum.Accounting.Characters;
+﻿using Perpetuum.Accounting.Characters;
 using Perpetuum.Data;
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Log;
 using Perpetuum.Units.DockingBases;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Caching;
 
 namespace Perpetuum.Services.MarketEngine
 {
@@ -20,12 +20,12 @@ namespace Perpetuum.Services.MarketEngine
     public class MarketHandler
     {
         private readonly DockingBaseHelper _dockingBaseHelper;
-      
+
         /// <summary>
         /// marketEid -> MarketPriceCollector
         /// </summary>
         private readonly ConcurrentDictionary<long, MarketPriceCollector> _marketPriceCollectors = new ConcurrentDictionary<long, MarketPriceCollector>();
-        private readonly ConcurrentDictionary<long,long> _marketEidToDockingBaseEid = new ConcurrentDictionary<long, long>();
+        private readonly ConcurrentDictionary<long, long> _marketEidToDockingBaseEid = new ConcurrentDictionary<long, long>();
         private readonly ObjectCache _visibleMarkets = new MemoryCache("visibleMarkets");
 
         public MarketHandler(DockingBaseHelper dockingBaseHelper)
@@ -70,7 +70,7 @@ namespace Perpetuum.Services.MarketEngine
                 Logger.Exception(ex);
                 return false;
             }
-            
+
             //ok, load price collector for the market
             var pc = GetPriceCollectorByMarket(market);
             baseEid = pc.GetBaseEid();
@@ -109,11 +109,11 @@ namespace Perpetuum.Services.MarketEngine
                 Db.Query().CommandText(query)
                        .SetParameter("@tb_def", EntityDefault.GetByName(DefinitionNames.TRAINING_DOCKING_BASE).Definition)
                        .ExecuteScalar<long>();
-           
+
                 Logger.Info("training base market eid was found: " + tbm_eid);
 
                 _trainingMarketEid = tbm_eid;
-                
+
             }
 
             return _trainingMarketEid;
@@ -144,7 +144,7 @@ namespace Perpetuum.Services.MarketEngine
         {
             GetPriceCollectorByMarket(market).InsertAveragePrice(itemDefinition, price, qty);
         }
-        
+
         private MarketAveragePriceEntry HandleGetAveragePriceByMarket(Market market, int definition)
         {
             var pc = GetPriceCollectorByMarket(market);
@@ -170,9 +170,9 @@ namespace Perpetuum.Services.MarketEngine
 
         public Dictionary<string, object> GetGlobalAverageHistory(int day, int itemDefinition)
         {
-            var startDate = DateTime.Today.AddDays(-1*day);
+            var startDate = DateTime.Today.AddDays(-1 * day);
 
-            var marketEidString = GetAllDefaultMarketsEids().ArrayToString(); 
+            var marketEidString = GetAllDefaultMarketsEids().ArrayToString();
 
             var count = 0;
             var prices = (from r in
@@ -186,7 +186,7 @@ namespace Perpetuum.Services.MarketEngine
                     .SetParameter("@day", day)
                     .SetParameter("@startDate", startDate)
                     .Execute()
-                select (object) new Dictionary<string, object>
+                          select (object)new Dictionary<string, object>
                 {
                     {k.price, r.GetValue<double>(0)},
                     {k.date, r.GetValue<DateTime>(1)},
