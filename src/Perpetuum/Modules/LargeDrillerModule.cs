@@ -2,6 +2,7 @@
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
+using Perpetuum.Log;
 using Perpetuum.Players;
 using Perpetuum.Services.MissionEngine.MissionTargets;
 using Perpetuum.Zones;
@@ -45,6 +46,8 @@ namespace Perpetuum.Modules
 
             int emptyTilesCounter = 0;
 
+            List<(string resourceName, int quantity)> resourceStats = new List<(string resourceName, int quantity)>();
+
             // make it parallel 
             foreach (Position position in mineralPositions)
             {
@@ -72,13 +75,6 @@ namespace Perpetuum.Modules
                     Debug.Assert(player != null, "player != null");
                     foreach (ItemInfo material in extractedMaterials)
                     {
-                        Db.Query()
-                            .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
-                            .SetParameter("@gathered_on", DateTime.UtcNow)
-                            .SetParameter("@resource_name", material.EntityDefault.Name)
-                            .SetParameter("@quantity", material.Quantity)
-                            .ExecuteNonQuery();
-
                         Item item = (Item)Factory.CreateWithRandomEID(material.Definition);
                         item.Owner = Owner;
                         item.Quantity = material.Quantity;
@@ -93,6 +89,8 @@ namespace Perpetuum.Modules
                         drilledQuantity,
                                     position));
                         player.Zone?.MiningLogHandler.EnqueueMiningLog(drilledMineralDefinition, drilledQuantity);
+
+                        resourceStats.Add((material.EntityDefault.Name, material.Quantity));
                     }
 
                     //save container
@@ -102,7 +100,22 @@ namespace Perpetuum.Modules
                     scope.Complete();
                 }
 
-
+                foreach (var (resourceName, quantity) in resourceStats)
+                {
+                    try
+                    {
+                        Db.Query()
+                            .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
+                            .SetParameter("@gathered_on", DateTime.UtcNow)
+                            .SetParameter("@resource_name", resourceName)
+                            .SetParameter("@quantity", quantity)
+                            .ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex.Message);
+                    }
+                }
             }
 
             GenerateHeat(EffectType.effect_excavator, 6);

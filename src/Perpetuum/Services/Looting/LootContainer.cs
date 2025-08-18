@@ -6,6 +6,7 @@ using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Groups.Gangs;
 using Perpetuum.Items;
+using Perpetuum.Log;
 using Perpetuum.Players;
 using Perpetuum.Players.ExtensionMethods;
 using Perpetuum.Robots;
@@ -602,18 +603,26 @@ namespace Perpetuum.Services.Looting
                     .Where(x => x.ItemInfo.EntityDefault.CategoryFlags.IsCategory(CategoryFlags.cf_reactor_plasma))
                     .GroupBy(x => x.ItemInfo.EntityDefault.Name);
 
-                foreach (IGrouping<string, LootItem> plasma in plasmaByType)
+                using (TransactionScope scope = Db.CreateTransaction())
                 {
-                    using (TransactionScope scope = Db.CreateTransaction())
+                    foreach (IGrouping<string, LootItem> plasma in plasmaByType)
                     {
-                        Db.Query()
-                            .CommandText("exec sp_RecordPlasmaGathered @gathered_on, @plasma_type, @quantity")
-                            .SetParameter("@gathered_on", DateTime.UtcNow)
-                            .SetParameter("@plasma_type", plasma.Key)
-                            .SetParameter("@quantity", plasma.Sum(x => x.ItemInfo.Quantity))
-                            .ExecuteNonQuery();
-                        scope.Complete();
+                        try
+                        {
+                            Db.Query()
+                                .CommandText("exec sp_RecordPlasmaGathered @gathered_on, @plasma_type, @quantity")
+                                .SetParameter("@gathered_on", DateTime.UtcNow)
+                                .SetParameter("@plasma_type", plasma.Key)
+                                .SetParameter("@quantity", plasma.Sum(x => x.ItemInfo.Quantity))
+                                .ExecuteNonQuery();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex.Message);
+                        }
                     }
+
+                    scope.Complete();
                 }
 
                 IEnumerable<IGrouping<string, LootItem>> fragmentsByType = container
@@ -621,21 +630,30 @@ namespace Perpetuum.Services.Looting
                     .Where(x => x.ItemInfo.EntityDefault.CategoryFlags.IsAny(new CategoryFlags[] { CategoryFlags.cf_robotshards, CategoryFlags.cf_research_kits, CategoryFlags.cf_reactor_cores }))
                     .GroupBy(x => x.ItemInfo.EntityDefault.Name);
 
-                foreach (IGrouping<string, LootItem> fragment in fragmentsByType)
+                using (TransactionScope scope = Db.CreateTransaction())
                 {
-                    using (TransactionScope scope = Db.CreateTransaction())
+                    foreach (IGrouping<string, LootItem> fragment in fragmentsByType)
                     {
-                        Db.Query()
-                            .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
-                            .SetParameter("@gathered_on", DateTime.UtcNow)
-                            .SetParameter("@resource_name", fragment.Key)
-                            .SetParameter("@quantity", fragment.Sum(x => x.ItemInfo.Quantity))
-                            .ExecuteNonQuery();
-                        scope.Complete();
+                        try
+                        {
+                            Db.Query()
+                                .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
+                                .SetParameter("@gathered_on", DateTime.UtcNow)
+                                .SetParameter("@resource_name", fragment.Key)
+                                .SetParameter("@quantity", fragment.Sum(x => x.ItemInfo.Quantity))
+                                .ExecuteNonQuery();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex.Message);
+                        }
                     }
+
+                    scope.Complete();
                 }
 
                 zone.UnitService.AddUserUnit(container, position);
+
                 return container;
             }
         }

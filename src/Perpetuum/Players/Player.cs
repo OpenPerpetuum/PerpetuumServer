@@ -1092,10 +1092,9 @@ namespace Perpetuum.Players
 
                     PlayerDeathLogger.Log.Write(zone, this, killer);
 
-                    bool wasInsured = InsuranceHelper.CheckInsuranceOnDeath(Eid, Definition);
-
-                    if (!Session.AccessLevel.IsAdminOrGm() && !IsBlessed)
+                    if (!Session.AccessLevel.IsAdminOrGm() && !IsBlessed || (!IsBlessed && LootHelper.Roll(0.05)))
                     {
+                        bool wasInsured = InsuranceHelper.CheckInsuranceOnDeath(Eid, Definition);
                         DieAndDropLoot(zone, killer, character, dockingBase, wasInsured);
                     }
                     else
@@ -1147,7 +1146,7 @@ namespace Perpetuum.Players
                     Repository.Delete(item);
                 }
 
-                foreach (Module module in Modules.Where(m => LootHelper.Roll(0.1)))
+                foreach (Module module in Modules.Where(m => LootHelper.Roll(0.25)))
                 {
                     module.Parent = robotInventory.Eid;
                     Repository.Delete(module);

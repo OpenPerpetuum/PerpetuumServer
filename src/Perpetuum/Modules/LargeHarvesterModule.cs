@@ -2,6 +2,7 @@
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
+using Perpetuum.Log;
 using Perpetuum.Players;
 using Perpetuum.Services.MissionEngine.MissionTargets;
 using Perpetuum.Zones;
@@ -32,6 +33,8 @@ namespace Perpetuum.Modules
             mineralPositions.Add(centralTile);
 
             int emptyTilesCounter = 0;
+
+            List<(string resourceName, int quantity)> resourceStats = new List<(string resourceName, int quantity)>();
 
             // make it parallel 
             foreach (Position position in mineralPositions)
@@ -72,13 +75,6 @@ namespace Perpetuum.Modules
 
                         foreach (ItemInfo extractedMaterial in harvestedPlants)
                         {
-                            Db.Query()
-                                .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
-                                .SetParameter("@gathered_on", DateTime.UtcNow)
-                                .SetParameter("@resource_name", extractedMaterial.EntityDefault.Name)
-                                .SetParameter("@quantity", extractedMaterial.Quantity)
-                                .ExecuteNonQuery();
-
                             Item item = (Item)Factory.CreateWithRandomEID(extractedMaterial.Definition);
                             item.Owner = Owner;
                             item.Quantity = extractedMaterial.Quantity;
@@ -87,6 +83,8 @@ namespace Perpetuum.Modules
                             int extractedQuantity = extractedMaterial.Quantity;
                             player.MissionHandler.EnqueueMissionEventInfo(new HarvestPlantEventInfo(player, extractedHarvestDefinition, extractedQuantity, position));
                             player.Zone?.HarvestLogHandler.EnqueueHarvestLog(extractedHarvestDefinition, extractedQuantity);
+
+                            resourceStats.Add((extractedMaterial.EntityDefault.Name, extractedMaterial.Quantity));
                         }
 
                         container.Save();
@@ -94,6 +92,23 @@ namespace Perpetuum.Modules
                         Transaction.Current.OnCommited(() => container.SendUpdateToOwnerAsync());
                         scope.Complete();
                     }
+                }
+            }
+
+            foreach (var (resourceName, quantity) in resourceStats)
+            {
+                try
+                {
+                    Db.Query()
+                        .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
+                        .SetParameter("@gathered_on", DateTime.UtcNow)
+                        .SetParameter("@resource_name", resourceName)
+                        .SetParameter("@quantity", quantity)
+                        .ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex.Message);
                 }
             }
 

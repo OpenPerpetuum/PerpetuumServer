@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Perpetuum.Accounting.Characters;
+using Perpetuum.Data;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Perpetuum.Accounting.Characters;
-using Perpetuum.Data;
 
 namespace Perpetuum.Services.MarketEngine
 {
-    public interface IMarketOrderRepository : IRepository<int,MarketOrder>
+    public interface IMarketOrderRepository : IRepository<int, MarketOrder>
     {
         void UpdatePrice(MarketOrder order);
         void UpdateQuantity(MarketOrder order);
@@ -77,7 +77,7 @@ namespace Perpetuum.Services.MarketEngine
 
         public void UpdatePrice(MarketOrder order)
         {
-            var expireDate = order.submitted.AddHours(order.duration);
+            var expireDate = DateTime.Now.AddHours(order.duration);//order.submitted.AddHours(order.duration);
             var durationRemains = (int)expireDate.Subtract(DateTime.Now).TotalHours;
 
             Db.Query().CommandText("update marketitems set price=@price,submitted=@now,duration=@dleft where marketitemid=@ID")
@@ -185,12 +185,12 @@ namespace Perpetuum.Services.MarketEngine
         {
             const string cmd = ORDER_SELECT + @"where submittereid=@characterEID and formembersof is not null";
 
-            return 
+            return
             Db.Query().CommandText(cmd)
                 .SetParameter("@characterEID", character.Eid)
                 .Execute()
                 .Select(CreateMarketOrderFromRecord);
-            
+
         }
 
         public IEnumerable<MarketOrder> GetByDefinition(int itemDefinition, long forMembersOf, Market market)
@@ -254,16 +254,16 @@ namespace Perpetuum.Services.MarketEngine
             if (record == null)
                 return null;
             var order = _marketOrderFactory();
-            order.id             = record.GetValue<int>("marketitemid");
-            order.marketEID      = record.GetValue<long>("marketeid");
-            order.itemEid        = record.GetValue<long?>("itemeid");
+            order.id = record.GetValue<int>("marketitemid");
+            order.marketEID = record.GetValue<long>("marketeid");
+            order.itemEid = record.GetValue<long?>("itemeid");
             order.itemDefinition = record.GetValue<int>("itemdefinition");
-            order.submitterEID   = record.GetValue<long>("submittereid");
-            order.submitted      = record.GetValue<DateTime>("submitted");
-            order.duration       = record.GetValue<int>("duration");
-            order.isSell         = record.GetValue<bool>("isSell");
-            order.price          = record.GetValue<double>("price");
-            order.quantity       = record.GetValue<int>("quantity");
+            order.submitterEID = record.GetValue<long>("submittereid");
+            order.submitted = record.GetValue<DateTime>("submitted");
+            order.duration = record.GetValue<int>("duration");
+            order.isSell = record.GetValue<bool>("isSell");
+            order.price = record.GetValue<double>("price");
+            order.quantity = record.GetValue<int>("quantity");
             order.useCorporationWallet = record.GetValue<bool>("usecorporationwallet");
             order.isVendorItem = record.GetValue<bool>("isvendoritem");
             order.forMembersOf = record.GetValue<long?>("formembersof");

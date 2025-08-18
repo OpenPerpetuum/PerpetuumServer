@@ -2,6 +2,7 @@
 using Perpetuum.EntityFramework;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Items;
+using Perpetuum.Log;
 using Perpetuum.Modules.ModuleProperties;
 using Perpetuum.Players;
 using Perpetuum.Services.MissionEngine.MissionTargets;
@@ -104,6 +105,9 @@ namespace Perpetuum.Modules
         {
             TerrainLock terrainLock = GetLock().ThrowIfNotType<TerrainLock>(ErrorCodes.InvalidLockType);
             CreateBeam(terrainLock.Location, BeamState.AlignToTerrain);
+
+            List<(string resourceName, int quantity)> resourceStats = new List<(string resourceName, int quantity)>();
+
             using (TransactionScope scope = Db.CreateTransaction())
             {
                 using (new TerrainUpdateMonitor(zone))
@@ -130,13 +134,6 @@ namespace Perpetuum.Modules
 
                     foreach (ItemInfo extractedMaterial in harvestedPlants)
                     {
-                        Db.Query()
-                            .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
-                            .SetParameter("@gathered_on", DateTime.UtcNow)
-                            .SetParameter("@resource_name", extractedMaterial.EntityDefault.Name)
-                            .SetParameter("@quantity", extractedMaterial.Quantity)
-                            .ExecuteNonQuery();
-
                         Item item = (Item)Factory.CreateWithRandomEID(extractedMaterial.Definition);
                         item.Owner = Owner;
                         item.Quantity = extractedMaterial.Quantity;
@@ -145,12 +142,31 @@ namespace Perpetuum.Modules
                         int extractedQuantity = extractedMaterial.Quantity;
                         player.MissionHandler.EnqueueMissionEventInfo(new HarvestPlantEventInfo(player, extractedHarvestDefinition, extractedQuantity, terrainLock.Location));
                         player.Zone?.HarvestLogHandler.EnqueueHarvestLog(extractedHarvestDefinition, extractedQuantity);
+
+                        resourceStats.Add((extractedMaterial.EntityDefault.Name, extractedMaterial.Quantity));
                     }
 
                     container.Save();
                     OnGathererMaterial(zone, player, (int)plantInfo.type);
                     Transaction.Current.OnCommited(() => container.SendUpdateToOwnerAsync());
                     scope.Complete();
+                }
+            }
+
+            foreach (var (resourceName, quantity) in resourceStats)
+            {
+                try
+                {
+                    Db.Query()
+                        .CommandText("exec sp_RecordResourceGathered @gathered_on, @resource_name, @quantity")
+                        .SetParameter("@gathered_on", DateTime.UtcNow)
+                        .SetParameter("@resource_name", resourceName)
+                        .SetParameter("@quantity", quantity)
+                        .ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error(ex.Message);
                 }
             }
 

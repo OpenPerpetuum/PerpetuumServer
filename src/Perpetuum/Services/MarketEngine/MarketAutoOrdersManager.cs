@@ -27,10 +27,24 @@ namespace Perpetuum.Services.MarketEngine
 
         private void Init()
         {
+            _timers.Add(new TimerAction(ConsolidateStatistics, TimeSpan.FromMinutes(15)));
             _timers.Add(new TimerAction(RecalculatePricesAndRenewOrders, TimeSpan.FromDays(1)));
 
             // Debug purposes, do not uncomment
+            //_timers.Add(new TimerAction(ConsolidateStatistics, TimeSpan.FromMinutes(1)));
             //_timers.Add(new TimerAction(RecalculatePricesAndRenewOrders, TimeSpan.FromMinutes(1)));
+        }
+
+        private void ConsolidateStatistics()
+        {
+            using (TransactionScope scope = Db.CreateTransaction())
+            {
+                _ = Db.Query()
+                    .CommandText("exec consolidate_statistics")
+                    .ExecuteNonQuery();
+
+                scope.Complete();
+            }
         }
 
         private void RecalculatePricesAndRenewOrders()
