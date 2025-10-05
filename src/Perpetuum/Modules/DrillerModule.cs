@@ -244,7 +244,7 @@ namespace Perpetuum.Modules
                 .ThrowIfFalse(
                     ErrorCodes.MiningEnablerEffectRequired,
                         (PerpetuumException ex) =>
-                            (ParentRobot as RemoteControlledCreature)
+                            (ParentRobot as RemoteControlledCreature)?
                                 .ProcessIndustrialTarget(position.Center, 0));
         }
 
