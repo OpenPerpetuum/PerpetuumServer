@@ -20,6 +20,11 @@ namespace Perpetuum.Groups.Gangs
         void ChangeLeader(Gang gang, Character newLeader);
         void SetRole(Gang gang, Character member, GangRole newRole);
 
+        /// <summary>
+        /// An action performed after a gang is created
+        /// </summary>
+        event Action<Gang,Character /* leader */> GangCreate;
+        
         event Action<Gang,Character /* member */> GangMemberJoined;
         event Action<Gang,Character /* member */> GangMemberRemoved;
         event Action<Gang> GangDisbanded;

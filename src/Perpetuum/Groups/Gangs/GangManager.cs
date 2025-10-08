@@ -56,11 +56,21 @@ namespace Perpetuum.Groups.Gangs
             gang.Id = Guid.NewGuid();
             gang.Name = gangName;
             gang.Leader = leader;
-            gang.SetMember(leader);
+            // In addition to leadership, an assistant role is also needed
+            // so that when the leader changes, the creator does not lose
+            // control over the gang
+            gang.SetMember(leader, GangRole.Assistant);
 
             _gangRepository.Insert(gang);
 
-            void Finish() => _channelManager.CreateAndJoinChannel(ChannelType.Gang, gang.ChannelName, gang.Leader);
+            void Finish()
+            {
+                // In addition to the DB repository, need to add a new gang to the dictionary
+                _gangs.Add(gang.Id, gang);
+                _channelManager.CreateAndJoinChannel(ChannelType.Gang, gang.ChannelName, gang.Leader);
+                // Perform actions upon completion of the gang creation
+                GangCreate?.Invoke(gang, leader);
+            }
 
             if (Transaction.Current != null)
                 Transaction.Current.OnCommited(Finish);
@@ -212,6 +222,7 @@ namespace Perpetuum.Groups.Gangs
                 Finish();
         }
 
+        public event Action<Gang, Character> GangCreate;
         public event Action<Gang,Character> GangMemberJoined;
         public event Action<Gang, Character> GangMemberRemoved;
 

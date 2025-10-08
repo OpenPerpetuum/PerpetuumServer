@@ -94,6 +94,7 @@ namespace Perpetuum.Zones
             IsLayerEditLocked = true;
             sessionManager.CharacterDeselected += OnCharacterDeselected;
             _gangManager = gangManager;
+            _gangManager.GangCreate += OnGangCreate;
             _gangManager.GangMemberJoined += OnGangMemberJoined;
             _gangManager.GangMemberRemoved += OnGangMemberRemoved;
             _gangManager.GangDisbanded += OnGangDisbanded;
@@ -128,6 +129,13 @@ namespace Perpetuum.Zones
             SaveUnitsToDb<PBSObject>();
             SaveUnitsToDb<ProximityDeviceBase>();
         }
+
+        /// <summary>
+        /// Perform the necessary actions for the zone after creating the gang.
+        /// </summary>
+        /// <param name="gang">Newly formed gang</param>
+        /// <param name="character">The creator of the gang</param>
+        private void OnGangCreate(Gang gang, Character character) => OnGangMemberJoined(gang, character);
 
         private void OnGangMemberJoined(Gang gang, Character character)
         {
