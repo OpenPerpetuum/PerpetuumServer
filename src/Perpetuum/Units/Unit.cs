@@ -387,6 +387,8 @@ namespace Perpetuum.Units
 
         protected virtual void OnBeforeRemovedFromZone(IZone zone) { }
 
+        public bool CannotTakeDamage => _damageProcessor?.CannotTakeDamage ?? true;
+
         public void TakeDamage(DamageInfo damageInfo)
         {
             _damageProcessor.TakeDamage(damageInfo);

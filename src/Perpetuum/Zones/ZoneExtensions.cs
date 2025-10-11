@@ -240,6 +240,11 @@ namespace Perpetuum.Zones
                     continue;
                 }
 
+                if (unit.CannotTakeDamage)
+                {
+                    continue;
+                }
+
                 LOSResult losResult = zone.IsInLineOfSight(damageInfo.attacker, unit, false);
                 if (losResult.hit)
                 {
