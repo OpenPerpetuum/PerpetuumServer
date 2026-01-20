@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Perpetuum.Accounting.Characters;
 using Perpetuum.Common.Loggers.Transaction;
+using Perpetuum.Data;
 using Perpetuum.ExportedTypes;
 using Perpetuum.Groups.Corporations;
 using Perpetuum.Items;
@@ -116,6 +117,7 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
 
             double insuranceFee, payOut;
             GetInsurancePrice(robot, out insuranceFee, out payOut).ThrowIfError();
+            payOut = GetBoostedInsurancePayout(character, payOut);
 
             wallet.Balance -= insuranceFee;
 
@@ -145,6 +147,26 @@ namespace Perpetuum.Services.ProductionEngine.Facilities
             InsuranceHelper.AddInsurance(character, robot.Eid, endDate, InsuranceType.robotInsurance, corporationEid, payOut).ThrowIfError();
             character.GetCurrentDockingBase().AddCentralBank(TransactionType.InsuranceFee, insuranceFee);
             currentInsurances++;
+        }
+
+        private const double SERVER_DESIRED_EP_LEVEL = 750000;
+        public double GetBoostedInsurancePayout(Character character, double payOut) {
+            Accounting.Account account = character.GetAccount();
+            var collectedEp = Db.Query().CommandText("SELECT dbo.extensionPointsCollected(@accountID)")
+                .SetParameter("@accountID", account.Id)
+                .ExecuteScalar<int>();
+            double modifier = GetInsurancePayoutModifier(collectedEp);
+
+            return Math.Round(payOut * (1 + modifier));
+        }
+
+        private static double GetInsurancePayoutModifier(int collectedEpSum) {
+
+            var linearRatio = collectedEpSum / SERVER_DESIRED_EP_LEVEL;
+            var result = 1.0 - linearRatio;
+            result = result.Clamp();
+
+            return result;
         }
 
         public ErrorCodes InsuranceQuery(Character character, IEnumerable<long> targetEids, out Dictionary<string, object> result)
